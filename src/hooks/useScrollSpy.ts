@@ -19,6 +19,8 @@ export function useScrollSpy(ids: string[]): string | null {
 	const key = ids.join("|");
 
 	useEffect(() => {
+		// A new id list never keeps an id it no longer contains.
+		setActiveId(null);
 		if (typeof IntersectionObserver === "undefined") return;
 		const sections = key
 			.split("|")

@@ -9,7 +9,7 @@ import { join, relative } from "node:path";
  * the middle dot) stay legal, and a pictograph the copy genuinely needs, such
  * as the credit band's heart, ships as an escape sequence.
  */
-const EMOJI = /[\u{2600}-\u{27bf}\u{1f000}-\u{1faff}]/u;
+const EMOJI = /[\u{2600}-\u{27bf}\u{1f000}-\u{1faff}]|\u{fe0f}|\u{20e3}/u;
 
 const SRC = join(import.meta.dirname, "..", "src");
 

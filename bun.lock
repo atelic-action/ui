@@ -5,7 +5,7 @@
     "": {
       "name": "@atelic/ui",
       "devDependencies": {
-        "@biomejs/biome": "^2.0.0",
+        "@biomejs/biome": "^2.5.13",
         "@testing-library/jest-dom": "^6.6.2",
         "@testing-library/react": "^16.0.1",
         "@types/react": "^19.0.0",
