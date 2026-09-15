@@ -1,0 +1,221 @@
+/* =================================================================
+   @atelic/ui BASE: the few unscoped resets, then the canvas,
+   typography, and layout helpers, scoped to .mkt.
+   Tokens are read here and never defined: each site's theme.css owns
+   them. Everything sits in the atelic-ui layer, so any rule a site
+   writes outside a layer wins without a specificity fight.
+   ================================================================= */
+@layer atelic-ui {
+	/* ---- Resets ---- */
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+	html,
+	body {
+		margin: 0;
+		padding: 0;
+	}
+	html {
+		-webkit-text-size-adjust: 100%;
+		scroll-behavior: smooth;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		html {
+			scroll-behavior: auto;
+		}
+	}
+
+	/* ---- Page canvas ---- */
+	/* Horizontal overflow is clipped at the body (where it still propagates to
+	   the viewport) rather than on .mkt itself: an overflow-x on .mkt would
+	   silently break position: sticky for every descendant. */
+	body:has(.mkt) {
+		overflow-x: hidden;
+	}
+	.mkt {
+		font-family: var(--font-sans);
+		background: var(--surface);
+		color: var(--ink);
+		line-height: 1.55;
+		font-size: 17px;
+		-webkit-font-smoothing: antialiased;
+		text-rendering: optimizeLegibility;
+	}
+	.mkt a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.mkt button {
+		font: inherit;
+		cursor: pointer;
+		border: none;
+		background: none;
+		color: inherit;
+	}
+	.mkt ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	.mkt img,
+	.mkt picture,
+	.mkt svg,
+	.mkt video {
+		display: block;
+		max-width: 100%;
+	}
+
+	/* ---- Typography ---- */
+	.mkt h1,
+	.mkt h2,
+	.mkt h3,
+	.mkt h4 {
+		/* Sites pairing a display face with a body face set --font-heading in
+		   their theme; without it, headings share the body family. */
+		font-family: var(--font-heading, var(--font-sans));
+		line-height: 1.04;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		text-wrap: balance;
+		margin: 0;
+	}
+	.mkt h1 {
+		font-size: clamp(2.6rem, 8vw, 5rem);
+	}
+	.mkt h2 {
+		font-size: clamp(2rem, 5.5vw, 3.4rem);
+	}
+	.mkt h3 {
+		font-size: clamp(1.35rem, 3vw, 1.85rem);
+		letter-spacing: -0.015em;
+	}
+	.mkt h4 {
+		font-size: 1.15rem;
+		font-weight: 700;
+		letter-spacing: -0.01em;
+	}
+	.mkt p {
+		text-wrap: pretty;
+		margin: 0;
+	}
+	.mkt em.serif,
+	.mkt .serif-em {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		color: var(--primary);
+	}
+	/* Serif accent words in headings carry the brand accent color (the
+	   wordmark's signature), so the italic word reads as the highlight it is.
+	   A page on a dark surface lifts its own to the bright primary. */
+	.mkt h1 .serif,
+	.mkt h2 .serif {
+		color: var(--primary);
+	}
+
+	/* ---- Layout helpers ---- */
+	.mkt .wrap {
+		width: 100%;
+		max-width: var(--max-width);
+		margin-inline: auto;
+		padding-inline: var(--gutter);
+	}
+	.mkt .section {
+		padding-block: clamp(56px, 9vw, 120px);
+	}
+	/* A middle step, for a page whose alternating bands do the separating and
+	   whose default rhythm reads too airy as a result. */
+	.mkt .section-md {
+		padding-block: clamp(44px, 6.5vw, 84px);
+	}
+	.mkt .section-sm {
+		padding-block: clamp(40px, 6vw, 72px);
+	}
+	/* Section band modifiers, global because routes across chunks use them. */
+	.mkt .section.surface-alt {
+		background: var(--surface-alt);
+	}
+	.mkt .section.tight-top {
+		padding-top: clamp(20px, 3vw, 40px);
+	}
+	.mkt .section.tight-bottom {
+		padding-bottom: clamp(20px, 3vw, 40px);
+	}
+	.mkt .stack-sm > * + * {
+		margin-top: 0.75rem;
+	}
+	.mkt .stack > * + * {
+		margin-top: 1.25rem;
+	}
+	.mkt .center {
+		text-align: center;
+	}
+	.mkt .muted {
+		color: var(--neutral-600);
+	}
+	.mkt .nowrap {
+		white-space: nowrap;
+	}
+
+	/* ---- CTA row (pairs of buttons under headlines) ---- */
+	.mkt .cta-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14px;
+		margin-top: 32px;
+	}
+	.mkt .cta-row.center {
+		justify-content: center;
+	}
+
+	/* ---- Chip row ---- */
+	.mkt .chip-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	/* ---- Prose (long form copy) ---- */
+	.mkt .prose {
+		max-width: 68ch;
+	}
+	.mkt .prose p {
+		margin-bottom: 1.1rem;
+		color: var(--ink-soft);
+		font-size: 1.08rem;
+		line-height: 1.7;
+	}
+	.mkt .prose h3 {
+		margin: 2.2rem 0 0.8rem;
+	}
+	.mkt .prose strong {
+		color: var(--ink);
+	}
+
+	/* Anchored sections sit under the fixed header; give every id an offset
+	   so jump links do not land beneath it. */
+	.mkt [id] {
+		scroll-margin-top: calc(var(--nav-height) + 16px);
+	}
+
+	/* ---- Prose links (long form body copy) ----
+	   The base anchor rule leaves links undecorated, and inside running text they
+	   inherit the paragraph color, so a link in a letter or a long note is
+	   invisible: the descriptive words read as prose and nobody clicks them.
+	   Underline them wherever prose runs. Learned on a reveal letter, where the
+	   whole ask was a link nobody could see. Scoped to paragraph links so a button
+	   dropped into a prose block is untouched, and placed last so it reads after
+	   the lighter anchor rules above. */
+	.mkt .prose p a:not(.btn) {
+		color: var(--ink);
+		border-bottom: 1px solid var(--neutral-300);
+		padding-bottom: 1px;
+	}
+	.mkt .prose p a:not(.btn):hover {
+		color: var(--primary);
+		border-color: var(--primary);
+	}
+}

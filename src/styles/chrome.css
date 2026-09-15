@@ -1,0 +1,460 @@
+/* =================================================================
+   @atelic/ui CHROME: the skip link, the brand lockup, the
+   header, the menu, the sticky CTA bar, the footer, and the credit
+   band. Tokens are read here and never defined. Everything sits in
+   the atelic-ui layer, so any rule a site writes outside a layer wins.
+   The chrome's buttons wear the site's own .btn classes.
+   ================================================================= */
+@layer atelic-ui {
+	/* ---- Skip link (a11y) ---- */
+	.mkt .skip-link {
+		position: absolute;
+		left: -9999px;
+		top: 0;
+		background: var(--ink);
+		color: #fff;
+		padding: 12px 18px;
+		z-index: 200;
+		border-radius: 0 0 8px 0;
+	}
+	.mkt .skip-link:focus {
+		left: 0;
+	}
+
+	/* ---- Brand lockup ---- */
+	/* The brand's trailing fade bar after the wordmark (logo.run), worn in the
+	   header and the footer. */
+	.mkt .wordmark-run {
+		display: inline-block;
+		width: 1.7em;
+		height: 2px;
+		margin-left: 0.38em;
+		vertical-align: middle;
+		background: linear-gradient(90deg, var(--primary), transparent);
+	}
+	/* The glyph tile mark (logo.tile): the favicon's design as real DOM text,
+	   so the brand webfont renders it, which an SVG loaded through an img
+	   cannot do. Worn in the header and the footer. */
+	.mkt .logo-tile {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		margin-right: 0.45em;
+		border-radius: 8px;
+		background: var(--surface-dark);
+		color: var(--surface);
+		font-weight: 600;
+		font-size: 1.05rem;
+		line-height: 1;
+		position: relative;
+		flex: none;
+	}
+	.mkt .logo-tile::after {
+		content: "";
+		position: absolute;
+		left: 7px;
+		right: 7px;
+		bottom: 4px;
+		height: 2.5px;
+		border-radius: 2px;
+		background: var(--primary);
+	}
+
+	/* ---- Header ---- */
+	/* Fixed header: transparent over a hero, solid once scrolled, or dark. */
+	.mkt .nav {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 100;
+		height: var(--nav-height);
+		display: flex;
+		align-items: center;
+		transition:
+			background 0.3s ease,
+			box-shadow 0.3s ease,
+			backdrop-filter 0.3s ease;
+	}
+	.mkt .nav-inner {
+		width: 100%;
+		max-width: var(--max-width);
+		margin-inline: auto;
+		padding-inline: var(--gutter);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+	}
+	.mkt .nav-logo {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-family: var(--font-brand);
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		font-size: 1.02rem;
+	}
+	.mkt .nav-logo .mark {
+		height: 30px;
+		width: 30px;
+	}
+	.mkt .nav-links {
+		display: none;
+		align-items: center;
+		gap: 4px;
+	}
+	.mkt .nav-links a {
+		padding: 8px 14px;
+		border-radius: var(--radius-pill);
+		font-weight: 600;
+		font-size: 0.95rem;
+		transition:
+			background 0.15s,
+			color 0.15s;
+	}
+	.mkt .nav-links a:hover {
+		background: rgba(33, 28, 23, 0.06);
+	}
+	/* A page's own stops: the scroll spied active one. */
+	.mkt .nav-links a.active {
+		color: var(--primary);
+	}
+	/* Desktop only, and hidden until the bar is solid: on small screens the
+	   sticky CTA bar and the menu carry the action, and the wordmark needs the
+	   width. The class sits on a wrapper around the button, because a site's
+	   .btn display rule lives outside this layer and would outrank a rule here
+	   that hid the button itself. */
+	.mkt .nav .nav-CTA {
+		display: none;
+	}
+	.mkt .nav-burger {
+		display: inline-flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 10px;
+	}
+	.mkt .nav-burger span {
+		width: 24px;
+		height: 2px;
+		background: currentColor;
+		border-radius: 2px;
+		transition:
+			transform 0.25s,
+			opacity 0.2s;
+	}
+	/* A white logo image is tinted to ink when the bar is solid on light. */
+	.mkt .nav.is-solid .nav-logo .mark {
+		filter: brightness(0) saturate(1);
+	}
+	.mkt .nav.is-transparent {
+		color: #fff;
+	}
+	.mkt .nav.is-transparent .nav-logo .wordmark {
+		color: #fff;
+	}
+	.mkt .nav.is-solid {
+		background: color-mix(in srgb, var(--surface) 86%, transparent);
+		backdrop-filter: saturate(1.4) blur(14px);
+		-webkit-backdrop-filter: saturate(1.4) blur(14px);
+		box-shadow: 0 1px 0 var(--hairline-strong);
+		color: var(--ink);
+	}
+	/* The dark bar (an artifact's stage, the audit): it matches the page
+	   instead of capping it with a light band. The white logo mark stays
+	   untinted, and the active stop lifts to the bright primary. */
+	.mkt .nav.is-solid.nav-dark {
+		background: color-mix(in srgb, var(--surface-dark) 88%, transparent);
+		box-shadow: 0 1px 0 color-mix(in srgb, var(--surface) 12%, transparent);
+		color: color-mix(in srgb, var(--surface) 96%, white);
+	}
+	.mkt .nav.nav-dark .nav-logo .mark {
+		filter: none;
+	}
+	.mkt .nav.nav-dark .nav-links a:hover {
+		background: rgba(255, 255, 255, 0.08);
+	}
+	.mkt .nav.nav-dark .nav-links a.active {
+		color: var(--primary-bright);
+	}
+	@media (min-width: 900px) {
+		.mkt .nav-links {
+			display: flex;
+		}
+		.mkt .nav-burger {
+			display: none;
+		}
+		.mkt .nav.is-solid .nav-CTA {
+			display: inline-flex;
+		}
+	}
+	/* The burger folds into an X while the menu is open. State lives on the
+	   button's own aria-expanded, so no extra class plumbing. */
+	.mkt .nav-burger[aria-expanded="true"] span:nth-child(1) {
+		transform: translateY(7px) rotate(45deg);
+	}
+	.mkt .nav-burger[aria-expanded="true"] span:nth-child(2) {
+		opacity: 0;
+	}
+	.mkt .nav-burger[aria-expanded="true"] span:nth-child(3) {
+		transform: translateY(-7px) rotate(-45deg);
+	}
+
+	/* ---- Menu ---- */
+	/* A native modal dialog, sized to the whole viewport over the dialog's own
+	   box. It renders in the top layer above the header, so it carries its own
+	   close button where the burger sits. */
+	.mkt .mobile-menu {
+		position: fixed;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		border: 0;
+		background: var(--surface-dark);
+		color: var(--surface);
+		flex-direction: column;
+		padding: calc(var(--nav-height) + 20px) var(--gutter) 40px;
+		overflow-y: auto;
+		transform: translateY(-100%);
+		transition: transform 0.4s cubic-bezier(0.7, 0, 0.2, 1);
+	}
+	.mkt .mobile-menu[open] {
+		display: flex;
+		transform: translateY(0);
+	}
+	@starting-style {
+		.mkt .mobile-menu[open] {
+			transform: translateY(-100%);
+		}
+	}
+	.mkt .mobile-menu::backdrop {
+		background: transparent;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.mkt .mobile-menu {
+			transition: none;
+		}
+	}
+	/* Page scroll holds still while the menu is open. */
+	html:has(dialog.mobile-menu[open]) {
+		overflow: hidden;
+	}
+	.mkt .mobile-menu .mm-close {
+		position: absolute;
+		top: calc(var(--nav-height) / 2 - 14.5px);
+		right: var(--gutter);
+		display: inline-flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 10px;
+	}
+	.mkt .mobile-menu .mm-close span {
+		width: 24px;
+		height: 2px;
+		background: currentColor;
+		border-radius: 2px;
+	}
+	.mkt .mobile-menu .mm-close span:nth-child(1) {
+		transform: translateY(3.5px) rotate(45deg);
+	}
+	.mkt .mobile-menu .mm-close span:nth-child(2) {
+		transform: translateY(-3.5px) rotate(-45deg);
+	}
+	/* Menu entries only (.mm-link), never bare anchors, so the .btn CTA below
+	   keeps its standard button styling. */
+	.mkt .mobile-menu .mm-link {
+		font-size: 1.8rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		padding: 14px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+	.mkt .mobile-menu .mm-link .idx {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--primary-bright);
+		font-weight: 500;
+	}
+	.mkt .mobile-menu .mm-CTA {
+		margin-top: 28px;
+	}
+	.mkt .mobile-menu .mm-contact {
+		margin-top: auto;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--neutral-300);
+		letter-spacing: 0.04em;
+		line-height: 1.9;
+	}
+
+	/* ---- Sticky CTA bar (phones only) ---- */
+	.mkt .sticky-CTA {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 95;
+		display: flex;
+		gap: 10px;
+		padding: 12px var(--gutter) max(12px, env(safe-area-inset-bottom));
+		background: color-mix(in srgb, var(--surface) 90%, transparent);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border-top: 1px solid var(--hairline-strong);
+		transform: translateY(120%);
+		transition: transform 0.35s cubic-bezier(0.7, 0, 0.2, 1);
+	}
+	.mkt .sticky-CTA.show {
+		transform: translateY(0);
+	}
+	.mkt .sticky-CTA .btn {
+		flex: 1;
+	}
+	.mkt .sticky-CTA .btn-call {
+		flex: 0 0 auto;
+	}
+	@media (min-width: 900px) {
+		.mkt .sticky-CTA {
+			display: none;
+		}
+	}
+
+	/* ---- Footer ---- */
+	.mkt .footer {
+		background: var(--surface-dark);
+		color: var(--neutral-200);
+		padding-block: clamp(48px, 7vw, 84px) 28px;
+	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .footer, so it never meets the header's link rules */
+	.mkt .footer a:hover {
+		color: #fff;
+	}
+	.mkt .footer-grid {
+		display: grid;
+		gap: 40px;
+		grid-template-columns: 1fr;
+	}
+	.mkt .footer h4 {
+		color: #fff;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		font-weight: 500;
+		margin-bottom: 16px;
+	}
+	.mkt .footer-brand img {
+		height: 38px;
+		margin-bottom: 18px;
+	}
+	.mkt .footer-brand p {
+		color: var(--neutral-300);
+		max-width: 30ch;
+	}
+	.mkt .footer nav a {
+		display: block;
+		padding: 6px 0;
+		color: var(--neutral-200);
+		font-weight: 500;
+	}
+	.mkt .footer .nap {
+		font-style: normal;
+		line-height: 1.9;
+		color: var(--neutral-200);
+	}
+	.mkt .footer .nap a {
+		color: #fff;
+		font-weight: 600;
+	}
+	.mkt .footer-hours {
+		font-family: var(--font-mono);
+		font-size: 0.82rem;
+		line-height: 1.9;
+		color: var(--neutral-300);
+	}
+	.mkt .footer-social {
+		display: flex;
+		gap: 10px;
+		margin-top: 20px;
+	}
+	.mkt .footer .footer-social-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 38px;
+		height: 38px;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		border-radius: var(--radius-sm);
+		color: var(--neutral-300);
+	}
+	.mkt .footer .footer-social-link:hover {
+		color: var(--primary-bright);
+		border-color: var(--primary-bright);
+	}
+	.mkt .footer-bottom {
+		margin-top: 48px;
+		padding-top: 24px;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px 28px;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.82rem;
+		color: var(--neutral-500);
+	}
+	.mkt .footer .footer-bottom a {
+		color: var(--neutral-300);
+	}
+	.mkt .footer-legal {
+		display: flex;
+		gap: 20px;
+		flex-wrap: wrap;
+	}
+	@media (min-width: 760px) {
+		.mkt .footer-grid {
+			grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+			gap: 48px;
+		}
+	}
+	/* Text wordmark for a site with no mark image. */
+	.mkt .footer-wordmark {
+		color: #fff;
+		font-size: 1.3rem;
+		font-weight: 600;
+		letter-spacing: -0.045em;
+		margin-bottom: 18px;
+	}
+
+	/* ---- Credit band ---- */
+	/* The developer credit below the footer: its own full width band, centered,
+	   small, and muted. Purely token themed (the hairline and hover lift derive
+	   from --surface through color-mix), so it rebrands with theme.css on any
+	   page it renders under, light or dark. */
+	.mkt .credit-bar {
+		background: var(--surface-dark);
+		border-top: 1px solid color-mix(in srgb, var(--surface) 10%, transparent);
+		color: var(--neutral-500);
+		font-size: 0.78rem;
+		text-align: center;
+		text-wrap: balance;
+		padding: 16px 20px;
+	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .credit-bar, so it never meets the footer's link rules */
+	.mkt .credit-bar a {
+		color: var(--neutral-300);
+		font-weight: 500;
+	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .credit-bar, so it never meets the header's link rules */
+	.mkt .credit-bar a:hover {
+		color: color-mix(in srgb, var(--surface) 96%, white);
+	}
+}
