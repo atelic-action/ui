@@ -136,7 +136,7 @@ describe("SiteMenu", () => {
 	it("renders the CTA as a standard button, unpolluted by menu link styling", () => {
 		render(<SiteMenu open onClose={() => {}} links={links} primaryCTA={primaryCTA} />);
 		const button = screen.getByRole("link", { name: "Book Now" });
-		expect(button).toHaveClass("btn", "btn-primary", "btn-lg", "mm-CTA");
+		expect(button).toHaveClass("btn", "btn-primary", "btn-lg", "mm-cta");
 		expect(button).not.toHaveClass("mm-link");
 		expect(button).toHaveAttribute("target", "_blank");
 		expect(button).toHaveAttribute("rel", "noopener");

@@ -127,7 +127,7 @@
 	   width. The class sits on a wrapper around the button, because a site's
 	   .btn display rule lives outside this layer and would outrank a rule here
 	   that hid the button itself. */
-	.mkt .nav .nav-CTA {
+	.mkt .nav .nav-cta {
 		display: none;
 	}
 	.mkt .nav-burger {
@@ -186,7 +186,7 @@
 		.mkt .nav-burger {
 			display: none;
 		}
-		.mkt .nav.is-solid .nav-CTA {
+		.mkt .nav.is-solid .nav-cta {
 			display: inline-flex;
 		}
 	}
@@ -283,7 +283,7 @@
 		color: var(--primary-bright);
 		font-weight: 500;
 	}
-	.mkt .mobile-menu .mm-CTA {
+	.mkt .mobile-menu .mm-cta {
 		margin-top: 28px;
 	}
 	.mkt .mobile-menu .mm-contact {
@@ -296,7 +296,7 @@
 	}
 
 	/* ---- Sticky CTA bar (phones only) ---- */
-	.mkt .sticky-CTA {
+	.mkt .sticky-cta {
 		position: fixed;
 		left: 0;
 		right: 0;
@@ -312,17 +312,17 @@
 		transform: translateY(120%);
 		transition: transform 0.35s cubic-bezier(0.7, 0, 0.2, 1);
 	}
-	.mkt .sticky-CTA.show {
+	.mkt .sticky-cta.show {
 		transform: translateY(0);
 	}
-	.mkt .sticky-CTA .btn {
+	.mkt .sticky-cta .btn {
 		flex: 1;
 	}
-	.mkt .sticky-CTA .btn-call {
+	.mkt .sticky-cta .btn-call {
 		flex: 0 0 auto;
 	}
 	@media (min-width: 900px) {
-		.mkt .sticky-CTA {
+		.mkt .sticky-cta {
 			display: none;
 		}
 	}

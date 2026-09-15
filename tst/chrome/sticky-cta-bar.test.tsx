@@ -35,7 +35,7 @@ describe("StickyCTABar", () => {
 
 	it("slides in once the page scrolls past the threshold", () => {
 		const { container } = render(<StickyCTABar primaryCTA={primaryCTA} threshold={300} />);
-		const bar = container.querySelector(".sticky-CTA");
+		const bar = container.querySelector(".sticky-cta");
 		expect(bar).not.toHaveClass("show");
 		expect(bar).toHaveAttribute("inert");
 

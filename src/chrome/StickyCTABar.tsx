@@ -32,7 +32,7 @@ export function StickyCTABar({
 
 	return (
 		// Inert while offscreen, so its links take no keyboard focus before it slides in.
-		<div className={show ? "sticky-CTA show" : "sticky-CTA"} inert={!show}>
+		<div className={show ? "sticky-cta show" : "sticky-cta"} inert={!show}>
 			<a
 				className="btn btn-primary"
 				href={primaryCTA.href}
