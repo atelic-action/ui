@@ -1,4 +1,4 @@
-# @atelic/ui
+# @atelic-action/ui
 
 Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update`.
 
@@ -7,7 +7,7 @@ The package ships source, not a build. Its TSX and CSS arrive as written and com
 ## Install
 
 ```bash
-bun add @atelic/ui
+bun add @atelic-action/ui
 ```
 
 Peer dependencies: `react` and `react-dom` at `^19.0.0`, and `lucide-react` at `^1.23.0`.
@@ -19,7 +19,7 @@ Prerendering and server rendering have to compile the package too, so keep it ou
 ```ts
 // vite.config.ts
 export default defineConfig({
-	ssr: { noExternal: ["@atelic/ui"] },
+	ssr: { noExternal: ["@atelic-action/ui"] },
 });
 ```
 
@@ -28,8 +28,8 @@ export default defineConfig({
 Import the stylesheets in this order, from the root route or the site's base sheet:
 
 1. The site's fonts (`fonts.css`)
-2. `@atelic/ui/styles/base.css`
-3. `@atelic/ui/styles/chrome.css`
+2. `@atelic-action/ui/styles/base.css`
+3. `@atelic-action/ui/styles/chrome.css`
 4. The site's own CSS
 5. The site's `theme.css`, last
 
@@ -39,15 +39,15 @@ Both package sheets sit inside `@layer atelic-ui`, so any rule a site writes out
 
 | Import | Exports |
 |---|---|
-| `@atelic/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic/ui/hooks` | `useScrollSpy` and its `PageStop` type |
-| `@atelic/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
-| `@atelic/ui/styles/chrome.css` | Styles for everything under `chrome` |
+| `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
+| `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
+| `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
+| `@atelic-action/ui/styles/chrome.css` | Styles for everything under `chrome` |
 
 Every component renders from props alone. None reads a config file or a router, so a site maps its own config onto the props in its shell:
 
 ```tsx
-import { Footer, SiteHeader, SkipLink, StickyCTABar } from "@atelic/ui/chrome";
+import { Footer, SiteHeader, SkipLink, StickyCTABar } from "@atelic-action/ui/chrome";
 
 <div className="mkt">
 	<SkipLink />

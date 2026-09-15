@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Conventions for `@atelic/ui`, the shared chrome and base styles the Atelic templates install. Installing, importing, and releasing live in [README.md](README.md).
+Conventions for `@atelic-action/ui`, the shared chrome and base styles the Atelic templates install. Installing, importing, and releasing live in [README.md](README.md).
 
 - **Relative imports only.** No `@/` aliases: consumers compile this source with their own Vite, which resolves none of ours.
 - **No router imports.** The package runs under TanStack Start prerender and later in a client SPA, so take the current path as a prop.
