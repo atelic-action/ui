@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@atelic/ui",
+      "name": "@atelic-action/ui",
       "devDependencies": {
         "@biomejs/biome": "^2.5.13",
         "@testing-library/jest-dom": "^6.6.2",

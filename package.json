@@ -1,5 +1,5 @@
 {
-	"name": "@atelic/ui",
+	"name": "@atelic-action/ui",
 	"version": "0.1.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, and the component library they install",
 	"type": "module",

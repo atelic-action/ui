@@ -1,5 +1,5 @@
 /* =================================================================
-   @atelic/ui CHROME: the skip link, the brand lockup, the
+   @atelic-action/ui CHROME: the skip link, the brand lockup, the
    header, the menu, the sticky CTA bar, the footer, and the credit
    band. Tokens are read here and never defined. Everything sits in
    the atelic-ui layer, so any rule a site writes outside a layer wins.

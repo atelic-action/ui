@@ -1,5 +1,5 @@
 /* =================================================================
-   @atelic/ui BASE: the few unscoped resets, then the canvas,
+   @atelic-action/ui BASE: the few unscoped resets, then the canvas,
    typography, and layout helpers, scoped to .mkt.
    Tokens are read here and never defined: each site's theme.css owns
    them. Everything sits in the atelic-ui layer, so any rule a site
