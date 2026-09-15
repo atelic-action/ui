@@ -76,4 +76,4 @@ The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus cont
    git push origin v0.1.1
    ```
 
-3. The Publish workflow checks that the tag matches the version, runs the gates, and publishes to npm with provenance. It authenticates through npm trusted publishing (the package's Trusted Publisher names this repo and `publish.yml`), so no token is stored, and it needs npm 11.5.1 or later, which Node 24 ships.
+3. The Publish workflow checks that the tag matches the version, runs the gates, and publishes to npm with provenance. It authenticates through npm trusted publishing (the package's Trusted Publisher names this repo and `publish.yml`, and its allowed actions must permit direct `npm publish`, since a configuration created after 2026-09-03 allows only `npm stage publish` by default), so no token is stored, and it needs npm 11.5.1 or later, which Node 24 ships.
