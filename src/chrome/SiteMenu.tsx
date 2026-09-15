@@ -88,7 +88,7 @@ export function SiteMenu({
 			))}
 			{primaryCTA && (
 				<a
-					className="btn btn-primary btn-lg mm-CTA"
+					className="btn btn-primary btn-lg mm-cta"
 					href={primaryCTA.href}
 					onClick={close}
 					{...newTabProps(primaryCTA.href, primaryCTA.external)}

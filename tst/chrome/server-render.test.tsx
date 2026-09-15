@@ -36,7 +36,7 @@ describe("server rendering", () => {
 		expect(markup).toContain('aria-current="page"');
 		expect(markup).toMatch(/<dialog[^>]*class="mobile-menu"/);
 		expect(markup).not.toMatch(/<dialog[^>]*\sopen/);
-		expect(markup).toContain('class="sticky-CTA"');
+		expect(markup).toContain('class="sticky-cta"');
 		expect(markup).toContain('class="credit-bar"');
 	});
 
@@ -50,7 +50,7 @@ describe("server rendering", () => {
 
 		expect(markup).toContain('class="nav is-solid nav-dark"');
 		expect(markup).toContain('href="#plan"');
-		expect(markup).not.toContain("nav-CTA");
+		expect(markup).not.toContain("nav-cta");
 		expect(markup).toContain("Developed with");
 	});
 });

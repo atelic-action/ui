@@ -111,7 +111,7 @@ export function SiteHeader({
 						// The class sits on a wrapper, not the button: a site's own .btn
 						// display rule lives outside the atelic-ui layer and would beat
 						// any rule here that hid the button itself.
-						<span className="nav-CTA">
+						<span className="nav-cta">
 							<a
 								className="btn btn-primary"
 								href={barCTA.href}

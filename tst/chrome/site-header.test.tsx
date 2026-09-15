@@ -76,7 +76,7 @@ describe("SiteHeader", () => {
 		const header = getHeader(container);
 
 		expect(within(header).queryByRole("navigation")).toBeNull();
-		expect(header.querySelector(".nav-CTA")).toBeNull();
+		expect(header.querySelector(".nav-cta")).toBeNull();
 		expect(within(header).queryByRole("button")).toBeNull();
 		expect(container.querySelector("dialog")).toBeNull();
 		expect(within(header).getByRole("link", { name: "Test Practice home" })).toHaveAttribute(
@@ -92,7 +92,7 @@ describe("SiteHeader", () => {
 		const button = within(getHeader(container)).getByRole("link", { name: "Book Now" });
 
 		expect(button).toHaveClass("btn", "btn-primary");
-		expect(button.parentElement).toHaveClass("nav-CTA");
+		expect(button.parentElement).toHaveClass("nav-cta");
 		expect(button).toHaveAttribute("target", "_blank");
 	});
 
@@ -101,9 +101,9 @@ describe("SiteHeader", () => {
 			<SiteHeader brand={brand} links={links} primaryCTA={primaryCTA} hideCTA />,
 		);
 
-		expect(getHeader(container).querySelector(".nav-CTA")).toBeNull();
+		expect(getHeader(container).querySelector(".nav-cta")).toBeNull();
 		const dialog = container.querySelector("dialog");
-		expect(dialog?.querySelector(".mm-CTA")).toHaveTextContent("Book Now");
+		expect(dialog?.querySelector(".mm-cta")).toHaveTextContent("Book Now");
 	});
 
 	it("swaps the nav and the CTA for the page's own stops in presentation mode", () => {
@@ -115,10 +115,10 @@ describe("SiteHeader", () => {
 		const nav = within(header).getByRole("navigation", { name: "Page sections" });
 		expect(within(nav).getByRole("link", { name: "Plan" })).toHaveAttribute("href", "#plan");
 		expect(within(header).queryByRole("navigation", { name: "Primary" })).toBeNull();
-		expect(header.querySelector(".nav-CTA")).toBeNull();
+		expect(header.querySelector(".nav-cta")).toBeNull();
 
 		const dialog = container.querySelector("dialog");
-		expect(dialog?.querySelector(".mm-CTA")).toBeNull();
+		expect(dialog?.querySelector(".mm-cta")).toBeNull();
 		expect(dialog?.querySelector('a.mm-link[href="#findings"]')).toBeInTheDocument();
 	});
 
