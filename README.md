@@ -40,6 +40,8 @@ Both package sheets sit inside `@layer atelic-ui`, so any rule a site writes out
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
+| `@atelic-action/ui/email` | The email components, `renderEmail`, `renderFailureEmail`, the plain text helpers, and their prop types (see [Email](#email)) |
+| `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
 | `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
 | `@atelic-action/ui/styles/chrome.css` | Styles for everything under `chrome` |
@@ -65,6 +67,95 @@ import { Footer, SiteHeader, SkipLink, StickyCTABar } from "@atelic-action/ui/ch
 ```
 
 The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus containment, and focus return come from the browser.
+
+## Email
+
+`@atelic-action/ui/email` is the runner email design as React components, ported one to one from the jq library the runners compose their mail from (homebase `runners/lib/email.jq`). The components are born inline: every layout is a table, every style is an inline style object, and there is no CSS file and no `className`, because Gmail strips a style block and ignores media queries on some accounts. The same components therefore mount on a web page as happily as they render into a mail client.
+
+Colors and fonts come from context, so a client branded email passes its own palette:
+
+```tsx
+import { Card, Eyebrow, Footer, Item, Masthead, renderEmail, TitleCard } from "@atelic-action/ui/email";
+import { atelicPalette } from "@atelic-action/ui/tokens";
+
+const html = renderEmail({
+	title: "Week 40 Recruiter",
+	preheader: "Three roles cleared every filter.",
+	palette: { ...atelicPalette, accent: "#0B6E4F" },
+	children: (
+		<>
+			<Masthead title="Recruiter" />
+			<TitleCard
+				eyebrowText="Week 40"
+				headlineLines={["Three cleared", "every filter."]}
+				lede="Two of them are remote."
+			/>
+			<Eyebrow text="Shortlist" />
+			<Card>
+				<Item
+					name="Pinewood Cabinetry"
+					right="4.5"
+					subparts={["Staff engineer", "Remote"]}
+					body="They answered inside a day."
+					linkText="Posting"
+					url="https://example.test/posting"
+					last
+				/>
+			</Card>
+			<Footer meta="Run 2026-10-05" />
+		</>
+	),
+});
+```
+
+`renderEmail` builds the document shell itself and puts only the rows through React, because React emits no doctype, React 19 hoists and reorders head tags, and it would escape the `>` in `details>summary`. `renderFailureEmail` is the same shell around `FailurePage`.
+
+### The Mapping
+
+Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_html`, a records cell's `html`, a stat's caption), the React prop is `children` or a `ReactNode`. Where the jq escapes a string argument, the prop is a plain string and React does the escaping.
+
+| jq Function | Component | Props |
+|---|---|---|
+| `eyebrow` | `Eyebrow` | `text` |
+| `card` | `Card` | `children` |
+| `fold` | `Fold` | `summary`, `children` |
+| `big_fold` | `BigFold` | `summary`, `count` (a `ReactNode`, absent for the jq's `""`), `children` |
+| `title_line` | `TitleLine` | `name`, `right` |
+| `item` | `Item` | `name`, `right`, `subparts`, `body`, `foldLabel`, `foldBody`, `linkText`, `url`, `last` |
+| `note` | `Note` | `eyebrowText`, `text`, `accented`, `last` |
+| `empty_row` | `EmptyRow` | `text` |
+| `stat` | `Stat` | `n`, `caption` (a `ReactNode`: the jq takes raw html here) |
+| `stats_row` | `StatsRow` | `children`, the `Stat` cells |
+| `list` | `List` | `fontSize`, `children` |
+| `list_row` | `ListRow` | `children` |
+| `lead_row` | `LeadRow` | `lead`, `rest` |
+| `row` | `Row` | `last`, `children` |
+| `fold_row` | `FoldRow` | `last`, `children` |
+| `mono_table` | `MonoTable` | `headers`, `rows` |
+| `bar` | `Bar` | `logged`, `target` |
+| `group_row` | `GroupRow` | `text`, `first` |
+| `target_row` | `TargetRow` | `text`, `logged`, `target` (null is a count with nothing to measure it against), `note`, `last` |
+| `scoreboard` | `Scoreboard` | `children`, the `GroupRow` and `TargetRow` rows |
+| `what_moved` | `WhatMoved` | `items`, `note` |
+| `read_block` | `ReadBlock` | `text`, `divider` |
+| `sub_eyebrow` | `SubEyebrow` | `text` |
+| `badge` | `Badge` | `letter` |
+| `day_strip` | `DayStrip` | `days`, `last` |
+| `stat_strip` | `StatStrip` | `stats` |
+| `records` | `Records` | `columns`, `rows`; a cell's `html` is a `ReactNode` |
+| `masthead` | `Masthead` | `title`, `wordmark` (defaults to `atelic`) |
+| `title_card` | `TitleCard` | `eyebrowText`, `headlineLines`, `lede`, `stats` (the rows under the lede, in place of the jq's `$stats_html`) |
+| `footer` | `Footer` | `meta` |
+| `page` | `renderEmail` | `title`, `preheader`, `children`, `palette`, `fonts` |
+| `failure_page` | `renderFailureEmail`, or `FailurePage` as body rows | `runnerTitle`, `eyebrowText`, `reason`, `logTail` |
+
+The plain text alternative part ports as plain functions with no React anywhere in them: `spaces`, `rpad`, `lpad`, `wrap`, `textRule`, `textSection`, `textRead`, `textBar`, `textTarget`, `textTableGrid`, `textTable`, plus `asciiUpcase` and `asciiDowncase`. Every width counts Unicode codepoints, the way jq's `length` does.
+
+`tst/email/expected/` holds frozen goldens generated from the jq library, and the component tests compare the rendered DOM against them. See that folder's README before touching one.
+
+### Tokens
+
+`@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
 
 ## Releasing
 
