@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, and the component library they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -19,7 +19,9 @@
 	],
 	"exports": {
 		"./chrome": "./src/chrome/index.ts",
+		"./email": "./src/email/index.ts",
 		"./hooks": "./src/hooks/index.ts",
+		"./tokens": "./src/tokens/index.ts",
 		"./styles/base.css": "./src/styles/base.css",
 		"./styles/chrome.css": "./src/styles/chrome.css",
 		"./package.json": "./package.json"
