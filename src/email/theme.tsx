@@ -56,8 +56,12 @@ export const tableReset = {
 	border: 0,
 };
 
-/** `#FC4A1A` to `rgba(252,74,26,0)`, the masthead rule's fade out stop. */
+/**
+ * `#FC4A1A` to `rgba(252,74,26,0)`, the masthead rule's fade out stop. An accent
+ * that is not a three or six digit hex fades to `transparent` rather than to NaN.
+ */
 export function fadeStop(hex: string): string {
+	if (!/^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return "transparent";
 	const digits = hex.replace("#", "");
 	const full =
 		digits.length === 3

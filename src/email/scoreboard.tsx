@@ -386,6 +386,8 @@ export type RecordsCell = {
 	html?: ReactNode;
 };
 
+const hasMarkup = (html: ReactNode): boolean => html !== undefined && html !== null && html !== "";
+
 export type RecordsProps = { columns: RecordsColumn[]; rows: RecordsCell[][] };
 
 /**
@@ -396,7 +398,11 @@ export function Records({ columns, rows }: RecordsProps) {
 	const { palette, fonts } = useEmailTheme();
 	const keep = columns
 		.map((_, i) => i)
-		.filter((i) => columns[i].keep || rows.some((row) => (row[i]?.value ?? "") !== ""));
+		.filter(
+			(i) =>
+				columns[i].keep ||
+				rows.some((row) => (row[i]?.value ?? "") !== "" || hasMarkup(row[i]?.html)),
+		);
 	const fixed = columns.some((c) => c.width !== undefined);
 	return (
 		<table
@@ -442,7 +448,7 @@ export function Records({ columns, rows }: RecordsProps) {
 						{keep.map((i) => {
 							const c = columns[i];
 							const cell = cells[i] ?? {};
-							const hasHTML = cell.html !== undefined && cell.html !== null && cell.html !== "";
+							const hasHTML = hasMarkup(cell.html);
 							return (
 								<td
 									key={i}

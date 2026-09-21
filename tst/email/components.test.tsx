@@ -36,6 +36,7 @@ import {
 	TitleLine,
 	WhatMoved,
 } from "../../src/email";
+import { fadeStop } from "../../src/email/theme";
 import { normalize } from "./normalize";
 
 /*
@@ -435,6 +436,22 @@ describe("the scoreboard", () => {
 			/>,
 			"records-drop",
 		));
+
+	it("Records keeps a column whose only content is markup", () => {
+		const markup = renderInline(
+			<Records
+				columns={[{ label: "Day" }, { label: "Type" }]}
+				rows={[[{ value: "Mon" }, { html: <Badge letter="S" /> }]]}
+			/>,
+		);
+		expect(markup).toContain(">Type</td>");
+	});
+
+	it("fadeStop fades a hex accent and never writes NaN for anything else", () => {
+		expect(fadeStop("#FC4A1A")).toBe("rgba(252,74,26,0)");
+		expect(fadeStop("#f41")).toBe("rgba(255,68,17,0)");
+		expect(fadeStop("rgb(252,74,26)")).toBe("transparent");
+	});
 
 	it("Records fixes its layout when a column carries a width", () =>
 		expectInline(
