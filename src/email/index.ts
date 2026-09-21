@@ -44,12 +44,6 @@ export {
 	type TitleCardProps,
 } from "./frame";
 export {
-	type RenderEmailOptions,
-	type RenderFailureEmailOptions,
-	renderEmail,
-	renderFailureEmail,
-} from "./render";
-export {
 	Badge,
 	type BadgeProps,
 	Bar,

@@ -18,8 +18,6 @@ import {
 	ReadBlock,
 	Records,
 	Row,
-	renderEmail,
-	renderFailureEmail,
 	Scoreboard,
 	Stat,
 	StatStrip,
@@ -29,6 +27,7 @@ import {
 	TitleCard,
 	WhatMoved,
 } from "../../src/email";
+import { renderEmail, renderFailureEmail } from "../../src/email/render";
 import { normalize } from "./normalize";
 
 /*

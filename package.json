@@ -20,6 +20,7 @@
 	"exports": {
 		"./chrome": "./src/chrome/index.ts",
 		"./email": "./src/email/index.ts",
+		"./email/render": "./src/email/render.tsx",
 		"./hooks": "./src/hooks/index.ts",
 		"./tokens": "./src/tokens/index.ts",
 		"./styles/base.css": "./src/styles/base.css",

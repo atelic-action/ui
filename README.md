@@ -40,7 +40,8 @@ Both package sheets sit inside `@layer atelic-ui`, so any rule a site writes out
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic-action/ui/email` | The email components, `renderEmail`, `renderFailureEmail`, the plain text helpers, and their prop types (see [Email](#email)) |
+| `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
+| `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
 | `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
@@ -75,7 +76,8 @@ The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus cont
 Colors and fonts come from context, so a client branded email passes its own palette:
 
 ```tsx
-import { Card, Eyebrow, Footer, Item, Masthead, renderEmail, TitleCard } from "@atelic-action/ui/email";
+import { Card, Eyebrow, Footer, Item, Masthead, TitleCard } from "@atelic-action/ui/email";
+import { renderEmail } from "@atelic-action/ui/email/render";
 import { atelicPalette } from "@atelic-action/ui/tokens";
 
 const html = renderEmail({
@@ -108,7 +110,7 @@ const html = renderEmail({
 });
 ```
 
-`renderEmail` builds the document shell itself and puts only the rows through React, because React emits no doctype, React 19 hoists and reorders head tags, and it would escape the `>` in `details>summary`. `renderFailureEmail` is the same shell around `FailurePage`.
+`renderEmail` builds the document shell itself and puts only the rows through React, because React emits no doctype, React 19 hoists and reorders head tags, and it would escape the `>` in `details>summary`. `renderFailureEmail` is the same shell around `FailurePage`. Both live at `@atelic-action/ui/email/render`, apart from the components, so a site that mounts a component on a page never pulls React's server renderer into its browser bundle.
 
 ### The Mapping
 
