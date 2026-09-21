@@ -1,0 +1,4 @@
+  Day  Session          Type     Min    Mi
+  Mon  Evening lift     Lift      48
+  Wed  Café · long run  Run (S)   62  6.20
+       Total                     110  6.20
