@@ -1,0 +1,20 @@
+/* Layout defaults for the components under src/components. A site's own
+   classes (.page-hero, .eyebrow, .lead, .btn) arrive unlayered and win, so
+   these only fill in where a site does not style them. */
+@layer atelic-ui {
+	.mkt .not-found-hero {
+		padding-top: calc(var(--nav-height, 72px) + clamp(40px, 7vw, 86px));
+		padding-bottom: clamp(28px, 5vw, 60px);
+	}
+	.mkt .not-found-hero h1 {
+		margin: 16px 0 0;
+	}
+	.mkt .not-found-hero .lead {
+		margin-top: 22px;
+		max-width: 56ch;
+	}
+	.mkt .not-found-links .cta-row,
+	.mkt .not-found-closing .cta-row {
+		margin-top: 22px;
+	}
+}
