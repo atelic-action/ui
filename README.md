@@ -1,6 +1,6 @@
 # @atelic-action/ui
 
-Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update`.
+Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the not found page and the routing that keeps it alive, the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update`.
 
 The package ships source, not a build. Its TSX and CSS arrive as written and compile inside each site's own Vite.
 
@@ -30,22 +30,26 @@ Import the stylesheets in this order, from the root route or the site's base she
 1. The site's fonts (`fonts.css`)
 2. `@atelic-action/ui/styles/base.css`
 3. `@atelic-action/ui/styles/chrome.css`
-4. The site's own CSS
-5. The site's `theme.css`, last
+4. `@atelic-action/ui/styles/components.css`
+5. The site's own CSS
+6. The site's `theme.css`, last
 
-Both package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the site's own `.btn` classes.
+The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the site's own `.btn` classes.
 
 ## What Is Inside
 
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
+| `@atelic-action/ui/components` | `NotFound` and its prop types (see [The Not Found Page](#the-not-found-page)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
+| `@atelic-action/ui/routing` | `staticNotFoundRouting`, the router options behind the not found page |
 | `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
 | `@atelic-action/ui/styles/chrome.css` | Styles for everything under `chrome` |
+| `@atelic-action/ui/styles/components.css` | Layout defaults for everything under `components` |
 
 Every component renders from props alone. None reads a config file or a router, so a site maps its own config onto the props in its shell:
 
@@ -68,6 +72,37 @@ import { Footer, SiteHeader, SkipLink, StickyCTABar } from "@atelic-action/ui/ch
 ```
 
 The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus containment, and focus return come from the browser.
+
+## The Not Found Page
+
+`NotFound` is the page an unknown path renders: a headline, a row of popular pages, and the closing call to action. It renders the body only, so a site wraps it in its own shell, and it wears the site's own classes (`.page-hero`, `.eyebrow`, `.lead`, `.final-cta`, `.btn`).
+
+On a statically prerendered TanStack Start site the markup is the easy part. The host serves the `/404` prerender for every miss, and the page survives hydration only with three pieces in the site:
+
+1. **A catch all route**, `src/routes/$.tsx`, rendering the site's page (noindexed). Never a dedicated `/404` route: an unknown path then matches only the root, TanStack's hydrate throws, and the page goes blank.
+2. **The router options:** `createRouter({ routeTree, ...staticNotFoundRouting(NotFoundPage) })`. A miss hydrates through its pending state first, so pending has to render the same page or React reports a mismatch.
+3. **The build:** a `{ path: "/404", prerender: { enabled: true }, sitemap: { exclude: true } }` entry in the Vite `pages` list, and a copy of `dist/client/404/index.html` to `dist/client/404.html`.
+
+```tsx
+// src/shared/components/NotFoundPage.tsx
+import { NotFound } from "@atelic-action/ui/components";
+
+export function NotFoundPage() {
+	return (
+		<SiteShell site={site}>
+			<NotFound
+				title="This page wandered off."
+				lead="The link may be old, or the page may have moved."
+				links={site.nav.filter((item) => item.to !== "/").map(({ label, to }) => ({ label, href: to }))}
+				closing={{ eyebrow: "Back on Track", title: "Let's get you where you were headed." }}
+				primaryCTA={site.cta}
+			/>
+		</SiteShell>
+	);
+}
+```
+
+`staticNotFoundRouting` is for prerendered sites only. On a live app the pending state is a real loading moment and the page would flash through every slow load, so an app sets `defaultNotFoundComponent` alone. A browser test is the only proof any of this works; template-marketing's `e2e/not-found.spec.ts` is the one to copy.
 
 ## Email
 
