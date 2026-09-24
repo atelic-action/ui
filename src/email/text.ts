@@ -135,21 +135,32 @@ export type RecordStackItem = {
 	/** Facts joined by a middle dot on the line under the title; empty items drop. */
 	meta: string[];
 	note?: string;
+	/** A stage word on the title line, right aligned in a pill; "[Contacted]" in the text twin. */
+	badge?: string;
+	/** A short task under the record, an orange eyebrow over a line of text. */
+	callout?: { eyebrow: string; text: string };
 };
 
 /**
  * The plain text twin of `RecordStack`: each title on its own line under a
- * two space indent, the meta joined by middle dots and the note beneath it,
- * both wrapped under a four space indent, a blank line between records. No
- * line runs past `textWidth`.
+ * two space indent with any badge after it in square brackets, the meta joined
+ * by middle dots and the note beneath it, both wrapped under a four space
+ * indent, then any callout as its eyebrow in upper case over its text under
+ * the same indent, a blank line between records. No line runs past
+ * `textWidth`.
  */
 export function recordStackText(records: RecordStackItem[]): string {
 	return records
 		.map((record) => {
-			const lines = [wrapIndented(record.title, 2)];
+			const title = record.badge ? `${record.title} [${record.badge}]` : record.title;
+			const lines = [wrapIndented(title, 2)];
 			const meta = record.meta.filter((m) => m !== "");
 			if (meta.length > 0) lines.push(wrapIndented(meta.join(" · "), 4));
 			if (record.note) lines.push(wrapIndented(record.note, 4));
+			if (record.callout) {
+				lines.push(wrapIndented(asciiUpcase(record.callout.eyebrow), 4));
+				lines.push(wrapIndented(record.callout.text, 4));
+			}
 			return lines.join("\n");
 		})
 		.join("\n\n");

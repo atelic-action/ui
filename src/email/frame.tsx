@@ -14,62 +14,88 @@ export type MastheadProps = {
 	title: string;
 	/** The wordmark at the top left. */
 	wordmark?: string;
+	/**
+	 * A quiet fact at the right end of the row, such as the week. It sits on
+	 * the title's line while it fits and drops under it, still right aligned,
+	 * when the row runs out of room.
+	 */
+	meta?: string;
 };
 
 /**
  * The wordmark and one orange rule at the top left, the email's title beside
- * them: the runner's name, not the week.
+ * them: the runner's name, not the week. A `meta` rides at the right end of
+ * the row in its own right aligned, unbroken block, floated after the brand so
+ * that on a narrow screen it drops under the title instead of squashing it.
  */
-export function Masthead({ title, wordmark = "atelic" }: MastheadProps) {
+export function Masthead({ title, wordmark = "atelic", meta }: MastheadProps) {
 	const { palette, fonts } = useEmailTheme();
+	const brand = (
+		<table {...tableReset}>
+			<tbody>
+				<tr>
+					<td
+						style={{
+							fontSize: "20px",
+							fontWeight: "600",
+							letterSpacing: "-0.045em",
+							color: palette.ink,
+							paddingRight: "8px",
+							lineHeight: "1",
+						}}
+					>
+						{wordmark}
+					</td>
+					<td width="34" style={{ width: "34px", verticalAlign: "middle", paddingRight: "12px" }}>
+						<div
+							style={{
+								width: "34px",
+								height: "2px",
+								fontSize: "0",
+								lineHeight: "0",
+								backgroundColor: palette.accent,
+								background: `linear-gradient(90deg,${palette.accent},${fadeStop(palette.accent)})`,
+							}}
+						>
+							{"\u00a0"}
+						</div>
+					</td>
+					<td
+						style={{
+							...eyebrowStyle(fonts),
+							color: palette.faint,
+							verticalAlign: "middle",
+							lineHeight: "1",
+						}}
+					>
+						{title}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	);
 	return (
 		<tr>
 			<td style={{ padding: "8px 8px 22px", fontFamily: fonts.sans }}>
-				<table {...tableReset}>
-					<tbody>
-						<tr>
-							<td
-								style={{
-									fontSize: "20px",
-									fontWeight: "600",
-									letterSpacing: "-0.045em",
-									color: palette.ink,
-									paddingRight: "8px",
-									lineHeight: "1",
-								}}
-							>
-								{wordmark}
-							</td>
-							<td
-								width="34"
-								style={{ width: "34px", verticalAlign: "middle", paddingRight: "12px" }}
-							>
-								<div
-									style={{
-										width: "34px",
-										height: "2px",
-										fontSize: "0",
-										lineHeight: "0",
-										backgroundColor: palette.accent,
-										background: `linear-gradient(90deg,${palette.accent},${fadeStop(palette.accent)})`,
-									}}
-								>
-									{"\u00a0"}
-								</div>
-							</td>
-							<td
-								style={{
-									...eyebrowStyle(fonts),
-									color: palette.faint,
-									verticalAlign: "middle",
-									lineHeight: "1",
-								}}
-							>
-								{title}
-							</td>
-						</tr>
-					</tbody>
-				</table>
+				{meta ? (
+					<>
+						<div style={{ display: "inline-block", verticalAlign: "middle" }}>{brand}</div>
+						<div
+							style={{
+								float: "right",
+								textAlign: "right",
+								whiteSpace: "nowrap",
+								...eyebrowStyle(fonts),
+								lineHeight: "20px",
+								color: palette.faint,
+							}}
+						>
+							{meta}
+						</div>
+					</>
+				) : (
+					brand
+				)}
 			</td>
 		</tr>
 	);

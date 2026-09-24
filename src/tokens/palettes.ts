@@ -24,6 +24,14 @@ export type Palette = {
 	line: string;
 	/** The lighter rule inside a card. */
 	hair: string;
+	/**
+	 * A change for the better, such as a positive delta under a stat. Optional
+	 * so a palette written before 0.5.0 still compiles; a palette without it
+	 * borrows the Atelic value.
+	 */
+	up?: string;
+	/** A change for the worse, the negative delta's color. Optional the same way. */
+	down?: string;
 };
 
 export const atelicPalette: Palette = {
@@ -35,6 +43,8 @@ export const atelicPalette: Palette = {
 	accent: "#FC4A1A",
 	line: "#E6DFD2",
 	hair: "#F0EAE0",
+	up: "#2F7A4B",
+	down: "#B23A2E",
 };
 
 /**

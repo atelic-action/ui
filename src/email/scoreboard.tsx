@@ -1,4 +1,5 @@
-import { Fragment, type ReactNode } from "react";
+import { type CSSProperties, Fragment, type ReactNode } from "react";
+import { atelicPalette, type Palette } from "../tokens";
 import type { RecordStackItem } from "./text";
 import { eyebrowStyle, tableReset, useEmailTheme } from "./theme";
 
@@ -327,9 +328,22 @@ export function DayStrip({ days, last }: DayStripProps) {
 export type StatStripEntry = {
 	n: string | number;
 	label: string;
-	/** A change beside the number, small and muted under the label: "+3 · +12%". */
+	/**
+	 * A change beside the number, small under the label: "+3 (12%)". One that
+	 * opens on "+" wears the palette's `up`, one that opens on "-" its `down`,
+	 * anything else stays muted.
+	 */
 	delta?: string;
 };
+
+/** The color a delta wears, read off its sign. */
+export function deltaColor(delta: string, palette: Palette): string {
+	if (delta.startsWith("+")) return palette.up ?? atelicPalette.up ?? palette.faint;
+	if (delta.startsWith("-") || delta.startsWith("\u2212")) {
+		return palette.down ?? atelicPalette.down ?? palette.faint;
+	}
+	return palette.faint;
+}
 export type StatStripProps = { stats: StatStripEntry[] };
 
 /**
@@ -377,7 +391,11 @@ export function StatStrip({ stats }: StatStripProps) {
 									<>
 										<br />
 										<span
-											style={{ fontFamily: fonts.mono, fontSize: "11px", color: palette.faint }}
+											style={{
+												fontFamily: fonts.mono,
+												fontSize: "11px",
+												color: deltaColor(entry.delta, palette),
+											}}
 										>
 											{entry.delta}
 										</span>
@@ -392,6 +410,35 @@ export function StatStrip({ stats }: StatStripProps) {
 	);
 }
 
+type RecordBadgeProps = { text: string };
+
+/**
+ * A word in a small mono pill on a hairline, the Badge idiom sized for a stage
+ * such as "Contacted". Only RecordStack wears it.
+ */
+function RecordBadge({ text }: RecordBadgeProps) {
+	const { palette, fonts } = useEmailTheme();
+	return (
+		<span
+			style={{
+				display: "inline-block",
+				fontFamily: fonts.mono,
+				fontSize: "10px",
+				lineHeight: "14px",
+				letterSpacing: "0.08em",
+				textTransform: "uppercase",
+				padding: "0 6px",
+				border: `1px solid ${palette.line}`,
+				borderRadius: "3px",
+				color: palette.dim,
+				whiteSpace: "nowrap",
+			}}
+		>
+			{text}
+		</span>
+	);
+}
+
 export type { RecordStackItem };
 export type RecordStackProps = { records: RecordStackItem[] };
 
@@ -403,12 +450,33 @@ export type RecordStackProps = { records: RecordStackItem[] };
  */
 export function RecordStack({ records }: RecordStackProps) {
 	const { palette, fonts } = useEmailTheme();
+	const titleStyle: CSSProperties = {
+		fontSize: "15px",
+		fontWeight: "600",
+		lineHeight: "1.35",
+		color: palette.ink,
+		wordBreak: "break-word",
+	};
 	return (
 		<table {...tableReset} width="100%" style={{ fontFamily: fonts.sans, color: palette.ink }}>
 			<tbody>
 				{records.map((record, i) => {
 					const last = i === records.length - 1;
 					const meta = record.meta.filter((m) => m !== "");
+					const title = record.url ? (
+						<a
+							href={record.url}
+							style={{
+								color: palette.ink,
+								textDecoration: "none",
+								borderBottom: `1px solid ${palette.accent}`,
+							}}
+						>
+							{record.title}
+						</a>
+					) : (
+						record.title
+					);
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: a record's position is its identity
 						<tr key={i}>
@@ -419,30 +487,29 @@ export function RecordStack({ records }: RecordStackProps) {
 									...(last ? {} : { borderBottom: `1px solid ${palette.line}` }),
 								}}
 							>
-								<div
-									style={{
-										fontSize: "15px",
-										fontWeight: "600",
-										lineHeight: "1.35",
-										color: palette.ink,
-										wordBreak: "break-word",
-									}}
-								>
-									{record.url ? (
-										<a
-											href={record.url}
-											style={{
-												color: palette.ink,
-												textDecoration: "none",
-												borderBottom: `1px solid ${palette.accent}`,
-											}}
-										>
-											{record.title}
-										</a>
-									) : (
-										record.title
-									)}
-								</div>
+								{record.badge ? (
+									<table {...tableReset} width="100%">
+										<tbody>
+											<tr>
+												<td style={{ ...titleStyle, verticalAlign: "top" }}>{title}</td>
+												<td
+													align="right"
+													style={{
+														textAlign: "right",
+														whiteSpace: "nowrap",
+														verticalAlign: "top",
+														paddingLeft: "12px",
+														paddingTop: "2px",
+													}}
+												>
+													<RecordBadge text={record.badge} />
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								) : (
+									<div style={titleStyle}>{title}</div>
+								)}
 								{meta.length > 0 ? (
 									<div
 										style={{
@@ -466,6 +533,25 @@ export function RecordStack({ records }: RecordStackProps) {
 										}}
 									>
 										{record.note}
+									</div>
+								) : null}
+								{record.callout ? (
+									<div
+										style={{
+											marginTop: "10px",
+											paddingLeft: "10px",
+											borderLeft: `2px solid ${palette.accent}`,
+											fontFamily: fonts.sans,
+											fontSize: "13px",
+											lineHeight: "1.5",
+											color: palette.ink,
+										}}
+									>
+										<span style={{ ...eyebrowStyle(fonts), color: palette.accent }}>
+											{record.callout.eyebrow}
+										</span>
+										<br />
+										{record.callout.text}
 									</div>
 								) : null}
 							</td>

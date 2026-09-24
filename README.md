@@ -149,18 +149,30 @@ const html = renderEmail({
 
 Runner emails are mobile first. A layout that squashes on a phone is fixed here, in the components every runner shares, never in a report page. A fixed column table is for numbers alone and never carries a name; names go in a `RecordStack`.
 
-`RecordStack` takes `records`, each a `RecordStackItem` (`title`, `url`, `meta`, `note`), and renders one table row per record: the title on its own line at 15px, bold and wrapping freely, linked when `url` is set; a mono meta line beneath it with the items joined by middle dots (empty items drop); an optional note beneath that; a hairline between records and none after the last. No cell carries a width, so a name of any length wraps at 320 pixels instead of squashing. `recordStackText(records)` is its plain text twin: each title on its own line under a two space indent, the meta and the note wrapped under a four space indent, a blank line between records, and no line past `textWidth` (68 columns, indent included).
+`RecordStack` takes `records`, each a `RecordStackItem` (`title`, `url`, `meta`, `note`, `badge`, `callout`), and renders one table row per record: the title on its own line at 15px, bold and wrapping freely, linked when `url` is set; a mono meta line beneath it with the items joined by middle dots (empty items drop); an optional note beneath that; a hairline between records and none after the last. No cell carries a width, so a name of any length wraps at 320 pixels instead of squashing. An optional `badge` (a stage word such as `"Contacted"`) sits on the title line in a small mono uppercase pill on a `line` hairline, in its own right aligned unbroken cell, so the title keeps wrapping beside it and the badge stays on the title's first line. An optional `callout` (`{ eyebrow, text }`) sets a short task under the meta and the note in the accented `Note` idiom: the eyebrow in the accent, the text at 13px, and a 2px accent rule down its left edge. A record with neither renders exactly as it did before. `recordStackText(records)` is its plain text twin: each title on its own line under a two space indent with any badge after it in square brackets (`Blue Heron Plumbing [Contacted]`), the meta and the note wrapped under a four space indent, any callout as its eyebrow in upper case over its text under that same indent, a blank line between records, and no line past `textWidth` (68 columns, indent included).
 
-`StatStrip` lays its stats out as inline block cells with an 88 pixel floor inside one centered cell, so six or seven stats flow onto a second row on a phone rather than shrinking. Each stat takes an optional `delta` (`"+3 · +12%"`), set small and muted under its label.
+`StatStrip` lays its stats out as inline block cells with an 88 pixel floor inside one centered cell, so six or seven stats flow onto a second row on a phone rather than shrinking. Each stat takes an optional `delta` (`"+3 (12%)"`), set small under its label and colored by its sign: one that opens on `+` wears the palette's `up`, one that opens on `-` its `down`, and anything else stays muted.
+
+`Masthead` takes an optional `meta` (`"Week 39 · 09/21 to 09/27"`) set in the eyebrow style at the right end of the row, so the title card no longer carries the week. It is a right aligned, unbroken block floated after the wordmark and title: on the same line while the row has room, and dropped under the title on its own line, still right aligned, when it does not (checked at 320 pixels). `Eyebrow` takes `strong`, which sets the label at 15px and weight 700 in ink rather than faint, with a slightly tighter tracking, so a section such as `MQL · 15` reads as a heading on a phone.
 
 ```tsx
 const records = [
-	{ title: "Pinewood Cabinetry", url: "https://example.test", meta: ["Lead", "Longmont", "fit 14"], note: "Answered the audit inside a day." },
+	{
+		title: "Pinewood Cabinetry",
+		url: "https://example.test",
+		meta: ["Lead", "Longmont", "fit 14"],
+		note: "Answered the audit inside a day.",
+		badge: "Contacted",
+		callout: { eyebrow: "Next", text: "Walk the Business Profile findings Thursday." },
+	},
 ];
+
+<Masthead title="Pipeline" meta="Week 39 · 09/21 to 09/27" />;
+<Eyebrow text="MQL · 15" strong />;
 
 <Card>
 	<Row last={false}>
-		<StatStrip stats={[{ n: 6, label: "Lead", delta: "+3 · +12%" }, { n: 2, label: "MQL" }]} />
+		<StatStrip stats={[{ n: 6, label: "Lead", delta: "+3 (12%)" }, { n: 2, label: "MQL", delta: "-1 (4%)" }]} />
 	</Row>
 	<Row last>
 		<RecordStack records={records} />
@@ -178,7 +190,7 @@ Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_ht
 
 | jq Function | Component | Props |
 |---|---|---|
-| `eyebrow` | `Eyebrow` | `text` |
+| `eyebrow` | `Eyebrow` | `text`, `strong` (added 0.5.0, no jq counterpart) |
 | `card` | `Card` | `children` |
 | `fold` | `Fold` | `summary`, `children` |
 | `big_fold` | `BigFold` | `summary`, `count` (a `ReactNode`, absent for the jq's `""`), `children` |
@@ -203,10 +215,10 @@ Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_ht
 | `sub_eyebrow` | `SubEyebrow` | `text` |
 | `badge` | `Badge` | `letter` |
 | `day_strip` | `DayStrip` | `days`, `last` |
-| `stat_strip` | `StatStrip` | `stats`, each with an optional `delta` (the component wraps where the jq does not) |
-| none | `RecordStack` | `records` (born here on 2026-09-24, with no jq counterpart) |
+| `stat_strip` | `StatStrip` | `stats`, each with an optional `delta` colored by its sign (the component wraps where the jq does not) |
+| none | `RecordStack` | `records`, each with an optional `badge` and `callout` (born here on 2026-09-24, with no jq counterpart) |
 | `records` | `Records` | `columns`, `rows`; a cell's `html` is a `ReactNode` |
-| `masthead` | `Masthead` | `title`, `wordmark` (defaults to `atelic`) |
+| `masthead` | `Masthead` | `title`, `wordmark` (defaults to `atelic`), `meta` (added 0.5.0, no jq counterpart) |
 | `title_card` | `TitleCard` | `eyebrowText`, `headlineLines`, `lede`, `stats` (the rows under the lede, in place of the jq's `$stats_html`) |
 | `footer` | `Footer` | `meta` |
 | `page` | `renderEmail` | `title`, `preheader`, `children`, `palette`, `fonts` |
@@ -219,6 +231,8 @@ The plain text alternative part ports as plain functions with no React anywhere 
 ### Tokens
 
 `@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
+
+The palette carries two optional keys beyond the jq's eight: `up` (`#2F7A4B`, a calm green) and `down` (`#B23A2E`, a calm red, kept well apart from the orange accent), the colors a `StatStrip` delta wears by its sign. Both read on the cream card. They are optional so a client palette written before 0.5.0 still compiles, and a palette without them borrows the Atelic values. Neither maps to a site token.
 
 ## Releasing
 

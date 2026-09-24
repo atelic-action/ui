@@ -147,6 +147,35 @@ describe("the plain text helpers", () => {
 		expect(text.endsWith("    Other")).toBe(true);
 	});
 
+	it("recordStackText brackets a badge after the title and sets a callout under the note", () => {
+		const text = recordStackText([
+			{
+				title: "Blue Heron Plumbing",
+				meta: ["Lead", "Wheat Ridge"],
+				note: "Answered the audit inside a day.",
+				badge: "Contacted",
+				callout: {
+					eyebrow: "Next",
+					text: "Walk the Business Profile findings on Thursday, then send the booking link and log the visit as a meeting in HubSpot.",
+				},
+			},
+			{
+				title: "Pinewood Cabinetry and Custom Millwork of Denver and the Front Range",
+				meta: [],
+				badge: "Engaged",
+			},
+		]);
+		const lines = text.split("\n");
+		for (const line of lines) expect([...line].length).toBeLessThanOrEqual(textWidth);
+		expect(lines[0]).toBe("  Blue Heron Plumbing [Contacted]");
+		expect(lines[1]).toBe("    Lead · Wheat Ridge");
+		expect(lines[2]).toBe("    Answered the audit inside a day.");
+		expect(lines[3]).toBe("    NEXT");
+		expect(lines[4].startsWith("    Walk the Business Profile findings")).toBe(true);
+		expect(lines[5].startsWith("    ")).toBe(true);
+		expect(text).toContain("the Front\n  Range [Engaged]");
+	});
+
 	it("textTableGrid keeps every column when widths are given", () => {
 		expect(
 			textTableGrid(

@@ -12,6 +12,8 @@ describe("the email palette", () => {
 			accent: "#FC4A1A",
 			line: "#E6DFD2",
 			hair: "#F0EAE0",
+			up: "#2F7A4B",
+			down: "#B23A2E",
 		});
 	});
 
