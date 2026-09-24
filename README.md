@@ -145,6 +145,31 @@ const html = renderEmail({
 });
 ```
 
+### Mobile First
+
+Runner emails are mobile first. A layout that squashes on a phone is fixed here, in the components every runner shares, never in a report page. A fixed column table is for numbers alone and never carries a name; names go in a `RecordStack`.
+
+`RecordStack` takes `records`, each a `RecordStackItem` (`title`, `url`, `meta`, `note`), and renders one table row per record: the title on its own line at 15px, bold and wrapping freely, linked when `url` is set; a mono meta line beneath it with the items joined by middle dots (empty items drop); an optional note beneath that; a hairline between records and none after the last. No cell carries a width, so a name of any length wraps at 320 pixels instead of squashing. `recordStackText(records)` is its plain text twin: each title on its own line under a two space indent, the meta and the note wrapped under a four space indent, a blank line between records, and no line past `textWidth` (68 columns, indent included).
+
+`StatStrip` lays its stats out as inline block cells with an 88 pixel floor inside one centered cell, so six or seven stats flow onto a second row on a phone rather than shrinking. Each stat takes an optional `delta` (`"+3 · +12%"`), set small and muted under its label.
+
+```tsx
+const records = [
+	{ title: "Pinewood Cabinetry", url: "https://example.test", meta: ["Lead", "Longmont", "fit 14"], note: "Answered the audit inside a day." },
+];
+
+<Card>
+	<Row last={false}>
+		<StatStrip stats={[{ n: 6, label: "Lead", delta: "+3 · +12%" }, { n: 2, label: "MQL" }]} />
+	</Row>
+	<Row last>
+		<RecordStack records={records} />
+	</Row>
+</Card>;
+
+const text = recordStackText(records);
+```
+
 `renderEmail` builds the document shell itself and puts only the rows through React, because React emits no doctype, React 19 hoists and reorders head tags, and it would escape the `>` in `details>summary`. `renderFailureEmail` is the same shell around `FailurePage`. Both live at `@atelic-action/ui/email/render`, apart from the components, so a site that mounts a component on a page never pulls React's server renderer into its browser bundle.
 
 ### The Mapping
@@ -178,7 +203,8 @@ Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_ht
 | `sub_eyebrow` | `SubEyebrow` | `text` |
 | `badge` | `Badge` | `letter` |
 | `day_strip` | `DayStrip` | `days`, `last` |
-| `stat_strip` | `StatStrip` | `stats` |
+| `stat_strip` | `StatStrip` | `stats`, each with an optional `delta` (the component wraps where the jq does not) |
+| none | `RecordStack` | `records` (born here on 2026-09-24, with no jq counterpart) |
 | `records` | `Records` | `columns`, `rows`; a cell's `html` is a `ReactNode` |
 | `masthead` | `Masthead` | `title`, `wordmark` (defaults to `atelic`) |
 | `title_card` | `TitleCard` | `eyebrowText`, `headlineLines`, `lede`, `stats` (the rows under the lede, in place of the jq's `$stats_html`) |
@@ -186,7 +212,7 @@ Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_ht
 | `page` | `renderEmail` | `title`, `preheader`, `children`, `palette`, `fonts` |
 | `failure_page` | `renderFailureEmail`, or `FailurePage` as body rows | `runnerTitle`, `eyebrowText`, `reason`, `logTail` |
 
-The plain text alternative part ports as plain functions with no React anywhere in them: `spaces`, `rpad`, `lpad`, `wrap`, `textRule`, `textSection`, `textRead`, `textBar`, `textTarget`, `textTableGrid`, `textTable`, plus `asciiUpcase` and `asciiDowncase`. Every width counts Unicode codepoints, the way jq's `length` does.
+The plain text alternative part ports as plain functions with no React anywhere in them: `spaces`, `rpad`, `lpad`, `wrap`, `textRule`, `textSection`, `textRead`, `textBar`, `textTarget`, `textTableGrid`, `textTable`, `recordStackText`, `textWidth`, plus `asciiUpcase` and `asciiDowncase`. Every width counts Unicode codepoints, the way jq's `length` does.
 
 `tst/email/expected/` holds frozen goldens generated from the jq library, and the component tests compare the rendered DOM against them. See that folder's README before touching one.
 

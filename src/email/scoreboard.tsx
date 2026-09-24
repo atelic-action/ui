@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from "react";
+import type { RecordStackItem } from "./text";
 import { eyebrowStyle, tableReset, useEmailTheme } from "./theme";
 
 /*
@@ -323,45 +324,154 @@ export function DayStrip({ days, last }: DayStripProps) {
 	);
 }
 
-export type StatStripEntry = { n: string | number; label: string };
+export type StatStripEntry = {
+	n: string | number;
+	label: string;
+	/** A change beside the number, small and muted under the label: "+3 · +12%". */
+	delta?: string;
+};
 export type StatStripProps = { stats: StatStripEntry[] };
 
-/** A row of big numbers over eyebrow labels. */
+/**
+ * A strip of big numbers over eyebrow labels. Each stat is an inline block
+ * cell with a floor on its width inside one centered cell, so six or seven
+ * stats flow onto a second row on a phone instead of shrinking to nothing.
+ */
 export function StatStrip({ stats }: StatStripProps) {
 	const { palette, fonts } = useEmailTheme();
-	const width = `${Math.floor(100 / stats.length)}%`;
+	const share = `${Math.floor(100 / Math.max(stats.length, 1))}%`;
 	return (
 		<table {...tableReset} width="100%">
 			<tbody>
 				<tr>
-					{stats.map((entry, i) => (
-						<td
-							// biome-ignore lint/suspicious/noArrayIndexKey: a stat's position is its identity
-							key={i}
-							width={width}
-							style={{
-								padding: "12px 6px 10px",
-								borderTop: `2px solid ${palette.ink}`,
-								textAlign: "center",
-								verticalAlign: "top",
-							}}
-						>
-							<span
+					<td align="center" style={{ textAlign: "center" }}>
+						{stats.map((entry, i) => (
+							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: a stat's position is its identity
+								key={i}
 								style={{
-									fontFamily: fonts.sans,
-									fontSize: "22px",
-									fontWeight: "600",
-									letterSpacing: "-0.02em",
-									color: palette.ink,
+									display: "inline-block",
+									width: share,
+									minWidth: "88px",
+									boxSizing: "border-box",
+									verticalAlign: "top",
+									padding: "12px 6px 10px",
+									borderTop: `2px solid ${palette.ink}`,
+									textAlign: "center",
 								}}
 							>
-								{String(entry.n)}
-							</span>
-							<br />
-							<span style={{ ...eyebrowStyle(fonts), color: palette.faint }}>{entry.label}</span>
-						</td>
-					))}
+								<span
+									style={{
+										fontFamily: fonts.sans,
+										fontSize: "22px",
+										fontWeight: "600",
+										letterSpacing: "-0.02em",
+										color: palette.ink,
+									}}
+								>
+									{String(entry.n)}
+								</span>
+								<br />
+								<span style={{ ...eyebrowStyle(fonts), color: palette.faint }}>{entry.label}</span>
+								{entry.delta ? (
+									<>
+										<br />
+										<span
+											style={{ fontFamily: fonts.mono, fontSize: "11px", color: palette.faint }}
+										>
+											{entry.delta}
+										</span>
+									</>
+								) : null}
+							</div>
+						))}
+					</td>
 				</tr>
+			</tbody>
+		</table>
+	);
+}
+
+export type { RecordStackItem };
+export type RecordStackProps = { records: RecordStackItem[] };
+
+/**
+ * One record per row, stacked: the title on its own line, a mono meta line
+ * under it, an optional note under that. No column cells and no fixed widths,
+ * so a name of any length wraps instead of squashing on a phone. A fixed
+ * column table is for numbers alone; names go here.
+ */
+export function RecordStack({ records }: RecordStackProps) {
+	const { palette, fonts } = useEmailTheme();
+	return (
+		<table {...tableReset} width="100%" style={{ fontFamily: fonts.sans, color: palette.ink }}>
+			<tbody>
+				{records.map((record, i) => {
+					const last = i === records.length - 1;
+					const meta = record.meta.filter((m) => m !== "");
+					return (
+						// biome-ignore lint/suspicious/noArrayIndexKey: a record's position is its identity
+						<tr key={i}>
+							<td
+								style={{
+									padding: `${i === 0 ? "0" : "12px"} 0 ${last ? "0" : "12px"}`,
+									verticalAlign: "top",
+									...(last ? {} : { borderBottom: `1px solid ${palette.line}` }),
+								}}
+							>
+								<div
+									style={{
+										fontSize: "15px",
+										fontWeight: "600",
+										lineHeight: "1.35",
+										color: palette.ink,
+										wordBreak: "break-word",
+									}}
+								>
+									{record.url ? (
+										<a
+											href={record.url}
+											style={{
+												color: palette.ink,
+												textDecoration: "none",
+												borderBottom: `1px solid ${palette.accent}`,
+											}}
+										>
+											{record.title}
+										</a>
+									) : (
+										record.title
+									)}
+								</div>
+								{meta.length > 0 ? (
+									<div
+										style={{
+											fontFamily: fonts.mono,
+											fontSize: "12px",
+											lineHeight: "1.5",
+											color: palette.faint,
+											marginTop: "4px",
+										}}
+									>
+										{meta.join(" · ")}
+									</div>
+								) : null}
+								{record.note ? (
+									<div
+										style={{
+											fontSize: "13px",
+											lineHeight: "1.5",
+											color: palette.dim,
+											marginTop: "6px",
+										}}
+									>
+										{record.note}
+									</div>
+								) : null}
+							</td>
+						</tr>
+					);
+				})}
 			</tbody>
 		</table>
 	);

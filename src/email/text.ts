@@ -37,16 +37,25 @@ export function lpad(value: string, width: number): string {
 	return spaces(width - codepoints(value)) + value;
 }
 
-/** Prose wrapped at 66 columns under a two space indent. */
-export function wrap(text: string): string {
+/** The widest a plain text line runs, indent included: two spaces and 66 columns of prose. */
+export const textWidth = 68;
+
+/** Prose broken into lines of at most `columns` codepoints, each under `indent`. */
+function wrapIndented(text: string, indent: number): string {
+	const columns = textWidth - indent;
 	const lines = [""];
 	for (const word of text.split(" ")) {
 		const last = lines[lines.length - 1];
 		if (codepoints(last) === 0) lines[lines.length - 1] = word;
-		else if (codepoints(last) + 1 + codepoints(word) > 66) lines.push(word);
+		else if (codepoints(last) + 1 + codepoints(word) > columns) lines.push(word);
 		else lines[lines.length - 1] = `${last} ${word}`;
 	}
-	return lines.map((line) => `  ${line}`).join("\n");
+	return lines.map((line) => `${spaces(indent)}${line}`).join("\n");
+}
+
+/** Prose wrapped at 66 columns under a two space indent. */
+export function wrap(text: string): string {
+	return wrapIndented(text, 2);
 }
 
 export const textRule = "=".repeat(64);
@@ -113,4 +122,35 @@ export function textTableGrid(
 
 export function textTable(cols: string[], rows: string[][], right: number[]): string {
 	return textTableGrid(cols, rows, right, null);
+}
+
+/**
+ * One record in a stack: what `RecordStack` renders and `recordStackText`
+ * writes. It lives here, with no React, so a plain text renderer can import it.
+ */
+export type RecordStackItem = {
+	title: string;
+	/** Links the title when set; the plain text twin leaves it out. */
+	url?: string | null;
+	/** Facts joined by a middle dot on the line under the title; empty items drop. */
+	meta: string[];
+	note?: string;
+};
+
+/**
+ * The plain text twin of `RecordStack`: each title on its own line under a
+ * two space indent, the meta joined by middle dots and the note beneath it,
+ * both wrapped under a four space indent, a blank line between records. No
+ * line runs past `textWidth`.
+ */
+export function recordStackText(records: RecordStackItem[]): string {
+	return records
+		.map((record) => {
+			const lines = [wrapIndented(record.title, 2)];
+			const meta = record.meta.filter((m) => m !== "");
+			if (meta.length > 0) lines.push(wrapIndented(meta.join(" · "), 4));
+			if (record.note) lines.push(wrapIndented(record.note, 4));
+			return lines.join("\n");
+		})
+		.join("\n\n");
 }
