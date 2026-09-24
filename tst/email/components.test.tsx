@@ -38,6 +38,7 @@ import {
 	WhatMoved,
 } from "../../src/email";
 import { fadeStop } from "../../src/email/theme";
+import { atelicPalette } from "../../src/tokens";
 import { normalize } from "./normalize";
 
 /*
@@ -84,6 +85,19 @@ function expectInline(node: ReactNode, name: string): void {
 
 describe("atoms", () => {
 	it("Eyebrow", () => expectRows(<Eyebrow text="The board" />, "eyebrow"));
+
+	it("Eyebrow, strong, reads as a heading", () => {
+		const plain = renderRows(<Eyebrow text="MQL · 15" />);
+		const strong = renderRows(<Eyebrow text="MQL · 15" strong />);
+		expect(plain).toContain("font-size:11px");
+		expect(plain).not.toContain("font-weight");
+		expect(strong).toContain("font-size:15px");
+		expect(strong).toContain("font-weight:700");
+		expect(strong).toContain(`color:${atelicPalette.ink}`);
+		expect(strong).not.toContain(atelicPalette.faint);
+		expect(strong).toContain("padding:36px 8px 12px");
+		expect(strong).toContain(">MQL · 15</td>");
+	});
 
 	it("Card", () =>
 		expectRows(
@@ -424,6 +438,95 @@ describe("the scoreboard", () => {
 		expect(markup).toMatch(/>C<\/span><br\/><span style="[^"]*">\+3 · \+12%<\/span>/);
 	});
 
+	it("StatStrip colors a delta by its sign", () => {
+		const markup = renderInline(
+			<StatStrip
+				stats={[
+					{ n: 15, label: "MQL", delta: "+3 (12%)" },
+					{ n: 4, label: "SQL", delta: "-2 (5%)" },
+					{ n: 1, label: "Won", delta: "0" },
+				]}
+			/>,
+		);
+		const deltas =
+			markup.match(/<span style="[^"]*font-size:11px;color:[^"]*">[^<]*<\/span>/g) ?? [];
+		expect(deltas).toHaveLength(3);
+		expect(deltas[0]).toContain(`color:${atelicPalette.up}`);
+		expect(deltas[0]).toContain(">+3 (12%)<");
+		expect(deltas[1]).toContain(`color:${atelicPalette.down}`);
+		expect(deltas[1]).toContain(">-2 (5%)<");
+		expect(deltas[2]).toContain(`color:${atelicPalette.faint}`);
+	});
+
+	it("StatStrip falls back to the Atelic up and down for a palette without them", () => {
+		const { up: _up, down: _down, ...bare } = atelicPalette;
+		const markup = renderToStaticMarkup(
+			<EmailThemeProvider palette={{ ...bare, faint: "#777777" }}>
+				<StatStrip stats={[{ n: 1, label: "A", delta: "+1" }]} />
+			</EmailThemeProvider>,
+		);
+		expect(markup).toContain(`color:${atelicPalette.up}`);
+	});
+
+	it("RecordStack puts a badge in its own right aligned cell and keeps the title whole", () => {
+		const title = "Blue Heron Plumbing and Drain Cleaning of Wheat Ridge";
+		const markup = renderInline(
+			<RecordStack records={[{ title, meta: ["Lead"], badge: "Contacted" }]} />,
+		);
+		expect(markup).toContain(`>${title}</td>`);
+		const badgeCell = markup.match(/<td align="right" style="([^"]*)">(.*?)<\/td>/);
+		expect(badgeCell).not.toBeNull();
+		expect(badgeCell?.[1]).toContain("text-align:right");
+		expect(badgeCell?.[1]).toContain("white-space:nowrap");
+		expect(badgeCell?.[2]).toContain(">Contacted</span>");
+		expect(badgeCell?.[2]).toContain(`border:1px solid ${atelicPalette.line}`);
+		expect(badgeCell?.[2]).toContain("text-transform:uppercase");
+		for (const cell of markup.match(/<td[^>]*>/g) ?? []) {
+			expect(cell).not.toMatch(/\swidth=/);
+			expect(cell).not.toMatch(/[";]width:/);
+		}
+	});
+
+	it("RecordStack sets a callout under the note with an orange eyebrow and border", () => {
+		const markup = renderInline(
+			<RecordStack
+				records={[
+					{
+						title: "Blue Heron Plumbing",
+						meta: ["Lead"],
+						note: "Answered the audit.",
+						callout: { eyebrow: "Next", text: "Walk the findings Thursday." },
+					},
+				]}
+			/>,
+		);
+		const note = markup.indexOf(">Answered the audit.</div>");
+		const callout = markup.indexOf(`border-left:2px solid ${atelicPalette.accent}`);
+		expect(note).toBeGreaterThan(-1);
+		expect(callout).toBeGreaterThan(note);
+		expect(markup).toMatch(
+			new RegExp(
+				`<span style="[^"]*color:${atelicPalette.accent}">Next</span><br/>Walk the findings Thursday.</div>`,
+			),
+		);
+		expect(markup).toMatch(/border-left:2px solid [^"]*font-size:13px/);
+	});
+
+	it("RecordStack without a badge or a callout renders as it did before", () => {
+		const markup = renderInline(
+			<RecordStack records={[{ title: "Alder & Co", meta: ["Other"] }]} />,
+		);
+		expect(markup).toBe(
+			renderInline(
+				<RecordStack
+					records={[{ title: "Alder & Co", meta: ["Other"], badge: "", callout: undefined }]}
+				/>,
+			),
+		);
+		expect(markup.match(/<td/g)).toHaveLength(1);
+		expect(markup).not.toContain("border-left");
+	});
+
 	it("RecordStack keeps a long title whole and fixes no width on any cell", () => {
 		const title = "Pinewood Cabinetry and Custom Millwork of Denver";
 		expect(title).toHaveLength(48);
@@ -539,6 +642,18 @@ describe("the scoreboard", () => {
 
 describe("the frame", () => {
 	it("Masthead", () => expectRows(<Masthead title="Retro · Week 40" />, "masthead"));
+
+	it("Masthead sets its meta in a right aligned block that drops under the title when narrow", () => {
+		const markup = renderRows(<Masthead title="Pipeline" meta="Week 39 · 09/21 to 09/27" />);
+		const meta = markup.match(/<div style="([^"]*)">Week 39 · 09\/21 to 09\/27<\/div>/);
+		expect(meta).not.toBeNull();
+		expect(meta?.[1]).toContain("float:right");
+		expect(meta?.[1]).toContain("text-align:right");
+		expect(meta?.[1]).toContain("white-space:nowrap");
+		expect(meta?.[1]).toContain("text-transform:uppercase");
+		expect(markup.indexOf(">Pipeline</td>")).toBeLessThan(markup.indexOf("Week 39"));
+		expect(markup).toContain('<div style="display:inline-block;vertical-align:middle"><table');
+	});
 
 	it("TitleCard with stats", () =>
 		expectRows(

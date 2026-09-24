@@ -10,16 +10,27 @@ import { eyebrowStyle, tableReset, useEmailTheme } from "./theme";
  * is a plain string and React does the escaping.
  */
 
-export type EyebrowProps = { text: string };
+export type EyebrowProps = {
+	text: string;
+	/** Reads as a heading on a phone: larger, bold, in ink rather than faint. */
+	strong?: boolean;
+};
 
 /** A section label between cards. */
-export function Eyebrow({ text }: EyebrowProps) {
+export function Eyebrow({ text, strong = false }: EyebrowProps) {
 	const { palette, fonts } = useEmailTheme();
+	const look = strong
+		? {
+				...eyebrowStyle(fonts),
+				fontSize: "15px",
+				fontWeight: "700",
+				letterSpacing: "0.06em",
+				color: palette.ink,
+			}
+		: { ...eyebrowStyle(fonts), color: palette.faint };
 	return (
 		<tr>
-			<td style={{ padding: "36px 8px 12px", ...eyebrowStyle(fonts), color: palette.faint }}>
-				{text}
-			</td>
+			<td style={{ padding: "36px 8px 12px", ...look }}>{text}</td>
 		</tr>
 	);
 }
