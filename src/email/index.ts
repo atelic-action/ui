@@ -56,6 +56,8 @@ export {
 	type GroupRowProps,
 	ReadBlock,
 	type ReadBlockProps,
+	RecordStack,
+	type RecordStackProps,
 	Records,
 	type RecordsCell,
 	type RecordsColumn,
@@ -77,6 +79,8 @@ export {
 	asciiDowncase,
 	asciiUpcase,
 	lpad,
+	type RecordStackItem,
+	recordStackText,
 	rpad,
 	spaces,
 	type TextTarget,
@@ -87,6 +91,7 @@ export {
 	textTable,
 	textTableGrid,
 	textTarget,
+	textWidth,
 	wrap,
 } from "./text";
 export {

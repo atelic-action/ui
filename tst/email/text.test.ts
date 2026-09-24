@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
 	lpad,
+	recordStackText,
 	rpad,
 	spaces,
 	textBar,
@@ -12,6 +13,7 @@ import {
 	textTable,
 	textTableGrid,
 	textTarget,
+	textWidth,
 	wrap,
 } from "../../src/email";
 
@@ -115,6 +117,34 @@ describe("the plain text helpers", () => {
 				[2],
 			),
 		).toBe(golden("table-drop"));
+	});
+
+	it("recordStackText stacks each record and keeps every line inside the text width", () => {
+		const text = recordStackText([
+			{
+				title: "Pinewood Cabinetry and Custom Millwork of Denver",
+				url: "https://example.test/pinewood",
+				meta: [
+					"Lead",
+					"Longmont",
+					"",
+					"fit 14",
+					"owner answers the phone",
+					"two trucks",
+					"no booking link",
+				],
+				note: "They answered the audit inside a day and asked for a walkthrough of the Business Profile findings before the Thursday visit.",
+			},
+			{ title: "Alder & Co", meta: ["Other"] },
+		]);
+		const lines = text.split("\n");
+		for (const line of lines) expect([...line].length).toBeLessThanOrEqual(textWidth);
+		expect(lines[0]).toBe("  Pinewood Cabinetry and Custom Millwork of Denver");
+		expect(lines[1].startsWith("    Lead · Longmont · fit 14 · ")).toBe(true);
+		expect(lines[2].startsWith("    ")).toBe(true);
+		expect(text).toContain("\n\n  Alder & Co\n    Other");
+		expect(text).not.toContain("example.test");
+		expect(text.endsWith("    Other")).toBe(true);
 	});
 
 	it("textTableGrid keeps every column when widths are given", () => {

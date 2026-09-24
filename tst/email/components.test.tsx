@@ -24,6 +24,7 @@ import {
 	MonoTable,
 	Note,
 	ReadBlock,
+	RecordStack,
 	Records,
 	Row,
 	Scoreboard,
@@ -398,6 +399,58 @@ describe("the scoreboard", () => {
 			/>,
 			"stat-strip-seven",
 		));
+
+	it("StatStrip wraps seven stats as inline blocks and shows a delta under its label", () => {
+		const markup = renderInline(
+			<StatStrip
+				stats={[
+					{ n: 1, label: "A" },
+					{ n: 2, label: "B" },
+					{ n: 3, label: "C", delta: "+3 · +12%" },
+					{ n: 4, label: "D" },
+					{ n: 5, label: "E" },
+					{ n: 6, label: "F" },
+					{ n: 7, label: "G" },
+				]}
+			/>,
+		);
+		const cells = markup.match(/<div style="display:inline-block;[^"]*"/g) ?? [];
+		expect(cells).toHaveLength(7);
+		for (const cell of cells) {
+			expect(cell).toContain("min-width:88px");
+			expect(cell).toContain("vertical-align:top");
+		}
+		expect(markup.match(/<td/g)).toHaveLength(1);
+		expect(markup).toMatch(/>C<\/span><br\/><span style="[^"]*">\+3 · \+12%<\/span>/);
+	});
+
+	it("RecordStack keeps a long title whole and fixes no width on any cell", () => {
+		const title = "Pinewood Cabinetry and Custom Millwork of Denver";
+		expect(title).toHaveLength(48);
+		const markup = renderInline(
+			<RecordStack
+				records={[
+					{
+						title,
+						url: "https://example.test/pinewood",
+						meta: ["Lead", "Longmont", "", "fit 14"],
+						note: "Answered the audit inside a day.",
+					},
+					{ title: "Alder & Co", meta: ["Other"] },
+				]}
+			/>,
+		);
+		expect(markup).toContain(`>${title}</a>`);
+		const cells = markup.match(/<td[^>]*>/g) ?? [];
+		expect(cells).toHaveLength(2);
+		for (const cell of cells) {
+			expect(cell).not.toMatch(/\swidth=/);
+			expect(cell).not.toMatch(/[";]width:/);
+		}
+		expect(markup).toContain(">Lead · Longmont · fit 14</div>");
+		expect(markup).toContain(">Answered the audit inside a day.</div>");
+		expect(markup.match(/border-bottom:1px solid #/g)).toHaveLength(2);
+	});
 
 	it("Records drops a column every row leaves empty", () =>
 		expectInline(
