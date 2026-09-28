@@ -101,6 +101,21 @@
 		height: 30px;
 		width: 30px;
 	}
+	/* The recipient half of a sent artifact's lockup (BrandLockup: recipient):
+	   a quiet times sign in the mono face, then the business's mark at
+	   wordmark height. */
+	.mkt .nav-logo .nav-x {
+		font-family: var(--font-mono);
+		font-weight: 400;
+		font-size: 0.9rem;
+		color: color-mix(in srgb, currentColor 55%, transparent);
+		margin: 0 2px;
+	}
+	.mkt .nav-logo .nav-recipient {
+		height: 22px;
+		width: auto;
+		display: block;
+	}
 	.mkt .nav-links {
 		display: none;
 		align-items: center;

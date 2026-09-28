@@ -55,6 +55,25 @@ describe("SiteHeader", () => {
 		});
 	});
 
+	it("adds the recipient's mark after a times sign when the brand names one", () => {
+		const sent = { ...brand, recipient: { src: "/images/client-dark.png", alt: "Client Co" } };
+		const { container } = render(<SiteHeader brand={sent} variant="dark" />);
+		const lockup = container.querySelector(".nav-logo");
+		if (!lockup) throw new Error("the header rendered no lockup");
+		expect(lockup.querySelector(".nav-x")).toHaveTextContent("×");
+		const mark = within(lockup as HTMLElement).getByAltText("Client Co");
+		expect(mark).toHaveClass("nav-recipient");
+		expect(mark).toHaveAttribute("src", "/images/client-dark.png");
+		// The sender's wordmark still leads the lockup.
+		expect(lockup.firstElementChild).not.toHaveClass("nav-x");
+	});
+
+	it("renders no times sign or recipient mark without one", () => {
+		const { container } = render(<SiteHeader brand={brand} />);
+		expect(container.querySelector(".nav-x")).toBeNull();
+		expect(container.querySelector(".nav-recipient")).toBeNull();
+	});
+
 	it("marks the link matching currentPath with aria-current", () => {
 		const { container } = render(<SiteHeader brand={brand} links={links} currentPath="/about" />);
 		const nav = within(getHeader(container)).getByRole("navigation", { name: "Primary" });
