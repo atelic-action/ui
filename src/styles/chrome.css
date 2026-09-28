@@ -30,7 +30,10 @@
 		height: 2px;
 		margin-left: 0.38em;
 		vertical-align: middle;
-		background: linear-gradient(90deg, var(--primary), transparent);
+		/* The run is the sender's, so it reads the brand accent a client
+		   branded host pins (GATE.md, Branding an artifact host) and falls
+		   back to the primary on a site wearing its own palette. */
+		background: linear-gradient(90deg, var(--brand-accent, var(--primary)), transparent);
 	}
 	/* The glyph tile mark (logo.tile): the favicon's design as real DOM text,
 	   so the brand webfont renders it, which an SVG loaded through an img
@@ -112,7 +115,9 @@
 		margin: 0 2px;
 	}
 	.mkt .nav-logo .nav-recipient {
-		height: 22px;
+		/* Matches the sender's mark, so a square recipient mark reads at the
+		   same size as the sender's would; a wide wordmark simply runs longer. */
+		height: 30px;
 		width: auto;
 		display: block;
 	}
