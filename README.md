@@ -77,7 +77,10 @@ lockup reads "atelic × <their mark>", the sender's wordmark and run first, a
 quiet times sign, then the recipient's mark at wordmark height. Cut the mark
 for the surface the header wears (a light mark for the dark bar) and keep it
 an image; the chrome draws no second wordmark. A marketing site's lockup
-passes no recipient.
+passes no recipient. The run after the wordmark reads `--brand-accent` when
+the theme sets it (a client branded host pins the sender's orange there) and
+falls back to `--primary` (0.6.1), and the recipient's mark sits at the same
+30 pixel height as the sender's.
 
 The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus containment, and focus return come from the browser.
 
