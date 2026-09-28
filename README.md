@@ -71,6 +71,14 @@ import { Footer, SiteHeader, SkipLink, StickyCTABar } from "@atelic-action/ui/ch
 </div>;
 ```
 
+A sent artifact's header names who the document is for as well as who it is
+from: pass `recipient: { src, alt }` on the `brand` (added 0.6.0) and the
+lockup reads "atelic × <their mark>", the sender's wordmark and run first, a
+quiet times sign, then the recipient's mark at wordmark height. Cut the mark
+for the surface the header wears (a light mark for the dark bar) and keep it
+an image; the chrome draws no second wordmark. A marketing site's lockup
+passes no recipient.
+
 The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus containment, and focus return come from the browser.
 
 ## The Not Found Page

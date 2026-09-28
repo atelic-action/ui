@@ -20,12 +20,26 @@ export interface BrandLogo {
 	run?: boolean;
 }
 
+/**
+ * The recipient half of a sent artifact's lockup: the business a document
+ * was prepared for, whose mark follows the sender's wordmark after a times
+ * sign. An image cut for the surface the header wears (a light mark on the
+ * dark bar), never a wordmark string, since the sender's type is the one
+ * face the chrome draws in.
+ */
+export interface BrandRecipient {
+	src: string;
+	alt: string;
+}
+
 /** The identity a header or footer wears. */
 export interface Brand {
 	name: string;
 	/** Where the lockup points. Defaults to "/". */
 	href?: string;
 	logo?: BrandLogo;
+	/** Set on a sent artifact's header only; a marketing site's lockup has no recipient. */
+	recipient?: BrandRecipient;
 }
 
 /** An entry in a site's primary nav. */
