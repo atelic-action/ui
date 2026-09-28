@@ -12,13 +12,14 @@ export interface BrandLockupProps {
  * because the link's own label already names it. On a sent artifact the
  * recipient's mark follows, after a times sign: "atelic × Wynkoop Athletics",
  * the sender's identity and the business the document is for in one lockup.
- * The recipient image keeps its alt, since the link's label names only the
- * sender.
+ * The anchor's aria-label folds in the recipient's alt too, since it
+ * overrides accessible-name computation for every child, image alt included.
  */
 export function BrandLockup({ brand, ariaLabel }: BrandLockupProps) {
 	const { name, href = "/", logo, recipient } = brand;
+	const label = ariaLabel ?? (recipient ? `${name} × ${recipient.alt} home` : `${name} home`);
 	return (
-		<a className="nav-logo" href={href} aria-label={ariaLabel ?? `${name} home`}>
+		<a className="nav-logo" href={href} aria-label={label}>
 			{logo?.tile ? (
 				<span className="logo-tile" aria-hidden="true">
 					{logo.tile}
