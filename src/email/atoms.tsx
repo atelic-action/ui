@@ -14,10 +14,12 @@ export type EyebrowProps = {
 	text: string;
 	/** Reads as a heading on a phone: larger, bold, in ink rather than faint. */
 	strong?: boolean;
+	/** Something small set right on the same line: a legend, a count. */
+	aside?: ReactNode;
 };
 
 /** A section label between cards. */
-export function Eyebrow({ text, strong = false }: EyebrowProps) {
+export function Eyebrow({ text, strong = false, aside }: EyebrowProps) {
 	const { palette, fonts } = useEmailTheme();
 	const look = strong
 		? {
@@ -28,9 +30,31 @@ export function Eyebrow({ text, strong = false }: EyebrowProps) {
 				color: palette.ink,
 			}
 		: { ...eyebrowStyle(fonts), color: palette.faint };
+	if (aside === undefined || aside === null) {
+		return (
+			<tr>
+				<td style={{ padding: "36px 8px 12px", ...look }}>{text}</td>
+			</tr>
+		);
+	}
+	// With an aside (a legend, a count) the eyebrow keeps its cell and the
+	// aside sits right on the same line, bottom aligned to the text.
 	return (
 		<tr>
-			<td style={{ padding: "36px 8px 12px", ...look }}>{text}</td>
+			<td style={{ padding: "36px 8px 12px" }}>
+				<table {...tableReset} width="100%">
+					<tbody>
+						<tr>
+							<td valign="bottom" style={look}>
+								{text}
+							</td>
+							<td valign="bottom" align="right" style={{ textAlign: "right" }}>
+								{aside}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</td>
 		</tr>
 	);
 }
