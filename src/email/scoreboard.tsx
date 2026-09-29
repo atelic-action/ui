@@ -473,7 +473,7 @@ export type RecordTimelineStripProps = { timeline: RecordTimeline };
  * (Company Cards IA, 2026-09-29).
  */
 export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
-	const { palette } = useEmailTheme();
+	const { palette, fonts } = useEmailTheme();
 	const days = Math.max(1, Math.round(timeline.days));
 	const touch = new Set(timeline.touches.map((d) => Math.round(d)));
 	const open = new Set(timeline.opens.map((d) => Math.round(d)));
@@ -486,26 +486,37 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 		else cells.push({ ago, span: 1, sent, opened });
 	}
 	const unit = 100 / days;
+	// The axis under the strip: how far back it reaches on the left, today on
+	// the right (Forni, 2026-09-29, asking whether it was a thirty day strip).
+	const axisStyle: CSSProperties = {
+		fontFamily: fonts.mono,
+		fontSize: "9px",
+		lineHeight: "12px",
+		color: palette.faint,
+		paddingTop: "2px",
+	};
 	return (
 		<table
 			{...tableReset}
 			width="100%"
 			style={{
 				marginTop: "8px",
-				height: "14px",
 				textAlign: "center",
-				borderBottom: `1px solid ${palette.line}`,
-				borderRight: `1.5px solid ${palette.ink}`,
 			}}
 		>
 			<tbody>
 				<tr>
-					{cells.map((cell) => (
+					{cells.map((cell, i) => (
 						<td
 							key={cell.ago}
 							valign="bottom"
 							colSpan={cell.span}
 							width={`${Math.round(unit * cell.span * 100) / 100}%`}
+							height="14"
+							style={{
+								borderBottom: `1px solid ${palette.line}`,
+								...(i === cells.length - 1 ? { borderRight: `1.5px solid ${palette.ink}` } : {}),
+							}}
 						>
 							{cell.sent ? (
 								<div
@@ -525,6 +536,18 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 							) : null}
 						</td>
 					))}
+				</tr>
+				<tr>
+					<td colSpan={Math.max(1, Math.ceil(cells.length / 2))} align="left" style={axisStyle}>
+						{`${days}d`}
+					</td>
+					<td
+						colSpan={Math.max(1, Math.floor(cells.length / 2))}
+						align="right"
+						style={{ ...axisStyle, textAlign: "right" }}
+					>
+						today
+					</td>
 				</tr>
 			</tbody>
 		</table>

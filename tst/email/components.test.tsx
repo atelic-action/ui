@@ -27,6 +27,7 @@ import {
 	RecordStack,
 	Records,
 	RecordTimelineLegend,
+	RecordTimelineStrip,
 	Row,
 	Scoreboard,
 	Stat,
@@ -545,6 +546,24 @@ describe("the scoreboard", () => {
 		expect(markup).toContain(`border-right:1.5px solid ${atelicPalette.ink}`);
 		expect(markup).toContain(`opened <b style="color:${atelicPalette.up}">3d</b>`);
 		expect(markup).not.toMatch(/style="[^"]*position:/);
+	});
+
+	it("RecordTimelineStrip carries an axis row, how far back on the left and today on the right", () => {
+		const markup = renderInline(
+			<RecordTimelineStrip timeline={{ days: 30, touches: [9], opens: [] }} />,
+		);
+		expect(markup).toMatch(/<td colSpan="\d+" align="left" style="[^"]*">30d<\/td>/);
+		expect(markup).toMatch(/<td colSpan="\d+" align="right" style="[^"]*">today<\/td>/);
+		expect(markup).toContain(`border-right:1.5px solid ${atelicPalette.ink}`);
+	});
+
+	it("Eyebrow sets an aside right on its own line", () => {
+		const markup = renderRows(
+			<Eyebrow text="The pipeline" strong={true} aside={<span>legend</span>} />,
+		);
+		expect(markup).toMatch(
+			/<td valign="bottom" style="[^"]*">The pipeline<\/td><td valign="bottom" align="right" style="text-align:right"><span>legend<\/span><\/td>/,
+		);
 	});
 
 	it("RecordTimelineLegend names the two marks and the span", () => {
