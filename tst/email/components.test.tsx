@@ -475,7 +475,7 @@ describe("the scoreboard", () => {
 			<RecordStack records={[{ title, meta: ["Lead"], badge: "Contacted" }]} />,
 		);
 		expect(markup).toContain(`>${title}</td>`);
-		const badgeCell = markup.match(/<td align="right" style="([^"]*)">(.*?)<\/td>/);
+		const badgeCell = markup.match(/<td align="right" valign="top" style="([^"]*)">(.*?)<\/td>/);
 		expect(badgeCell).not.toBeNull();
 		expect(badgeCell?.[1]).toContain("text-align:right");
 		expect(badgeCell?.[1]).toContain("white-space:nowrap");
@@ -535,7 +535,9 @@ describe("the scoreboard", () => {
 		expect(markup).toContain(`border:1.5px solid ${atelicPalette.ink}`);
 		expect(markup).toContain(`border:1px solid ${atelicPalette.line}`);
 		expect(markup).toMatch(/font-weight:bold[^"]*">New</);
-		expect(markup.match(/<td width="[0-9.]+%"/g) ?? []).toHaveLength(30);
+		// Three marked days and four runs of empty days between and around them: seven cells, not thirty.
+		expect(markup.match(/<td valign="bottom" colSpan="\d+"/g) ?? []).toHaveLength(7);
+		expect(markup).toContain('colSpan="18" width="60%"');
 		expect(markup.match(new RegExp(`background:${atelicPalette.ink}`, "g")) ?? []).toHaveLength(2);
 		expect(
 			markup.match(new RegExp(`border-radius:50%;background:${atelicPalette.accent}`, "g")) ?? [],
