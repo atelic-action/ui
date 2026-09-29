@@ -441,7 +441,6 @@ function RecordBadge({ text, tone = "faint" }: RecordBadgeProps) {
 				border: tone === "faint" ? `1px solid ${palette.line}` : `1.5px solid ${color}`,
 				borderRadius: "3px",
 				color,
-				whiteSpace: "nowrap",
 			}}
 		>
 			{text}
@@ -493,6 +492,8 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 			width="100%"
 			style={{
 				marginTop: "8px",
+				height: "14px",
+				textAlign: "center",
 				borderBottom: `1px solid ${palette.line}`,
 				borderRight: `1.5px solid ${palette.ink}`,
 			}}
@@ -502,9 +503,9 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 					{cells.map((cell) => (
 						<td
 							key={cell.ago}
+							valign="bottom"
 							colSpan={cell.span}
 							width={`${Math.round(unit * cell.span * 100) / 100}%`}
-							style={{ height: "14px", verticalAlign: "bottom", textAlign: "center", padding: "0" }}
 						>
 							{cell.sent ? (
 								<div
@@ -626,25 +627,26 @@ export function RecordStack({ records }: RecordStackProps) {
 								}}
 							>
 								{badges.length > 0 ? (
-									<table {...tableReset} width="100%">
+									<table {...tableReset} width="100%" style={titleStyle}>
 										<tbody>
 											<tr>
-												<td style={{ ...titleStyle, verticalAlign: "top" }}>{title}</td>
+												<td valign="top">{title}</td>
 												<td
 													align="right"
+													valign="top"
 													style={{
 														textAlign: "right",
 														whiteSpace: "nowrap",
-														verticalAlign: "top",
 														paddingLeft: "12px",
 														paddingTop: "2px",
 													}}
 												>
 													{badges.map((badge, j) => (
 														// biome-ignore lint/suspicious/noArrayIndexKey: a pill's position is its identity
-														<span key={j} style={{ marginLeft: j === 0 ? "0" : "4px" }}>
+														<Fragment key={j}>
+															{j === 0 ? null : " "}
 															<RecordBadge text={badge.text} tone={badge.tone} />
-														</span>
+														</Fragment>
 													))}
 												</td>
 											</tr>
@@ -656,19 +658,11 @@ export function RecordStack({ records }: RecordStackProps) {
 								{record.timeline ? <RecordTimelineStrip timeline={record.timeline} /> : null}
 								{meta.length > 0 || aside ? (
 									aside ? (
-										<table {...tableReset} width="100%" style={{ marginTop: "4px" }}>
+										<table {...tableReset} width="100%" style={{ ...metaStyle, marginTop: "4px" }}>
 											<tbody>
 												<tr>
-													<td style={metaStyle}>{meta.join(" · ")}</td>
-													<td
-														align="right"
-														style={{
-															...metaStyle,
-															textAlign: "right",
-															whiteSpace: "nowrap",
-															paddingLeft: "12px",
-														}}
-													>
+													<td>{meta.join(" · ")}</td>
+													<td align="right" style={{ whiteSpace: "nowrap", paddingLeft: "12px" }}>
 														{aside}
 													</td>
 												</tr>
