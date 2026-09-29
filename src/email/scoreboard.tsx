@@ -538,11 +538,11 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 					))}
 				</tr>
 				<tr>
-					<td colSpan={Math.max(1, Math.ceil(cells.length / 2))} align="left" style={axisStyle}>
+					<td colSpan={Math.max(1, Math.ceil(days / 2))} align="left" style={axisStyle}>
 						{`${days}d`}
 					</td>
 					<td
-						colSpan={Math.max(1, Math.floor(cells.length / 2))}
+						colSpan={Math.max(1, Math.floor(days / 2))}
 						align="right"
 						style={{ ...axisStyle, textAlign: "right" }}
 					>

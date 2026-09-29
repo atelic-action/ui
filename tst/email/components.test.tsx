@@ -554,6 +554,9 @@ describe("the scoreboard", () => {
 		);
 		expect(markup).toMatch(/<td colSpan="\d+" align="left" style="[^"]*">30d<\/td>/);
 		expect(markup).toMatch(/<td colSpan="\d+" align="right" style="[^"]*">today<\/td>/);
+		// The axis spans the whole thirty day strip even though empty days are merged into few cells.
+		expect(markup).toContain('colSpan="15" align="left"');
+		expect(markup).toContain('colSpan="15" align="right"');
 		expect(markup).toContain(`border-right:1.5px solid ${atelicPalette.ink}`);
 	});
 
