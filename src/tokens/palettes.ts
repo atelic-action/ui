@@ -32,6 +32,11 @@ export type Palette = {
 	up?: string;
 	/** A change for the worse, the negative delta's color. Optional the same way. */
 	down?: string;
+	/**
+	 * The cooling tone between `up` and the accent: a record opened inside two
+	 * weeks but not one (Company Cards, 0.7.0). Optional the same way.
+	 */
+	warm?: string;
 };
 
 export const atelicPalette: Palette = {
@@ -45,6 +50,7 @@ export const atelicPalette: Palette = {
 	hair: "#F0EAE0",
 	up: "#2F7A4B",
 	down: "#B23A2E",
+	warm: "#B7791F",
 };
 
 /**

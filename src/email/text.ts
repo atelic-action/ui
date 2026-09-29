@@ -124,6 +124,28 @@ export function textTable(cols: string[], rows: string[][], right: number[]): st
 	return textTableGrid(cols, rows, right, null);
 }
 
+/** A pill on a record's title line: faint is the quiet stage word, ink and accent are the Company Cards tones. */
+export type RecordBadgeTone = "faint" | "ink" | "accent";
+export type RecordBadge = { text: string; tone?: RecordBadgeTone };
+
+/**
+ * A record's last `days` days on one line, today at the right edge: each
+ * send as a day count back from today, and each known open the same way.
+ * The html draws squares and dots on a baseline; the text twin draws one
+ * character per day.
+ */
+export type RecordTimeline = {
+	days: number;
+	touches: number[];
+	opens: number[];
+};
+
+/** The color a record's aside number wears: `up` is fresh, `warm` is cooling, `accent` is cold. */
+export type RecordAsideTone = "up" | "warm" | "accent";
+
+/** A fact set right on the meta line, its number in a tone: "opened" and "6d". */
+export type RecordAside = { text: string; strong?: string; tone?: RecordAsideTone };
+
 /**
  * One record in a stack: what `RecordStack` renders and `recordStackText`
  * writes. It lives here, with no React, so a plain text renderer can import it.
@@ -137,14 +159,44 @@ export type RecordStackItem = {
 	note?: string;
 	/** A stage word on the title line, right aligned in a pill; "[Contacted]" in the text twin. */
 	badge?: string;
+	/** More pills after `badge`, each in its tone: New in the accent, the next touch in ink, Wait faint (Company Cards, 2026-09-29). */
+	badges?: RecordBadge[];
+	/** The record's recent days, drawn between the title and the meta line. */
+	timeline?: RecordTimeline;
+	/** A fact set right on the meta line, its number colored by its tone. */
+	aside?: RecordAside;
 	/** A short task under the record, an orange eyebrow over a line of text. */
 	callout?: { eyebrow: string; text: string };
 };
 
+/** Every pill on a record's title line, the quiet stage word first. */
+export function recordBadges(record: RecordStackItem): RecordBadge[] {
+	const badges: RecordBadge[] = record.badge ? [{ text: record.badge, tone: "faint" }] : [];
+	return [...badges, ...(record.badges ?? [])];
+}
+
+/**
+ * The timeline as one character per day, oldest on the left and today on the
+ * right: `#` a send, `o` an open, `@` both on one day, `·` nothing, then `|`
+ * for today's edge. "30d [#····o··@···|]" reads the same way the drawn one does.
+ */
+export function recordTimelineText(timeline: RecordTimeline): string {
+	const days = Math.max(1, Math.round(timeline.days));
+	const touch = new Set(timeline.touches.map((d) => Math.round(d)));
+	const open = new Set(timeline.opens.map((d) => Math.round(d)));
+	let strip = "";
+	for (let ago = days - 1; ago >= 0; ago -= 1) {
+		strip +=
+			touch.has(ago) && open.has(ago) ? "@" : touch.has(ago) ? "#" : open.has(ago) ? "o" : "·";
+	}
+	return `${days}d [${strip}|]`;
+}
+
 /**
  * The plain text twin of `RecordStack`: each title on its own line under a
- * two space indent with any badge after it in square brackets, the meta joined
- * by middle dots and the note beneath it, both wrapped under a four space
+ * two space indent with every badge after it in square brackets, the
+ * timeline as a character strip, the meta joined by middle dots with the
+ * aside at its end and the note beneath it, all wrapped under a four space
  * indent, then any callout as its eyebrow in upper case over its text under
  * the same indent, a blank line between records. No line runs past
  * `textWidth`.
@@ -152,9 +204,14 @@ export type RecordStackItem = {
 export function recordStackText(records: RecordStackItem[]): string {
 	return records
 		.map((record) => {
-			const title = record.badge ? `${record.title} [${record.badge}]` : record.title;
-			const lines = [wrapIndented(title, 2)];
+			const badges = recordBadges(record)
+				.map((b) => ` [${b.text}]`)
+				.join("");
+			const lines = [wrapIndented(`${record.title}${badges}`, 2)];
+			if (record.timeline) lines.push(wrapIndented(recordTimelineText(record.timeline), 4));
 			const meta = record.meta.filter((m) => m !== "");
+			if (record.aside)
+				meta.push([record.aside.text, record.aside.strong ?? ""].filter((x) => x !== "").join(" "));
 			if (meta.length > 0) lines.push(wrapIndented(meta.join(" · "), 4));
 			if (record.note) lines.push(wrapIndented(record.note, 4));
 			if (record.callout) {
