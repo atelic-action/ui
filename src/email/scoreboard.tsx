@@ -467,61 +467,63 @@ export type RecordTimelineStripProps = { timeline: RecordTimeline };
  * A record's recent days on one line, today at the right edge: an ink square
  * on each day a send went out, an accent dot on each day an open is known,
  * the two stacked when they share a day, all standing on a hairline with a
- * tick for today. One table cell per day and nothing positioned, so it
- * survives every mail client (Company Cards IA, 2026-09-29).
+ * tick for today. One cell per marked day and one per run of empty days
+ * between them, so a record with three marks is seven cells rather than
+ * thirty: Gmail clips a message past about 100 KB and a stage list carries
+ * dozens of records. Nothing is positioned, so it survives every mail client
+ * (Company Cards IA, 2026-09-29).
  */
 export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 	const { palette } = useEmailTheme();
 	const days = Math.max(1, Math.round(timeline.days));
 	const touch = new Set(timeline.touches.map((d) => Math.round(d)));
 	const open = new Set(timeline.opens.map((d) => Math.round(d)));
-	const cells = Array.from({ length: days }, (_, i) => days - 1 - i);
+	const cells: { ago: number; span: number; sent: boolean; opened: boolean }[] = [];
+	for (let ago = days - 1; ago >= 0; ago -= 1) {
+		const sent = touch.has(ago);
+		const opened = open.has(ago);
+		const last = cells[cells.length - 1];
+		if (!sent && !opened && last && !last.sent && !last.opened) last.span += 1;
+		else cells.push({ ago, span: 1, sent, opened });
+	}
+	const unit = 100 / days;
 	return (
-		<table {...tableReset} width="100%" style={{ marginTop: "8px" }}>
+		<table
+			{...tableReset}
+			width="100%"
+			style={{
+				marginTop: "8px",
+				borderBottom: `1px solid ${palette.line}`,
+				borderRight: `1.5px solid ${palette.ink}`,
+			}}
+		>
 			<tbody>
 				<tr>
-					{cells.map((ago) => {
-						const sent = touch.has(ago);
-						const opened = open.has(ago);
-						return (
-							<td
-								key={ago}
-								width={`${100 / days}%`}
-								style={{
-									height: "16px",
-									verticalAlign: "bottom",
-									textAlign: "center",
-									borderBottom: `1px solid ${palette.line}`,
-									...(ago === 0 ? { borderRight: `1.5px solid ${palette.ink}` } : {}),
-								}}
-							>
-								{sent ? (
-									<div
-										style={{
-											width: "8px",
-											height: "8px",
-											margin: "0 auto",
-											background: palette.ink,
-										}}
-									/>
-								) : null}
-								{opened ? (
-									<div
-										style={{
-											width: "5px",
-											height: "5px",
-											margin: `${sent ? "2px" : "0"} auto 0`,
-											borderRadius: "50%",
-											background: palette.accent,
-										}}
-									/>
-								) : null}
-								{sent || opened ? null : (
-									<div style={{ height: "1px", fontSize: "1px", lineHeight: "1px" }}>&nbsp;</div>
-								)}
-							</td>
-						);
-					})}
+					{cells.map((cell) => (
+						<td
+							key={cell.ago}
+							colSpan={cell.span}
+							width={`${Math.round(unit * cell.span * 100) / 100}%`}
+							style={{ height: "14px", verticalAlign: "bottom", textAlign: "center", padding: "0" }}
+						>
+							{cell.sent ? (
+								<div
+									style={{ width: "8px", height: "8px", margin: "0 auto", background: palette.ink }}
+								/>
+							) : null}
+							{cell.opened ? (
+								<div
+									style={{
+										width: "5px",
+										height: "5px",
+										margin: `${cell.sent ? "2px" : "0"} auto 0`,
+										borderRadius: "50%",
+										background: palette.accent,
+									}}
+								/>
+							) : null}
+						</td>
+					))}
 				</tr>
 			</tbody>
 		</table>
