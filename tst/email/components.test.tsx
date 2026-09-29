@@ -26,6 +26,7 @@ import {
 	ReadBlock,
 	RecordStack,
 	Records,
+	RecordTimelineLegend,
 	Row,
 	Scoreboard,
 	Stat,
@@ -510,6 +511,45 @@ describe("the scoreboard", () => {
 			),
 		);
 		expect(markup).toMatch(/border-left:2px solid [^"]*font-size:13px/);
+	});
+
+	it("RecordStack draws the Company Cards pills, timeline and aside without positioning anything", () => {
+		const markup = renderInline(
+			<RecordStack
+				records={[
+					{
+						title: "Crema Coffee House",
+						meta: ["5 touches", "1 open"],
+						badges: [
+							{ text: "New", tone: "accent" },
+							{ text: "Bump", tone: "ink" },
+							{ text: "Wait", tone: "faint" },
+						],
+						timeline: { days: 30, touches: [28, 9], opens: [9, 3] },
+						aside: { text: "opened", strong: "3d", tone: "up" },
+					},
+				]}
+			/>,
+		);
+		expect(markup).toContain(`border:1.5px solid ${atelicPalette.accent}`);
+		expect(markup).toContain(`border:1.5px solid ${atelicPalette.ink}`);
+		expect(markup).toContain(`border:1px solid ${atelicPalette.line}`);
+		expect(markup).toMatch(/font-weight:bold[^"]*">New</);
+		expect(markup.match(/<td width="[0-9.]+%"/g) ?? []).toHaveLength(30);
+		expect(markup.match(new RegExp(`background:${atelicPalette.ink}`, "g")) ?? []).toHaveLength(2);
+		expect(
+			markup.match(new RegExp(`border-radius:50%;background:${atelicPalette.accent}`, "g")) ?? [],
+		).toHaveLength(2);
+		expect(markup).toContain(`border-right:1.5px solid ${atelicPalette.ink}`);
+		expect(markup).toContain(`opened <b style="color:${atelicPalette.up}">3d</b>`);
+		expect(markup).not.toMatch(/style="[^"]*position:/);
+	});
+
+	it("RecordTimelineLegend names the two marks and the span", () => {
+		const markup = renderInline(<RecordTimelineLegend days={30} />);
+		expect(markup).toContain(`background:${atelicPalette.ink}`);
+		expect(markup).toContain(`border-radius:50%;background:${atelicPalette.accent}`);
+		expect(markup).toContain("30 days to today");
 	});
 
 	it("RecordStack without a badge or a callout renders as it did before", () => {

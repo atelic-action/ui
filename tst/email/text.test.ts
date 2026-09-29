@@ -4,6 +4,7 @@ import { join } from "node:path";
 import {
 	lpad,
 	recordStackText,
+	recordTimelineText,
 	rpad,
 	spaces,
 	textBar,
@@ -174,6 +175,31 @@ describe("the plain text helpers", () => {
 		expect(lines[4].startsWith("    Walk the Business Profile findings")).toBe(true);
 		expect(lines[5].startsWith("    ")).toBe(true);
 		expect(text).toContain("the Front\n  Range [Engaged]");
+	});
+
+	it("recordTimelineText draws one character per day with today at the right edge", () => {
+		expect(recordTimelineText({ days: 10, touches: [9, 2], opens: [2, 0] })).toBe(
+			"10d [#······@·o|]",
+		);
+	});
+
+	it("recordStackText brackets every pill, draws the timeline and ends the meta with the aside", () => {
+		const text = recordStackText([
+			{
+				title: "Crema Coffee House",
+				meta: ["5 touches", "1 open"],
+				badge: "Contacted",
+				badges: [
+					{ text: "New", tone: "accent" },
+					{ text: "Bump", tone: "ink" },
+				],
+				timeline: { days: 10, touches: [9, 2], opens: [2, 0] },
+				aside: { text: "opened", strong: "3d", tone: "up" },
+			},
+		]);
+		expect(text).toBe(
+			"  Crema Coffee House [Contacted] [New] [Bump]\n    10d [#······@·o|]\n    5 touches · 1 open · opened 3d",
+		);
 	});
 
 	it("textTableGrid keeps every column when widths are given", () => {

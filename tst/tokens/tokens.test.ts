@@ -14,6 +14,7 @@ describe("the email palette", () => {
 			hair: "#F0EAE0",
 			up: "#2F7A4B",
 			down: "#B23A2E",
+			warm: "#B7791F",
 		});
 	});
 

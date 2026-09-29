@@ -1,6 +1,12 @@
 import { type CSSProperties, Fragment, type ReactNode } from "react";
 import { atelicPalette, type Palette } from "../tokens";
-import type { RecordStackItem } from "./text";
+import {
+	type RecordAsideTone,
+	type RecordBadgeTone,
+	type RecordStackItem,
+	type RecordTimeline,
+	recordBadges,
+} from "./text";
 import { eyebrowStyle, tableReset, useEmailTheme } from "./theme";
 
 /*
@@ -410,14 +416,17 @@ export function StatStrip({ stats }: StatStripProps) {
 	);
 }
 
-type RecordBadgeProps = { text: string };
+type RecordBadgeProps = { text: string; tone?: RecordBadgeTone };
 
 /**
- * A word in a small mono pill on a hairline, the Badge idiom sized for a stage
- * such as "Contacted". Only RecordStack wears it.
+ * The pill on a record's title line. Faint is the stage word as it always
+ * was, dim text in a hairline box; ink and accent are the Company Cards
+ * pills (2026-09-29), bold, drawn in their own color on a heavier border:
+ * the next touch in ink, New in the accent.
  */
-function RecordBadge({ text }: RecordBadgeProps) {
+function RecordBadge({ text, tone = "faint" }: RecordBadgeProps) {
 	const { palette, fonts } = useEmailTheme();
+	const color = tone === "ink" ? palette.ink : tone === "accent" ? palette.accent : palette.dim;
 	return (
 		<span
 			style={{
@@ -427,10 +436,11 @@ function RecordBadge({ text }: RecordBadgeProps) {
 				lineHeight: "14px",
 				letterSpacing: "0.08em",
 				textTransform: "uppercase",
+				fontWeight: tone === "faint" ? "normal" : "bold",
 				padding: "0 6px",
-				border: `1px solid ${palette.line}`,
+				border: tone === "faint" ? `1px solid ${palette.line}` : `1.5px solid ${color}`,
 				borderRadius: "3px",
-				color: palette.dim,
+				color,
 				whiteSpace: "nowrap",
 			}}
 		>
@@ -440,13 +450,119 @@ function RecordBadge({ text }: RecordBadgeProps) {
 }
 
 export type { RecordStackItem };
+
+/** The default for a palette written before `warm` existed: the cooling tone between `up` and the accent. */
+const WARM = "#B7791F";
+
+function asideColor(tone: RecordAsideTone | undefined, palette: Palette): string {
+	if (tone === "up") return palette.up ?? atelicPalette.up ?? palette.ink;
+	if (tone === "warm") return palette.warm ?? WARM;
+	if (tone === "accent") return palette.accent;
+	return palette.faint;
+}
+
+export type RecordTimelineStripProps = { timeline: RecordTimeline };
+
+/**
+ * A record's recent days on one line, today at the right edge: an ink square
+ * on each day a send went out, an accent dot on each day an open is known,
+ * the two stacked when they share a day, all standing on a hairline with a
+ * tick for today. One table cell per day and nothing positioned, so it
+ * survives every mail client (Company Cards IA, 2026-09-29).
+ */
+export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
+	const { palette } = useEmailTheme();
+	const days = Math.max(1, Math.round(timeline.days));
+	const touch = new Set(timeline.touches.map((d) => Math.round(d)));
+	const open = new Set(timeline.opens.map((d) => Math.round(d)));
+	const cells = Array.from({ length: days }, (_, i) => days - 1 - i);
+	return (
+		<table {...tableReset} width="100%" style={{ marginTop: "8px" }}>
+			<tbody>
+				<tr>
+					{cells.map((ago) => {
+						const sent = touch.has(ago);
+						const opened = open.has(ago);
+						return (
+							<td
+								key={ago}
+								width={`${100 / days}%`}
+								style={{
+									height: "16px",
+									verticalAlign: "bottom",
+									textAlign: "center",
+									borderBottom: `1px solid ${palette.line}`,
+									...(ago === 0 ? { borderRight: `1.5px solid ${palette.ink}` } : {}),
+								}}
+							>
+								{sent ? (
+									<div
+										style={{
+											width: "8px",
+											height: "8px",
+											margin: "0 auto",
+											background: palette.ink,
+										}}
+									/>
+								) : null}
+								{opened ? (
+									<div
+										style={{
+											width: "5px",
+											height: "5px",
+											margin: `${sent ? "2px" : "0"} auto 0`,
+											borderRadius: "50%",
+											background: palette.accent,
+										}}
+									/>
+								) : null}
+								{sent || opened ? null : (
+									<div style={{ height: "1px", fontSize: "1px", lineHeight: "1px" }}>&nbsp;</div>
+								)}
+							</td>
+						);
+					})}
+				</tr>
+			</tbody>
+		</table>
+	);
+}
+
+export type RecordTimelineLegendProps = { days: number };
+
+/** What the marks on a timeline are, once above a list of records: the square, the dot, and the span. */
+export function RecordTimelineLegend({ days }: RecordTimelineLegendProps) {
+	const { palette, fonts } = useEmailTheme();
+	const mark = (style: CSSProperties) => (
+		<span
+			style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px", ...style }}
+		/>
+	);
+	return (
+		<div
+			style={{ fontFamily: fonts.mono, fontSize: "11px", lineHeight: "16px", color: palette.faint }}
+		>
+			{mark({ width: "8px", height: "8px", background: palette.ink })}
+			touch
+			<span style={{ display: "inline-block", width: "14px" }} />
+			{mark({ width: "5px", height: "5px", borderRadius: "50%", background: palette.accent })}
+			open
+			<span style={{ display: "inline-block", width: "14px" }} />
+			{`${days} days to today`}
+		</div>
+	);
+}
+
 export type RecordStackProps = { records: RecordStackItem[] };
 
 /**
- * One record per row, stacked: the title on its own line, a mono meta line
- * under it, an optional note under that. No column cells and no fixed widths,
- * so a name of any length wraps instead of squashing on a phone. A fixed
- * column table is for numbers alone; names go here.
+ * One record per row, stacked: the title on its own line with its pills
+ * beside it, an optional timeline, a mono meta line with an optional aside
+ * set right, an optional note under that, an optional callout last. No
+ * column cells and no fixed widths, so a name of any length wraps instead of
+ * squashing on a phone. A fixed column table is for numbers alone; names go
+ * here. The pills, the timeline and the aside are the Company Cards IA
+ * (2026-09-29); a record without them renders as it always did.
  */
 export function RecordStack({ records }: RecordStackProps) {
 	const { palette, fonts } = useEmailTheme();
@@ -457,12 +573,19 @@ export function RecordStack({ records }: RecordStackProps) {
 		color: palette.ink,
 		wordBreak: "break-word",
 	};
+	const metaStyle: CSSProperties = {
+		fontFamily: fonts.mono,
+		fontSize: "12px",
+		lineHeight: "1.5",
+		color: palette.faint,
+	};
 	return (
 		<table {...tableReset} width="100%" style={{ fontFamily: fonts.sans, color: palette.ink }}>
 			<tbody>
 				{records.map((record, i) => {
 					const last = i === records.length - 1;
 					const meta = record.meta.filter((m) => m !== "");
+					const badges = recordBadges(record);
 					const title = record.url ? (
 						<a
 							href={record.url}
@@ -477,6 +600,19 @@ export function RecordStack({ records }: RecordStackProps) {
 					) : (
 						record.title
 					);
+					const aside = record.aside ? (
+						<>
+							{record.aside.text}
+							{record.aside.strong ? (
+								<>
+									{" "}
+									<b style={{ color: asideColor(record.aside.tone, palette) }}>
+										{record.aside.strong}
+									</b>
+								</>
+							) : null}
+						</>
+					) : null;
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: a record's position is its identity
 						<tr key={i}>
@@ -487,7 +623,7 @@ export function RecordStack({ records }: RecordStackProps) {
 									...(last ? {} : { borderBottom: `1px solid ${palette.line}` }),
 								}}
 							>
-								{record.badge ? (
+								{badges.length > 0 ? (
 									<table {...tableReset} width="100%">
 										<tbody>
 											<tr>
@@ -502,7 +638,12 @@ export function RecordStack({ records }: RecordStackProps) {
 														paddingTop: "2px",
 													}}
 												>
-													<RecordBadge text={record.badge} />
+													{badges.map((badge, j) => (
+														// biome-ignore lint/suspicious/noArrayIndexKey: a pill's position is its identity
+														<span key={j} style={{ marginLeft: j === 0 ? "0" : "4px" }}>
+															<RecordBadge text={badge.text} tone={badge.tone} />
+														</span>
+													))}
 												</td>
 											</tr>
 										</tbody>
@@ -510,18 +651,30 @@ export function RecordStack({ records }: RecordStackProps) {
 								) : (
 									<div style={titleStyle}>{title}</div>
 								)}
-								{meta.length > 0 ? (
-									<div
-										style={{
-											fontFamily: fonts.mono,
-											fontSize: "12px",
-											lineHeight: "1.5",
-											color: palette.faint,
-											marginTop: "4px",
-										}}
-									>
-										{meta.join(" · ")}
-									</div>
+								{record.timeline ? <RecordTimelineStrip timeline={record.timeline} /> : null}
+								{meta.length > 0 || aside ? (
+									aside ? (
+										<table {...tableReset} width="100%" style={{ marginTop: "4px" }}>
+											<tbody>
+												<tr>
+													<td style={metaStyle}>{meta.join(" · ")}</td>
+													<td
+														align="right"
+														style={{
+															...metaStyle,
+															textAlign: "right",
+															whiteSpace: "nowrap",
+															paddingLeft: "12px",
+														}}
+													>
+														{aside}
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									) : (
+										<div style={{ ...metaStyle, marginTop: "4px" }}>{meta.join(" · ")}</div>
+									)
 								) : null}
 								{record.note ? (
 									<div
