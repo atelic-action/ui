@@ -41,7 +41,7 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic-action/ui/components` | `NotFound` and its prop types (see [The Not Found Page](#the-not-found-page)) |
+| `@atelic-action/ui/components` | `NotFound` and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
@@ -246,6 +246,23 @@ The plain text alternative part ports as plain functions with no React anywhere 
 `@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
 
 The palette carries three optional keys beyond the jq's eight: `up` (`#2F7A4B`, a calm green) and `down` (`#B23A2E`, a calm red, kept well apart from the orange accent), the colors a `StatStrip` delta wears by its sign, and `warm` (`#B7791F`, an amber between `up` and the accent) for a record's aside that is cooling but not cold. All three read on the cream card. They are optional so a client palette written before 0.5.0 still compiles, and a palette without them borrows the Atelic values. None maps to a site token.
+
+## Page Components
+
+The blocks a page composes, each styled in `styles/components.css` inside the `atelic-ui` layer, so a site's own unlayered rule resizes or recolors any of them. They were cut from the SkySpec baseline writeup on 2026-10-02 (ATE-600), which is the worked example of all eight on one page.
+
+| Component | What it is | Notes |
+|---|---|---|
+| `Checklist` | A short list of checks, each passed or failed | Two columns when there is room, one on a phone. `passLabel` and `failLabel` name the icons for a screen reader |
+| `DataTable` | A table whose first column names each row, sortable by any column marked `sortable` | A click on a heading sorts on a wide screen. On a phone each row stacks, every fact wearing its column's label, and a dropdown sorts. A cell is a node, or `{ display, sort }` when what it shows is not what it sorts by; a formatted number in a string (`"$12,047"`, `"0.24%"`) sorts as a number. It renders in `defaultSort` on the server |
+| `StatRow` | A row of large figures, each over what it counts and its `period` | `trend` draws an arrow before a figure that is itself a change. `deltas` list comparisons beneath: an arrow, how far, against what (`basis`), and the earlier figure (`was`), each in its own tone, since a spend falling and a cost falling read differently |
+| `Callout` | One finding: an icon in its tone beside the title, the explainer under it | `variant="box"` sets it apart on a tinted ground, for something missing or owed |
+| `Collapsible` | A labeled line the reader opens for the detail behind it | A native `details`, so it works before any script loads and find in page opens it. `summary` carries the point, so the detail needs no explaining once open. It prints open |
+| `StackedBar` | One bar split into the parts of a whole, with a key | A part of zero is keyed and not drawn |
+| `ColumnChart` | A bar a period, the periods in groups that carry a label and a total | Months in quarters is the case it was cut for: a quarter reads against the one before it and the same one a year earlier |
+| `ThresholdScale` | Zones on a scale and a pin for each reading | For a number judged against lines, like a load time against good and poor |
+
+**Tones.** `good`, `warn`, `bad`, `info`, and `muted` are the one palette the package carries, because good, a warning, and broken read green, amber, and red whatever the brand is. A component sets `data-tone`, and `--tone`, `--tone-fill`, and `--tone-bg` follow for whatever sits inside. A site's theme may restate `--tone-good` and the rest on `.mkt`; `info` and `muted` come from the theme's own primary and neutral tokens.
 
 ## Releasing
 
