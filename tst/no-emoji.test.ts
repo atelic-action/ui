@@ -11,18 +11,27 @@ import { join, relative } from "node:path";
  */
 const EMOJI = /[\u{2600}-\u{27bf}\u{1f000}-\u{1faff}]|\u{fe0f}|\u{20e3}/u;
 
-const SRC = join(import.meta.dirname, "..", "src");
+const ROOT = join(import.meta.dirname, "..");
+const SRC = join(ROOT, "src");
+
+async function offendersIn(pattern: string): Promise<string[]> {
+	const offenders: string[] = [];
+	for await (const file of glob(pattern)) {
+		const lines = readFileSync(file, "utf8").split("\n");
+		lines.forEach((line, i) => {
+			const match = EMOJI.exec(line);
+			if (match) offenders.push(`${relative(ROOT, file)}:${i + 1} contains "${match[0]}"`);
+		});
+	}
+	return offenders;
+}
 
 describe("icons over emojis", () => {
 	it("keeps src/ free of emoji and pictograph characters", async () => {
-		const offenders: string[] = [];
-		for await (const file of glob(`${SRC}/**/*.{ts,tsx,css}`)) {
-			const lines = readFileSync(file, "utf8").split("\n");
-			lines.forEach((line, i) => {
-				const match = EMOJI.exec(line);
-				if (match) offenders.push(`${relative(SRC, file)}:${i + 1} contains "${match[0]}"`);
-			});
-		}
-		expect(offenders).toEqual([]);
+		expect(await offendersIn(`${SRC}/**/*.{ts,tsx,css}`)).toEqual([]);
+	});
+
+	it("holds the gallery to the same rule", async () => {
+		expect(await offendersIn(`${join(ROOT, "gallery")}/*.{ts,tsx,css,html}`)).toEqual([]);
 	});
 });

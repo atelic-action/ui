@@ -1,0 +1,205 @@
+/* The gallery's own sheet, loaded after the package's three. It plays the
+   part a site plays: the fonts, the theme tokens, and the page's layout, all
+   unlayered so they win over the atelic-ui layer. Nothing here restyles a
+   component; a component looks here exactly as it does on a site wearing
+   the practice's own theme. */
+
+/* ---- Fonts: Geist and Geist Mono, the practice's faces, self hosted ---- */
+@font-face {
+	font-family: "Geist";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url(/fonts/Geist-Variable.woff2) format("woff2");
+}
+@font-face {
+	font-family: "Geist Mono";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url(/fonts/GeistMono-Variable.woff2) format("woff2");
+}
+
+/* ---- Theme: the Atelic palette, the artifact template's default theme
+   (template-artifact src/styles/theme.css), copied value for value. ---- */
+.mkt {
+	--surface: #f6f1e7;
+	--surface-alt: #efe8da;
+	--surface-inset: #e9e0cd;
+	--surface-dark: #151515;
+	--card: #fdfbf6;
+
+	--ink: #151515;
+	--ink-soft: #55503f;
+
+	--neutral-100: #e5dcc8;
+	--neutral-200: #d4c8b0;
+	--neutral-300: #b6a98f;
+	--neutral-500: #8a8272;
+	--neutral-600: #6b6559;
+
+	--primary: #fc4a1a;
+	--primary-deep: #d63a10;
+	--primary-bright: #ff8059;
+	--primary-tint: #fee7df;
+	--primary-shadow: 0 6px 18px rgba(252, 74, 26, 0.28);
+	--primary-shadow-hover: 0 8px 24px rgba(252, 74, 26, 0.36);
+	--primary-focus-ring: rgba(252, 74, 26, 0.12);
+
+	--secondary: #55503f;
+	--secondary-soft: #6b6559;
+	--secondary-tint: #ece5d6;
+	--tertiary: #8a8272;
+
+	--font-sans: "Geist", system-ui, -apple-system, sans-serif;
+	--font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+	--font-serif: "Geist", Georgia, serif;
+	--font-brand: var(--font-sans);
+
+	--radius-sm: 8px;
+	--radius-md: 14px;
+	--radius-lg: 22px;
+	--radius-xl: 32px;
+	--radius-pill: 999px;
+
+	--shadow-sm: 0 1px 2px rgba(21, 21, 21, 0.06), 0 2px 8px rgba(21, 21, 21, 0.04);
+	--hairline: rgba(21, 21, 21, 0.05);
+	--hairline-strong: rgba(21, 21, 21, 0.08);
+
+	--max-width: 1040px;
+	--gutter: clamp(16px, 5vw, 56px);
+	--nav-height: 68px;
+}
+
+body {
+	background: #f6f1e7;
+}
+
+/* ---- The header: nine stops fit the bar only on a wide screen, so the
+   burger carries them until then and the links run a size smaller. ---- */
+@media (min-width: 900px) and (max-width: 1099px) {
+	.mkt .nav-links {
+		display: none;
+	}
+	.mkt .nav-burger {
+		display: inline-flex;
+	}
+}
+@media (min-width: 1100px) {
+	.mkt .nav-links {
+		gap: 0;
+	}
+	.mkt .nav-links a {
+		padding: 6px 9px;
+		font-size: 0.84rem;
+	}
+}
+
+/* ---- The page ---- */
+.mkt .gallery-head {
+	padding-top: calc(var(--nav-height) + clamp(36px, 6vw, 72px));
+	padding-bottom: clamp(16px, 3vw, 28px);
+}
+.mkt .gallery-meta {
+	margin-top: 14px;
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+	letter-spacing: 0.04em;
+	color: var(--neutral-600);
+}
+.mkt .gallery-intro {
+	margin-top: 18px;
+	max-width: 60ch;
+	font-size: 1.08rem;
+	color: var(--ink-soft);
+}
+
+.mkt .gallery-piece {
+	padding-block: clamp(32px, 5vw, 56px);
+	border-top: 1px solid var(--neutral-100);
+}
+.mkt .gallery-piece h2 {
+	font-size: clamp(1.6rem, 4vw, 2.2rem);
+}
+.mkt .gallery-lead {
+	margin-top: 10px;
+	max-width: 64ch;
+	color: var(--ink-soft);
+}
+.mkt .gallery-lead code {
+	font-family: var(--font-mono);
+	font-size: 0.88em;
+}
+.mkt .gallery-examples {
+	display: grid;
+	gap: 18px;
+	margin-top: 22px;
+}
+.mkt .gallery-example {
+	margin: 0;
+	min-width: 0;
+	background: var(--card);
+	border: 1px solid var(--neutral-100);
+	border-radius: var(--radius-md);
+	padding: clamp(16px, 3vw, 28px);
+}
+.mkt .gallery-example figcaption {
+	margin-bottom: 14px;
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--neutral-500);
+}
+.mkt .gallery-example-body {
+	min-width: 0;
+}
+.mkt .gallery-stack {
+	display: grid;
+	gap: 16px;
+}
+.mkt .collapsible-body p {
+	color: var(--ink-soft);
+}
+
+/* A row tone is the site's to color (DataTable sets data-tone and leaves it). */
+.mkt .data-table tbody tr[data-tone] th,
+.mkt .data-table tbody tr[data-tone] td {
+	color: var(--tone);
+}
+
+/* ---- Tones ---- */
+.mkt .gallery-tones {
+	display: grid;
+	gap: 12px;
+}
+.mkt .gallery-tones li {
+	display: grid;
+	grid-template-columns: 44px 5.5em minmax(0, 1fr);
+	align-items: center;
+	gap: 14px;
+}
+.mkt .gallery-swatch {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: var(--radius-sm);
+	background: var(--tone-bg);
+}
+.mkt .gallery-swatch span {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--tone-fill);
+	box-shadow: 0 0 0 2px var(--tone);
+}
+.mkt .gallery-tone-name {
+	font-family: var(--font-mono);
+	font-weight: 600;
+	color: var(--tone);
+}
+.mkt .gallery-tone-reads {
+	color: var(--ink-soft);
+}

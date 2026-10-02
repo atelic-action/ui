@@ -1,0 +1,4 @@
+# The gallery shows the package's components to the people who build with
+# them. It is never search inventory; the page's robots meta says the same.
+User-agent: *
+Disallow: /

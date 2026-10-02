@@ -1,0 +1,7 @@
+{
+	"installCommand": "bun install",
+	"buildCommand": "bun run gallery:build",
+	"outputDirectory": "gallery/dist",
+	"framework": null,
+	"cleanUrls": true
+}
