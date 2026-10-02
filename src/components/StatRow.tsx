@@ -60,7 +60,7 @@ export function StatRow({ stats, className }: StatRowProps) {
 					<div className="stat" key={i} data-tone={stat.tone}>
 						<div className="num">
 							{Trend && stat.trend && (
-								<Trend className="stat-trend" aria-label={spoken[stat.trend]} />
+								<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
 							)}
 							{stat.value}
 						</div>
@@ -70,7 +70,7 @@ export function StatRow({ stats, className }: StatRowProps) {
 								<div className="stat-delta" key={delta.basis}>
 									{delta.was && <span className="stat-delta-was">{delta.was}</span>}
 									<span className="stat-delta-change" data-tone={delta.tone ?? "muted"}>
-										<Icon size={14} aria-label={spoken[delta.direction]} />
+										<Icon size={14} role="img" aria-label={spoken[delta.direction]} />
 										{delta.change}
 									</span>
 									{delta.basisTitle ? (

@@ -78,18 +78,18 @@ export function DataTable({
 	const anySortable = columns.some((column) => column.sortable);
 
 	const sorted = useMemo(() => {
-		if (!sort) return rows;
+		// Each row keeps its place in the source, which is its key: a sort moves
+		// a row's elements rather than rewriting every row in place.
+		const indexed = rows.map((row, index) => ({ row, index }));
+		if (!sort) return indexed;
 		const direction = sort.direction === "asc" ? 1 : -1;
-		return rows
-			.map((row, index) => ({ row, index }))
-			.sort((a, b) => {
-				const order = compare(
-					sortValue(a.row.cells[sort.column]),
-					sortValue(b.row.cells[sort.column]),
-				);
-				return order === 0 ? a.index - b.index : order * direction;
-			})
-			.map(({ row }) => row);
+		return indexed.sort((a, b) => {
+			const order = compare(
+				sortValue(a.row.cells[sort.column]),
+				sortValue(b.row.cells[sort.column]),
+			);
+			return order === 0 ? a.index - b.index : order * direction;
+		});
 	}, [rows, sort]);
 
 	const sortBy = (column: number) => {
@@ -168,9 +168,8 @@ export function DataTable({
 					</tr>
 				</thead>
 				<tbody>
-					{sorted.map((row, r) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: rows carry no id and re-render whole on a sort
-						<tr key={r} data-tone={row.tone}>
+					{sorted.map(({ row, index }) => (
+						<tr key={index} data-tone={row.tone}>
 							{row.cells.map((cell, c) => {
 								const align = columns[c]?.align ?? "left";
 								const body = isValueCell(cell) ? cell.display : cell;

@@ -30,7 +30,7 @@ export function Checklist({
 				return (
 					// biome-ignore lint/suspicious/noArrayIndexKey: checks are static content in a fixed order
 					<li key={i} data-tone={item.pass ? "good" : "bad"}>
-						<Icon size={18} aria-label={item.pass ? passLabel : failLabel} />
+						<Icon size={18} role="img" aria-label={item.pass ? passLabel : failLabel} />
 						<span>
 							<span className="checklist-label">{item.label}</span>
 							{item.detail && <span className="checklist-detail">{item.detail}</span>}

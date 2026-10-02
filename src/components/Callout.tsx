@@ -50,7 +50,7 @@ export function Callout({
 			className={["callout", variant === "box" && "is-box", className].filter(Boolean).join(" ")}
 			data-tone={tone}
 		>
-			<Icon className="callout-icon" size={18} aria-label={toneLabel ?? labels[tone]} />
+			<Icon className="callout-icon" size={18} role="img" aria-label={toneLabel ?? labels[tone]} />
 			<div className="callout-text">
 				<div className="callout-title">{title}</div>
 				{children && <div className="callout-body">{children}</div>}
