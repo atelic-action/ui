@@ -264,6 +264,17 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 
 **Tones.** `good`, `warn`, `bad`, `info`, and `muted` are the one palette the package carries, because good, a warning, and broken read green, amber, and red whatever the brand is. A component sets `data-tone`, and `--tone`, `--tone-fill`, and `--tone-bg` follow for whatever sits inside. A site's theme may restate `--tone-good` and the rest on `.mkt`; `info` and `muted` come from the theme's own primary and neutral tokens.
 
+## The Gallery
+
+`gallery/` is one static page, The Components, that shows every page component on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published.
+
+```bash
+bun run gallery:dev    # a dev server on the repo's own source
+bun run gallery:build  # the static page, written to gallery/dist
+```
+
+`vercel.json` builds it the same way and serves `gallery/dist`. Typecheck and lint cover it, and CI builds it, so a component change that breaks the gallery fails CI. **A new page component gets a gallery section in the same change**, with each of its meaningfully different forms shown.
+
 ## Releasing
 
 1. Bump `version` in `package.json` and merge it to `main`: patch for a fix, minor for a new component or prop, major for a breaking prop or class rename.

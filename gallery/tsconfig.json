@@ -1,0 +1,11 @@
+{
+  /* The gallery's own check: the root config plus JSON imports, so the page
+     can read the package's name and version at build time. It also checks
+     every file under src/ the page imports. */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "resolveJsonModule": true
+  },
+  "include": ["."],
+  "exclude": ["dist"]
+}

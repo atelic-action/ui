@@ -10,5 +10,6 @@ Conventions for `@atelic-action/ui`, the shared chrome and base styles the Ateli
 - **Layout by kind:** `src/chrome/`, `src/components/` for page scale components, `src/routing/` for router options, `src/email/`, `src/tokens/`, `src/hooks/`, `src/styles/`, `src/lib/` for internal helpers, `src/types.ts`. Tests live in `tst/`.
 - **Email components are born inline:** tables for layout, inline style objects, literal palette values off the theme context, no CSS and no `className`. That is what lets them render in a mail client and mount on a web page alike. React Email is deliberately deferred until the first client facing email, since nothing here needs it and adding it later is additive (decided 2026-09-21).
 - **No emoji in `src/`.** Write a pictograph the copy needs as an escape (`\u{1F49A}`); `tst/no-emoji.test.ts` enforces it.
+- **The gallery** (`gallery/`, served at `ui.atelic.me`) shows every page component from the repo's own source; a new page component gets its gallery section in the same change. It is outside `src/`, so it never publishes and never needs a version bump. See [README.md](README.md#the-gallery).
 - **Semver:** patch for a fix, minor for a new component or prop, major for a breaking prop or class rename.
-- **Gates:** `bun run lint`, `bun run typecheck`, and `bun run test:run`, all green before a merge.
+- **Gates:** `bun run lint`, `bun run typecheck`, `bun run test:run`, and `bun run gallery:build`, all green before a merge.

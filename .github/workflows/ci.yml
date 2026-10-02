@@ -33,3 +33,6 @@ jobs:
 
       - name: Run tests
         run: bun run test:run
+
+      - name: Build the gallery
+        run: bun run gallery:build
