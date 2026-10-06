@@ -9,6 +9,7 @@ import {
 	DataTable,
 	type DataTableColumn,
 	type DataTableRow,
+	Disclosure,
 	StackedBar,
 	StarRating,
 	StatRow,
@@ -27,6 +28,7 @@ const stops: PageStop[] = [
 	{ id: "stat-row", label: "StatRow" },
 	{ id: "callout", label: "Callout" },
 	{ id: "collapsible", label: "Collapsible" },
+	{ id: "disclosure", label: "Disclosure" },
 	{ id: "stacked-bar", label: "StackedBar" },
 	{ id: "column-chart", label: "ColumnChart" },
 	{ id: "threshold-scale", label: "ThresholdScale" },
@@ -53,6 +55,34 @@ function Piece({
 				<div className="gallery-examples">{children}</div>
 			</div>
 		</section>
+	);
+}
+
+function Aisles() {
+	const [open, setOpen] = useState<Record<string, boolean>>({ breads: true });
+	const aisles = [
+		{ key: "breads", label: "Breads", items: ["Country sourdough", "Seeded rye", "Baguette"] },
+		{ key: "pastry", label: "Pastry", items: ["Croissant", "Morning bun"] },
+	];
+	return (
+		<div style={{ display: "grid", gap: 12 }}>
+			{aisles.map((aisle) => (
+				<Disclosure
+					key={aisle.key}
+					label={aisle.label}
+					meta={<span className="gallery-count">{aisle.items.length}</span>}
+					headingLevel={3}
+					open={Boolean(open[aisle.key])}
+					onToggle={() => setOpen((was) => ({ ...was, [aisle.key]: !was[aisle.key] }))}
+				>
+					<ul className="gallery-rows">
+						{aisle.items.map((item) => (
+							<li key={item}>{item}</li>
+						))}
+					</ul>
+				</Disclosure>
+			))}
+		</div>
 	);
 }
 
@@ -304,6 +334,16 @@ export function Gallery() {
 								]}
 							/>
 						</Example>
+						<Example caption="Quiet: a glance row for a working page, with a unit and one figure in the accent">
+							<StatRow
+								variant="quiet"
+								stats={[
+									{ value: "148", label: "Loaves on the rack" },
+									{ value: "9", label: "Running low", tone: "info" },
+									{ value: "36.5", unit: "kg", label: "Flour used" },
+								]}
+							/>
+						</Example>
 					</Piece>
 
 					<Piece
@@ -362,6 +402,16 @@ export function Gallery() {
 									shows the summer hours. Anything can sit inside: a table, a chart, or a picture.
 								</p>
 							</Collapsible>
+						</Example>
+					</Piece>
+
+					<Piece
+						id="disclosure"
+						title="Disclosure"
+						lead="A section the page opens and closes. The page holds which are open, so it can remember, and a closed body is not rendered. The label is the toggle; the count beside it stays out of its name, and a tap anywhere on the row folds it."
+					>
+						<Example>
+							<Aisles />
 						</Example>
 					</Piece>
 

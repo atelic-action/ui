@@ -41,7 +41,7 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic-action/ui/components` | `NotFound` and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
+| `@atelic-action/ui/components` | `NotFound` and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
@@ -256,8 +256,9 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 |---|---|---|
 | `Checklist` | A short list of checks, each passed or failed | Two columns when there is room, one on a phone. `passLabel` and `failLabel` name the icons for a screen reader |
 | `DataTable` | A table whose first column names each row, sortable by any column marked `sortable` | A click on a heading sorts on a wide screen. On a phone each row stacks, every fact wearing its column's label, and a dropdown sorts. A cell is a node, or `{ display, sort }` when what it shows is not what it sorts by; a formatted number in a string (`"$12,047"`, `"0.24%"`) sorts as a number. It renders in `defaultSort` on the server |
-| `StatRow` | A row of large figures, each over what it counts and its `period` | `trend` draws an arrow before a figure that is itself a change. `deltas` list comparisons beneath: an arrow, how far, against what (`basis`), and the earlier figure (`was`), each in its own tone, since a spend falling and a cost falling read differently |
+| `StatRow` | A row of large figures, each over what it counts and its `period`. `variant="quiet"` is the glance row for a working page: a light figure in the text color over a small capitalized label, hairlines between; `unit` sets a figure's unit small beside it | `trend` draws an arrow before a figure that is itself a change. `deltas` list comparisons beneath: an arrow, how far, against what (`basis`), and the earlier figure (`was`), each in its own tone, since a spend falling and a cost falling read differently |
 | `Callout` | One finding: an icon in its tone beside the title, the explainer under it | `variant="box"` sets it apart on a tinted ground, for something missing or owed |
+| `Disclosure` | A section the page opens and closes: a header row that folds a body the caller controls | For an app. The caller holds `open`, so it can remember what was folded, and a closed body is not rendered. The label is the toggle; `meta` (a count, a flag) sits beside it, outside its name, and a tap on it still folds. `headingLevel` makes the label a real heading |
 | `Collapsible` | A labeled line the reader opens for the detail behind it | A native `details`, so it works before any script loads and find in page opens it. `summary` carries the point, so the detail needs no explaining once open. It prints open |
 | `StackedBar` | One bar split into the parts of a whole, with a key | A part of zero is keyed and not drawn |
 | `ColumnChart` | A bar a period, the periods in groups that carry a label and a total | Months in quarters is the case it was cut for: a quarter reads against the one before it and the same one a year earlier |
@@ -275,7 +276,7 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 The page components also work in an app that has its own base styles (Tailwind, shadcn) and wears none of the site chrome. Three things make that so (0.10.0):
 
 1. **A second scope.** Every rule in `styles/components.css` answers to `.atelic-ui` as well as `.mkt`. `.atelic-ui` has no resets behind it, so an app puts the class on the region that holds a package component and nothing else in it restyles. Prefer a region to `body`: the components use plain class names (`.stat .num`, `.callout`, `.note`), and an app with markup of its own under those names would have a page wide scope reach it. `body` is right only for an app that has checked it has none, and it is the one way to cover a component rendered in a portal.
-2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind, where the app can declare the layer order before Tailwind loads, `@layer theme, base, atelic-ui, components, utilities;` keeps utilities winning over the package too; where it cannot, the package's layer lands last and wins over utilities set on a package element, which only matters to a caller styling one with a utility class.
+2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind the app **must declare the layer order before any stylesheet loads**, in a `<style>` in the `<head>` of its `index.html`: `@layer properties, theme, base, atelic-ui, components, utilities;`. A layer ranks by where it is first named, and a bundler is free to name the package's first, which ranks it below Tailwind's reset; the reset then strips the padding, margins, and borders off every component, while colors and type still look right, so it is easy to miss. Named there, the package ranks above the reset and below the app's utilities.
 3. **The app maps its tokens** onto the ones the components read, in its own stylesheet on the same scope:
 
 | Token | What it colors |
@@ -300,9 +301,13 @@ The page components also work in an app that has its own base styles (Tailwind, 
 	--neutral-100: hsl(var(--muted));
 	--surface-alt: hsl(var(--muted));
 	--ui-primary: hsl(var(--brand));
+	--primary-bright: hsl(var(--brand));
+	--primary-tint: color-mix(in srgb, hsl(var(--brand)) 12%, transparent);
 	--ui-card: hsl(var(--card));
 }
 ```
+
+**Unit tests.** The package ships TSX source, and Vitest compiles it like any other module. A file under `node_modules` has no tsconfig of its own to name a JSX runtime, so a test that renders a package component fails with `React is not defined` until the test config says which to use: `esbuild: { jsx: "automatic" }` at the top level of `vitest.config.ts`. The app build needs nothing, since the React plugin sets it for Vite.
 
 `StarRating` needs none of this: its sheet is unscoped and reads no token. The chrome (`SiteHeader`, `Footer`, and the rest) and `NotFound` remain site shaped and are not meant for a signed in app.
 

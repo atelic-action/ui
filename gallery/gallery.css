@@ -240,3 +240,23 @@ body {
 	color: var(--ink-soft);
 	max-width: 60ch;
 }
+
+/* ---- Disclosure example: a count pill and plain rows ---- */
+.mkt .gallery-count {
+	min-width: 22px;
+	height: 22px;
+	padding: 0 7px;
+	border-radius: 999px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--surface-alt);
+	font: 500 11.5px / 1 var(--font-mono);
+}
+.mkt .gallery-rows li {
+	padding: 12px 18px;
+	border-top: 1px solid var(--neutral-100);
+}
+.mkt .gallery-rows li:first-child {
+	border-top: none;
+}

@@ -62,3 +62,24 @@ describe("StatRow", () => {
 		expect(order).toEqual(["num", "stat-delta", "lbl"]);
 	});
 });
+
+describe("StatRow, quiet", () => {
+	it("is loud unless asked, and quiet when asked", () => {
+		const { container, rerender } = render(<StatRow stats={[{ value: "12", label: "On hand" }]} />);
+		expect(container.querySelector(".stat-row")).not.toHaveClass("is-quiet");
+		rerender(<StatRow variant="quiet" stats={[{ value: "12", label: "On hand" }]} />);
+		expect(container.querySelector(".stat-row")).toHaveClass("is-quiet");
+	});
+
+	it("sets a unit beside the figure, inside the figure's line", () => {
+		render(<StatRow variant="quiet" stats={[{ value: "412.6", unit: "mi", label: "Distance" }]} />);
+		const unit = screen.getByText("mi");
+		expect(unit).toHaveClass("stat-unit");
+		expect(unit.closest(".num")).toHaveTextContent("412.6mi");
+	});
+
+	it("draws no unit when none is given", () => {
+		const { container } = render(<StatRow stats={[{ value: "12", label: "On hand" }]} />);
+		expect(container.querySelector(".stat-unit")).toBeNull();
+	});
+});

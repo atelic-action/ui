@@ -16,6 +16,7 @@ export {
 	type DataTableValueCell,
 	type SortDirection,
 } from "./DataTable";
+export { Disclosure, type DisclosureProps } from "./Disclosure";
 export { NotFound, type NotFoundProps } from "./NotFound";
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from "./StackedBar";
 export { describeStarRating, StarRating, type StarRatingProps } from "./StarRating";

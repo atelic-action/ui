@@ -22,6 +22,8 @@ export interface StatDelta {
 export interface StatItem {
 	/** The big figure, e.g. "$199", "3,948", "23%"; may embed an inline glyph. */
 	value: ReactNode;
+	/** The figure's unit, set small after it on the same baseline, e.g. "mi". */
+	unit?: ReactNode;
 	/** An arrow before the figure, when the figure is itself a change. */
 	trend?: StatDirection;
 	/** What the figure counts. */
@@ -38,6 +40,13 @@ export interface StatItem {
 
 export interface StatRowProps {
 	stats: StatItem[];
+	/**
+	 * How loud the row is. `loud`, the default, is a report's headline figures:
+	 * heavy, large, in the accent. `quiet` is a glance row for a working page:
+	 * a light figure in the text color over a small capitalized label, the
+	 * stats divided by a hairline. A tone still colors a quiet figure.
+	 */
+	variant?: "loud" | "quiet";
 	className?: string;
 }
 
@@ -50,9 +59,13 @@ const spoken = { up: "Up", down: "Down", flat: "Unchanged" } as const;
  * closes the stat, with the period it covers. The row wraps to as many
  * columns as fit, and arrows are read aloud as up or down.
  */
-export function StatRow({ stats, className }: StatRowProps) {
+export function StatRow({ stats, variant = "loud", className }: StatRowProps) {
 	return (
-		<div className={["stat-row", className].filter(Boolean).join(" ")}>
+		<div
+			className={["stat-row", variant === "quiet" && "is-quiet", className]
+				.filter(Boolean)
+				.join(" ")}
+		>
 			{stats.map((stat, i) => {
 				const Trend = stat.trend ? arrow[stat.trend] : null;
 				return (
@@ -63,6 +76,7 @@ export function StatRow({ stats, className }: StatRowProps) {
 								<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
 							)}
 							{stat.value}
+							{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
 						</div>
 						{stat.deltas?.map((delta) => {
 							const Icon = arrow[delta.direction];
