@@ -274,8 +274,8 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 
 The page components also work in an app that has its own base styles (Tailwind, shadcn) and wears none of the site chrome. Three things make that so (0.10.0):
 
-1. **A second scope.** Every rule in `styles/components.css` answers to `.atelic-ui` as well as `.mkt`. `.atelic-ui` has no resets behind it, so an app puts the class on `body`, or on any region, and nothing of its own restyles. Putting it on `body` also covers anything rendered in a portal.
-2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. With Tailwind, declare the layer order first so the app's utilities still win over the package and the package wins over Tailwind's reset: `@layer theme, base, atelic-ui, components, utilities;`.
+1. **A second scope.** Every rule in `styles/components.css` answers to `.atelic-ui` as well as `.mkt`. `.atelic-ui` has no resets behind it, so an app puts the class on the region that holds a package component and nothing else in it restyles. Prefer a region to `body`: the components use plain class names (`.stat .num`, `.callout`, `.note`), and an app with markup of its own under those names would have a page wide scope reach it. `body` is right only for an app that has checked it has none, and it is the one way to cover a component rendered in a portal.
+2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind, where the app can declare the layer order before Tailwind loads, `@layer theme, base, atelic-ui, components, utilities;` keeps utilities winning over the package too; where it cannot, the package's layer lands last and wins over utilities set on a package element, which only matters to a caller styling one with a utility class.
 3. **The app maps its tokens** onto the ones the components read, in its own stylesheet on the same scope:
 
 | Token | What it colors |
