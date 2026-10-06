@@ -20,6 +20,48 @@ describe("StackedBar", () => {
 	});
 });
 
+describe("StackedBar colors and key", () => {
+	it("gives a part a color of its own, on its bar and its swatch, over any tone", () => {
+		const { container } = render(
+			<StackedBar
+				segments={[
+					{ label: "protein", value: 150, color: "#222" },
+					{ label: "carbs", value: 200, color: "#888", tone: "good" },
+					{ label: "fat", value: 60, tone: "muted" },
+				]}
+			/>,
+		);
+		const parts = [...container.querySelectorAll<HTMLElement>(".stacked-bar-track span")];
+		expect(parts.map((part) => part.style.getPropertyValue("--tone-fill"))).toEqual([
+			"#222",
+			"#888",
+			"",
+		]);
+		const keys = [...container.querySelectorAll<HTMLElement>(".chart-key li")];
+		expect(keys.map((key) => key.style.getPropertyValue("--tone-fill"))).toEqual([
+			"#222",
+			"#888",
+			"",
+		]);
+		expect(parts[0]).not.toHaveAttribute("data-tone");
+		expect(parts[2]).toHaveAttribute("data-tone", "muted");
+	});
+
+	it("draws the bar alone when the key is turned off, and still says what it shows", () => {
+		const { container } = render(
+			<StackedBar
+				showKey={false}
+				segments={[
+					{ label: "protein", value: 150, display: "150 g", color: "#222" },
+					{ label: "fat", value: 60, display: "60 g", color: "#888" },
+				]}
+			/>,
+		);
+		expect(container.querySelector(".chart-key")).toBeNull();
+		expect(screen.getByRole("img")).toHaveAccessibleName("protein: 150 g, fat: 60 g");
+	});
+});
+
 describe("ColumnChart", () => {
 	const groups = [
 		{

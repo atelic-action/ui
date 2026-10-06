@@ -266,7 +266,45 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 
 **StarRating outside a site.** It is the one component that does not sit under `.mkt` or read a theme token: its styles are in `styles/star-rating.css`, and its two colors are the `--star-fill` and `--star-outline` custom properties, falling back to the text color and a faint tint of it. An app that installs the package for this component alone imports that one sheet, not `components.css`.
 
+**A part's own color.** `StackedBar` takes a `color` on a segment, any CSS color, for parts that are not good or bad (the protein, carbs, and fat of a meal), and it wins over `tone`. `showKey={false}` draws the bar alone for a page that keys the parts its own way; the bar keeps its spoken summary.
+
 **Tones.** `good`, `warn`, `bad`, `info`, and `muted` are the one palette the package carries, because good, a warning, and broken read green, amber, and red whatever the brand is. A component sets `data-tone`, and `--tone`, `--tone-fill`, and `--tone-bg` follow for whatever sits inside. A site's theme may restate `--tone-good` and the rest on `.mkt`; `info` and `muted` come from the theme's own primary and neutral tokens.
+
+## In an App
+
+The page components also work in an app that has its own base styles (Tailwind, shadcn) and wears none of the site chrome. Three things make that so (0.10.0):
+
+1. **A second scope.** Every rule in `styles/components.css` answers to `.atelic-ui` as well as `.mkt`. `.atelic-ui` has no resets behind it, so an app puts the class on the region that holds a package component and nothing else in it restyles. Prefer a region to `body`: the components use plain class names (`.stat .num`, `.callout`, `.note`), and an app with markup of its own under those names would have a page wide scope reach it. `body` is right only for an app that has checked it has none, and it is the one way to cover a component rendered in a portal.
+2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind, where the app can declare the layer order before Tailwind loads, `@layer theme, base, atelic-ui, components, utilities;` keeps utilities winning over the package too; where it cannot, the package's layer lands last and wins over utilities set on a package element, which only matters to a caller styling one with a utility class.
+3. **The app maps its tokens** onto the ones the components read, in its own stylesheet on the same scope:
+
+| Token | What it colors |
+|---|---|
+| `--ink`, `--ink-soft` | Text and quieter text |
+| `--neutral-100`, `--neutral-200`, `--neutral-500` | Hairlines, tracks, and captions |
+| `--surface-alt` | The quiet ground behind a muted tone |
+| `--ui-primary` (falls back to `--primary`), `--primary-bright`, `--primary-tint` | The accent, its brighter fill, and its tint |
+| `--ui-card` (falls back to `--card`) | A raised surface |
+| `--font-sans`, `--font-mono`, `--radius-sm` | Type and the small radius |
+| `--tone-good`, `--tone-warn`, `--tone-bad`, each with `-fill` and `-bg` | Optional: the package defines these, and a dark theme restates them |
+
+`--ui-primary` and `--ui-card` exist because an app's own `--primary` and `--card` may hold something else: shadcn keeps bare HSL channels there, which are not a color on their own. A site sets neither and nothing changes.
+
+```css
+/* app.css */
+.atelic-ui {
+	--ink: hsl(var(--foreground));
+	--ink-soft: hsl(var(--muted-foreground));
+	--neutral-500: hsl(var(--muted-foreground));
+	--neutral-200: hsl(var(--border));
+	--neutral-100: hsl(var(--muted));
+	--surface-alt: hsl(var(--muted));
+	--ui-primary: hsl(var(--brand));
+	--ui-card: hsl(var(--card));
+}
+```
+
+`StarRating` needs none of this: its sheet is unscoped and reads no token. The chrome (`SiteHeader`, `Footer`, and the rest) and `NotFound` remain site shaped and are not meant for a signed in app.
 
 ## The Gallery
 
