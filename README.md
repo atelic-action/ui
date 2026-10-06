@@ -41,7 +41,7 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic-action/ui/components` | `NotFound` and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
+| `@atelic-action/ui/components` | `NotFound` and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
@@ -50,6 +50,7 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
 | `@atelic-action/ui/styles/chrome.css` | Styles for everything under `chrome` |
 | `@atelic-action/ui/styles/components.css` | Layout defaults for everything under `components` |
+| `@atelic-action/ui/styles/star-rating.css` | `StarRating`'s styles alone, for an app that wears none of the site chrome; `components.css` already imports it |
 
 Every component renders from props alone. None reads a config file or a router, so a site maps its own config onto the props in its shell:
 
@@ -261,6 +262,9 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 | `StackedBar` | One bar split into the parts of a whole, with a key | A part of zero is keyed and not drawn |
 | `ColumnChart` | A bar a period, the periods in groups that carry a label and a total | Months in quarters is the case it was cut for: a quarter reads against the one before it and the same one a year earlier |
 | `ThresholdScale` | Zones on a scale and a pin for each reading | For a number judged against lines, like a load time against good and poor |
+| `StarRating` | A row of stars showing a rating in half star steps, and taking one when given `onChange` | Each star is two hit targets; picking the current rating clears it. Editable, it is one slider to a keyboard and a screen reader; read only, a picture named by the rating. `fillColor` and `outlineColor` take any CSS color, `size` and `max` set the star and the scale |
+
+**StarRating outside a site.** It is the one component that does not sit under `.mkt` or read a theme token: its styles are in `styles/star-rating.css`, and its two colors are the `--star-fill` and `--star-outline` custom properties, falling back to the text color and a faint tint of it. An app that installs the package for this component alone imports that one sheet, not `components.css`.
 
 **Tones.** `good`, `warn`, `bad`, `info`, and `muted` are the one palette the package carries, because good, a warning, and broken read green, amber, and red whatever the brand is. A component sets `data-tone`, and `--tone`, `--tone-fill`, and `--tone-bg` follow for whatever sits inside. A site's theme may restate `--tone-good` and the rest on `.mkt`; `info` and `muted` come from the theme's own primary and neutral tokens.
 

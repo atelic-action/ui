@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { name as packageName, version } from "../package.json";
 import { CreditBar, type PageStop, SiteHeader, SkipLink } from "../src/chrome";
 import {
@@ -10,6 +10,7 @@ import {
 	type DataTableColumn,
 	type DataTableRow,
 	StackedBar,
+	StarRating,
 	StatRow,
 	ThresholdScale,
 	type Tone,
@@ -29,6 +30,7 @@ const stops: PageStop[] = [
 	{ id: "stacked-bar", label: "StackedBar" },
 	{ id: "column-chart", label: "ColumnChart" },
 	{ id: "threshold-scale", label: "ThresholdScale" },
+	{ id: "star-rating", label: "StarRating" },
 	{ id: "tones", label: "Tones" },
 ];
 
@@ -52,6 +54,11 @@ function Piece({
 			</div>
 		</section>
 	);
+}
+
+function EditableStars() {
+	const [rating, setRating] = useState<number | null>(4);
+	return <StarRating value={rating} onChange={setRating} />;
 }
 
 function Example({ caption, children }: { caption?: string; children: ReactNode }) {
@@ -406,6 +413,30 @@ export function Gallery() {
 								{ label: "Desktop", value: 1.8, display: "1.8 s", tone: "good" },
 							]}
 						/>
+					</Example>
+				</Piece>
+
+				<Piece
+					id="star-rating"
+					title="StarRating"
+					lead="A row of stars in half star steps. Given a handler it takes a rating: each star is two targets, the arrows move half a star, and picking the rating already set clears it. Without one it is a picture. The fill and the outline each take any color."
+				>
+					<Example caption="Editable, in the text color">
+						<EditableStars />
+					</Example>
+					<Example caption="Read only">
+						<StarRating value={3.5} />
+					</Example>
+					<Example caption="A fill and an outline of its own, on a smaller star">
+						<StarRating
+							value={4.5}
+							fillColor="var(--primary)"
+							outlineColor="var(--primary)"
+							size={18}
+						/>
+					</Example>
+					<Example caption="Unrated, on a scale of three">
+						<StarRating value={null} max={3} fillColor="#d98c00" outlineColor="#d9b36a" />
 					</Example>
 				</Piece>
 

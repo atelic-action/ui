@@ -18,6 +18,7 @@ export {
 } from "./DataTable";
 export { NotFound, type NotFoundProps } from "./NotFound";
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from "./StackedBar";
+export { describeStarRating, StarRating, type StarRatingProps } from "./StarRating";
 export {
 	type StatDelta,
 	type StatDirection,
