@@ -148,6 +148,114 @@
 		margin-top: 4px;
 	}
 
+	:is(.mkt, .atelic-ui) .stat-unit {
+		margin-left: 0.2em;
+		font-size: 0.4em;
+		font-weight: 500;
+		letter-spacing: 0;
+		color: var(--neutral-500);
+	}
+
+	/* ---- StatRow, quiet: a glance row for a working page. A light figure in
+	   the text color over a small capitalized label, the stats divided by a
+	   hairline. `--stat-size` sets the figure. ---- */
+	:is(.mkt, .atelic-ui) .stat-row.is-quiet {
+		display: flex;
+		gap: 0;
+	}
+	:is(.mkt, .atelic-ui) .stat-row.is-quiet .stat {
+		flex: 1;
+		min-width: 64px;
+		padding-right: 16px;
+	}
+	:is(.mkt, .atelic-ui) .stat-row.is-quiet .stat + .stat {
+		padding-left: 16px;
+		border-left: 1px solid var(--neutral-200);
+	}
+	:is(.mkt, .atelic-ui) .stat-row.is-quiet .stat .num {
+		align-items: baseline;
+		gap: 4px;
+		font: 300 var(--stat-size, 28px) / 1 var(--font-sans);
+		/* After the shorthand, which would otherwise reset it. */
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.02em;
+		color: var(--tone, var(--ink));
+	}
+	:is(.mkt, .atelic-ui) .stat-row.is-quiet .stat-unit {
+		margin-left: 0;
+		font: 500 12px / 1 var(--font-mono);
+	}
+	:is(.mkt, .atelic-ui) .stat-row.is-quiet .stat .lbl {
+		margin-top: 7px;
+		font: 500 10px / 1.2 var(--font-sans);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--neutral-500);
+	}
+
+	/* ---- Disclosure: a section the page opens and closes. The toggle's
+	   ::after covers the whole header row, so the meta and the chevron fold
+	   it too while staying out of its name. ---- */
+	:is(.mkt, .atelic-ui) .disclosure {
+		border: 1px solid var(--neutral-200);
+		border-radius: 16px;
+		background: var(--ui-card, var(--card));
+		overflow: hidden;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-head {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 14px 18px;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-title {
+		display: flex;
+		min-width: 0;
+		margin: 0;
+		font: inherit;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-toggle {
+		border: none;
+		background: transparent;
+		padding: 0;
+		text-align: left;
+		font: 500 17px / 1 var(--font-sans);
+		letter-spacing: -0.01em;
+		color: var(--ink);
+		cursor: pointer;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-toggle::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-toggle:focus-visible {
+		outline: none;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-toggle:focus-visible::after {
+		outline: 2px solid var(--disclosure-focus, var(--ink));
+		outline-offset: -2px;
+		border-radius: 15px;
+	}
+	:is(.mkt, .atelic-ui) .disclosure-meta {
+		display: inline-flex;
+		align-items: center;
+		color: var(--neutral-500);
+	}
+	:is(.mkt, .atelic-ui) .disclosure-chevron {
+		margin-left: auto;
+		flex-shrink: 0;
+		color: var(--neutral-500);
+		transition: transform 200ms ease;
+	}
+	:is(.mkt, .atelic-ui) .disclosure.is-open .disclosure-chevron {
+		transform: rotate(180deg);
+	}
+	:is(.mkt, .atelic-ui) .disclosure-body {
+		border-top: 1px solid var(--neutral-200);
+	}
+
 	/* ---- Collapsible: a labeled line that opens to the detail behind it ---- */
 	:is(.mkt, .atelic-ui) .collapsible > summary {
 		display: flex;
