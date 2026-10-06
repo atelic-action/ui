@@ -49,6 +49,22 @@ describe("StarRating", () => {
 		expect(onChange).toHaveBeenCalledWith(null);
 	});
 
+	it("previews the half star under the pointer, and drops the preview on a pick", () => {
+		const { container } = render(<StarRating value={4} onChange={() => {}} />);
+		const widths = () =>
+			[...container.querySelectorAll<HTMLElement>(".star-rating-fill")].map(
+				(fill) => fill.style.width,
+			);
+
+		fireEvent.mouseEnter(screen.getByRole("button", { name: "1.5 stars" }));
+		expect(widths()).toEqual(["100%", "50%", "0%", "0%", "0%"]);
+
+		// The value has not moved here, so the row falls back to it: the pick
+		// took the preview down even though the pointer never left.
+		fireEvent.click(screen.getByRole("button", { name: "1.5 stars" }));
+		expect(widths()).toEqual(["100%", "100%", "100%", "100%", "0%"]);
+	});
+
 	it("fills whole stars, then half of the next, then none", () => {
 		const { container } = render(<StarRating value={3.5} />);
 		const widths = [...container.querySelectorAll<HTMLElement>(".star-rating-fill")].map(
