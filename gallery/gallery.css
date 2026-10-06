@@ -203,3 +203,40 @@ body {
 .mkt .gallery-tone-reads {
 	color: var(--ink-soft);
 }
+
+/* ---- In an App: a region outside .mkt, wearing .atelic-ui alone. It maps
+   its own tokens, the way an app's stylesheet would, and sets only what a
+   page needs to hold it: a ground, a measure, and room. ---- */
+.gallery-app {
+	--ink: #f4efe6;
+	--ink-soft: #b9b2a4;
+	--neutral-100: #2b2925;
+	--neutral-200: #3a3732;
+	--neutral-500: #a39d90;
+	--surface-alt: #24221f;
+	--ui-primary: #ff7a3d;
+	--primary-bright: #ff9a6b;
+	--primary-tint: #3a2418;
+	--ui-card: #201e1b;
+	--tone-good: #6fd08c;
+	--tone-warn: #f0b84a;
+	--tone-warn-bg: #33290f;
+	--radius-sm: 6px;
+	--font-sans: "Geist Variable", system-ui, sans-serif;
+	--font-mono: ui-monospace, monospace;
+	background: #151412;
+	color: var(--ink);
+	font-family: var(--font-sans);
+	padding: 56px max(24px, calc((100vw - 880px) / 2));
+	display: grid;
+	gap: 28px;
+}
+.gallery-app h2 {
+	margin: 0;
+	font-size: 1.6rem;
+}
+.gallery-app p {
+	margin: 0;
+	color: var(--ink-soft);
+	max-width: 60ch;
+}

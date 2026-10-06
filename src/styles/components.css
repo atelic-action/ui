@@ -2,21 +2,33 @@
 
 /* Layout defaults for the components under src/components. A site's own
    classes (.page-hero, .eyebrow, .lead, .btn) arrive unlayered and win, so
-   these only fill in where a site does not style them. */
+   these only fill in where a site does not style them.
+
+   Every rule answers to either of two scopes. `.mkt` is a site's canvas,
+   which base.css also resets headings, links, and buttons under.
+   `.atelic-ui` is the same scope with no resets behind it, for an app that
+   has its own base (Tailwind, shadcn) and wants only the components. The
+   two weigh the same, so nothing a site already overrides changes.
+
+   Two tokens are read through names of the package's own first:
+   `--ui-primary` and `--ui-card`, each falling back to `--primary` and
+   `--card`. A site sets neither and nothing changes. An app whose own
+   `--primary` and `--card` hold something else (shadcn keeps bare HSL
+   channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
-	.mkt .not-found-hero {
+	:is(.mkt, .atelic-ui) .not-found-hero {
 		padding-top: calc(var(--nav-height, 72px) + clamp(40px, 7vw, 86px));
 		padding-bottom: clamp(28px, 5vw, 60px);
 	}
-	.mkt .not-found-hero h1 {
+	:is(.mkt, .atelic-ui) .not-found-hero h1 {
 		margin: 16px 0 0;
 	}
-	.mkt .not-found-hero .lead {
+	:is(.mkt, .atelic-ui) .not-found-hero .lead {
 		margin-top: 22px;
 		max-width: 56ch;
 	}
-	.mkt .not-found-links .cta-row,
-	.mkt .not-found-closing .cta-row {
+	:is(.mkt, .atelic-ui) .not-found-links .cta-row,
+	:is(.mkt, .atelic-ui) .not-found-closing .cta-row {
 		margin-top: 22px;
 	}
 
@@ -24,7 +36,7 @@
 	   warning, and broken read green, amber, and red whatever the brand is.
 	   A site's theme may restate any of these on .mkt. A component sets
 	   data-tone, and --tone, --tone-fill, and --tone-bg follow. ---- */
-	.mkt {
+	:is(.mkt, .atelic-ui) {
 		--tone-good: #1b7f3b;
 		--tone-good-fill: #37a35c;
 		--tone-good-bg: #eaf6ee;
@@ -35,27 +47,27 @@
 		--tone-bad-fill: #d9483f;
 		--tone-bad-bg: #fdecea;
 	}
-	.mkt [data-tone="good"] {
+	:is(.mkt, .atelic-ui) [data-tone="good"] {
 		--tone: var(--tone-good);
 		--tone-fill: var(--tone-good-fill);
 		--tone-bg: var(--tone-good-bg);
 	}
-	.mkt [data-tone="warn"] {
+	:is(.mkt, .atelic-ui) [data-tone="warn"] {
 		--tone: var(--tone-warn);
 		--tone-fill: var(--tone-warn-fill);
 		--tone-bg: var(--tone-warn-bg);
 	}
-	.mkt [data-tone="bad"] {
+	:is(.mkt, .atelic-ui) [data-tone="bad"] {
 		--tone: var(--tone-bad);
 		--tone-fill: var(--tone-bad-fill);
 		--tone-bg: var(--tone-bad-bg);
 	}
-	.mkt [data-tone="info"] {
-		--tone: var(--primary);
+	:is(.mkt, .atelic-ui) [data-tone="info"] {
+		--tone: var(--ui-primary, var(--primary));
 		--tone-fill: var(--primary-bright);
 		--tone-bg: var(--primary-tint);
 	}
-	.mkt [data-tone="muted"] {
+	:is(.mkt, .atelic-ui) [data-tone="muted"] {
 		--tone: var(--neutral-500);
 		--tone-fill: var(--neutral-200);
 		--tone-bg: var(--surface-alt);
@@ -63,50 +75,50 @@
 
 	/* ---- StatRow: large figures, each over what it counts, its period,
 	   and its comparisons ---- */
-	.mkt .stat-row {
+	:is(.mkt, .atelic-ui) .stat-row {
 		display: grid;
 		gap: 24px;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 	@media (min-width: 760px) {
-		.mkt .stat-row {
+		:is(.mkt, .atelic-ui) .stat-row {
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		}
 	}
-	.mkt .stat-row.is-center .stat {
+	:is(.mkt, .atelic-ui) .stat-row.is-center .stat {
 		text-align: center;
 	}
-	.mkt .stat .num {
+	:is(.mkt, .atelic-ui) .stat .num {
 		display: flex;
 		align-items: center;
 		gap: 0.12em;
 		font-size: clamp(2.2rem, 5vw, 3rem);
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		color: var(--tone, var(--primary));
+		color: var(--tone, var(--ui-primary, var(--primary)));
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
-	.mkt .stat-row.is-center .stat .num {
+	:is(.mkt, .atelic-ui) .stat-row.is-center .stat .num {
 		justify-content: center;
 	}
-	.mkt .stat-trend {
+	:is(.mkt, .atelic-ui) .stat-trend {
 		width: 0.8em;
 		height: 0.8em;
 		flex: none;
 	}
-	.mkt .stat .lbl {
+	:is(.mkt, .atelic-ui) .stat .lbl {
 		font-size: 0.95rem;
 		font-weight: 650;
 		color: var(--ink);
 		margin-top: 8px;
 	}
-	.mkt .stat-period {
+	:is(.mkt, .atelic-ui) .stat-period {
 		margin-left: 0.5em;
 		font-weight: 400;
 		color: var(--neutral-500);
 	}
-	.mkt .stat-delta {
+	:is(.mkt, .atelic-ui) .stat-delta {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: baseline;
@@ -117,27 +129,27 @@
 		color: var(--neutral-500);
 		font-variant-numeric: tabular-nums;
 	}
-	.mkt .stat-delta-change {
+	:is(.mkt, .atelic-ui) .stat-delta-change {
 		display: inline-flex;
 		align-items: center;
 		gap: 2px;
 		font-weight: 700;
 		color: var(--tone);
 	}
-	.mkt .stat-delta-change svg {
+	:is(.mkt, .atelic-ui) .stat-delta-change svg {
 		align-self: center;
 	}
-	.mkt .stat-delta-basis {
+	:is(.mkt, .atelic-ui) .stat-delta-basis {
 		text-decoration: none;
 	}
-	.mkt .stat .note {
+	:is(.mkt, .atelic-ui) .stat .note {
 		font-size: 0.8rem;
 		color: var(--neutral-500);
 		margin-top: 4px;
 	}
 
 	/* ---- Collapsible: a labeled line that opens to the detail behind it ---- */
-	.mkt .collapsible > summary {
+	:is(.mkt, .atelic-ui) .collapsible > summary {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -145,77 +157,77 @@
 		cursor: pointer;
 		list-style: none;
 	}
-	.mkt .collapsible > summary::-webkit-details-marker {
+	:is(.mkt, .atelic-ui) .collapsible > summary::-webkit-details-marker {
 		display: none;
 	}
-	.mkt .collapsible-text {
+	:is(.mkt, .atelic-ui) .collapsible-text {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
 		min-width: 0;
 	}
-	.mkt .collapsible-label {
+	:is(.mkt, .atelic-ui) .collapsible-label {
 		font-weight: 650;
 		color: var(--ink);
 	}
-	.mkt .collapsible-summary {
+	:is(.mkt, .atelic-ui) .collapsible-summary {
 		color: var(--ink-soft);
 		text-wrap: pretty;
 	}
-	.mkt .collapsible > summary:hover .collapsible-label {
-		color: var(--primary);
+	:is(.mkt, .atelic-ui) .collapsible > summary:hover .collapsible-label {
+		color: var(--ui-primary, var(--primary));
 	}
-	.mkt .collapsible-chevron {
+	:is(.mkt, .atelic-ui) .collapsible-chevron {
 		flex: none;
 		color: var(--neutral-500);
 		transition: transform 0.15s;
 	}
-	.mkt .collapsible[open] > summary .collapsible-chevron {
+	:is(.mkt, .atelic-ui) .collapsible[open] > summary .collapsible-chevron {
 		transform: rotate(180deg);
 	}
-	.mkt .collapsible-body {
+	:is(.mkt, .atelic-ui) .collapsible-body {
 		margin-top: 12px;
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.mkt .collapsible-chevron {
+		:is(.mkt, .atelic-ui) .collapsible-chevron {
 			transition: none;
 		}
 	}
 	/* Paper cannot be clicked, so a printed collapsible is open. */
 	@media print {
-		.mkt .collapsible::details-content {
+		:is(.mkt, .atelic-ui) .collapsible::details-content {
 			content-visibility: visible;
 			display: block;
 		}
-		.mkt .collapsible-chevron {
+		:is(.mkt, .atelic-ui) .collapsible-chevron {
 			display: none;
 		}
 	}
 
 	/* ---- Callout: an icon in its tone beside the title, the explainer
 	   under it; boxed, it sits apart on a tinted ground ---- */
-	.mkt .callout {
+	:is(.mkt, .atelic-ui) .callout {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: 10px;
 		align-items: start;
 	}
-	.mkt .callout-icon {
+	:is(.mkt, .atelic-ui) .callout-icon {
 		margin-top: 0.15em;
 		color: var(--tone);
 		flex: none;
 	}
-	.mkt .callout-title {
+	:is(.mkt, .atelic-ui) .callout-title {
 		font-weight: 650;
 		color: var(--ink);
 		text-wrap: pretty;
 	}
-	.mkt .callout-body {
+	:is(.mkt, .atelic-ui) .callout-body {
 		margin-top: 2px;
 		color: var(--ink-soft);
 		text-wrap: pretty;
 	}
-	.mkt .callout.is-box {
+	:is(.mkt, .atelic-ui) .callout.is-box {
 		padding: 14px 16px;
 		border-radius: var(--radius-sm);
 		background: var(--tone-bg);
@@ -223,7 +235,7 @@
 	}
 
 	/* ---- Checklist: checks passed or failed, two columns when there is room ---- */
-	.mkt .checklist {
+	:is(.mkt, .atelic-ui) .checklist {
 		list-style: none;
 		margin: 0;
 		padding: 0;
@@ -232,36 +244,36 @@
 		gap: 12px 28px;
 	}
 	@media print, (min-width: 721px) {
-		.mkt .checklist {
+		:is(.mkt, .atelic-ui) .checklist {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
-	.mkt .checklist li {
+	:is(.mkt, .atelic-ui) .checklist li {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
 		gap: 10px;
 		align-items: start;
 		line-height: 1.4;
 	}
-	.mkt .checklist li > svg {
+	:is(.mkt, .atelic-ui) .checklist li > svg {
 		margin-top: 0.1em;
 		color: var(--tone);
 	}
-	.mkt .checklist-label {
+	:is(.mkt, .atelic-ui) .checklist-label {
 		display: block;
 		font-weight: 600;
 		color: var(--ink);
 	}
-	.mkt .checklist li[data-tone="bad"] .checklist-label {
+	:is(.mkt, .atelic-ui) .checklist li[data-tone="bad"] .checklist-label {
 		color: var(--tone);
 	}
-	.mkt .checklist-detail {
+	:is(.mkt, .atelic-ui) .checklist-detail {
 		display: block;
 		color: var(--ink-soft);
 	}
 
 	/* ---- The charts' shared key: a swatch, a figure, a label ---- */
-	.mkt .chart-key {
+	:is(.mkt, .atelic-ui) .chart-key {
 		list-style: none;
 		margin: 10px 0 0;
 		padding: 0;
@@ -271,17 +283,17 @@
 		font-size: 0.82rem;
 		color: var(--ink-soft);
 	}
-	.mkt .chart-key li {
+	:is(.mkt, .atelic-ui) .chart-key li {
 		display: inline-flex;
 		align-items: baseline;
 		gap: 7px;
 	}
-	.mkt .chart-key b {
+	:is(.mkt, .atelic-ui) .chart-key b {
 		font-weight: 650;
 		color: var(--ink);
 		font-variant-numeric: tabular-nums;
 	}
-	.mkt .chart-swatch {
+	:is(.mkt, .atelic-ui) .chart-swatch {
 		width: 10px;
 		height: 10px;
 		border-radius: 3px;
@@ -291,35 +303,35 @@
 	}
 
 	/* ---- StackedBar: one bar, the parts of a whole ---- */
-	.mkt .stacked-bar-track {
+	:is(.mkt, .atelic-ui) .stacked-bar-track {
 		display: flex;
 		gap: 2px;
 		height: 16px;
 		border-radius: 999px;
 		overflow: hidden;
 	}
-	.mkt .stacked-bar-track span {
+	:is(.mkt, .atelic-ui) .stacked-bar-track span {
 		background: var(--tone-fill);
 		min-width: 4px;
 	}
 
 	/* ---- ColumnChart: a bar a period, the periods in labeled groups ---- */
-	.mkt .column-chart-plot {
+	:is(.mkt, .atelic-ui) .column-chart-plot {
 		display: flex;
 		align-items: flex-end;
 		gap: 12px;
 		min-width: 0;
 	}
-	.mkt .column-chart-group {
+	:is(.mkt, .atelic-ui) .column-chart-group {
 		flex: 1 1 0;
 		min-width: 0;
 	}
-	.mkt .column-chart-bars {
+	:is(.mkt, .atelic-ui) .column-chart-bars {
 		display: flex;
 		align-items: flex-end;
 		gap: 3px;
 	}
-	.mkt .column-chart-col {
+	:is(.mkt, .atelic-ui) .column-chart-col {
 		flex: 1 1 0;
 		min-width: 0;
 		display: flex;
@@ -327,24 +339,24 @@
 		align-items: center;
 		gap: 3px;
 	}
-	.mkt .column-chart-value {
+	:is(.mkt, .atelic-ui) .column-chart-value {
 		font-size: 0.64rem;
 		font-variant-numeric: tabular-nums;
 		color: var(--ink-soft);
 		white-space: nowrap;
 	}
-	.mkt .column-chart-bar {
+	:is(.mkt, .atelic-ui) .column-chart-bar {
 		width: 100%;
 		max-width: 48px;
 		border-radius: 4px 4px 0 0;
 		background: var(--tone-fill);
 	}
-	.mkt .column-chart-label {
+	:is(.mkt, .atelic-ui) .column-chart-label {
 		font-size: 0.66rem;
 		color: var(--ink-soft);
 		white-space: nowrap;
 	}
-	.mkt .column-chart-group-label {
+	:is(.mkt, .atelic-ui) .column-chart-group-label {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
@@ -358,7 +370,7 @@
 		color: var(--neutral-500);
 		white-space: nowrap;
 	}
-	.mkt .column-chart-group-label b {
+	:is(.mkt, .atelic-ui) .column-chart-group-label b {
 		font-family: var(--font-sans);
 		font-size: 0.8rem;
 		letter-spacing: 0;
@@ -368,37 +380,37 @@
 	}
 
 	/* ---- ThresholdScale: zones, and a pin a reading ---- */
-	.mkt .threshold-scale {
+	:is(.mkt, .atelic-ui) .threshold-scale {
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
 	}
-	.mkt .threshold-scale-row {
+	:is(.mkt, .atelic-ui) .threshold-scale-row {
 		display: grid;
 		grid-template-columns: 4.4em minmax(0, 1fr) 3.4em;
 		gap: 10px;
 		align-items: center;
 	}
-	.mkt .threshold-scale-label {
+	:is(.mkt, .atelic-ui) .threshold-scale-label {
 		color: var(--ink-soft);
 	}
-	.mkt .threshold-scale-track {
+	:is(.mkt, .atelic-ui) .threshold-scale-track {
 		position: relative;
 		display: flex;
 		gap: 2px;
 		height: 12px;
 	}
-	.mkt .threshold-scale-zone {
+	:is(.mkt, .atelic-ui) .threshold-scale-zone {
 		background: var(--tone-fill);
 		opacity: 0.32;
 	}
-	.mkt .threshold-scale-zone:first-child {
+	:is(.mkt, .atelic-ui) .threshold-scale-zone:first-child {
 		border-radius: 999px 0 0 999px;
 	}
-	.mkt .threshold-scale-zone:nth-last-child(2) {
+	:is(.mkt, .atelic-ui) .threshold-scale-zone:nth-last-child(2) {
 		border-radius: 0 999px 999px 0;
 	}
-	.mkt .threshold-scale-pin {
+	:is(.mkt, .atelic-ui) .threshold-scale-pin {
 		position: absolute;
 		top: 50%;
 		width: 18px;
@@ -406,30 +418,30 @@
 		margin: -9px 0 0 -9px;
 		border-radius: 50%;
 		background: var(--tone-fill);
-		border: 3px solid var(--card);
+		border: 3px solid var(--ui-card, var(--card));
 		box-shadow: 0 0 0 1.5px var(--tone-fill);
 	}
-	.mkt .threshold-scale-value {
+	:is(.mkt, .atelic-ui) .threshold-scale-value {
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
 		color: var(--tone);
 		text-align: right;
 	}
-	.mkt .threshold-scale-axis {
+	:is(.mkt, .atelic-ui) .threshold-scale-axis {
 		position: relative;
 		display: flex;
 		gap: 2px;
 		height: 2.3em;
 		font-size: 0.8rem;
 	}
-	.mkt .threshold-scale-axis > span {
+	:is(.mkt, .atelic-ui) .threshold-scale-axis > span {
 		color: var(--tone);
 		font-weight: 600;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
-	.mkt .threshold-scale-axis > i {
+	:is(.mkt, .atelic-ui) .threshold-scale-axis > i {
 		position: absolute;
 		top: 1.25em;
 		transform: translateX(-50%);
@@ -443,12 +455,12 @@
 	/* ---- DataTable: on a phone each row stacks, its facts wearing their
 	   column's label, and a dropdown sorts; wide, it is a table whose
 	   headings sort ---- */
-	.mkt .data-table table,
-	.mkt .data-table tbody {
+	:is(.mkt, .atelic-ui) .data-table table,
+	:is(.mkt, .atelic-ui) .data-table tbody {
 		display: block;
 		width: 100%;
 	}
-	.mkt .data-table thead {
+	:is(.mkt, .atelic-ui) .data-table thead {
 		position: absolute;
 		width: 1px;
 		height: 1px;
@@ -456,7 +468,7 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 	}
-	.mkt .data-table-sort {
+	:is(.mkt, .atelic-ui) .data-table-sort {
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -464,16 +476,16 @@
 		font-size: 0.85rem;
 		color: var(--ink-soft);
 	}
-	.mkt .data-table-sort select {
+	:is(.mkt, .atelic-ui) .data-table-sort select {
 		font: inherit;
 		color: var(--ink);
-		background: var(--card);
+		background: var(--ui-card, var(--card));
 		border: 1px solid var(--neutral-200);
 		border-radius: var(--radius-sm);
 		padding: 5px 8px;
 		max-width: 100%;
 	}
-	.mkt .data-table tbody tr {
+	:is(.mkt, .atelic-ui) .data-table tbody tr {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
@@ -482,25 +494,25 @@
 		border-bottom: 1px solid var(--neutral-100);
 		line-height: 1.35;
 	}
-	.mkt .data-table tbody tr:first-child {
+	:is(.mkt, .atelic-ui) .data-table tbody tr:first-child {
 		border-top: 1.5px solid var(--ink);
 	}
-	.mkt .data-table tbody tr:last-child {
+	:is(.mkt, .atelic-ui) .data-table tbody tr:last-child {
 		border-bottom: 0;
 		padding-bottom: 0;
 	}
-	.mkt .data-table tbody th {
+	:is(.mkt, .atelic-ui) .data-table tbody th {
 		width: 100%;
 		text-align: left;
 		font-weight: 400;
 	}
-	.mkt .data-table td {
+	:is(.mkt, .atelic-ui) .data-table td {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
 		font-variant-numeric: tabular-nums;
 	}
-	.mkt .data-table td::before {
+	:is(.mkt, .atelic-ui) .data-table td::before {
 		content: attr(data-label);
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
@@ -509,33 +521,33 @@
 		color: var(--neutral-500);
 	}
 	@media print, (min-width: 721px) {
-		.mkt .data-table-sort {
+		:is(.mkt, .atelic-ui) .data-table-sort {
 			display: none;
 		}
-		.mkt .data-table table {
+		:is(.mkt, .atelic-ui) .data-table table {
 			display: table;
 			border-collapse: collapse;
 		}
-		.mkt .data-table tbody {
+		:is(.mkt, .atelic-ui) .data-table tbody {
 			display: table-row-group;
 		}
-		.mkt .data-table thead {
+		:is(.mkt, .atelic-ui) .data-table thead {
 			position: static;
 			width: auto;
 			height: auto;
 			overflow: visible;
 			clip: auto;
 		}
-		.mkt .data-table tbody tr {
+		:is(.mkt, .atelic-ui) .data-table tbody tr {
 			display: table-row;
 			padding: 0;
 			border: 0;
 		}
-		.mkt .data-table tbody tr:first-child {
+		:is(.mkt, .atelic-ui) .data-table tbody tr:first-child {
 			border-top: 0;
 		}
-		.mkt .data-table th,
-		.mkt .data-table td {
+		:is(.mkt, .atelic-ui) .data-table th,
+		:is(.mkt, .atelic-ui) .data-table td {
 			display: table-cell;
 			padding: 7px 14px 7px 0;
 			border-bottom: 1px solid var(--neutral-100);
@@ -543,23 +555,23 @@
 			vertical-align: middle;
 			font-weight: 400;
 		}
-		.mkt .data-table tbody th {
+		:is(.mkt, .atelic-ui) .data-table tbody th {
 			width: auto;
 		}
-		.mkt .data-table td::before {
+		:is(.mkt, .atelic-ui) .data-table td::before {
 			content: none;
 		}
-		.mkt .data-table th:last-child,
-		.mkt .data-table td:last-child {
+		:is(.mkt, .atelic-ui) .data-table th:last-child,
+		:is(.mkt, .atelic-ui) .data-table td:last-child {
 			padding-right: 0;
 		}
-		.mkt .data-table [data-align="center"] {
+		:is(.mkt, .atelic-ui) .data-table [data-align="center"] {
 			text-align: center;
 		}
-		.mkt .data-table [data-align="right"] {
+		:is(.mkt, .atelic-ui) .data-table [data-align="right"] {
 			text-align: right;
 		}
-		.mkt .data-table thead th {
+		:is(.mkt, .atelic-ui) .data-table thead th {
 			padding-top: 0;
 			padding-bottom: 8px;
 			border-bottom: 1.5px solid var(--ink);
@@ -571,7 +583,7 @@
 			white-space: nowrap;
 			vertical-align: bottom;
 		}
-		.mkt .data-table thead th button {
+		:is(.mkt, .atelic-ui) .data-table thead th button {
 			display: inline-flex;
 			align-items: center;
 			gap: 4px;
@@ -584,23 +596,23 @@
 			color: inherit;
 			cursor: pointer;
 		}
-		.mkt .data-table thead th button:hover,
-		.mkt .data-table thead th button[data-active] {
-			color: var(--primary);
+		:is(.mkt, .atelic-ui) .data-table thead th button:hover,
+		:is(.mkt, .atelic-ui) .data-table thead th button[data-active] {
+			color: var(--ui-primary, var(--primary));
 		}
-		.mkt .data-table thead th button svg {
+		:is(.mkt, .atelic-ui) .data-table thead th button svg {
 			opacity: 0.55;
 		}
-		.mkt .data-table thead th button[data-active] svg {
+		:is(.mkt, .atelic-ui) .data-table thead th button[data-active] svg {
 			opacity: 1;
 		}
-		.mkt .data-table tbody tr:last-child th,
-		.mkt .data-table tbody tr:last-child td {
+		:is(.mkt, .atelic-ui) .data-table tbody tr:last-child th,
+		:is(.mkt, .atelic-ui) .data-table tbody tr:last-child td {
 			border-bottom: 0;
 		}
 	}
 	@media print {
-		.mkt .data-table thead th button svg {
+		:is(.mkt, .atelic-ui) .data-table thead th button svg {
 			display: none;
 		}
 	}
