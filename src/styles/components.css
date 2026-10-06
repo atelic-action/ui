@@ -1,3 +1,5 @@
+@import "./star-rating.css";
+
 /* Layout defaults for the components under src/components. A site's own
    classes (.page-hero, .eyebrow, .lead, .btn) arrive unlayered and win, so
    these only fill in where a site does not style them. */

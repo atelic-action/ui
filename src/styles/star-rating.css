@@ -1,0 +1,67 @@
+/* StarRating: a row of stars in half star steps. On its own sheet, and not
+   under .mkt, so an app that wears none of the site chrome can import this
+   file alone; components.css imports it for every site.
+
+   The two colors are custom properties with fallbacks off the text color, so
+   the row needs no theme token and takes a color from a prop, from a site's
+   own rule, or from whatever it sits in. */
+@layer atelic-ui {
+	.star-rating {
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+		line-height: 0;
+		border-radius: 4px;
+	}
+	.star-rating.is-editable:focus-visible {
+		outline: 2px solid var(--star-focus, currentColor);
+		outline-offset: 2px;
+	}
+	.star-rating-star {
+		position: relative;
+		display: inline-block;
+		width: var(--star-size, 24px);
+		height: var(--star-size, 24px);
+	}
+	/* Pinned to the star's size: a base reset that caps an svg at its
+	   container's width would shrink the filled star inside its clip to a
+	   small whole star, where it has to stay full size and be cut in half. */
+	.star-rating .star-rating-star svg {
+		display: block;
+		width: var(--star-size, 24px);
+		height: var(--star-size, 24px);
+		max-width: none;
+	}
+	.star-rating-outline {
+		color: var(--star-outline, color-mix(in srgb, currentColor 40%, transparent));
+	}
+	/* The filled star sits over the outline and is clipped to none, half, or
+	   all of its width. */
+	.star-rating-fill {
+		position: absolute;
+		inset-block: 0;
+		left: 0;
+		overflow: hidden;
+		pointer-events: none;
+		color: var(--star-fill, currentColor);
+	}
+	.star-rating-fill svg {
+		fill: currentColor;
+	}
+	.star-rating-hit {
+		position: absolute;
+		inset-block: 0;
+		width: 50%;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+	}
+	.star-rating-hit.is-left {
+		left: 0;
+	}
+	.star-rating-hit.is-right {
+		right: 0;
+	}
+}
