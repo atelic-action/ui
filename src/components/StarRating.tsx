@@ -80,7 +80,13 @@ export function StarRating({
 							aria-label={describeStarRating(rating)}
 							className={`star-rating-hit ${half === 0 ? "is-left" : "is-right"}`}
 							onMouseEnter={() => setHover(rating)}
-							onClick={() => onChange(rating === value ? null : rating)}
+							onClick={() => {
+								// Drop the preview with the pick: the pointer is still on this
+								// half, and a preview left up would hide a clear behind the
+								// very stars it just emptied.
+								setHover(null);
+								onChange(rating === value ? null : rating);
+							}}
 						/>
 					))}
 			</span>
