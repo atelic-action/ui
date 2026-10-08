@@ -17,6 +17,7 @@ import {
 	ThresholdScale,
 	type Tone,
 } from "../src/components";
+import { Button, Chip, Eyebrow, Lead, SectionHeading } from "../src/primitives";
 
 /*
  * Every figure and name on this page is made up. The business throughout is
@@ -35,6 +36,7 @@ const stops: PageStop[] = [
 	{ id: "threshold-scale", label: "ThresholdScale" },
 	{ id: "star-rating", label: "StarRating" },
 	{ id: "gate-login", label: "GateLogin" },
+	{ id: "primitives", label: "Primitives" },
 	{ id: "tones", label: "Tones" },
 ];
 
@@ -564,6 +566,59 @@ export function Gallery() {
 									endpoint="/gallery-has-no-gate"
 								/>
 							</div>
+						</Example>
+					</Piece>
+
+					<Piece
+						id="primitives"
+						title="Primitives"
+						lead="The small pieces every page is set in: the button, the chip, the eyebrow, the lead paragraph, and the section heading that composes the last three. Each recolors from the theme tokens."
+					>
+						<Example caption="Button: primary, dark, and ghost; large; with the arrow">
+							<div className="gallery-row">
+								<Button href="#primitives">Order ahead</Button>
+								<Button href="#primitives" variant="dark">
+									See the menu
+								</Button>
+								<Button href="#primitives" variant="ghost">
+									Our story
+								</Button>
+								<Button href="#primitives" size="lg" arrow>
+									Order ahead
+								</Button>
+							</div>
+						</Example>
+						<Example caption="On a dark surface">
+							<div className="gallery-row gallery-dark">
+								<Button href="#primitives">Order ahead</Button>
+								<Button href="#primitives" variant="ghost" onDark>
+									Our story
+								</Button>
+								<Chip onDark dot>
+									Open today
+								</Chip>
+								<Eyebrow onDark>Since 2014</Eyebrow>
+							</div>
+						</Example>
+						<Example caption="Chip: plain, with a dot, and as a link">
+							<div className="gallery-row">
+								<Chip>Sourdough</Chip>
+								<Chip dot>Baked this morning</Chip>
+								<Chip href="#primitives">Wholesale</Chip>
+							</div>
+						</Example>
+						<Example caption="SectionHeading: an eyebrow, a title, and a lead">
+							<SectionHeading
+								eyebrow="Wholesale"
+								title="Bread for the places you already eat."
+								lead="Eleven cafes and two grocers carry the morning bake, delivered before they open."
+								as="h3"
+							/>
+						</Example>
+						<Example caption="Lead, on its own">
+							<Lead>
+								Everything is mixed, shaped, and baked in the back of the shop on Alder Street.
+							</Lead>
 						</Example>
 					</Piece>
 

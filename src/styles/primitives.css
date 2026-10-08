@@ -1,0 +1,153 @@
+/* The primitives under src/primitives: the button, the chip, the eyebrow,
+   the lead paragraph, and the section heading. Every value is a theme token.
+   They sit in the package's layer like every sheet here, so any rule a site
+   writes outside a layer still wins over them whatever its specificity. */
+@layer atelic-ui {
+	/* CTA buttons: primary (brand), dark (ink), ghost (outline). */
+	:is(.mkt, .atelic-ui) .btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.6em;
+		padding: 0.95em 1.6em;
+		font-weight: 700;
+		font-size: 1rem;
+		letter-spacing: -0.01em;
+		border-radius: var(--radius-pill);
+		transition:
+			transform 0.18s ease,
+			background 0.2s ease,
+			box-shadow 0.2s ease,
+			color 0.2s ease;
+		text-align: center;
+		line-height: 1;
+	}
+	:is(.mkt, .atelic-ui) .btn:active {
+		transform: translateY(1px) scale(0.99);
+	}
+	:is(.mkt, .atelic-ui) .btn-primary {
+		background: var(--primary);
+		color: #fff;
+		box-shadow: var(--primary-shadow);
+	}
+	:is(.mkt, .atelic-ui) .btn-primary:hover {
+		background: var(--primary-deep);
+		box-shadow: var(--primary-shadow-hover);
+		transform: translateY(-1px);
+	}
+	:is(.mkt, .atelic-ui) .btn-dark {
+		background: var(--ink);
+		color: var(--surface);
+	}
+	:is(.mkt, .atelic-ui) .btn-dark:hover {
+		background: #000;
+		transform: translateY(-1px);
+	}
+	:is(.mkt, .atelic-ui) .btn-ghost {
+		background: transparent;
+		color: var(--ink);
+		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
+	}
+	:is(.mkt, .atelic-ui) .btn-ghost:hover {
+		box-shadow: inset 0 0 0 1.5px var(--ink);
+	}
+	:is(.mkt, .atelic-ui) .btn-ghost.on-dark {
+		color: #fff;
+		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.45);
+	}
+	:is(.mkt, .atelic-ui) .btn-ghost.on-dark:hover {
+		box-shadow: inset 0 0 0 1.5px #fff;
+		background: rgba(255, 255, 255, 0.08);
+	}
+	:is(.mkt, .atelic-ui) .btn-lg {
+		padding: 1.1em 2em;
+		font-size: 1.08rem;
+	}
+	:is(.mkt, .atelic-ui) .btn .arrow {
+		transition: transform 0.2s ease;
+	}
+	:is(.mkt, .atelic-ui) .btn:hover .arrow {
+		transform: translateX(3px);
+	}
+
+	/* Chip: small mono tag for credentials, feature tags, service areas. */
+	:is(.mkt, .atelic-ui) .chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		padding: 0.5em 0.85em;
+		border-radius: var(--radius-pill);
+		background: var(--card);
+		color: var(--ink-soft);
+		box-shadow: inset 0 0 0 1px var(--neutral-200);
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .chip .dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--primary);
+	}
+	:is(.mkt, .atelic-ui) .chip svg {
+		flex: none;
+	}
+	:is(.mkt, .atelic-ui) .chip.on-dark {
+		background: rgba(255, 255, 255, 0.08);
+		color: #efe7da;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+	}
+
+	/* Eyebrow: mono uppercase kicker trailed by a bar that fades off to the
+	   right — the wordmark's signature, in the brand's primary. This fade is
+	   the only rendering; the old leading-dash mode is retired. */
+	:is(.mkt, .atelic-ui) .eyebrow {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--primary);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6em;
+	}
+	:is(.mkt, .atelic-ui) .eyebrow.on-dark {
+		color: var(--primary-bright);
+	}
+	:is(.mkt, .atelic-ui) .eyebrow.center {
+		justify-content: center;
+	}
+	:is(.mkt, .atelic-ui) .eyebrow::after {
+		content: "";
+		width: 40px;
+		height: 2px;
+		display: inline-block;
+		/* Themes with a dedicated ruling accent (a brand color reserved for
+		   rules, never text) set --rule-accent; default stays the text color. */
+		background: linear-gradient(90deg, var(--rule-accent, currentColor), transparent);
+	}
+
+	:is(.mkt, .atelic-ui) .lead {
+		font-size: clamp(1.05rem, 2vw, 1.3rem);
+		color: var(--ink-soft);
+		line-height: 1.55;
+	}
+
+	:is(.mkt, .atelic-ui) .section-head {
+		/* Width is constrained on the lead only: titles size to their section so
+		   they never wrap early into dead space (the 60ch cap here was measured
+		   at the body font size, boxing every title into ~510px). */
+		max-width: none;
+	}
+	:is(.mkt, .atelic-ui) .section-head.center {
+		margin-inline: auto;
+	}
+	:is(.mkt, .atelic-ui) .section-head .section-head-lead {
+		margin-top: 16px;
+		max-width: 60ch;
+	}
+}

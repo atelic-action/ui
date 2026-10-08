@@ -262,8 +262,7 @@ body {
 }
 
 /* GateLogin is a full screen in a site. Here it is framed to the height of
-   an example, and its button borrows a plain look, since the gallery has no
-   site button classes for it to wear. */
+   an example. */
 .mkt .gallery-gate {
 	border: 1px solid var(--hairline);
 	border-radius: 12px;
@@ -272,16 +271,16 @@ body {
 .mkt .gallery-gate .gate-screen {
 	min-height: 560px;
 }
-.mkt .gallery-gate .btn {
-	display: inline-flex;
+
+/* The primitives sit in a row so their sizes and surfaces compare at a glance. */
+.mkt .gallery-row {
+	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 10px;
-	padding: 14px 26px;
-	border: 0;
-	border-radius: 999px;
-	background: var(--primary);
-	color: #fff;
-	font: inherit;
-	font-weight: 600;
-	cursor: pointer;
+	gap: 14px;
+}
+.mkt .gallery-dark {
+	padding: 22px;
+	border-radius: 12px;
+	background: var(--surface-dark);
 }
