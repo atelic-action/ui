@@ -140,7 +140,7 @@ export { default } from "@atelic-action/ui/gate/middleware";
 export const config = { matcher: ["/((?!api/).*)"] };
 ```
 
-The default middleware holds back everything `needsSession` does: all of a host but the login page, what that page loads (`/assets/` apart from `/assets/doc/`, `/fonts/`, `/brand/`, the favicon and logo), `/api/`, `robots.txt`, `health.json`, and a website build proxied under `/proto`. A site whose matcher already leaves its open paths out passes its own test, and one whose link opens something other than a document names it:
+The default middleware holds back everything `needsSession` does: all of a host but the login page, what that page loads (`/assets/` apart from `/assets/doc/`, `/fonts/`, `/brand/`, the favicon and logo), the two functions under `/api/auth/`, `robots.txt`, `health.json`, and a website build proxied under `/proto`. A site whose matcher already leaves its open paths out passes its own test, and one whose link opens something other than a document names it:
 
 ```ts
 import { createMiddleware } from "@atelic-action/ui/gate/middleware";
@@ -153,9 +153,9 @@ export const POST = createRequestLink({ noun: "preview" });
 | Env | Read by | What it does |
 |---|---|---|
 | `GATE_SESSION_SECRET` | all three | The signing secret, and the switch: unset, the gate is off. Use 32 random bytes or more |
-| `GATE_ALLOWLIST` | request link | Comma separated emails that may receive a link |
+| `GATE_ALLOWLIST` | all three | Comma separated emails that may receive a link. Taking an address off, then redeploying, refuses its outstanding link and ends its session |
 | `RESEND_API_KEY` | request link | The sending only key the link goes out on |
-| `GATE_BASE_URL` | request link | The host the link points at. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
+| `GATE_BASE_URL` | request link | The host the link points at; a bare host is read as https. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
 | `GATE_FROM`, `GATE_SUBJECT`, `GATE_LINK_TTL_MIN` | request link | Sender, subject, and link lifetime in minutes (15) |
 | `GATE_SESSION_DAYS`, `GATE_WATERMARK_MODE` | verify | Session lifetime in days (7), and `pill` or `tiled` |
 
@@ -163,10 +163,11 @@ What it holds to, each with a test in `tst/gate/`:
 
 - Tokens are compact JWTs under HS256, signed and verified by [jose](https://github.com/panva/jose). The algorithm is pinned, and a link token is never accepted as a session or a session as a link.
 - The emailed link is never built from a forwarded header, since a caller can name any host there.
-- A link request answers the same way after the same wait whether or not the address was on the allowlist.
+- A link request answers the same way after the same two second wait whether or not the address was on the allowlist, and a send still running shortly before then is given up. A send that fails says so in the function's log and nowhere else.
 - The post sign in destination is held to a path on the same host (`safeNext`).
+- An open path opens only as written; the held corner is held in any case. Only the two sign in functions are open under `/api/`.
 
-What it does not do, by having no store: a link can be used more than once until it expires, a session is revoked only by rotating the secret, and link requests are not rate limited.
+What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
 
 This is the one corner of the package that ships compiled. Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
 

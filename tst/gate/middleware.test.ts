@@ -16,8 +16,13 @@ function request(path: string, cookie?: string): Request {
  * while the login page's own assets pass straight through.
  */
 describe("the access wall middleware", () => {
+	beforeEach(() => {
+		process.env.GATE_ALLOWLIST = "owner@example.com";
+	});
+
 	afterEach(() => {
 		delete process.env.GATE_SESSION_SECRET;
+		delete process.env.GATE_ALLOWLIST;
 	});
 
 	it("stays dormant with no GATE_SESSION_SECRET, files included", async () => {
@@ -55,8 +60,13 @@ describe("the access wall middleware", () => {
 });
 
 describe("createMiddleware", () => {
+	beforeEach(() => {
+		process.env.GATE_ALLOWLIST = "owner@example.com";
+	});
+
 	afterEach(() => {
 		delete process.env.GATE_SESSION_SECRET;
+		delete process.env.GATE_ALLOWLIST;
 	});
 
 	it("holds what the site's own test says, in place of the wall", async () => {
@@ -83,5 +93,25 @@ describe("createMiddleware", () => {
 		process.env.GATE_SESSION_SECRET = SECRET;
 		const response = await middleware(request("/writeup", "gate_session=%E0%A4%A"));
 		expect(response?.status).toBe(302);
+	});
+});
+
+describe("the access wall middleware and the allowlist", () => {
+	afterEach(() => {
+		delete process.env.GATE_SESSION_SECRET;
+		delete process.env.GATE_ALLOWLIST;
+	});
+
+	it("ends the session of an address taken off the allowlist", async () => {
+		process.env.GATE_SESSION_SECRET = SECRET;
+		process.env.GATE_ALLOWLIST = "owner@example.com";
+		const session = await signToken(
+			{ e: "owner@example.com", x: Math.floor(Date.now() / 1000) + 600, p: "session" },
+			SECRET,
+		);
+		const cookie = `gate_session=${encodeURIComponent(session)}`;
+		expect(await middleware(request("/writeup", cookie))).toBeUndefined();
+		process.env.GATE_ALLOWLIST = "someone-else@example.com";
+		expect((await middleware(request("/writeup", cookie)))?.status).toBe(302);
 	});
 });

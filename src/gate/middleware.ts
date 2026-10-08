@@ -4,7 +4,9 @@
  * Opt in and fail open: with no GATE_SESSION_SECRET set the gate is dormant
  * and every request passes, so a site is fully public. Set the secret (and an
  * allowlist) on the Vercel project and this same code starts enforcing: a
- * request without a valid session cookie is redirected to /login.
+ * request without a valid session cookie is redirected to /login. The
+ * session's address has to be on the allowlist still, so taking one off (and
+ * redeploying) ends that reader's session.
  *
  * A site's root `middleware.ts` exports this as its default beside its own
  * `config`, which the platform reads from that file and nowhere else:
@@ -16,6 +18,7 @@
  * whose matcher already leaves its open paths out passes its own test to
  * `createMiddleware`.
  */
+import { isAllowed } from "./config.js";
 import { verifyToken } from "./tokens.js";
 import { needsSession as wallNeedsSession } from "./wall.js";
 
@@ -46,7 +49,9 @@ export function createMiddleware(options: MiddlewareOptions = {}) {
 
 		const cookies = request.headers.get("cookie") ?? "";
 		const claims = await verifyToken(readCookie(cookies, "gate_session"), secret);
-		if (claims?.p === "session") return; // valid session, continue to the site
+		if (claims?.p === "session" && isAllowed(claims.e, process.env.GATE_ALLOWLIST)) {
+			return; // valid session, continue to the site
+		}
 
 		const login = new URL("/login", url.origin);
 		login.searchParams.set("next", url.pathname + url.search);

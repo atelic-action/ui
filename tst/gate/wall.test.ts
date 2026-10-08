@@ -94,3 +94,29 @@ describe("needsSession", () => {
 		}
 	});
 });
+
+describe("the access wall, what the review of 2026-10-08 tightened", () => {
+	it("opens the two sign in functions and holds any other function", () => {
+		expect(needsSession("/api/auth/request-link")).toBe(false);
+		expect(needsSession("/api/auth/verify")).toBe(false);
+		expect(needsSession("/api/contact")).toBe(true);
+		expect(needsSession("/api/")).toBe(true);
+	});
+
+	it("opens a path only as written, never in another case", () => {
+		for (const path of [
+			"/LOGIN",
+			"/Login/",
+			"/Assets/index-BXwh7LMy.js",
+			"/PROTO/x",
+			"/Brand/logo.svg",
+		]) {
+			expect(needsSession(path)).toBe(true);
+		}
+	});
+
+	it("holds the held corner in any case", () => {
+		expect(needsSession("/assets/DOC/writeup-BiT53waW.js")).toBe(true);
+		expect(needsSession("/assets/Doc/")).toBe(true);
+	});
+});

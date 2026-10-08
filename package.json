@@ -49,7 +49,7 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"build": "tsc -p tsconfig.server.json",
+		"build": "rm -rf dist && tsc -p tsconfig.server.json",
 		"build:smoke": "node --input-type=module -e \"for (const entry of ['', '/middleware', '/request-link', '/verify']) await import('@atelic-action/ui/gate' + entry)\"",
 		"prepack": "bun run build",
 		"lint": "biome check .",

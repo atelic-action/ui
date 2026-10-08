@@ -20,6 +20,7 @@ function setCookieHeader(response: Response): string {
 describe("GET /api/auth/verify", () => {
 	beforeEach(() => {
 		vi.stubEnv("GATE_SESSION_SECRET", SECRET);
+		vi.stubEnv("GATE_ALLOWLIST", "sharon@example.com");
 	});
 	afterEach(() => {
 		vi.unstubAllEnvs();
@@ -82,4 +83,35 @@ describe("GET /api/auth/verify", () => {
 		const response = await GET(verifyRequest(token));
 		expect(response.headers.get("location")).toBe("/login?e=expired");
 	});
+});
+
+describe("GET /api/auth/verify, hardening", () => {
+	beforeEach(() => {
+		vi.stubEnv("GATE_SESSION_SECRET", SECRET);
+		vi.stubEnv("GATE_ALLOWLIST", "sharon@example.com");
+	});
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	const link = (email: string) =>
+		signToken({ e: email, x: Math.floor(Date.now() / 1000) + 600, p: "link" }, SECRET);
+
+	it("starts no session for an address taken off the allowlist after its link went out", async () => {
+		const token = await link("sharon@example.com");
+		vi.stubEnv("GATE_ALLOWLIST", "owner@example.com");
+		const response = await GET(verifyRequest(token));
+		expect(response.headers.get("location")).toBe("/login?e=expired");
+		expect(setCookieHeader(response)).toBe("");
+	});
+
+	it.each(["-1", "0", "Infinity", "a week"])(
+		"falls back to a seven day session when GATE_SESSION_DAYS is %j",
+		async (days) => {
+			vi.stubEnv("GATE_SESSION_DAYS", days);
+			const response = await GET(verifyRequest(await link("sharon@example.com")));
+			expect(response.status).toBe(302);
+			expect(setCookieHeader(response)).toContain("Max-Age=604800");
+		},
+	);
 });

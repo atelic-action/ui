@@ -7,9 +7,11 @@
  *
  * Env (set on the Vercel project):
  * - GATE_SESSION_SECRET    signing secret; also the gate's on and off switch
+ * - GATE_ALLOWLIST         the link's address must still be on it
  * - GATE_SESSION_DAYS      session lifetime in days (optional, default 7)
  * - GATE_WATERMARK_MODE    "pill" (default) or "tiled"
  */
+import { isAllowed, positive } from "./config.js";
 import { safeNext } from "./next.js";
 import { signToken, verifyToken } from "./tokens.js";
 
@@ -27,14 +29,16 @@ function redirect(location: string, headers?: Headers): Response {
 
 export async function GET(request: Request): Promise<Response> {
 	const secret = process.env.GATE_SESSION_SECRET;
-	const token = new URL(request.url).searchParams.get("token");
+	if (!secret) return redirect("/login?e=expired");
 
-	const claims = secret ? await verifyToken(token, secret) : null;
-	if (!secret || !claims || claims.p !== "link") {
+	const token = new URL(request.url).searchParams.get("token");
+	const claims = await verifyToken(token, secret);
+	// An address taken off the allowlist after its link went out gets no session.
+	if (claims?.p !== "link" || !isAllowed(claims.e, process.env.GATE_ALLOWLIST)) {
 		return redirect("/login?e=expired");
 	}
 
-	const days = Number(process.env.GATE_SESSION_DAYS ?? "7") || 7;
+	const days = positive(process.env.GATE_SESSION_DAYS, 7);
 	const maxAge = days * 24 * 60 * 60;
 	const session = await signToken(
 		{ e: claims.e, x: Math.floor(Date.now() / 1000) + maxAge, p: "session" },

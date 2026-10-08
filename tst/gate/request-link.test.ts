@@ -131,7 +131,7 @@ describe("POST /api/auth/request-link, hardening", () => {
 				settled = true;
 				return response;
 			});
-			await vi.advanceTimersByTimeAsync(1199);
+			await vi.advanceTimersByTimeAsync(1999);
 			const early = settled;
 			await vi.advanceTimersByTimeAsync(1);
 			await pending;
@@ -175,5 +175,105 @@ describe("linkBase", () => {
 				VERCEL_PROJECT_PRODUCTION_URL: "client.atelic.me",
 			}),
 		).toBe("https://preview-abc.vercel.app");
+	});
+});
+
+describe("POST /api/auth/request-link, a send that goes wrong", () => {
+	let logged: ReturnType<typeof vi.spyOn>;
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.stubEnv("GATE_SESSION_SECRET", SECRET);
+		vi.stubEnv("GATE_ALLOWLIST", "sharon@example.com");
+		vi.stubEnv("RESEND_API_KEY", "re_test_key");
+		logged = vi.spyOn(console, "error").mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
+		logged.mockRestore();
+	});
+
+	it("gives a hung send up before the answer is due, so it answers on time", async () => {
+		// A send that never settles on its own, only when its signal aborts.
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				(_url: string, init: RequestInit) =>
+					new Promise((_resolve, reject) => {
+						init.signal?.addEventListener("abort", () =>
+							reject(new DOMException("aborted", "AbortError")),
+						);
+					}),
+			),
+		);
+		let settled = false;
+		const pending = POST(request({ email: "sharon@example.com" })).finally(() => {
+			settled = true;
+		});
+		// Reading the body and signing are real work off the fake clock, so
+		// wait for the send to start before moving the clock.
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
+		await vi.advanceTimersByTimeAsync(1600);
+		expect(settled).toBe(false);
+		// The send is given up at 1700 and the answer is due at 2000, both
+		// counted from before the send began.
+		await vi.advanceTimersByTimeAsync(400);
+		expect(settled).toBe(true);
+		expect((await pending).status).toBe(200);
+		expect(logged).toHaveBeenCalledWith(expect.stringContaining("AbortError"));
+	});
+
+	it("logs a send Resend refused, and answers as ever", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 403 })));
+		const response = await answer(POST(request({ email: "sharon@example.com" })));
+		await expect(response.json()).resolves.toEqual({ ok: true });
+		expect(logged).toHaveBeenCalledWith(expect.stringContaining("403"));
+	});
+
+	it("logs a missing sending key, and answers as ever", async () => {
+		vi.stubEnv("RESEND_API_KEY", "");
+		vi.stubGlobal("fetch", vi.fn());
+		const response = await answer(POST(request({ email: "sharon@example.com" })));
+		await expect(response.json()).resolves.toEqual({ ok: true });
+		expect(fetch).not.toHaveBeenCalled();
+		expect(logged).toHaveBeenCalledWith(expect.stringContaining("RESEND_API_KEY"));
+	});
+
+	it.each(["-5", "0", "Infinity", "soon"])(
+		"falls back to a fifteen minute link when GATE_LINK_TTL_MIN is %j",
+		async (ttl) => {
+			vi.stubEnv("GATE_LINK_TTL_MIN", ttl);
+			vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+			const before = Math.floor(Date.now() / 1000);
+			await answer(POST(request({ email: "sharon@example.com" })));
+			const payload = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
+			const token = new URL(payload.text.match(/https?:\S+/)[0]).searchParams.get("token");
+			const claims = await verifyToken(token, SECRET);
+			expect(claims?.x).toBe(before + 15 * 60);
+		},
+	);
+});
+
+describe("linkBase, a configured base", () => {
+	const here = new Request("https://preview-abc.vercel.app/api/auth/request-link");
+
+	it("reads a bare host as https", () => {
+		expect(linkBase(here, { GATE_BASE_URL: "client.atelic.me" })).toBe("https://client.atelic.me");
+	});
+
+	it("keeps the host and drops any path", () => {
+		expect(linkBase(here, { GATE_BASE_URL: "https://client.atelic.me/writeup/" })).toBe(
+			"https://client.atelic.me",
+		);
+	});
+
+	it("falls back to the request's own host when it is not a URL at all", () => {
+		const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+		expect(linkBase(here, { GATE_BASE_URL: "https://" })).toBe("https://preview-abc.vercel.app");
+		expect(logged).toHaveBeenCalledWith(expect.stringContaining("GATE_BASE_URL"));
+		logged.mockRestore();
 	});
 });

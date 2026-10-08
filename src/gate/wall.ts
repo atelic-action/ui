@@ -11,7 +11,7 @@
  * the favicon in its head, and the brand marks the header draws, which every
  * prerendered page preloads because the router's pending page carries the
  * header (each site's e2e/wall.spec.ts fails when the login page asks for
- * anything else); plus the sign in functions under /api/, the login page itself,
+ * anything else); plus the two sign in functions under /api/auth/, the login page itself,
  * robots.txt, and the uptime monitor's health.json. /assets/doc/ is the one
  * part of /assets/ held back: the build writes every chunk carrying a
  * private content module there (the private chunks build plugin), so a document's
@@ -43,7 +43,7 @@ const OPEN_EXACT = new Set([
 	"/proto",
 ]);
 
-const OPEN_PREFIXES = ["/api/", "/assets/", "/brand/", "/fonts/", "/proto/"];
+const OPEN_PREFIXES = ["/api/auth/", "/assets/", "/brand/", "/fonts/", "/proto/"];
 
 /** The one corner of an open prefix that stays behind the wall. */
 const HELD_PREFIXES = ["/assets/doc/"];
@@ -51,9 +51,12 @@ const HELD_PREFIXES = ["/assets/doc/"];
 /**
  * Whether a request for this path needs a session when the wall is armed.
  * The path is read the way a file server would read it (decoded, repeated
- * slashes collapsed, case folded) so an encoded or doubled slash cannot walk
- * a held file out through an open prefix; anything that will not decode, or
- * still climbs a directory once decoded, is held.
+ * slashes collapsed) so an encoded or doubled slash cannot walk a held file
+ * out through an open prefix; anything that will not decode, or still climbs
+ * a directory once decoded, is held. Case is folded for the held corner
+ * alone, so no spelling of it slips out, while an open path opens only as
+ * written: the host serves files by exact case, and a path that merely looks
+ * like an open one names some other file.
  */
 export function needsSession(pathname: string): boolean {
 	let path: string;
@@ -62,9 +65,10 @@ export function needsSession(pathname: string): boolean {
 	} catch {
 		return true;
 	}
-	path = path.replace(/\/{2,}/g, "/").toLowerCase();
+	path = path.replace(/\/{2,}/g, "/");
 	if (path.includes("..") || path.includes("\\")) return true;
-	if (HELD_PREFIXES.some((prefix) => path.startsWith(prefix))) return true;
+	const folded = path.toLowerCase();
+	if (HELD_PREFIXES.some((prefix) => folded.startsWith(prefix))) return true;
 	if (OPEN_EXACT.has(path)) return false;
 	return !OPEN_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
