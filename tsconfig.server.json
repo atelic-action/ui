@@ -18,5 +18,5 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src/gate/*.ts"]
+  "include": ["src/gate/*.ts", "src/vite/*.ts", "src/artifact/readers.ts"]
 }

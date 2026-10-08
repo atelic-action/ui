@@ -1,0 +1,1862 @@
+/* The artifact documents under src/artifact: the writeup, the monthly page,
+   the sealed document stage, and the grade chip and sign off the first two
+   share. Moved whole from the artifact template, in the order its build
+   bundled them (the shared classes, the stage, the monthly page, the
+   writeup), which the two @page rules depend on: the later one wins, and
+   the writeup's is the later one. They sit in the package's layer like
+   every sheet here, so any rule a site writes outside a layer still wins
+   over them whatever its specificity. */
+@layer atelic-ui {
+	/* =================================================================
+	   SHARED: the vocabulary the writeup and the monthly page both wear,
+	   the grade chip (GradeChip) and the sign off lockup (SignOff). A class
+	   used by more than one route's components lives in the base sheet
+	   chain rather than in a component's stylesheet, so it can never vanish
+	   from a page that does not import the component that defined it.
+
+	   Tokens only, with one deliberate literal set: the four grade colors.
+	   ================================================================= */
+
+	/* ---- the grade chip ---- */
+	:is(.mkt, .atelic-ui) .op-grade {
+		display: inline-block;
+		vertical-align: 0.1em;
+		margin-left: 0.6em;
+		padding: 0.1em 0.55em 0.12em;
+		border: 1px solid var(--hairline-strong);
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 7pt;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
+		line-height: 1.3;
+		min-width: 1.6em;
+		text-align: center;
+	}
+	/* The four grade colors are the second deliberate literal set after the
+	   printed sheet's white: a grade reads green, yellow, orange, red
+	   everywhere, whatever the brand's palette, so they are not theme tokens.
+	   The orange sits between the yellow's hue and the red's so the four stay
+	   apart on paper, and its letter clears AA on its own tint. */
+	:is(.mkt, .atelic-ui) .op-grade[data-grade="a"] {
+		color: #1b7f3b;
+		border-color: #1b7f3b;
+		background: #eaf6ee;
+	}
+	:is(.mkt, .atelic-ui) .op-grade[data-grade="b"] {
+		color: #9a6b00;
+		border-color: #c99a1a;
+		background: #fdf5dc;
+	}
+	:is(.mkt, .atelic-ui) .op-grade[data-grade="c"] {
+		color: #a84500;
+		border-color: #e8650a;
+		background: #fff0e3;
+	}
+	:is(.mkt, .atelic-ui) .op-grade[data-grade="d"] {
+		color: #b3261e;
+		border-color: #b3261e;
+		background: #fdecea;
+	}
+
+	/* ---- the sign off lockup: its container sets the size and the color ---- */
+	:is(.mkt, .atelic-ui) .op-who {
+		display: flex;
+		align-items: center;
+		gap: 10pt;
+	}
+	:is(.mkt, .atelic-ui) .op-who img {
+		width: 0.6in;
+		height: 0.6in;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-who a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .op-who b {
+		font-weight: 500;
+		color: var(--ink);
+	}
+	:is(.mkt, .atelic-ui) .op-sign {
+		font-family: var(--font-script);
+		font-size: 15pt;
+		color: var(--ink);
+		line-height: 1;
+		margin-bottom: 4pt;
+	}
+
+	@media screen and (max-width: 899px) {
+		:is(.mkt, .atelic-ui) .op-grade {
+			font-size: 10px;
+		}
+		:is(.mkt, .atelic-ui) .op-sign {
+			font-size: 22px;
+		}
+		:is(.mkt, .atelic-ui) .op-who img {
+			width: 56px;
+			height: 56px;
+		}
+	}
+
+	/* The sender's logo is the outlined wordmark, an image wider than the square
+	   slot the shared header cuts for a mark, so it keeps its own width, and the
+	   empty text wordmark beside it takes no room. */
+	:is(.mkt, .atelic-ui) .nav-logo .mark {
+		width: auto;
+		height: 20px;
+	}
+	:is(.mkt, .atelic-ui) .nav-logo .wordmark:empty {
+		display: none;
+	}
+
+	/* The sealed document stage: the Gate component (Gate.tsx). The sign in
+	   screen and the watermark it shares a vocabulary with live in
+	   styles/gate.css. */
+
+	/* =================================================================
+	   THE SEALED DOCUMENT STAGE: the Gate component (Gate.tsx).
+	   A dark stage derived from the semantic tokens, so a client's
+	   theme.css recolors it. The gate card reuses the login
+	   screen's vocabulary above (eyebrow, headline, lead, form, input,
+	   error); this section only stages it dark and adds the document
+	   classes the decrypted HTML is written against.
+	   ================================================================= */
+	:is(.mkt, .atelic-ui) .gate-stage {
+		--gs-stage: var(--surface-dark);
+		--gs-bright: color-mix(in srgb, var(--surface) 96%, white);
+		--gs-dim: color-mix(in srgb, var(--surface) 62%, var(--surface-dark));
+		--gs-faint: color-mix(in srgb, var(--surface) 40%, var(--surface-dark));
+		--gs-panel: color-mix(in srgb, var(--surface-dark) 88%, var(--surface));
+		--gs-border: color-mix(in srgb, var(--surface-dark) 72%, var(--surface));
+		--gs-hairline: color-mix(in srgb, var(--surface) 10%, transparent);
+
+		/* The navbar is fixed, so it adds no document height: a stage sized
+		   100svh minus the nav plus a credit bar shorter than the nav leaves
+		   the document shorter than the viewport, and the body's light
+		   background shows beneath the credit bar. The stage therefore owns
+		   the full viewport and clears the nav itself, painting dark edge to
+		   edge behind the bar. */
+		min-height: 100svh;
+		padding-top: var(--nav-height);
+		background: var(--gs-stage);
+		color: var(--gs-bright);
+	}
+
+	/* Overscroll and any sub-viewport rounding still expose the page body at
+	   the edges; a page carrying the stage paints its whole shell dark. */
+	:is(.mkt, .atelic-ui):has(.gate-stage) {
+		background: var(--surface-dark);
+	}
+
+	/* ---- the gate card, staged dark ---- */
+	:is(.mkt, .atelic-ui) .gate-hall {
+		display: grid;
+		place-items: center;
+		min-height: calc(100svh - var(--nav-height));
+		padding-block: clamp(48px, 9vh, 96px);
+	}
+	:is(.mkt, .atelic-ui) .gate-card {
+		width: 100%;
+		max-width: 520px;
+		margin-inline: auto;
+		padding: clamp(28px, 5vw, 44px);
+		border: 1px solid var(--gs-border);
+		border-radius: var(--radius-lg);
+		background: var(--gs-panel);
+		text-align: center;
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-eyebrow {
+		margin: 0 0 12px;
+		font-size: 12.5px;
+		letter-spacing: 0.02em;
+		color: var(--gs-faint);
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-headline {
+		margin: 0 0 12px;
+		font-family: var(--font-sans);
+		font-weight: 800;
+		letter-spacing: -0.015em;
+		font-size: clamp(26px, 3.4vw, 34px);
+		line-height: 1.12;
+		max-width: none;
+		color: var(--gs-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-lead {
+		margin: 0 auto 26px;
+		max-width: 42ch;
+		font-size: 15px;
+		line-height: 1.6;
+		color: var(--gs-dim);
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-input {
+		border-color: var(--gs-border);
+		background: color-mix(in srgb, var(--surface-dark) 94%, var(--surface));
+		color: var(--gs-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-input::placeholder {
+		color: var(--gs-faint);
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-input:focus-visible {
+		border-color: var(--primary-bright);
+		box-shadow: 0 0 0 3px var(--primary-focus-ring);
+	}
+	:is(.mkt, .atelic-ui) .gate-stage .gate-error {
+		margin: 20px auto 0;
+		max-width: 46ch;
+		font-size: 14.5px;
+		line-height: 1.55;
+		color: var(--gs-dim);
+		background: none;
+		border: none;
+		padding: 0;
+	}
+
+	/* ---- the document ----
+	   Everything below styles HTML the content module authors, so the
+	   selectors are element level inside .gate-content rather than a class
+	   per line. A client document writes plain markup and inherits this. */
+	:is(.mkt, .atelic-ui) .gate-doc {
+		/* The stage itself clears the fixed nav, so the document pads only
+		   its own breathing room. */
+		padding-block: clamp(44px, 8vh, 88px) clamp(64px, 12vh, 132px);
+	}
+	:is(.mkt, .atelic-ui) .gate-content {
+		/* The document column matches the chrome: .wrap and .nav-inner share
+		   --max-width, so the text aligns with the header bar's edges rather
+		   than sitting in a narrower centered measure. */
+		color: var(--gs-dim);
+		font-size: 16.5px;
+		line-height: 1.7;
+	}
+	:is(.mkt, .atelic-ui) .gate-content h1 {
+		margin: 0 0 10px;
+		font-size: clamp(30px, 4.4vw, 46px);
+		line-height: 1.06;
+		color: var(--gs-bright);
+		text-wrap: balance;
+	}
+	:is(.mkt, .atelic-ui) .gate-content h2 {
+		margin: 52px 0 14px;
+		font-size: clamp(21px, 2.6vw, 27px);
+		line-height: 1.2;
+		color: var(--gs-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-content h3 {
+		margin: 28px 0 8px;
+		font-size: 17px;
+		color: var(--gs-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-content p {
+		margin: 0 0 16px;
+		text-wrap: pretty;
+	}
+	:is(.mkt, .atelic-ui) .gate-content ul {
+		margin: 0 0 16px;
+		padding-left: 22px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		list-style: disc;
+	}
+	:is(.mkt, .atelic-ui) .gate-content li {
+		display: list-item;
+		list-style: disc;
+		margin: 0;
+	}
+	:is(.mkt, .atelic-ui) .gate-content li::marker {
+		color: var(--primary-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-content strong {
+		color: var(--gs-bright);
+		font-weight: 600;
+	}
+	:is(.mkt, .atelic-ui) .gate-content a {
+		color: var(--primary-bright);
+		text-decoration: none;
+		border-bottom: 1px solid currentColor;
+	}
+	:is(.mkt, .atelic-ui) .gate-content hr {
+		margin: 44px 0;
+		border: 0;
+		border-top: 1px solid var(--gs-hairline);
+	}
+	:is(.mkt, .atelic-ui) .gate-meta {
+		margin: 0 0 34px;
+		font-family: var(--font-mono);
+		font-size: 12.5px;
+		color: var(--gs-faint);
+	}
+	:is(.mkt, .atelic-ui) .gate-lede {
+		font-size: 18px;
+		color: var(--gs-bright);
+	}
+
+	/* Tier cards: the shape of a three option quote. Faded panels on the
+	   stage, one hairline lifted to mark the recommended option; no filled
+	   color anywhere, so the CTA button stays the only saturated thing. */
+	:is(.mkt, .atelic-ui) .gate-tiers {
+		display: grid;
+		/* Three explicit columns: auto-fit minted a fourth empty track at
+		   document width and squeezed the cards into three quarters of the
+		   row. A proposal's tier row is three builds wide by design. */
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 16px;
+		margin: 24px 0 8px;
+	}
+	@media (max-width: 860px) {
+		:is(.mkt, .atelic-ui) .gate-tiers {
+			grid-template-columns: 1fr;
+		}
+	}
+	:is(.mkt, .atelic-ui) .gate-tier {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 22px;
+		border: 1px solid var(--gs-border);
+		border-radius: var(--radius-lg);
+		background: var(--gs-panel);
+		min-width: 0;
+	}
+	:is(.mkt, .atelic-ui) .gate-tier.is-picked {
+		border-color: color-mix(in srgb, var(--primary-bright) 55%, transparent);
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-name {
+		font-weight: 600;
+		font-size: 17px;
+		color: var(--gs-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-price {
+		font-family: var(--font-mono);
+		font-size: 21px;
+		color: var(--primary-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-note {
+		font-size: 14px;
+		line-height: 1.55;
+		color: var(--gs-dim);
+	}
+
+	/* Trade arithmetic on a card: a sum column sitting on the card's left,
+	   digits right-aligned against each other the way a hand total lines
+	   up, with any annotation (the credit's label) to the right of its
+	   figure. Markup:
+
+	     <div class="gate-tier-math">
+	       <span class="gate-tier-was">$7,400</span>
+	       <span class="gate-tier-credit">&minus; $3,660</span>
+	       <span class="gate-tier-mathlabel">install credit</span>
+	       <span class="gate-tier-price">$3,740</span>
+	     </div>
+
+	   Amounts take grid column one (right-aligned, shared right edge);
+	   labels take column two. A bare .gate-tier-price outside the math
+	   block (the add-on card) keeps its standalone look. */
+	:is(.mkt, .atelic-ui) .gate-tier-math {
+		display: grid;
+		grid-template-columns: max-content auto;
+		column-gap: 10px;
+		row-gap: 2px;
+		align-items: baseline;
+		justify-content: start;
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-math .gate-tier-was,
+	:is(.mkt, .atelic-ui) .gate-tier-math .gate-tier-credit,
+	:is(.mkt, .atelic-ui) .gate-tier-math .gate-tier-price {
+		grid-column: 1;
+		text-align: right;
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-mathlabel {
+		grid-column: 2;
+		font-size: 13px;
+		color: var(--gs-faint);
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-was {
+		font-family: var(--font-mono);
+		font-size: 15px;
+		color: var(--gs-faint);
+		text-decoration: line-through;
+	}
+	:is(.mkt, .atelic-ui) .gate-tier-credit {
+		font-family: var(--font-mono);
+		font-size: 14px;
+		color: var(--gs-dim);
+	}
+
+	/* A full width card in the tier grid, for an add-on (a monthly service
+	   under one-time builds) that applies across every column. */
+	:is(.mkt, .atelic-ui) .gate-tiers .gate-tier.is-addon {
+		grid-column: 1 / -1;
+	}
+
+	/* The icon list: the standard sent artifact list form, each line led
+	   by a small lucide icon that says what the line means. The sealed
+	   content inlines the SVGs. */
+	:is(.mkt, .atelic-ui) .gate-content ul.icon-list {
+		list-style: none;
+		margin: 0 0 16px;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	:is(.mkt, .atelic-ui) .gate-content ul.icon-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: 12px;
+		margin: 0;
+		list-style: none;
+	}
+	:is(.mkt, .atelic-ui) .gate-content ul.icon-list svg {
+		width: 18px;
+		height: 18px;
+		flex: 0 0 auto;
+		margin-top: 3px;
+		color: var(--primary-bright);
+	}
+
+	/* Numbered flow: the ordered list for a step-by-step close. */
+	:is(.mkt, .atelic-ui) .gate-content ol {
+		margin: 0 0 16px;
+		padding-left: 24px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	:is(.mkt, .atelic-ui) .gate-content ol li {
+		display: list-item;
+		list-style: decimal;
+		margin: 0;
+	}
+	:is(.mkt, .atelic-ui) .gate-content ol li::marker {
+		color: var(--primary-bright);
+		font-weight: 700;
+	}
+
+	/* Icon bullets: a checklist variant of the document list, worn by any
+	   ul.gate-checks in the sealed content or inside a tier card. */
+	:is(.mkt, .atelic-ui) .gate-content ul.gate-checks {
+		list-style: none;
+		padding-left: 0;
+	}
+	:is(.mkt, .atelic-ui) .gate-content .gate-checks li {
+		position: relative;
+		list-style: none;
+		padding-left: 26px;
+	}
+	:is(.mkt, .atelic-ui) .gate-content .gate-checks li::before {
+		/* The lucide check, masked so it takes the accent color. A glyph
+		   character would trip the icons-over-emojis test; an SVG matches
+		   the icon set the rest of the site draws from. */
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 0.28em;
+		width: 14px;
+		height: 14px;
+		background-color: var(--primary-bright);
+		-webkit-mask:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+			center / contain no-repeat;
+		mask:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+			center / contain no-repeat;
+	}
+	:is(.mkt, .atelic-ui) .gate-tier ul.gate-checks {
+		margin: 6px 0 0;
+		display: grid;
+		gap: 8px;
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--gs-dim);
+	}
+	:is(.mkt, .atelic-ui) .gate-tier .gate-checks li {
+		padding-left: 22px;
+	}
+
+	/* ---- the close: sign off, then the person lockup ---- */
+	:is(.mkt, .atelic-ui) .gate-sign {
+		margin: 44px 0 18px;
+		/* The pitch surface sign off is the script face (voice.md rule 9),
+		   the same face the writeup and the monthly page close on, centered
+		   on the dark stage. */
+		font-family: var(--font-script);
+		font-size: clamp(38px, 5.5vw, 56px);
+		color: var(--secondary-soft);
+		text-align: center;
+	}
+	:is(.mkt, .atelic-ui) .gate-person {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 18px;
+		text-align: left;
+	}
+	:is(.mkt, .atelic-ui) .gate-person img {
+		width: 88px;
+		height: 88px;
+		border-radius: 50%;
+		object-fit: cover;
+		display: block;
+		flex: none;
+	}
+	:is(.mkt, .atelic-ui) .gate-person-name {
+		display: block;
+		font-weight: 600;
+		font-size: 17px;
+		color: var(--gs-bright);
+	}
+	:is(.mkt, .atelic-ui) .gate-person-role {
+		display: block;
+		margin-top: 4px;
+		font-size: 14px;
+		color: var(--gs-dim);
+	}
+	:is(.mkt, .atelic-ui) .gate-person-role a {
+		color: inherit;
+		border-bottom: 1px solid currentColor;
+	}
+	:is(.mkt, .atelic-ui) .gate-person-mail {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+		margin-top: 8px;
+		font-size: 14px;
+		font-weight: 500;
+		letter-spacing: 0.02em;
+		color: var(--primary-bright);
+		border-bottom: 1px solid currentColor;
+		padding-bottom: 1px;
+	}
+	:is(.mkt, .atelic-ui) .gate-person-mail svg {
+		width: 15px;
+		height: 15px;
+	}
+
+	/* =================================================================
+	   THE MONTHLY PAGE: one letter sheet and its hosted twin. Three
+	   renderings of one DOM, the same as the writeup's:
+
+	   - Screen (wide): the sheet at letter width on the surface, under the
+	     artifact shell's dark header.
+	   - Column (under 900px): the same sheet at phone type sizes; the leads
+	     run two across and each grade row folds into a labeled block.
+	   - Print: exactly one letter sheet, zero page margin, the header and
+	     the credit band dropped. Content that misses the sheet is clipped,
+	     never reflowed, so a print of one sheet is the check.
+
+	   Tokens only (theme.css), except the printed sheet's white. The grade
+	   chip and the sign off are the shared classes at the head of this sheet.
+	   ================================================================= */
+	:is(.mkt, .atelic-ui) .rp {
+		--rp-ink: var(--ink);
+		--rp-ink-soft: var(--ink-soft);
+		--rp-ink-faint: var(--neutral-500);
+		--rp-rule: var(--hairline-strong);
+		--rp-accent: var(--primary);
+		--rp-paper: #ffffff;
+		font-family: var(--font-sans);
+		color: var(--rp-ink);
+		background: var(--surface);
+		padding: calc(var(--nav-height) + 32px) 24px 48px;
+	}
+	:is(.mkt, .atelic-ui) .rp a {
+		color: inherit;
+		text-decoration: none;
+	}
+	:is(.mkt, .atelic-ui) .rp a:hover {
+		color: var(--rp-accent);
+	}
+
+	/* ---- the sheet ---- */
+	:is(.mkt, .atelic-ui) .rp-sheet {
+		width: 8.5in;
+		max-width: 100%;
+		margin: 0 auto;
+		padding: 0.5in 0.65in 0.45in;
+		display: flex;
+		flex-direction: column;
+		background: var(--rp-paper);
+		border-radius: 7px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+		print-color-adjust: exact;
+		-webkit-print-color-adjust: exact;
+	}
+
+	/* ---- the title and the period ---- */
+	:is(.mkt, .atelic-ui) .rp-period {
+		font-family: var(--font-mono);
+		font-size: 8pt;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--rp-accent);
+	}
+	:is(.mkt, .atelic-ui) .rp h1 {
+		font-family: var(--font-sans);
+		font-size: 25pt;
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		line-height: 1.08;
+		margin: 6pt 0 14pt;
+		text-wrap: balance;
+		color: var(--rp-ink);
+	}
+
+	/* ---- the leads: four questions, each a figure and one sentence ---- */
+	:is(.mkt, .atelic-ui) .rp-leads {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0 16pt;
+		padding: 10pt 0 14pt;
+		border-top: 1.5px solid var(--rp-ink);
+		border-bottom: 1px solid var(--rp-rule);
+	}
+	:is(.mkt, .atelic-ui) .rp-lead {
+		display: flex;
+		flex-direction: column;
+		gap: 3pt;
+		min-width: 0;
+	}
+	:is(.mkt, .atelic-ui) .rp-q {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 7pt;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		line-height: 1.4;
+		text-transform: uppercase;
+		color: var(--rp-accent);
+	}
+	:is(.mkt, .atelic-ui) .rp-figure {
+		font-size: 18pt;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		line-height: 1.1;
+		color: var(--rp-ink);
+	}
+	:is(.mkt, .atelic-ui) .rp-lead p {
+		margin: 0;
+		font-size: 8.4pt;
+		line-height: 1.4;
+		color: var(--rp-ink-soft);
+		text-wrap: pretty;
+	}
+
+	/* ---- the seven grades: now, last month, baseline, what moved ---- */
+	:is(.mkt, .atelic-ui) .rp-grades {
+		width: 100%;
+		border-collapse: collapse;
+		margin: 14pt 0 16pt;
+		font-size: 8.4pt;
+		line-height: 1.35;
+	}
+	:is(.mkt, .atelic-ui) .rp-grades th {
+		text-align: left;
+		padding: 0 6pt 4pt 0;
+		border-bottom: 1.5px solid var(--rp-ink);
+		font-family: var(--font-mono);
+		font-size: 6.5pt;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: var(--rp-ink-faint);
+	}
+	:is(.mkt, .atelic-ui) .rp-grades td {
+		padding: 4pt 6pt 4pt 0;
+		border-bottom: 1px solid var(--rp-rule);
+		vertical-align: top;
+		color: var(--rp-ink);
+	}
+	:is(.mkt, .atelic-ui) .rp-grades tr.is-tier-start:not(:first-child) td {
+		border-top: 1px solid var(--rp-ink);
+	}
+	:is(.mkt, .atelic-ui) .rp-tier {
+		width: 0.85in;
+		font-family: var(--font-mono);
+		font-size: 7pt;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .rp-section {
+		width: 1.9in;
+		font-weight: 600;
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .rp-now,
+	:is(.mkt, .atelic-ui) .rp-earlier {
+		width: 0.65in;
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .rp-grades .op-grade {
+		margin-left: 0;
+	}
+	/* The earlier letters print muted; this month's is the one judgement. */
+	:is(.mkt, .atelic-ui) .rp-earlier .op-grade {
+		opacity: 0.45;
+	}
+	:is(.mkt, .atelic-ui) .rp-moved {
+		color: var(--rp-ink-soft);
+		text-wrap: pretty;
+	}
+
+	/* ---- the close ---- */
+	:is(.mkt, .atelic-ui) .rp-close {
+		margin-top: auto;
+		padding-top: 10pt;
+		border-top: 1px solid var(--rp-rule);
+		font-size: 8pt;
+		line-height: 1.6;
+		color: var(--rp-ink-faint);
+	}
+
+	/* ---- the column: phones and portrait tablets ---- */
+	@media screen and (max-width: 899px) {
+		:is(.mkt, .atelic-ui) .rp {
+			padding: calc(var(--nav-height) + 8px) 0 0;
+		}
+		:is(.mkt, .atelic-ui) .rp-sheet {
+			padding: 22px 18px 24px;
+			border-radius: 0;
+			box-shadow: none;
+		}
+		:is(.mkt, .atelic-ui) .rp-period {
+			font-size: 11px;
+		}
+		:is(.mkt, .atelic-ui) .rp h1 {
+			font-size: 30px;
+			margin: 8px 0 16px;
+		}
+		:is(.mkt, .atelic-ui) .rp-leads {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 18px 16px;
+			padding: 16px 0 18px;
+		}
+		:is(.mkt, .atelic-ui) .rp-q {
+			font-size: 11px;
+		}
+		:is(.mkt, .atelic-ui) .rp-figure {
+			font-size: 24px;
+		}
+		:is(.mkt, .atelic-ui) .rp-lead p {
+			font-size: 14px;
+			line-height: 1.45;
+		}
+		:is(.mkt, .atelic-ui) .rp-grades {
+			font-size: 14px;
+		}
+		:is(.mkt, .atelic-ui) .rp-grades thead {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+		}
+		:is(.mkt, .atelic-ui) .rp-grades tr {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: baseline;
+			gap: 6px 14px;
+			padding: 10px 0;
+			border-bottom: 1px solid var(--rp-rule);
+		}
+		:is(.mkt, .atelic-ui) .rp-grades tr.is-tier-start:not(:first-child) {
+			border-top: 1px solid var(--rp-ink);
+		}
+		:is(.mkt, .atelic-ui) .rp-grades td {
+			display: block;
+			width: auto;
+			padding: 0;
+			border: none;
+		}
+		:is(.mkt, .atelic-ui) .rp-grades tr.is-tier-start:not(:first-child) td {
+			border: none;
+		}
+		/* Each row folds to the tier on its own line (first row of a tier
+		   only), the section, the three letters, then what moved. */
+		:is(.mkt, .atelic-ui) .rp-grades .rp-tier,
+		:is(.mkt, .atelic-ui) .rp-grades .rp-section,
+		:is(.mkt, .atelic-ui) .rp-grades .rp-moved {
+			width: 100%;
+		}
+		:is(.mkt, .atelic-ui) .rp-tier {
+			font-size: 10px;
+		}
+		:is(.mkt, .atelic-ui) .rp-tier:empty {
+			display: none;
+		}
+		:is(.mkt, .atelic-ui) .rp-section {
+			white-space: normal;
+		}
+		:is(.mkt, .atelic-ui) .rp-now::before,
+		:is(.mkt, .atelic-ui) .rp-earlier::before {
+			content: attr(data-label);
+			margin-right: 6px;
+			font-family: var(--font-mono);
+			font-size: 10px;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: var(--rp-ink-faint);
+		}
+		:is(.mkt, .atelic-ui) .rp-earlier:empty {
+			display: none;
+		}
+		:is(.mkt, .atelic-ui) .rp-close {
+			padding-top: 16px;
+			font-size: 13px;
+		}
+	}
+
+	/* ---- print: one letter sheet, the document alone ---- */
+	@page {
+		size: letter;
+		margin: 0;
+	}
+	@media print {
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			background: none;
+		}
+		:is(.mkt, .atelic-ui):has(.rp) .nav,
+		:is(.mkt, .atelic-ui):has(.rp) .skip-link,
+		:is(.mkt, .atelic-ui):has(.rp) .credit-bar {
+			display: none;
+		}
+		:is(.mkt, .atelic-ui) .rp {
+			padding: 0;
+			background: none;
+		}
+		:is(.mkt, .atelic-ui) .rp-sheet {
+			width: 8.5in;
+			height: 11in;
+			max-width: none;
+			margin: 0;
+			overflow: hidden;
+			border-radius: 0;
+			box-shadow: none;
+		}
+	}
+
+	/* =================================================================
+	   THE WRITEUP: a web page first, and the printed copy from the same
+	   page.
+
+	   - Phone first: the base rules are the phone's. Each section is a card
+	     of small blocks in one column; a table's rows stack, each fact
+	     wearing its column's label, so nothing scrolls sideways.
+	   - Wide (721px and up): the same cards with room: the overview on one
+	     line a section, real table columns, the owner's screen beside the
+	     findings.
+	   - Print: the chrome steps aside, the lockup and the pointer to the
+	     hosted page appear, the type comes down, and the cards flow across
+	     letter pages. Nothing is clipped and no block splits across pages.
+
+	   Tokens only (theme.css). The blocks inside a section (the checklist,
+	   the sortable table, the charts, the stat row, the callout, the
+	   collapsible) and their tones are styles/components.css's; this sheet sets
+	   the document around them and their sizes here.
+	   ================================================================= */
+	:is(.mkt, .atelic-ui) .op {
+		--op-ink: var(--ink);
+		--op-ink-soft: var(--ink-soft);
+		--op-ink-faint: var(--neutral-500);
+		--op-rule: var(--neutral-100);
+		--op-accent: var(--primary);
+		--op-card: var(--card);
+		font-family: var(--font-sans);
+		color: var(--op-ink);
+		background: var(--surface);
+		min-height: 100vh;
+	}
+	:is(.mkt, .atelic-ui) .op a {
+		color: inherit;
+		text-decoration: none;
+	}
+	:is(.mkt, .atelic-ui) .op-doc {
+		max-width: 920px;
+		margin: 0 auto;
+		padding: calc(var(--nav-height) + 22px) 16px 48px;
+		font-size: 16px;
+		line-height: 1.5;
+		print-color-adjust: exact;
+		-webkit-print-color-adjust: exact;
+	}
+
+	/* ---- the head: who it is for, what it is ---- */
+	:is(.mkt, .atelic-ui) .op-top {
+		display: none;
+	}
+	:is(.mkt, .atelic-ui) .op-meta {
+		margin: 0 0 10px;
+		font-family: var(--font-mono);
+		font-size: 12.5px;
+		letter-spacing: 0.04em;
+		color: var(--op-ink-faint);
+	}
+	:is(.mkt, .atelic-ui) .op-meta b {
+		font-weight: 500;
+		color: var(--op-ink-soft);
+	}
+	/* On a phone the date takes its own line; wide, it follows a middle dot. */
+	:is(.mkt, .atelic-ui) .op-meta-sep {
+		display: none;
+	}
+	:is(.mkt, .atelic-ui) .op-meta-date {
+		display: block;
+	}
+	:is(.mkt, .atelic-ui) .op h1 {
+		font-size: clamp(32px, 5vw, 44px);
+		font-weight: 650;
+		letter-spacing: -0.03em;
+		line-height: 1.08;
+		margin: 0;
+		text-wrap: balance;
+		color: var(--op-ink);
+	}
+	:is(.mkt, .atelic-ui) .op-intro {
+		margin: 14px 0 0;
+		max-width: 62ch;
+		font-size: 16.5px;
+		line-height: 1.5;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+
+	/* ---- the grade chip, at web sizes ---- */
+	:is(.mkt, .atelic-ui) .op .op-grade {
+		display: inline-grid;
+		place-items: center;
+		margin: 0;
+		padding: 0;
+		width: 26px;
+		height: 26px;
+		border-radius: 8px;
+		font-family: var(--font-sans);
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 0;
+		line-height: 1;
+		vertical-align: middle;
+		flex: none;
+	}
+
+	/* ---- the overview: the key, then every section under its tier, each a
+	   grade, a name that links to the section, and one plain read ---- */
+	:is(.mkt, .atelic-ui) .op-ov {
+		margin-top: 22px;
+		scroll-margin-top: calc(var(--nav-height) + 16px);
+	}
+	:is(.mkt, .atelic-ui) .op-ov-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px 20px;
+		margin-bottom: 10px;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-title {
+		font-size: 13px;
+		font-family: var(--font-mono);
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-faint);
+		margin: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-legend {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 16px;
+		font-size: 13.5px;
+		color: var(--op-ink-soft);
+	}
+	:is(.mkt, .atelic-ui) .op-legend li {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+	}
+	:is(.mkt, .atelic-ui) .op-legend .op-grade {
+		width: 22px;
+		height: 22px;
+		border-radius: 6px;
+		font-size: 12px;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-card {
+		background: var(--op-card);
+		border: 1px solid var(--op-rule);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-tier-label {
+		padding: 7px 16px;
+		background: var(--surface-alt);
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-soft);
+	}
+	:is(.mkt, .atelic-ui) .op-ov-tier ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-row {
+		position: relative;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		column-gap: 12px;
+		row-gap: 2px;
+		align-items: start;
+		padding: 12px 12px 12px 16px;
+		border-top: 1px solid var(--op-rule);
+	}
+	:is(.mkt, .atelic-ui) .op-ov-row:hover {
+		background: var(--surface);
+	}
+	:is(.mkt, .atelic-ui) .op-ov-grade {
+		grid-row: 1 / span 2;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-grade .op-grade {
+		width: 30px;
+		height: 30px;
+		border-radius: 9px;
+		font-size: 15px;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-before .op-grade {
+		opacity: 0.45;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-name {
+		font-size: 16px;
+		font-weight: 650;
+		letter-spacing: -0.01em;
+		line-height: 1.35;
+		padding-top: 3px;
+	}
+	/* The name is the link, and it covers the row; a link inside the read
+	   sits above it. */
+	:is(.mkt, .atelic-ui) .op-ov-name a::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-row:hover .op-ov-name {
+		color: var(--op-accent);
+	}
+	:is(.mkt, .atelic-ui) .op-ov-read {
+		grid-column: 2;
+		font-size: 15px;
+		line-height: 1.45;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-read a {
+		position: relative;
+		z-index: 1;
+		color: var(--op-accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	:is(.mkt, .atelic-ui) .op-ov-go {
+		grid-column: 3;
+		grid-row: 1;
+		margin-top: 5px;
+		color: var(--neutral-300);
+	}
+
+	/* ---- a part: the tier and the question it answers ---- */
+	:is(.mkt, .atelic-ui) .op-part {
+		margin: 34px 0 10px;
+		scroll-margin-top: calc(var(--nav-height) + 16px);
+	}
+	:is(.mkt, .atelic-ui) .op-part h2 {
+		font-size: 27px;
+		font-weight: 650;
+		letter-spacing: -0.025em;
+		line-height: 1.1;
+		margin: 0;
+		color: var(--op-ink);
+	}
+	:is(.mkt, .atelic-ui) .op-part p {
+		margin: 6px 0 0;
+		font-size: 16.5px;
+		color: var(--op-ink-soft);
+	}
+
+	/* ---- a topic: one section, a card of blocks ---- */
+	:is(.mkt, .atelic-ui) .op-topic {
+		background: var(--op-card);
+		border: 1px solid var(--op-rule);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		padding: 18px 16px 16px;
+		margin-top: 12px;
+		scroll-margin-top: calc(var(--nav-height) + 16px);
+	}
+	:is(.mkt, .atelic-ui) .op-topic-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 20px;
+	}
+	:is(.mkt, .atelic-ui) .op-topic h3 {
+		font-size: 21px;
+		font-weight: 650;
+		letter-spacing: -0.02em;
+		line-height: 1.2;
+		margin: 0;
+		color: var(--op-ink);
+	}
+	:is(.mkt, .atelic-ui) .op-topic h3 a {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		border-bottom: 1px solid var(--neutral-200);
+	}
+	:is(.mkt, .atelic-ui) .op-topic h3 a svg {
+		color: var(--op-ink-faint);
+	}
+	:is(.mkt, .atelic-ui) .op-topic h3 a:hover,
+	:is(.mkt, .atelic-ui) .op-topic h3 a:hover svg {
+		color: var(--op-accent);
+		border-color: var(--op-accent);
+	}
+	:is(.mkt, .atelic-ui) .op-def {
+		margin: 6px 0 0;
+		font-size: 16px;
+		line-height: 1.45;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+	/* why the letter: the rule the section met, in a line */
+	:is(.mkt, .atelic-ui) .op-why {
+		margin: 6px 0 0;
+		font-size: 14.5px;
+		line-height: 1.45;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+	:is(.mkt, .atelic-ui) .op-why b {
+		font-weight: 650;
+		color: var(--op-ink);
+	}
+	:is(.mkt, .atelic-ui) .op-topic-head > .op-grade {
+		width: 42px;
+		height: 42px;
+		border-radius: 12px;
+		font-size: 21px;
+	}
+
+	/* ---- blocks inside a topic, one under another ---- */
+	:is(.mkt, .atelic-ui) .op-blocks {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	:is(.mkt, .atelic-ui) .op-block {
+		margin-top: 16px;
+		padding-top: 16px;
+		border-top: 1px solid var(--op-rule);
+		min-width: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-block-head {
+		margin-bottom: 12px;
+	}
+	:is(.mkt, .atelic-ui) .op-block-head h4 {
+		font-size: 16px;
+		font-weight: 650;
+		letter-spacing: -0.005em;
+		margin: 0;
+		color: var(--op-ink);
+	}
+	:is(.mkt, .atelic-ui) .op-block-head p {
+		margin: 3px 0 0;
+		font-size: 15px;
+		line-height: 1.45;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+	:is(.mkt, .atelic-ui) .op-note {
+		margin: 12px 0 0;
+		font-size: 15px;
+		line-height: 1.5;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+	:is(.mkt, .atelic-ui) .op-note b {
+		color: var(--op-ink);
+		font-weight: 600;
+	}
+	:is(.mkt, .atelic-ui) .op-dash {
+		display: inline-block;
+		width: 14px;
+		height: 1.5px;
+		vertical-align: 0.3em;
+		background: var(--neutral-300);
+	}
+
+	/* The blocks are the shared package's components. These are the writeup's
+	   sizes for them. */
+	:is(.mkt, .atelic-ui) .op-checks .checklist,
+	:is(.mkt, .atelic-ui) .op-scale .threshold-scale {
+		font-size: 15px;
+	}
+	:is(.mkt, .atelic-ui) .op-bar .chart-key,
+	:is(.mkt, .atelic-ui) .op-columns .chart-key {
+		font-size: 13px;
+	}
+
+	/* the table: its layout is the shared DataTable's; these are the writeup's
+	   own sizes and the two line row names. */
+	:is(.mkt, .atelic-ui) .op-table .data-table {
+		font-size: 15px;
+	}
+	:is(.mkt, .atelic-ui) .op-table tbody th b {
+		display: block;
+		font-weight: 600;
+	}
+	:is(.mkt, .atelic-ui) .op-table tbody th a,
+	:is(.mkt, .atelic-ui) .op-table .op-sub {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--op-ink-faint);
+		overflow-wrap: anywhere;
+	}
+	:is(.mkt, .atelic-ui) .op-table tbody th a:hover {
+		color: var(--op-accent);
+	}
+	:is(.mkt, .atelic-ui) .op-table tr[data-tone="bad"] th b {
+		color: var(--tone-bad);
+	}
+	:is(.mkt, .atelic-ui) .op-table td {
+		white-space: nowrap;
+	}
+	/* A cell of running words wraps; a cell of figures never does. */
+	:is(.mkt, .atelic-ui) .op-table td:has(.op-wrap) {
+		white-space: normal;
+	}
+	:is(.mkt, .atelic-ui) .op-mark-cell {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		color: var(--tone);
+		font-weight: 600;
+	}
+	/* the icon keeps its size however long the words beside it run */
+	:is(.mkt, .atelic-ui) .op-mark-cell svg {
+		flex: none;
+	}
+	:is(.mkt, .atelic-ui) .op-rating {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		font-weight: 600;
+		color: var(--tone, var(--op-ink));
+	}
+	:is(.mkt, .atelic-ui) .op-rating svg {
+		color: var(--tone, var(--tone-warn-fill));
+		fill: currentColor;
+	}
+
+	/* a few big numbers: the shared StatRow, at the writeup's sizes */
+	:is(.mkt, .atelic-ui) .op-stats .stat-row {
+		gap: 18px 28px;
+	}
+	:is(.mkt, .atelic-ui) .op-stats .stat .num {
+		font-size: 28px;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.1;
+		color: var(--tone, var(--op-ink));
+	}
+	:is(.mkt, .atelic-ui) .op-stats .stat-delta {
+		font-size: 13px;
+	}
+	:is(.mkt, .atelic-ui) .op-stats .stat .lbl {
+		margin-top: 6px;
+		font-size: 15px;
+	}
+
+	/* pictures on their own: the same size, side by side */
+	:is(.mkt, .atelic-ui) .op-shots-row {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 16px;
+		max-width: 520px;
+		align-items: start;
+	}
+	/* three sit on one line, on a phone as well */
+	:is(.mkt, .atelic-ui) .op-shots-row[data-count="3"] {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 12px;
+		max-width: 780px;
+	}
+	:is(.mkt, .atelic-ui) .op-shots-row .op-shot a,
+	:is(.mkt, .atelic-ui) .op-shots-row .op-shot-frame {
+		aspect-ratio: 3 / 4;
+		background: var(--surface);
+	}
+	:is(.mkt, .atelic-ui) .op-shots-row .op-shot img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: center;
+	}
+
+	/* the collapsible: the shared one, at the writeup's sizes */
+	:is(.mkt, .atelic-ui) .op-more .collapsible-label {
+		font-size: 16px;
+	}
+	:is(.mkt, .atelic-ui) .op-more .collapsible-summary {
+		font-size: 15px;
+		line-height: 1.45;
+	}
+	:is(.mkt, .atelic-ui) .op-more .collapsible-body {
+		margin-top: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-more-body {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+	}
+	:is(.mkt, .atelic-ui) .op-more-body > .op-block:first-child {
+		border-top: 0;
+		margin-top: 6px;
+		padding-top: 6px;
+	}
+
+	/* findings: the shared Callout, one under another, with the owner's screen
+	   beside them */
+	:is(.mkt, .atelic-ui) .op-findings.has-shots {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 18px;
+		align-items: start;
+	}
+	:is(.mkt, .atelic-ui) .op-findings-list {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	:is(.mkt, .atelic-ui) .op-findings .callout {
+		font-size: 15.5px;
+		line-height: 1.5;
+	}
+	:is(.mkt, .atelic-ui) .op-findings .callout a,
+	:is(.mkt, .atelic-ui) .op-note a,
+	:is(.mkt, .atelic-ui) .op-block-head p a {
+		color: var(--op-accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		overflow-wrap: anywhere;
+	}
+	:is(.mkt, .atelic-ui) .op-shots {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		max-width: 340px;
+	}
+	:is(.mkt, .atelic-ui) .op-shot {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		margin: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-shot a,
+	:is(.mkt, .atelic-ui) .op-shot-frame {
+		display: block;
+		width: 100%;
+		border-radius: var(--radius-sm);
+		overflow: hidden;
+		border: 1px solid var(--neutral-200);
+		background: var(--op-card);
+	}
+	:is(.mkt, .atelic-ui) .op-shot a {
+		cursor: zoom-in;
+	}
+	:is(.mkt, .atelic-ui) .op-shot img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+	:is(.mkt, .atelic-ui) .op-shot-brief {
+		display: grid;
+		place-items: center;
+		min-height: 140px;
+		border: 1px dashed var(--neutral-300);
+		border-radius: var(--radius-sm);
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--op-ink-faint);
+		padding: 12px;
+		text-align: center;
+	}
+	:is(.mkt, .atelic-ui) .op-shot figcaption {
+		font-size: 12.5px;
+		line-height: 1.45;
+		color: var(--op-ink-faint);
+	}
+
+	/* sources: the tools the readings came from */
+	:is(.mkt, .atelic-ui) .op-sources {
+		margin-top: 16px;
+		padding-top: 12px;
+		border-top: 1px solid var(--op-rule);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 6px 16px;
+		font-size: 13.5px;
+	}
+	:is(.mkt, .atelic-ui) .op-sources-label {
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-faint);
+	}
+	:is(.mkt, .atelic-ui) .op-sources ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 18px;
+		color: var(--op-ink-soft);
+	}
+	:is(.mkt, .atelic-ui) .op-sources a {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		color: var(--op-accent);
+		font-weight: 550;
+	}
+	:is(.mkt, .atelic-ui) .op-sources a:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	/* ---- the rented line: paid's facts in one line, ungraded ---- */
+	:is(.mkt, .atelic-ui) .op-rented {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		margin: 18px 0 0;
+		padding: 16px;
+		background: var(--surface-alt);
+		border-radius: var(--radius-md);
+		font-size: 15.5px;
+		line-height: 1.5;
+		color: var(--op-ink);
+		text-wrap: pretty;
+	}
+	:is(.mkt, .atelic-ui) .op-rented-label {
+		flex: none;
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-soft);
+	}
+
+	/* ---- the markets table: on a phone each market stacks, its letters on
+	   one line with their column's label; wide, it is a table ---- */
+	:is(.mkt, .atelic-ui) .op-markets-table {
+		display: block;
+		width: 100%;
+		margin-top: 18px;
+		font-size: 15px;
+		line-height: 1.4;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table tbody {
+		display: block;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table tbody tr {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		column-gap: 16px;
+		row-gap: 6px;
+		padding: 12px 0;
+		border-bottom: 1px solid var(--op-rule);
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table tbody tr:last-child {
+		border-bottom: 0;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table th,
+	:is(.mkt, .atelic-ui) .op-markets-table td {
+		text-align: left;
+		color: var(--op-ink);
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table .op-markets-market,
+	:is(.mkt, .atelic-ui) .op-markets-table .op-markets-read {
+		width: 100%;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-market {
+		font-weight: 600;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-place {
+		display: block;
+		font-weight: 400;
+		font-size: 12.5px;
+		color: var(--op-ink-faint);
+	}
+	:is(.mkt, .atelic-ui) .op-markets-col,
+	:is(.mkt, .atelic-ui) .op-markets-label {
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		font-weight: 400;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--op-ink-soft);
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-label {
+		margin-right: 6px;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-grade {
+		white-space: nowrap;
+	}
+	:is(.mkt, .atelic-ui) .op-markets-table .op-markets-read {
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+
+	/* ---- the close ---- */
+	:is(.mkt, .atelic-ui) .op-close {
+		margin-top: 44px;
+		padding-top: 22px;
+		border-top: 1px solid var(--neutral-200);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		font-size: 14px;
+		line-height: 1.6;
+		color: var(--op-ink-faint);
+	}
+	:is(.mkt, .atelic-ui) .op-close b {
+		font-weight: 500;
+		color: var(--op-ink);
+	}
+	/* The sign off lockup itself (.op-who, .op-sign) is shared with the monthly
+	   page, so it lives with the shared classes at the head of this sheet. */
+	:is(.mkt, .atelic-ui) .op .op-sign {
+		font-size: 24px;
+		margin-bottom: 8px;
+	}
+	:is(.mkt, .atelic-ui) .op .op-who {
+		gap: 14px;
+	}
+	:is(.mkt, .atelic-ui) .op .op-who img {
+		width: 56px;
+		height: 56px;
+	}
+	/* The pointer to the hosted page belongs to the printed copy alone. */
+	:is(.mkt, .atelic-ui) .op-twin {
+		display: none;
+	}
+	:is(.mkt, .atelic-ui) .op-sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	/* ---- wide: the same page with room ---- */
+	@media print, (min-width: 721px) {
+		:is(.mkt, .atelic-ui) .op-meta-sep,
+		:is(.mkt, .atelic-ui) .op-meta-date {
+			display: inline;
+		}
+		:is(.mkt, .atelic-ui) .op-doc {
+			padding: calc(var(--nav-height) + 32px) 24px 64px;
+		}
+		:is(.mkt, .atelic-ui) .op-intro {
+			font-size: 18px;
+		}
+		:is(.mkt, .atelic-ui) .op-ov-tier-label {
+			padding: 7px 20px;
+		}
+		:is(.mkt, .atelic-ui) .op-ov-row {
+			grid-template-columns: auto 232px minmax(0, 1fr) auto;
+			column-gap: 16px;
+			padding: 11px 14px 11px 20px;
+		}
+		:is(.mkt, .atelic-ui) .op-ov-grade {
+			grid-row: 1;
+		}
+		:is(.mkt, .atelic-ui) .op-ov-read {
+			grid-column: 3;
+			padding-top: 4px;
+		}
+		:is(.mkt, .atelic-ui) .op-ov-go {
+			grid-column: 4;
+		}
+		:is(.mkt, .atelic-ui) .op-part {
+			margin: 40px 0 12px;
+		}
+		:is(.mkt, .atelic-ui) .op-part h2 {
+			font-size: 30px;
+		}
+		:is(.mkt, .atelic-ui) .op-part p {
+			font-size: 17px;
+		}
+		:is(.mkt, .atelic-ui) .op-topic {
+			padding: 22px 26px 18px;
+		}
+		:is(.mkt, .atelic-ui) .op-topic h3 {
+			font-size: 23px;
+		}
+		:is(.mkt, .atelic-ui) .op-topic-head > .op-grade {
+			width: 46px;
+			height: 46px;
+			border-radius: 13px;
+			font-size: 23px;
+		}
+		:is(.mkt, .atelic-ui) .op-findings.has-shots {
+			grid-template-columns: minmax(0, 1fr) 250px;
+			gap: 28px;
+		}
+		:is(.mkt, .atelic-ui) .op-findings .op-shots {
+			max-width: none;
+		}
+		:is(.mkt, .atelic-ui) .op-rented {
+			flex-direction: row;
+			align-items: baseline;
+			gap: 16px;
+			padding: 16px 26px;
+		}
+		:is(.mkt, .atelic-ui) .op-close {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-end;
+		}
+
+		/* the markets as a real table */
+		:is(.mkt, .atelic-ui) .op-markets-table {
+			display: table;
+			border-collapse: collapse;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table tbody {
+			display: table-row-group;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table thead {
+			position: static;
+			width: auto;
+			height: auto;
+			overflow: visible;
+			clip: auto;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table tbody tr {
+			display: table-row;
+			padding: 0;
+			border: 0;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table th,
+		:is(.mkt, .atelic-ui) .op-markets-table td {
+			display: table-cell;
+			padding: 10px 14px 10px 0;
+			border-bottom: 1px solid var(--op-rule);
+			vertical-align: top;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table thead th {
+			padding-top: 0;
+			padding-bottom: 8px;
+			border-bottom: 1.5px solid var(--op-ink);
+			vertical-align: bottom;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table tbody tr:last-child th,
+		:is(.mkt, .atelic-ui) .op-markets-table tbody tr:last-child td {
+			border-bottom: 0;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table .op-markets-market {
+			width: 170px;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-table .op-markets-read {
+			width: auto;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-col {
+			width: 64px;
+		}
+		:is(.mkt, .atelic-ui) .op-markets-label {
+			display: none;
+		}
+	}
+
+	/* ---- print: the same page, on letter paper ---- */
+	@page {
+		size: letter;
+		margin: 0.5in 0.55in 0.6in;
+		@bottom-right {
+			content: counter(page) " / " counter(pages);
+			font-family: ui-monospace, "SF Mono", monospace;
+			font-size: 7.5pt;
+			color: #75858f;
+		}
+	}
+	@media print {
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			background: none;
+		}
+		/* The sheet is the page at three quarters size. The zoom sits on the root,
+		   where the browser sizes each block for its page breaks at the printed
+		   size; on the document it measured them full size and broke early. */
+		html:has(:is(.mkt, .atelic-ui) .op-doc) {
+			zoom: 0.74;
+		}
+		:is(.mkt, .atelic-ui) .nav,
+		:is(.mkt, .atelic-ui) .credit-bar,
+		:is(.mkt, .atelic-ui) .skip-link,
+		:is(.mkt, .atelic-ui) .op-ov-go,
+		:is(.mkt, .atelic-ui) .op-topic h3 a svg {
+			display: none;
+		}
+		:is(.mkt, .atelic-ui),
+		:is(.mkt, .atelic-ui) .op {
+			background: none;
+			min-height: 0;
+		}
+		:is(.mkt, .atelic-ui) .op-doc {
+			max-width: none;
+			padding: 0;
+		}
+		:is(.mkt, .atelic-ui) .op-top {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			margin-bottom: 18px;
+		}
+		:is(.mkt, .atelic-ui) .op-mark {
+			font-weight: 600;
+			font-size: 22px;
+			letter-spacing: -0.045em;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.38em;
+			color: var(--op-ink);
+			font-family: var(--font-brand);
+		}
+		:is(.mkt, .atelic-ui) .op-run {
+			display: inline-block;
+			width: 1.7em;
+			height: 2px;
+			background: linear-gradient(90deg, var(--op-accent), transparent);
+		}
+		:is(.mkt, .atelic-ui) .op-x {
+			font-family: var(--font-mono);
+			font-size: 16px;
+			color: var(--op-ink-faint);
+			line-height: 1;
+		}
+		:is(.mkt, .atelic-ui) .op-recipient {
+			height: 30px;
+			width: auto;
+			display: block;
+		}
+		:is(.mkt, .atelic-ui) .op-ov-card,
+		:is(.mkt, .atelic-ui) .op-topic {
+			box-shadow: none;
+			border-color: var(--neutral-200);
+		}
+		:is(.mkt, .atelic-ui) .op-topic h3 a {
+			border-bottom: 0;
+		}
+		/* A small block stays whole; a table or a collapsible may run over a
+		   page, row by row, with its heading kept beside its first rows. */
+		:is(.mkt, .atelic-ui) .op-ov,
+		:is(.mkt, .atelic-ui) .op-block,
+		:is(.mkt, .atelic-ui) .op-rented,
+		:is(.mkt, .atelic-ui) .op-close,
+		:is(.mkt, .atelic-ui) .op-topic-head,
+		:is(.mkt, .atelic-ui) .op-block-head,
+		:is(.mkt, .atelic-ui) .op-markets-table tr,
+		:is(.mkt, .atelic-ui) .data-table tr {
+			break-inside: avoid;
+		}
+		:is(.mkt, .atelic-ui) .op-block.op-table,
+		:is(.mkt, .atelic-ui) .op-block.op-more,
+		:is(.mkt, .atelic-ui) .op-block.op-checks,
+		:is(.mkt, .atelic-ui) .op-block.op-findings,
+		:is(.mkt, .atelic-ui) .op-markets {
+			break-inside: auto;
+		}
+		/* A list of checks or findings runs over a page item by item, so a
+		   section starts in whatever space the last one left. */
+		:is(.mkt, .atelic-ui) .op-checks .checklist > li,
+		:is(.mkt, .atelic-ui) .op-findings .callout {
+			break-inside: avoid;
+		}
+		:is(.mkt, .atelic-ui) .op-part,
+		:is(.mkt, .atelic-ui) .collapsible > summary {
+			break-inside: avoid;
+			break-after: avoid;
+		}
+		:is(.mkt, .atelic-ui) .op-topic-head,
+		:is(.mkt, .atelic-ui) .op-block-head,
+		:is(.mkt, .atelic-ui) .collapsible > summary,
+		:is(.mkt, .atelic-ui) .data-table thead {
+			break-after: avoid;
+		}
+		:is(.mkt, .atelic-ui) .op-shot a {
+			cursor: auto;
+		}
+		:is(.mkt, .atelic-ui) .op-twin {
+			display: flex;
+			align-items: center;
+			gap: 14px;
+		}
+		:is(.mkt, .atelic-ui) .op-twin-text {
+			text-align: right;
+			font-family: var(--font-mono);
+			font-size: 12px;
+			letter-spacing: 0.04em;
+		}
+		:is(.mkt, .atelic-ui) .op-twin-text b {
+			display: block;
+			font-family: var(--font-sans);
+			font-size: 16px;
+			font-weight: 600;
+			letter-spacing: -0.01em;
+			margin-top: 2px;
+		}
+		:is(.mkt, .atelic-ui) .op-qr {
+			width: 96px;
+			height: 96px;
+			display: block;
+		}
+	}
+}
