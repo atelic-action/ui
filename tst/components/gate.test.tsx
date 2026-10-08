@@ -242,3 +242,64 @@ describe("readCookie, a name with pattern characters", () => {
 		expect(readCookie("gate_email")).toBe("");
 	});
 });
+
+describe("GateLogin, the way back", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	const type = (email: string) =>
+		fireEvent.change(screen.getByLabelText("Your email"), { target: { value: email } });
+	const form = () => screen.getByLabelText("Your email").closest("form") as HTMLFormElement;
+
+	it("drops an earlier failure when the next submit is not an email at all", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 500 })));
+		render(<GateLogin brandName="Summit" />);
+		type("sharon@example.com");
+		fireEvent.submit(form());
+		await waitFor(() => expect(screen.getByText(/Something went wrong/)).toBeInTheDocument());
+		type("not an email");
+		fireEvent.submit(form());
+		expect(screen.queryByText(/Something went wrong/)).not.toBeInTheDocument();
+		expect(screen.getAllByRole("alert")).toHaveLength(1);
+		expect(screen.getByRole("alert")).toHaveTextContent(/does not look like an email/);
+	});
+
+	it("hands focus to the field when the reader starts over", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+		render(<GateLogin brandName="Summit" />);
+		type("sharon@example.com");
+		fireEvent.submit(form());
+		await waitFor(() => expect(screen.getByText("Check your inbox.")).toBeInTheDocument());
+		fireEvent.click(screen.getByRole("button", { name: "Start over" }));
+		await waitFor(() => expect(screen.getByLabelText("Your email")).toHaveFocus());
+	});
+
+	it("posts once for two submits in the same tick", async () => {
+		const send = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+		vi.stubGlobal("fetch", send);
+		render(<GateLogin brandName="Summit" />);
+		type("sharon@example.com");
+		const target = form();
+		fireEvent.submit(target);
+		fireEvent.submit(target);
+		await waitFor(() => expect(screen.getByText("Check your inbox.")).toBeInTheDocument());
+		expect(send).toHaveBeenCalledTimes(1);
+	});
+
+	it("gives each screen on a page its own error id", () => {
+		vi.stubGlobal("fetch", vi.fn());
+		render(
+			<>
+				<GateLogin brandName="One" />
+				<GateLogin brandName="Two" />
+			</>,
+		);
+		for (const field of screen.getAllByLabelText("Your email")) {
+			fireEvent.change(field, { target: { value: "nope" } });
+			fireEvent.submit(field.closest("form") as HTMLFormElement);
+		}
+		const ids = screen.getAllByRole("alert").map((alert) => alert.id);
+		expect(new Set(ids).size).toBe(2);
+	});
+});

@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 
 type Status = "idle" | "sending" | "sent" | "failed";
 
@@ -47,6 +47,9 @@ export function GateLogin({
 	const [invalid, setInvalid] = useState(false);
 	const input = useRef<HTMLInputElement>(null);
 	const confirmation = useRef<HTMLHeadingElement>(null);
+	// A ref, since two submits can land before React renders the first one's state.
+	const inFlight = useRef(false);
+	const errorId = useId();
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
@@ -65,9 +68,11 @@ export function GateLogin({
 		const form = event.currentTarget;
 		// A second submit while the first is in flight would post twice, and a
 		// late failure would then pull the confirmation back to the form.
-		if (status === "sending") return;
+		if (inFlight.current) return;
 		const email = String(new FormData(form).get("email") ?? "").trim();
 		if (!EMAIL_PATTERN.test(email)) {
+			// Nothing was sent, so an earlier failure no longer describes anything.
+			setStatus("idle");
 			setInvalid(true);
 			input.current?.focus();
 			return;
@@ -75,6 +80,7 @@ export function GateLogin({
 		setInvalid(false);
 
 		const next = new URLSearchParams(window.location.search).get("next") ?? "/";
+		inFlight.current = true;
 		setStatus("sending");
 		try {
 			const response = await fetch(endpoint, {
@@ -88,7 +94,16 @@ export function GateLogin({
 			setExpired(false);
 		} catch {
 			setStatus("failed");
+		} finally {
+			inFlight.current = false;
 		}
+	}
+
+	// "Start over" swaps the confirmation for the form, and the button that
+	// held focus goes with it, so focus is handed to the field it leads to.
+	function startOver() {
+		setStatus("idle");
+		requestAnimationFrame(() => input.current?.focus());
 	}
 
 	return (
@@ -112,7 +127,7 @@ export function GateLogin({
 						</div>
 						<p className="gate-fine">
 							Wrong address?{" "}
-							<button type="button" className="gate-link-button" onClick={() => setStatus("idle")}>
+							<button type="button" className="gate-link-button" onClick={startOver}>
 								Start over
 							</button>
 						</p>
@@ -135,7 +150,7 @@ export function GateLogin({
 								autoComplete="email"
 								aria-label="Your email"
 								aria-invalid={invalid || undefined}
-								aria-describedby={invalid ? "gate-email-error" : undefined}
+								aria-describedby={invalid ? errorId : undefined}
 								ref={input}
 								required
 							/>
@@ -151,7 +166,7 @@ export function GateLogin({
 							</button>
 						</form>
 						{invalid && (
-							<p className="gate-error gate-error-after" id="gate-email-error" role="alert">
+							<p className="gate-error gate-error-after" id={errorId} role="alert">
 								That does not look like an email address. Check it and try again.
 							</p>
 						)}
