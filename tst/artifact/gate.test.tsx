@@ -156,3 +156,51 @@ describe("Gate", () => {
 		expect(window._hsq).toEqual([]);
 	});
 });
+
+describe("Gate, and who it says opened the document", () => {
+	beforeEach(() => {
+		window._hsq = [];
+		window.localStorage.clear();
+	});
+
+	it("seals a payload that names no one", () => {
+		for (const person of payload.people) {
+			expect(Object.keys(person).sort()).toEqual(["id", "iv", "salt", "wrapped"]);
+		}
+		expect(JSON.stringify(payload).toLowerCase()).not.toContain(EMAIL.toLowerCase());
+	});
+
+	it("identifies the reader by the address they typed, lowercased and trimmed", async () => {
+		render(<Gate payload={payload} {...COPY} identifyDomain="example.com" />);
+		submit(`  ${EMAIL.toUpperCase()} `);
+		await waitFor(
+			() => expect(window._hsq).toContainEqual(["identify", { email: EMAIL.toLowerCase() }]),
+			{ timeout: 5000 },
+		);
+	});
+
+	it("opens for an address typed without its at sign, and identifies nobody by it", async () => {
+		render(<Gate payload={payload} {...COPY} identifyDomain="example.com" />);
+		submit(EMAIL.replace("@", ""));
+		await waitFor(
+			() =>
+				expect(screen.getByRole("heading", { name: "A Proposal for Summit" })).toBeInTheDocument(),
+			{ timeout: 5000 },
+		);
+		expect(window._hsq).toEqual([]);
+	});
+
+	it("ignores an address an older payload still lists", async () => {
+		const older = {
+			...payload,
+			people: payload.people.map((person) => ({ ...person, email: "someone-else@example.com" })),
+		};
+		render(<Gate payload={older} {...COPY} identifyDomain="example.com" />);
+		submit(EMAIL);
+		await waitFor(
+			() => expect(window._hsq).toContainEqual(["identify", { email: EMAIL.toLowerCase() }]),
+			{ timeout: 5000 },
+		);
+		expect(JSON.stringify(window._hsq)).not.toContain("someone-else");
+	});
+});

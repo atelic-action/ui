@@ -79,7 +79,6 @@ export async function sealDocument(
 		);
 		sealed.push({
 			id: person.id,
-			email: person.email,
 			salt: toBase64(salt),
 			iv: toBase64(iv),
 			wrapped: toBase64(wrapped),

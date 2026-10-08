@@ -226,7 +226,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 `@atelic-action/ui/artifact` is everything the artifact template shared across its cuts, so a fix reaches every business's documents with one version bump:
 
-- **The documents:** `Writeup`, `Report`, and `Gate` (the sealed document, with its `GatePayload` type), plus the `GradeChip` and `SignOff` the first two share, and every content type they take (`WriteupProps`, `ReportProps`, `GateProps`, and the rest).
+- **The documents:** `Writeup`, `Report`, and `Gate` (the sealed document, with its `GatePayload` type; a reader's address is the key, so a payload never lists it, and the component identifies a reader to HubSpot by the address they typed), plus the `GradeChip` and `SignOff` the first two share, and every content type they take (`WriteupProps`, `ReportProps`, `GateProps`, and the rest).
 - **The shell:** `ArtifactShell`, the `.mkt` scope with the skip link, the dark header, the credit band, and the watermark around a page.
 - **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
 - **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
