@@ -31,10 +31,12 @@ Import the stylesheets in this order, from the root route or the site's base she
 2. `@atelic-action/ui/styles/base.css`
 3. `@atelic-action/ui/styles/chrome.css`
 4. `@atelic-action/ui/styles/components.css`
-5. The site's own CSS
-6. The site's `theme.css`, last
+5. `@atelic-action/ui/styles/primitives.css`
+6. `@atelic-action/ui/styles/gate.css`, on a site that mounts the access gate
+7. The site's own CSS
+8. The site's `theme.css`, last
 
-The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the site's own `.btn` classes.
+The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
 
 ## What Is Inside
 
@@ -42,10 +44,12 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
 | `@atelic-action/ui/components` | `NotFound`, the access gate's `GateLogin` and `Watermark` (with `readCookie`), and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
+| `@atelic-action/ui/primitives` | `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading`, and their prop types (see [Primitives](#primitives)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
+| `@atelic-action/ui/styles/primitives.css` | Styles for everything under `primitives`, the `.btn` classes included |
 | `@atelic-action/ui/styles/gate.css` | Styles for `GateLogin` and `Watermark` |
 | `@atelic-action/ui/gate` | `signToken`, `verifyToken`, `safeNext`, `needsSession`, and the token types |
 | `@atelic-action/ui/gate/request-link` | `POST`, the handler that emails a sign in link, and `createRequestLink` |
@@ -120,6 +124,21 @@ export function NotFoundPage() {
 ```
 
 `staticNotFoundRouting` is for prerendered sites only. On a live app the pending state is a real loading moment and the page would flash through every slow load, so an app sets `defaultNotFoundComponent` alone. A browser test is the only proof any of this works; template-marketing's `e2e/not-found.spec.ts` is the one to copy.
+
+## Primitives
+
+`Button`, `Chip`, `Eyebrow`, `Lead`, and `SectionHeading` are the small pieces a page is set in, the same in every template. Each renders from props and wears a class of the same name (`.btn`, `.chip`, `.eyebrow`, `.lead`, `.section-head`), styled by `primitives.css` from the theme tokens.
+
+```tsx
+import { Button, SectionHeading } from "@atelic-action/ui/primitives";
+
+<SectionHeading eyebrow="Pricing" title="One number" lead="Flat and posted." />;
+<Button href="/contact" size="lg" arrow>
+	Book a visit
+</Button>;
+```
+
+`Button` is an anchor when it has an `href` and a real button otherwise. It renders the `href` as given: a site served under a base path wraps it once and applies its own prefix there. Its arrow is hidden from the name a screen reader hears.
 
 ## The Access Gate
 
