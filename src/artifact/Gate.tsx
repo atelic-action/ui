@@ -19,10 +19,13 @@ export interface GatePerson {
 	/** Stable handle for the reader, used in the payload and in `onUnlock`. */
 	id: string;
 	/**
-	 * The reader's email address: the secret their key derives from, and,
-	 * when it matches `identifyDomain`, the identity pushed to HubSpot.
+	 * Never read, and a payload sealed today does not carry it. The reader's
+	 * address is the secret their key derives from, so a payload that lists
+	 * it hands the key to anyone who reads the page's script; payloads sealed
+	 * before 2026-10-08 did. The address a reader types is the one this
+	 * component uses.
 	 */
-	email: string;
+	email?: string;
 	/** Base64: this reader's PBKDF2 salt, GCM nonce, and wrapped content key. */
 	salt: string;
 	iv: string;
@@ -83,6 +86,8 @@ function fromBase64(value: string): Uint8Array {
 
 interface Opened {
 	person: GatePerson;
+	/** The address that opened the document, as the reader gave it. */
+	email: string;
 	html: string;
 }
 
@@ -137,7 +142,7 @@ async function openDocument(payload: GatePayload, rawEmail: string): Promise<Ope
 				contentKey,
 				fromBase64(payload.ct) as BufferSource,
 			);
-			return { person, html: new TextDecoder().decode(plain) };
+			return { person, email: rawEmail, html: new TextDecoder().decode(plain) };
 		} catch {
 			// Wrong email for this reader. Try the next one; say nothing.
 		}
@@ -145,11 +150,18 @@ async function openDocument(payload: GatePayload, rawEmail: string): Promise<Ope
 	return null;
 }
 
-function identifyReader(person: GatePerson, domain: string | undefined) {
-	if (!domain || !person.email) return;
-	if (!person.email.toLowerCase().endsWith(`@${domain.toLowerCase()}`)) return;
+/**
+ * Tells HubSpot who opened the document, from the address the reader gave:
+ * the payload names no one. The key forgives what the reader types (case,
+ * spaces, even a missing at sign), so the address is sent only when it reads
+ * as one, and only on the domain the site names.
+ */
+function identifyReader(rawEmail: string, domain: string | undefined) {
+	const email = rawEmail.trim().toLowerCase();
+	if (!domain || !/^[^\s@]+@[^\s@]+$/.test(email)) return;
+	if (!email.endsWith(`@${domain.toLowerCase()}`)) return;
 	window._hsq = window._hsq || [];
-	window._hsq.push(["identify", { email: person.email }]);
+	window._hsq.push(["identify", { email }]);
 	window._hsq.push(["setPath", window.location.pathname]);
 	window._hsq.push(["trackPageView"]);
 }
@@ -238,7 +250,7 @@ export function Gate({
 				if (cancelled) return;
 				if (opened) {
 					writeStored(storageKey, fromQuery);
-					identifyReader(opened.person, identifyDomain);
+					identifyReader(opened.email, identifyDomain);
 					setHtml(opened.html);
 					onUnlockRef.current?.(opened.person);
 					return;
@@ -252,7 +264,7 @@ export function Gate({
 			if (!stored) return;
 			const opened = await openDocument(payload, stored);
 			if (cancelled || !opened) return;
-			identifyReader(opened.person, identifyDomain);
+			identifyReader(opened.email, identifyDomain);
 			setHtml(opened.html);
 			onUnlockRef.current?.(opened.person);
 		}
@@ -275,7 +287,7 @@ export function Gate({
 			return;
 		}
 		writeStored(storageKey, value);
-		identifyReader(opened.person, identifyDomain);
+		identifyReader(opened.email, identifyDomain);
 		setHtml(opened.html);
 		onUnlockRef.current?.(opened.person);
 	}
