@@ -10,6 +10,7 @@ import {
 	type DataTableColumn,
 	type DataTableRow,
 	Disclosure,
+	GateLogin,
 	StackedBar,
 	StarRating,
 	StatRow,
@@ -33,6 +34,7 @@ const stops: PageStop[] = [
 	{ id: "column-chart", label: "ColumnChart" },
 	{ id: "threshold-scale", label: "ThresholdScale" },
 	{ id: "star-rating", label: "StarRating" },
+	{ id: "gate-login", label: "GateLogin" },
 	{ id: "tones", label: "Tones" },
 ];
 
@@ -543,6 +545,25 @@ export function Gallery() {
 						</Example>
 						<Example caption="Unrated, on a scale of three">
 							<StarRating value={null} max={3} fillColor="#d98c00" outlineColor="#d9b36a" />
+						</Example>
+					</Piece>
+
+					<Piece
+						id="gate-login"
+						title="GateLogin"
+						lead="The access gate's sign in screen: a reader on the allowlist asks for a link and the same confirmation shows whoever asks. It is a whole screen in a site, framed here to fit, and its button wears the site's own button classes. Its companion, Watermark, stamps the signed in reader's email on every page behind the gate and draws nothing without a session, so it has no picture here."
+					>
+						<Example caption="With an eyebrow, the copy a site passes, and the fine print">
+							<div className="gallery-gate">
+								<GateLogin
+									brandName="Kestrel Hollow Bakehouse"
+									eyebrow="Private"
+									lead="Enter your email and we will send a private link to the writeup."
+									builtBy="Atelic"
+									contactEmail="hello@example.test"
+									endpoint="/gallery-has-no-gate"
+								/>
+							</div>
 						</Example>
 					</Piece>
 

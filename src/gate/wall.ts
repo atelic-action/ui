@@ -11,7 +11,8 @@
  * the favicon in its head, and the brand marks the header draws, which every
  * prerendered page preloads because the router's pending page carries the
  * header (each site's e2e/wall.spec.ts fails when the login page asks for
- * anything else); plus the two sign in functions under /api/auth/, the login page itself,
+ * anything else); plus everything under /api/auth/, where the two sign in functions
+ * live and a host adds nothing private, the login page itself,
  * robots.txt, and the uptime monitor's health.json. /assets/doc/ is the one
  * part of /assets/ held back: the build writes every chunk carrying a
  * private content module there (the private chunks build plugin), so a document's
