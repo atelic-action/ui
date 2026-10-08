@@ -33,8 +33,9 @@ Import the stylesheets in this order, from the root route or the site's base she
 4. `@atelic-action/ui/styles/components.css`
 5. `@atelic-action/ui/styles/primitives.css`
 6. `@atelic-action/ui/styles/gate.css`, on a site that mounts the access gate
-7. The site's own CSS
-8. The site's `theme.css`, last
+7. `@atelic-action/ui/styles/artifact.css`, on a site that hosts the artifact documents
+8. The site's own CSS
+9. The site's `theme.css`, last
 
 The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
 
@@ -44,6 +45,8 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
 | `@atelic-action/ui/components` | `NotFound`, the access gate's `GateLogin` and `Watermark` (with `readCookie`), and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
+| `@atelic-action/ui/artifact` | `Writeup`, `Report`, `Gate`, `GradeChip`, `SignOff`, `ArtifactShell`, the `ArtifactConfig` types, `buildPageHead`, the reader helpers, `AppErrorBoundary`, `newTabProps`, and their prop types (see [The Artifact Documents](#the-artifact-documents)) |
+| `@atelic-action/ui/artifact/readers` | The reader helpers alone, built, for what Node runs as shipped: a site's browser tests and its reader script |
 | `@atelic-action/ui/primitives` | `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading`, and their prop types (see [Primitives](#primitives)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
@@ -51,6 +54,8 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
 | `@atelic-action/ui/styles/primitives.css` | Styles for everything under `primitives`, the `.btn` classes included |
 | `@atelic-action/ui/styles/gate.css` | Styles for `GateLogin` and `Watermark` |
+| `@atelic-action/ui/styles/artifact.css` | Styles for everything under `artifact`: the writeup, the monthly page, the sealed document stage, the grade chip, and the sign off |
+| `@atelic-action/ui/vite` | `privateChunks`, the Vite plugin that keeps private content in `/assets/doc/`, with `isPrivateContent` and `DOC_DIR` |
 | `@atelic-action/ui/gate` | `signToken`, `verifyToken`, `safeNext`, `needsSession`, and the token types |
 | `@atelic-action/ui/gate/request-link` | `POST`, the handler that emails a sign in link, and `createRequestLink` |
 | `@atelic-action/ui/gate/verify` | `GET`, the handler that turns a link into a session |
@@ -191,7 +196,7 @@ What it holds to, each with a test in `tst/gate/`:
 
 What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
 
-This is the one corner of the package that ships compiled. Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
+This is one of the two corners of the package that ship compiled (the other is the Vite plugin, under [The Artifact Documents](#the-artifact-documents)). Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
 
 ### The Screen and the Watermark
 
@@ -216,6 +221,40 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 ```
 
 `GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader `Watermark` uses and a site's own code can: empty during prerender, for a missing cookie, and for one that will not decode. `GateLogin` says so when an address is not an email, holds a second submit while the first is in flight, and announces each outcome to a screen reader.
+
+## The Artifact Documents
+
+`@atelic-action/ui/artifact` is everything the artifact template shared across its cuts, so a fix reaches every business's documents with one version bump:
+
+- **The documents:** `Writeup`, `Report`, and `Gate` (the sealed document, with its `GatePayload` type), plus the `GradeChip` and `SignOff` the first two share, and every content type they take (`WriteupProps`, `ReportProps`, `GateProps`, and the rest).
+- **The shell:** `ArtifactShell`, the `.mkt` scope with the skip link, the dark header, the credit band, and the watermark around a page.
+- **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
+- **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
+- **The error boundary:** `AppErrorBoundary` and its `ErrorFallback`.
+- **`newTabProps`,** for the links a content module writes.
+
+The package imports no router, so `ArtifactShell` takes the path being read as its `currentPath` prop. A site keeps a wrapper a few lines long that reads the path from its own router and passes it down:
+
+```tsx
+import { ArtifactShell as Shell, type ArtifactShellProps } from "@atelic-action/ui/artifact";
+import { useLocation } from "@tanstack/react-router";
+
+export function ArtifactShell(props: Omit<ArtifactShellProps, "currentPath">) {
+	const currentPath = useLocation({ select: (location) => location.pathname });
+	return <Shell {...props} currentPath={currentPath} />;
+}
+```
+
+The documents import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css` and before its `theme.css`, so every page carries the rules whichever route it is. The sheet holds two `@page` rules, the monthly page's and then the writeup's, and the later one wins for every page a site prints; the order inside the sheet is the order the template's build bundled them in and is load bearing.
+
+`@atelic-action/ui/vite` is `privateChunks`, the Vite plugin that writes every chunk carrying private content to `/assets/doc/`, where the access wall holds it, and fails the build when one lands anywhere else. A `vite.config.ts` is run by Node as shipped, so the plugin is built to `dist/vite/` like the gate:
+
+```ts
+// vite.config.ts
+import { privateChunks } from "@atelic-action/ui/vite";
+
+export default defineConfig({ plugins: [tanstackStart(), react(), privateChunks()] });
+```
 
 ## Email
 
