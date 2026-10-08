@@ -53,7 +53,9 @@ const HELD_PREFIXES = ["/assets/doc/"];
  * The path is read the way a file server would read it (decoded, repeated
  * slashes collapsed) so an encoded or doubled slash cannot walk a held file
  * out through an open prefix; anything that will not decode, or still climbs
- * a directory once decoded, is held. Case is folded for the held corner
+ * a directory once decoded, is held, and so is one that still carries a
+ * percent sign, since a second decode somewhere downstream would make it a
+ * different path than the one judged here. Case is folded for the held corner
  * alone, so no spelling of it slips out, while an open path opens only as
  * written: the host serves files by exact case, and a path that merely looks
  * like an open one names some other file.
@@ -66,7 +68,7 @@ export function needsSession(pathname: string): boolean {
 		return true;
 	}
 	path = path.replace(/\/{2,}/g, "/");
-	if (path.includes("..") || path.includes("\\")) return true;
+	if (path.includes("..") || path.includes("\\") || path.includes("%")) return true;
 	const folded = path.toLowerCase();
 	if (HELD_PREFIXES.some((prefix) => folded.startsWith(prefix))) return true;
 	if (OPEN_EXACT.has(path)) return false;

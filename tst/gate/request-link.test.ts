@@ -317,3 +317,22 @@ describe("POST /api/auth/request-link, what the email carries", () => {
 		expect((await verifyToken(token, SECRET))?.n).toBe("/");
 	});
 });
+
+describe("linkBase, plain http", () => {
+	const here = new Request("https://preview-abc.vercel.app/api/auth/request-link");
+
+	it("refuses a plain http base and falls back to the request's own host", () => {
+		const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+		expect(linkBase(here, { GATE_BASE_URL: "http://client.atelic.me" })).toBe(
+			"https://preview-abc.vercel.app",
+		);
+		expect(logged).toHaveBeenCalledWith(expect.stringContaining("plain http"));
+		logged.mockRestore();
+	});
+
+	it("accepts plain http for a local host", () => {
+		expect(linkBase(here, { GATE_BASE_URL: "http://localhost:5173" })).toBe(
+			"http://localhost:5173",
+		);
+	});
+});

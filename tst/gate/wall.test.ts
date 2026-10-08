@@ -120,3 +120,11 @@ describe("the access wall, what the review of 2026-10-08 tightened", () => {
 		expect(needsSession("/assets/Doc/")).toBe(true);
 	});
 });
+
+describe("the access wall and a path encoded twice", () => {
+	it("holds a path that still carries a percent sign once decoded", () => {
+		expect(needsSession("/assets/%2564oc/writeup-BiT53waW.js")).toBe(true);
+		expect(needsSession("/assets/100%25.js")).toBe(true);
+		expect(needsSession("/login%2520")).toBe(true);
+	});
+});

@@ -47,6 +47,9 @@ jobs:
       - name: Run tests
         run: bun run test:run
 
+      - name: Build the gate, then load it the way a Vercel function does
+        run: bun run build && bun run build:smoke
+
       - name: Publish
         # Trusted publishing: npm exchanges the job's OIDC token, so no
         # secret is stored, and provenance is attached automatically.

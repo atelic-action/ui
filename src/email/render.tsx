@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { escapeHTML } from "../lib/escapeHTML";
 import { atelicFonts, atelicPalette, type Fonts, type Palette } from "../tokens";
 import { FailurePage } from "./frame";
 import { EmailThemeProvider } from "./theme";
@@ -10,16 +11,6 @@ import { EmailThemeProvider } from "./theme";
  * escape the `>` in `details>summary` inside a style block. Only the rows
  * inside the 680 column go through React.
  */
-
-/** jq's `esc`, in the same order, for the strings that land in the shell. */
-function esc(value: string): string {
-	return value
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
-}
 
 const WRAPPER_OPEN = "<table><tbody>";
 const WRAPPER_CLOSE = "</tbody></table>";
@@ -65,13 +56,13 @@ export function renderEmail({
 	return (
 		`<!doctype html><html lang="en"><head><meta charset="utf-8">` +
 		`<meta name="viewport" content="width=device-width, initial-scale=1">` +
-		`<meta name="color-scheme" content="light"><title>${esc(title)}</title>` +
+		`<meta name="color-scheme" content="light"><title>${escapeHTML(title)}</title>` +
 		`<style>body{margin:0;padding:0;background:${ground}}a{color:${palette.ink}}` +
 		`details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}` +
 		`@media (max-width:700px){.wrap{width:100%!important}}</style></head>` +
 		`<body style="margin:0;padding:0;background:${ground};-webkit-text-size-adjust:100%">` +
 		(preheader
-			? `<span style="display:none;font-size:1px;color:${ground};max-height:0;overflow:hidden">${esc(preheader)}</span>`
+			? `<span style="display:none;font-size:1px;color:${ground};max-height:0;overflow:hidden">${escapeHTML(preheader)}</span>`
 			: "") +
 		`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${ground}">` +
 		`<tr><td align="center" style="padding:28px 12px 48px">` +
