@@ -2,7 +2,7 @@
 
 Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the not found page and the routing that keeps it alive, the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update`.
 
-The package ships source, not a build. Its TSX and CSS arrive as written and compile inside each site's own Vite.
+The package ships source, not a build. Its TSX and CSS arrive as written and compile inside each site's own Vite. The one exception is the access gate's server side, which ships compiled (see [The Access Gate](#the-access-gate)).
 
 ## Install
 
@@ -46,6 +46,10 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
+| `@atelic-action/ui/gate` | `signToken`, `verifyToken`, `safeNext`, `needsSession`, and the token types |
+| `@atelic-action/ui/gate/request-link` | `POST`, the handler that emails a sign in link, and `createRequestLink` |
+| `@atelic-action/ui/gate/verify` | `GET`, the handler that turns a link into a session |
+| `@atelic-action/ui/gate/middleware` | The routing middleware as the default export, and `createMiddleware` |
 | `@atelic-action/ui/routing` | `staticNotFoundRouting`, the router options behind the not found page |
 | `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
 | `@atelic-action/ui/styles/chrome.css` | Styles for everything under `chrome` |
@@ -115,6 +119,56 @@ export function NotFoundPage() {
 ```
 
 `staticNotFoundRouting` is for prerendered sites only. On a live app the pending state is a real loading moment and the page would flash through every slow load, so an app sets `defaultNotFoundComponent` alone. A browser test is the only proof any of this works; template-marketing's `e2e/not-found.spec.ts` is the one to copy.
+
+## The Access Gate
+
+The gate puts a whole host behind an email sign in with no database: a reader on the allowlist asks for a link, the link starts a signed session cookie, and the middleware holds every page and file back from anyone without one. It is opt in and fails open, so a host with no `GATE_SESSION_SECRET` is fully public.
+
+Vercel finds these three files by path, so a site keeps them, each a re export:
+
+```ts
+// api/auth/request-link.ts
+export { POST } from "@atelic-action/ui/gate/request-link";
+
+// api/auth/verify.ts
+export { GET } from "@atelic-action/ui/gate/verify";
+
+// middleware.ts
+export { default } from "@atelic-action/ui/gate/middleware";
+
+// The platform reads the matcher from this file and nowhere else.
+export const config = { matcher: ["/((?!api/).*)"] };
+```
+
+The default middleware holds back everything `needsSession` does: all of a host but the login page, what that page loads (`/assets/` apart from `/assets/doc/`, `/fonts/`, `/brand/`, the favicon and logo), `/api/`, `robots.txt`, `health.json`, and a website build proxied under `/proto`. A site whose matcher already leaves its open paths out passes its own test, and one whose link opens something other than a document names it:
+
+```ts
+import { createMiddleware } from "@atelic-action/ui/gate/middleware";
+export default createMiddleware({ needsSession: () => true });
+
+import { createRequestLink } from "@atelic-action/ui/gate/request-link";
+export const POST = createRequestLink({ noun: "preview" });
+```
+
+| Env | Read by | What it does |
+|---|---|---|
+| `GATE_SESSION_SECRET` | all three | The signing secret, and the switch: unset, the gate is off. Use 32 random bytes or more |
+| `GATE_ALLOWLIST` | request link | Comma separated emails that may receive a link |
+| `RESEND_API_KEY` | request link | The sending only key the link goes out on |
+| `GATE_BASE_URL` | request link | The host the link points at. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
+| `GATE_FROM`, `GATE_SUBJECT`, `GATE_LINK_TTL_MIN` | request link | Sender, subject, and link lifetime in minutes (15) |
+| `GATE_SESSION_DAYS`, `GATE_WATERMARK_MODE` | verify | Session lifetime in days (7), and `pill` or `tiled` |
+
+What it holds to, each with a test in `tst/gate/`:
+
+- Tokens are compact JWTs under HS256, signed and verified by [jose](https://github.com/panva/jose). The algorithm is pinned, and a link token is never accepted as a session or a session as a link.
+- The emailed link is never built from a forwarded header, since a caller can name any host there.
+- A link request answers the same way after the same wait whether or not the address was on the allowlist.
+- The post sign in destination is held to a path on the same host (`safeNext`).
+
+What it does not do, by having no store: a link can be used more than once until it expires, a session is revoked only by rotating the secret, and link requests are not rate limited.
+
+This is the one corner of the package that ships compiled. Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
 
 ## Email
 
