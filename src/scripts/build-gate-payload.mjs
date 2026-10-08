@@ -83,8 +83,10 @@ async function deriveKey(email, salt) {
 
 /**
  * Encrypt `contentHtml` once and wrap the content key for each person.
- * `people` is [{ id, email }]; the email is the reader's secret and their
- * identity, so both survive into the payload alongside the wrap.
+ * `people` is [{ id, email }]. The email is the reader's secret, the thing
+ * their key derives from, so it never reaches the payload; nor does the id,
+ * which is often a first name. A sealed reader is an ordinal (`r1`, `r2`)
+ * and their wrap, and nothing that says who they are.
  */
 export async function sealDocument(contentHtml, people) {
 	if (typeof contentHtml !== "string" || contentHtml.length === 0) {

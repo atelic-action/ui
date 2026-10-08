@@ -1,6 +1,6 @@
 # @atelic-action/ui
 
-Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the not found page and the routing that keeps it alive, the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update`.
+Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the not found page and the routing that keeps it alive, the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update @atelic-action/ui --latest`.
 
 The package ships source, not a build. Its TSX and CSS arrive as written and compile inside each site's own Vite. The one exception is the access gate's server side, which ships compiled (see [The Access Gate](#the-access-gate)).
 
@@ -9,6 +9,8 @@ The package ships source, not a build. Its TSX and CSS arrive as written and com
 ```bash
 bun add @atelic-action/ui
 ```
+
+The package is below 1.0, where a caret range admits patches only, so a site takes a new minor with `bun update @atelic-action/ui --latest`: a plain `bun update` leaves it on the minor it has and reports nothing wrong.
 
 Peer dependencies: `react` and `react-dom` at `^19.0.0`, and `lucide-react` at `^1.23.0`. Three more are optional, needed only by a site whose `vite.config.ts` imports `@atelic-action/ui/vite`: `vite`, `@tanstack/react-start`, and `@vitejs/plugin-react`. The commands the package installs run under `bun`, with `node` for the sealing command.
 
