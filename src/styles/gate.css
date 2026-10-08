@@ -1,0 +1,207 @@
+/* The access gate's two faces: the sign in screen (GateLogin) and the
+   confidential watermark (Watermark). Every value is a theme token, so the
+   gate recolors with the rest of a site. Scoped under `.mkt` or
+   `.atelic-ui`, which also lifts each rule over the base heading and
+   paragraph rules inside this layer. */
+@layer atelic-ui {
+	:is(.mkt, .atelic-ui) .gate-screen {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		background: var(--surface);
+		color: var(--ink);
+	}
+
+	:is(.mkt, .atelic-ui) .gate-brand {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		padding: 22px 32px;
+		border-bottom: 1px solid var(--neutral-100);
+	}
+	:is(.mkt, .atelic-ui) .gate-brand-name {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: 24px;
+		color: var(--primary);
+	}
+	:is(.mkt, .atelic-ui) .gate-brand-sub {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
+	}
+
+	:is(.mkt, .atelic-ui) .gate-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		padding: 52px 24px 44px;
+	}
+	:is(.mkt, .atelic-ui) .gate-eyebrow {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--primary);
+		margin: 0 0 16px;
+	}
+	:is(.mkt, .atelic-ui) .gate-headline {
+		font-family: var(--font-serif);
+		font-size: clamp(2rem, 4.4vw, 2.7rem);
+		line-height: 1.08;
+		margin: 0 0 16px;
+		max-width: 16ch;
+		text-wrap: balance;
+		color: var(--ink);
+	}
+	:is(.mkt, .atelic-ui) .gate-lead {
+		font-size: 1.05rem;
+		color: var(--ink-soft);
+		max-width: 46ch;
+		margin: 0 0 30px;
+		text-wrap: pretty;
+	}
+
+	:is(.mkt, .atelic-ui) .gate-form {
+		display: flex;
+		gap: 10px;
+		width: 100%;
+		max-width: 440px;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+	:is(.mkt, .atelic-ui) .gate-input {
+		flex: 1;
+		min-width: 220px;
+		font-family: var(--font-sans);
+		font-size: 15px;
+		/* The pill, matching the primary Button, so the pair reads as one
+		   control set (Forni's review of the SkySpec gate, 2026-08-25). */
+		padding: 15px 22px;
+		border-radius: var(--radius-pill);
+		border: 1px solid var(--neutral-200);
+		background: var(--card);
+		color: var(--ink);
+		outline: none;
+	}
+	:is(.mkt, .atelic-ui) .gate-input:focus-visible {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px var(--primary-focus-ring);
+	}
+	:is(.mkt, .atelic-ui) .gate-input::placeholder {
+		color: var(--neutral-500);
+	}
+
+	:is(.mkt, .atelic-ui) .gate-fine {
+		margin: 26px 0 0;
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		color: var(--neutral-500);
+	}
+	:is(.mkt, .atelic-ui) .gate-fine a {
+		color: var(--primary);
+		text-decoration: none;
+	}
+	:is(.mkt, .atelic-ui) .gate-fine a:hover {
+		text-decoration: underline;
+	}
+
+	:is(.mkt, .atelic-ui) .gate-sent {
+		margin: 4px auto 0;
+		max-width: 440px;
+		border: 1px solid var(--neutral-100);
+		border-radius: var(--radius-sm);
+		background: var(--primary-tint);
+		padding: 18px 20px;
+		text-align: left;
+		color: var(--ink-soft);
+	}
+	:is(.mkt, .atelic-ui) .gate-sent strong {
+		color: var(--ink);
+	}
+	:is(.mkt, .atelic-ui) .gate-error {
+		margin: 0 0 22px;
+		max-width: 44ch;
+		font-size: 0.95rem;
+		color: var(--ink);
+		background: var(--surface-alt);
+		border: 1px solid var(--neutral-200);
+		border-radius: var(--radius-sm);
+		padding: 11px 16px;
+	}
+
+	/* The "Start over" control reads as a link in the fine print. */
+	:is(.mkt, .atelic-ui) .gate-link-button {
+		background: none;
+		border: none;
+		color: var(--primary);
+		cursor: pointer;
+		font: inherit;
+		padding: 0;
+	}
+	/* The failure line under the form, where the default bottom margin is spare. */
+	:is(.mkt, .atelic-ui) .gate-error.gate-error-after {
+		margin-top: 22px;
+		margin-bottom: 0;
+	}
+
+	/* ---- Watermark ---- */
+	:is(.mkt, .atelic-ui) .gate-wm {
+		position: fixed;
+		right: 16px;
+		bottom: 16px;
+		z-index: 2147483000;
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		max-width: calc(100vw - 32px);
+		padding: 8px 13px;
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.03em;
+		background: var(--surface-dark);
+		color: var(--surface);
+		box-shadow: var(--shadow-md, 0 8px 24px -10px rgba(0, 0, 0, 0.5));
+		pointer-events: none;
+	}
+	:is(.mkt, .atelic-ui) .gate-wm b {
+		color: #fff;
+		font-weight: 600;
+	}
+	:is(.mkt, .atelic-ui) .gate-wm-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--primary-bright);
+		flex-shrink: 0;
+	}
+	:is(.mkt, .atelic-ui) .gate-wm-text {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	:is(.mkt, .atelic-ui) .gate-wm-tile-layer {
+		position: fixed;
+		inset: 0;
+		z-index: 2147482000;
+		pointer-events: none;
+		overflow: hidden;
+		opacity: 0.5;
+	}
+	:is(.mkt, .atelic-ui) .gate-wm-tile {
+		position: absolute;
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--primary);
+		opacity: 0.12;
+		white-space: nowrap;
+		transform: rotate(-30deg);
+	}
+}

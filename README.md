@@ -41,11 +41,12 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | Import | Exports |
 |---|---|
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic-action/ui/components` | `NotFound` and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
+| `@atelic-action/ui/components` | `NotFound`, the access gate's `GateLogin` and `Watermark` (with `readCookie`), and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
 | `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
 | `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
+| `@atelic-action/ui/styles/gate.css` | Styles for `GateLogin` and `Watermark` |
 | `@atelic-action/ui/gate` | `signToken`, `verifyToken`, `safeNext`, `needsSession`, and the token types |
 | `@atelic-action/ui/gate/request-link` | `POST`, the handler that emails a sign in link, and `createRequestLink` |
 | `@atelic-action/ui/gate/verify` | `GET`, the handler that turns a link into a session |
@@ -170,6 +171,29 @@ What it holds to, each with a test in `tst/gate/`:
 - An open path opens only as written; the held corner is held in any case. Under `/api/`, only `/api/auth/` is open.
 
 What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
+
+### The Screen and the Watermark
+
+The two pieces a reader sees are ordinary components, in `@atelic-action/ui/components`, styled by `@atelic-action/ui/styles/gate.css` (import it after `components.css`):
+
+```tsx
+// src/routes/login.tsx: the screen alone inside the site's scope, no header
+<div className="mkt">
+	<GateLogin
+		brandName={site.recipient.name}
+		eyebrow={site.gate?.eyebrow}
+		headline={site.gate?.headline}
+		lead={site.gate?.lead}
+		builtBy={site.sender.name}
+		contactEmail={site.sender.email}
+	/>
+</div>;
+
+// the site's shell, once, so every page behind the gate wears it
+<Watermark />;
+```
+
+`GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader both use: empty during prerender, for a missing cookie, and for one that will not decode.
 
 This is the one corner of the package that ships compiled. Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
 
