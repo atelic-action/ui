@@ -151,3 +151,22 @@ describe("GET /api/auth/verify, what the answer carries", () => {
 		expect(response.headers.get("referrer-policy")).toBe("no-referrer");
 	});
 });
+
+describe("GET /api/auth/verify, an absurd lifetime", () => {
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	it.each(["1e300", "1e308", "5000"])("holds GATE_SESSION_DAYS=%s to a year", async (days) => {
+		vi.stubEnv("GATE_SESSION_SECRET", SECRET);
+		vi.stubEnv("GATE_ALLOWLIST", "sharon@example.com");
+		vi.stubEnv("GATE_SESSION_DAYS", days);
+		const token = await signToken(
+			{ e: "sharon@example.com", x: Math.floor(Date.now() / 1000) + 600, p: "link" },
+			SECRET,
+		);
+		const response = await GET(verifyRequest(token));
+		expect(response.status).toBe(302);
+		expect(setCookieHeader(response)).toContain("Max-Age=31536000");
+	});
+});

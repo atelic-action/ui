@@ -15,11 +15,15 @@
  * - GATE_LINK_TTL_MIN     link lifetime in minutes (optional, default 15)
  * - GATE_BASE_URL         the host the link points at (optional, see linkBase)
  */
+import { escapeHTML } from "../lib/escapeHTML.js";
 import { isAllowed, positive } from "./config.js";
 import { safeNext } from "./next.js";
 import { signToken } from "./tokens.js";
 
 const DEFAULT_FROM = "Atelic <forms@atelic.me>";
+
+/** A day: a sign in link that outlives it is a standing key, not a link. */
+const LONGEST_LINK_MIN = 24 * 60;
 
 /** How long every valid request takes to answer, whatever it did. */
 const ANSWER_AFTER_MS = 2000;
@@ -46,16 +50,19 @@ function json(status: number, body: Record<string, unknown>): Response {
 /**
  * Where the emailed link points. Never a forwarded header: a caller can name
  * any host there, and the link carries a signed token. The configured base
- * wins, read as a host (a bare one is taken as https); on production the
- * project's own domain is next; otherwise the host the platform routed this
+ * wins, read as a host (a bare one is taken as https, and plain http is
+ * accepted only for a local one); on production the project's own domain is
+ * next; otherwise the host the platform routed this
  * request to, which is the deployment itself.
  */
 export function linkBase(request: Request, env: Record<string, string | undefined>): string {
 	const configured = env.GATE_BASE_URL?.trim();
 	if (configured) {
 		try {
-			return new URL(/^https?:\/\//i.test(configured) ? configured : `https://${configured}`)
-				.origin;
+			const base = new URL(/^https?:\/\//i.test(configured) ? configured : `https://${configured}`);
+			const local = base.hostname === "localhost" || base.hostname === "127.0.0.1";
+			if (base.protocol === "https:" || local) return base.origin;
+			console.error("gate: GATE_BASE_URL is plain http, falling back to the request's own host");
 		} catch {
 			console.error("gate: GATE_BASE_URL is not a URL, falling back to the request's own host");
 		}
@@ -66,19 +73,9 @@ export function linkBase(request: Request, env: Record<string, string | undefine
 	return new URL(request.url).origin;
 }
 
-/** Text made safe to set inside an HTML element or a quoted attribute. */
-function escapeHtml(text: string): string {
-	return text
-		.replaceAll("&", "&amp;")
-		.replaceAll("<", "&lt;")
-		.replaceAll(">", "&gt;")
-		.replaceAll('"', "&quot;")
-		.replaceAll("'", "&#39;");
-}
-
-function linkEmailHtml(rawLink: string, rawNoun: string): string {
-	const link = escapeHtml(rawLink);
-	const noun = escapeHtml(rawNoun);
+function linkEmailHTML(rawLink: string, rawNoun: string): string {
+	const link = escapeHTML(rawLink);
+	const noun = escapeHTML(rawNoun);
 	// Gmail renders inline styles only, no style blocks.
 	return `
 		<div style="font-family: Helvetica, Arial, sans-serif; color: #211c17; line-height: 1.6; max-width: 520px;">
@@ -114,7 +111,7 @@ async function sendLink(to: string, link: string, noun: string): Promise<void> {
 				from: process.env.GATE_FROM || DEFAULT_FROM,
 				to: [to],
 				subject: process.env.GATE_SUBJECT || `Your private link to the ${noun}`,
-				html: linkEmailHtml(link, noun),
+				html: linkEmailHTML(link, noun),
 				text: `Your private link to the ${noun}:\n\n${link}\n\nIf you did not expect this, you can ignore it.`,
 			}),
 		});
@@ -155,7 +152,7 @@ export function createRequestLink(options: RequestLinkOptions = {}) {
 		const answered = wait(ANSWER_AFTER_MS);
 
 		if (secret && isAllowed(email, process.env.GATE_ALLOWLIST)) {
-			const ttlMinutes = positive(process.env.GATE_LINK_TTL_MIN, 15);
+			const ttlMinutes = positive(process.env.GATE_LINK_TTL_MIN, 15, LONGEST_LINK_MIN);
 			try {
 				const token = await signToken(
 					{

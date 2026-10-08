@@ -15,6 +15,9 @@ import { isAllowed, positive } from "./config.js";
 import { safeNext } from "./next.js";
 import { signToken, verifyToken } from "./tokens.js";
 
+/** A year: past it a session is no longer something anyone remembers granting. */
+const LONGEST_SESSION_DAYS = 365;
+
 function cookie(name: string, value: string, maxAge: number, httpOnly: boolean): string {
 	const flags = ["Path=/", "Secure", "SameSite=Lax", `Max-Age=${maxAge}`];
 	if (httpOnly) flags.unshift("HttpOnly");
@@ -42,7 +45,7 @@ export async function GET(request: Request): Promise<Response> {
 		return redirect("/login?e=expired");
 	}
 
-	const days = positive(process.env.GATE_SESSION_DAYS, 7);
+	const days = positive(process.env.GATE_SESSION_DAYS, 7, LONGEST_SESSION_DAYS);
 	// Whole seconds: a browser ignores a Max-Age that is not an integer.
 	const maxAge = Math.max(1, Math.round(days * 24 * 60 * 60));
 	const session = await signToken(

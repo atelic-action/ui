@@ -19,11 +19,15 @@ describe("isAllowed", () => {
 
 describe("positive", () => {
 	it("keeps a positive number", () => {
-		expect(positive("30", 7)).toBe(30);
-		expect(positive("0.5", 7)).toBe(0.5);
+		expect(positive("30", 7, 365)).toBe(30);
+		expect(positive("0.5", 7, 365)).toBe(0.5);
 	});
 
 	it.each([undefined, "", "0", "-3", "Infinity", "NaN", "soon"])("falls back for %j", (value) => {
-		expect(positive(value, 7)).toBe(7);
+		expect(positive(value, 7, 365)).toBe(7);
+	});
+
+	it.each(["366", "1e300", "1e308"])("holds %j to the ceiling", (value) => {
+		expect(positive(value, 7, 365)).toBe(365);
 	});
 });

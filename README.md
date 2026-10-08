@@ -141,7 +141,7 @@ export { default } from "@atelic-action/ui/gate/middleware";
 export const config = { matcher: ["/((?!api/auth/).*)"] };
 ```
 
-The default middleware holds back everything `needsSession` does: all of a host but the login page, what that page loads (`/assets/` apart from `/assets/doc/`, `/fonts/`, `/brand/`, the favicon and logo), the two functions under `/api/auth/`, `robots.txt`, `health.json`, and a website build proxied under `/proto`. A site whose matcher already leaves its open paths out passes its own test, and one whose link opens something other than a document names it:
+The default middleware holds back everything `needsSession` does: all of a host but the login page, what that page loads (`/assets/` apart from `/assets/doc/`, `/fonts/`, `/brand/`, the favicon and logo), everything under `/api/auth/` (the two sign in functions, and the one place under `/api/` where a host must add nothing private), `robots.txt`, `health.json`, and a website build proxied under `/proto`. A site whose matcher already leaves its open paths out passes its own test, and one whose link opens something other than a document names it:
 
 ```ts
 import { createMiddleware } from "@atelic-action/ui/gate/middleware";
@@ -156,9 +156,9 @@ export const POST = createRequestLink({ noun: "preview" });
 | `GATE_SESSION_SECRET` | all three | The signing secret, and the switch: unset, the gate is off. Use 32 random bytes or more |
 | `GATE_ALLOWLIST` | all three | Comma separated emails that may receive a link. Taking an address off, then redeploying, refuses its outstanding link and ends its session |
 | `RESEND_API_KEY` | request link | The sending only key the link goes out on |
-| `GATE_BASE_URL` | request link | The host the link points at; a bare host is read as https. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
-| `GATE_FROM`, `GATE_SUBJECT`, `GATE_LINK_TTL_MIN` | request link | Sender, subject, and link lifetime in minutes (15) |
-| `GATE_SESSION_DAYS`, `GATE_WATERMARK_MODE` | verify | Session lifetime in days (7), and `pill` or `tiled` |
+| `GATE_BASE_URL` | request link | The host the link points at; a bare host is read as https, and plain http is refused unless it is local. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
+| `GATE_FROM`, `GATE_SUBJECT`, `GATE_LINK_TTL_MIN` | request link | Sender, subject, and link lifetime in minutes (15, a day at most) |
+| `GATE_SESSION_DAYS`, `GATE_WATERMARK_MODE` | verify | Session lifetime in days (7, a year at most), and `pill` or `tiled` |
 
 What it holds to, each with a test in `tst/gate/`:
 
@@ -167,7 +167,7 @@ What it holds to, each with a test in `tst/gate/`:
 - The emailed link is never built from a forwarded header, since a caller can name any host there.
 - A link request answers the same way after the same two second wait whether or not the address was on the allowlist, and a send still running shortly before then is given up. A send that fails says so in the function's log and nowhere else.
 - The post sign in destination is held to a path on the same host, 512 characters at most (`safeNext`).
-- An open path opens only as written; the held corner is held in any case. Only the two sign in functions are open under `/api/`.
+- An open path opens only as written; the held corner is held in any case. Under `/api/`, only `/api/auth/` is open.
 
 What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
 
