@@ -1,7 +1,7 @@
 import { webcrypto } from "node:crypto";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Gate, type GatePayload } from "../../src/artifact/Gate";
-import { sealDocument } from "./fixtures/sealDocument";
+import { sealDocument } from "../../src/scripts/build-gate-payload.mjs";
 
 const HTML = '<h1>A Proposal for Summit</h1><p class="gate-lede">Three tiers, one number each.</p>';
 const EMAIL = "reader@example.com";
@@ -85,7 +85,7 @@ describe("Gate", () => {
 		expect(screen.queryByPlaceholderText("you@company.com")).not.toBeInTheDocument();
 		// The email as typed, so a return visit walks straight back in.
 		expect(localStorage.getItem(STORAGE_KEY)).toBe("Reader@Example.COM");
-		expect(onUnlock).toHaveBeenCalledWith(expect.objectContaining({ id: "reader" }));
+		expect(onUnlock).toHaveBeenCalledWith(expect.objectContaining({ id: "r1" }));
 	});
 
 	it("walks a returning reader straight in from storage", async () => {

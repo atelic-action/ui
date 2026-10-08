@@ -10,7 +10,7 @@ The package ships source, not a build. Its TSX and CSS arrive as written and com
 bun add @atelic-action/ui
 ```
 
-Peer dependencies: `react` and `react-dom` at `^19.0.0`, and `lucide-react` at `^1.23.0`.
+Peer dependencies: `react` and `react-dom` at `^19.0.0`, and `lucide-react` at `^1.23.0`. Three more are optional, needed only by a site whose `vite.config.ts` imports `@atelic-action/ui/vite`: `vite`, `@tanstack/react-start`, and `@vitejs/plugin-react`. The commands the package installs run under `bun`, with `node` for the sealing command.
 
 ## Vite Config
 
@@ -46,7 +46,7 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
 | `@atelic-action/ui/components` | `NotFound`, the access gate's `GateLogin` and `Watermark` (with `readCookie`), and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
 | `@atelic-action/ui/artifact` | `Writeup`, `Report`, `Gate`, `GradeChip`, `SignOff`, `ArtifactShell`, the `ArtifactConfig` types, `buildPageHead`, the reader helpers, `AppErrorBoundary`, `newTabProps`, and their prop types (see [The Artifact Documents](#the-artifact-documents)) |
-| `@atelic-action/ui/artifact/readers` | The reader helpers alone, built, for what Node runs as shipped: a site's browser tests and its reader script |
+| `@atelic-action/ui/artifact/readers` | The reader helpers alone, built, for what Node runs as shipped: a site's browser tests |
 | `@atelic-action/ui/primitives` | `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading`, and their prop types (see [Primitives](#primitives)) |
 | `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
 | `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
@@ -55,7 +55,8 @@ The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outs
 | `@atelic-action/ui/styles/primitives.css` | Styles for everything under `primitives`, the `.btn` classes included |
 | `@atelic-action/ui/styles/gate.css` | Styles for `GateLogin` and `Watermark` |
 | `@atelic-action/ui/styles/artifact.css` | Styles for everything under `artifact`: the writeup, the monthly page, the sealed document stage, the grade chip, and the sign off |
-| `@atelic-action/ui/vite` | `privateChunks`, the Vite plugin that keeps private content in `/assets/doc/`, with `isPrivateContent` and `DOC_DIR` |
+| `@atelic-action/ui/vite` | `artifactConfig`, the whole Vite configuration of an artifact site as one call, with `artifactPages`; and `privateChunks`, the Vite plugin that keeps private content in `/assets/doc/`, with `isPrivateContent` and `DOC_DIR` (see [The Artifact Vite Config](#the-artifact-vite-config)) |
+| The `bin` commands | Eight commands a site's `package.json` calls by name, from `atelic-check-access` to `atelic-seal-document` (see [The Commands](#the-commands)) |
 | `@atelic-action/ui/gate` | `signToken`, `verifyToken`, `safeNext`, `needsSession`, and the token types |
 | `@atelic-action/ui/gate/request-link` | `POST`, the handler that emails a sign in link, and `createRequestLink` |
 | `@atelic-action/ui/gate/verify` | `GET`, the handler that turns a link into a session |
@@ -196,7 +197,7 @@ What it holds to, each with a test in `tst/gate/`:
 
 What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
 
-This is one of the two corners of the package that ship compiled (the other is the Vite plugin, under [The Artifact Documents](#the-artifact-documents)). Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
+This is one of the two corners of the package that ship compiled (the other is the Vite entry, under [The Artifact Vite Config](#the-artifact-vite-config)). Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
 
 ### The Screen and the Watermark
 
@@ -247,14 +248,61 @@ export function ArtifactShell(props: Omit<ArtifactShellProps, "currentPath">) {
 
 The documents import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css` and before its `theme.css`, so every page carries the rules whichever route it is. The sheet holds two `@page` rules, the monthly page's and then the writeup's, and the later one wins for every page a site prints; the order inside the sheet is the order the template's build bundled them in and is load bearing.
 
-`@atelic-action/ui/vite` is `privateChunks`, the Vite plugin that writes every chunk carrying private content to `/assets/doc/`, where the access wall holds it, and fails the build when one lands anywhere else. A `vite.config.ts` is run by Node as shipped, so the plugin is built to `dist/vite/` like the gate:
+### The Artifact Vite Config
+
+`@atelic-action/ui/vite` holds the whole Vite configuration of an artifact site, so a site's `vite.config.ts` is one call that names its pages:
 
 ```ts
 // vite.config.ts
-import { privateChunks } from "@atelic-action/ui/vite";
+import { artifactConfig } from "@atelic-action/ui/vite";
 
-export default defineConfig({ plugins: [tanstackStart(), react(), privateChunks()] });
+export default artifactConfig({ pages: ["/writeup", "/proposal", "/report"] });
 ```
+
+`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui"]`. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
+
+A site with a real need of its own passes `extend`, which is merged over the result with Vite's `mergeConfig`:
+
+```ts
+export default artifactConfig({
+	pages: ["/writeup"],
+	extend: { server: { port: 5180 } },
+});
+```
+
+`privateChunks` is the plugin inside it, exported for a site that writes its own configuration: it writes every chunk carrying private content to `/assets/doc/`, where the access wall holds it, and fails the build when one lands anywhere else.
+
+A `vite.config.ts` is run by Node as shipped, so `src/vite/` is built to `dist/vite/` like the gate. The entry imports `@tanstack/react-start` and `@vitejs/plugin-react` when it loads, so a site that imports anything from it has both installed; they are optional peers only because a site that never imports this entry needs neither.
+
+### The Commands
+
+The package installs the scripts every artifact site used to carry as files, so a site's `package.json` calls a command by name and holds no script of its own. Each reads the site it is run in from the working directory: `src/site.config.ts`, `public/`, and `dist/client` are the site's, found from where the command is run, which is the site's root.
+
+| Command | What It Does | Where a Site Calls It |
+|---|---|---|
+| `atelic-check-access` | Fails the build when `src/site.config.ts` says `access: "private"`, the build is on Vercel, and the wall's three variables are not set; warns on a local build of a private site | First step of `build` |
+| `atelic-stamp-health` | Writes `dist/client/health.json` with the status, the commit, and the build time | Last step of `build` |
+| `atelic-check-links` | Asks for every external link in the prerendered pages and exits 1 when one is dead | `check:links`, after a build |
+| `atelic-check-wall <host> [path ...]` | Asks a deployed host for each document and held file with no cookie, and passes only when the wall answers every one and the sign in functions respond | `check:wall`, before any private link goes out |
+| `atelic-reader-link <email> [path] [--token <token>] [--qr \| --no-qr]` | Mints a named reader: prints the sealed line for `analytics.identify` and the link to send, and writes `public/images/qr.png` for a public writeup's first reader | `reader` |
+| `atelic-serve-static` | Serves `dist/client` on `127.0.0.1` the way Vercel does, on `PORT` or 4173 | The `webServer` command in `playwright.config.ts` |
+| `atelic-print-sheets <url or dist/client> <out.pdf> [sheets] [page] [port]` | Prints a page to PDF with headless Chrome, reports the sheet count, and fails when a count is given and missed | `print` |
+| `atelic-seal-document <config.json> [out.json]` | Seals a document into the payload `Gate` reads, one wrapped key for each reader. The payload names no one: no address, and readers numbered `r1`, `r2` whatever the config calls them | `seal` |
+
+A site's scripts, whole:
+
+```json
+{
+	"build": "atelic-check-access && tsc -b && vite build && cp dist/client/404/index.html dist/client/404.html && atelic-stamp-health",
+	"check:links": "atelic-check-links",
+	"check:wall": "atelic-check-wall",
+	"reader": "atelic-reader-link",
+	"print": "atelic-print-sheets",
+	"seal": "atelic-seal-document"
+}
+```
+
+The logic lives in `src/scripts/` as modules with their functions exported, which is what the tests import, and each file in `bin/` only reads the command line and calls one. The TypeScript commands open on `#!/usr/bin/env bun` and run as source, since `bun` runs TypeScript inside `node_modules`. The sealing command is plain `.mjs` under `#!/usr/bin/env node`, and the print command is `bash`; it needs Chrome (the `CHROME` variable names another binary), `python3`, and `curl`.
 
 ## Email
 
