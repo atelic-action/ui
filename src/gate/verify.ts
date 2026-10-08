@@ -24,6 +24,10 @@ function cookie(name: string, value: string, maxAge: number, httpOnly: boolean):
 function redirect(location: string, headers?: Headers): Response {
 	const merged = headers ?? new Headers();
 	merged.set("Location", location);
+	// The request carried a token in its URL and the answer may carry cookies:
+	// nothing keeps a copy, and the next page learns nothing of the link.
+	merged.set("Cache-Control", "no-store");
+	merged.set("Referrer-Policy", "no-referrer");
 	return new Response(null, { status: 302, headers: merged });
 }
 
@@ -39,7 +43,8 @@ export async function GET(request: Request): Promise<Response> {
 	}
 
 	const days = positive(process.env.GATE_SESSION_DAYS, 7);
-	const maxAge = days * 24 * 60 * 60;
+	// Whole seconds: a browser ignores a Max-Age that is not an integer.
+	const maxAge = Math.max(1, Math.round(days * 24 * 60 * 60));
 	const session = await signToken(
 		{ e: claims.e, x: Math.floor(Date.now() / 1000) + maxAge, p: "session" },
 		secret,

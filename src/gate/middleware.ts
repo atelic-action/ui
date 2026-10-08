@@ -12,9 +12,11 @@
  * `config`, which the platform reads from that file and nowhere else:
  *
  *   export { default } from "@atelic-action/ui/gate/middleware";
- *   export const config = { matcher: ["/((?!api/).*)"] };
+ *   export const config = { matcher: ["/((?!api/auth/).*)"] };
  *
- * The default holds back everything `needsSession` in wall.ts does. A site
+ * That matcher keeps only the two sign in functions away from the middleware,
+ * so any other function a host adds is held like a page. The default holds
+ * back everything `needsSession` in wall.ts does. A site
  * whose matcher already leaves its open paths out passes its own test to
  * `createMiddleware`.
  */

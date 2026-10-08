@@ -16,7 +16,8 @@ export function isAllowed(email: string, allowlist: string | undefined): boolean
 /**
  * A setting that has to be a positive, finite number, or its default. A
  * lifetime of zero, a negative one, or Infinity would mint a token that is
- * already dead or that cannot be signed at all.
+ * already dead or that cannot be signed at all. A fraction is allowed (half
+ * a day), so a caller rounds what it derives to whole seconds.
  */
 export function positive(value: string | undefined, fallback: number): number {
 	const parsed = Number(value);

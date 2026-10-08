@@ -136,8 +136,9 @@ export { GET } from "@atelic-action/ui/gate/verify";
 // middleware.ts
 export { default } from "@atelic-action/ui/gate/middleware";
 
-// The platform reads the matcher from this file and nowhere else.
-export const config = { matcher: ["/((?!api/).*)"] };
+// The platform reads the matcher from this file and nowhere else. Only the
+// two sign in functions skip the middleware; any other function is held.
+export const config = { matcher: ["/((?!api/auth/).*)"] };
 ```
 
 The default middleware holds back everything `needsSession` does: all of a host but the login page, what that page loads (`/assets/` apart from `/assets/doc/`, `/fonts/`, `/brand/`, the favicon and logo), the two functions under `/api/auth/`, `robots.txt`, `health.json`, and a website build proxied under `/proto`. A site whose matcher already leaves its open paths out passes its own test, and one whose link opens something other than a document names it:
@@ -161,10 +162,11 @@ export const POST = createRequestLink({ noun: "preview" });
 
 What it holds to, each with a test in `tst/gate/`:
 
+- Give each host its own secret. A token carries no host, so two hosts sharing a secret would accept each other's sessions.
 - Tokens are compact JWTs under HS256, signed and verified by [jose](https://github.com/panva/jose). The algorithm is pinned, and a link token is never accepted as a session or a session as a link.
 - The emailed link is never built from a forwarded header, since a caller can name any host there.
 - A link request answers the same way after the same two second wait whether or not the address was on the allowlist, and a send still running shortly before then is given up. A send that fails says so in the function's log and nowhere else.
-- The post sign in destination is held to a path on the same host (`safeNext`).
+- The post sign in destination is held to a path on the same host, 512 characters at most (`safeNext`).
 - An open path opens only as written; the held corner is held in any case. Only the two sign in functions are open under `/api/`.
 
 What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.

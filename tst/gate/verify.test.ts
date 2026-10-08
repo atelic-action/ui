@@ -115,3 +115,39 @@ describe("GET /api/auth/verify, hardening", () => {
 		},
 	);
 });
+
+describe("GET /api/auth/verify, what the answer carries", () => {
+	beforeEach(() => {
+		vi.stubEnv("GATE_SESSION_SECRET", SECRET);
+		vi.stubEnv("GATE_ALLOWLIST", "sharon@example.com");
+	});
+	afterEach(() => {
+		vi.unstubAllEnvs();
+	});
+
+	it("rounds a fractional session lifetime to whole seconds", async () => {
+		vi.stubEnv("GATE_SESSION_DAYS", "0.3");
+		const token = await signToken(
+			{ e: "sharon@example.com", x: Math.floor(Date.now() / 1000) + 600, p: "link" },
+			SECRET,
+		);
+		const response = await GET(verifyRequest(token));
+		expect(setCookieHeader(response)).toMatch(/Max-Age=25920(\n|$)/);
+		expect(setCookieHeader(response)).not.toMatch(/Max-Age=\d+\.\d/);
+	});
+
+	it.each([
+		["a good link", true],
+		["a bad one", false],
+	])("is never stored and sends no referrer, for %s", async (_name, good) => {
+		const token = good
+			? await signToken(
+					{ e: "sharon@example.com", x: Math.floor(Date.now() / 1000) + 600, p: "link" },
+					SECRET,
+				)
+			: "nope";
+		const response = await GET(verifyRequest(token));
+		expect(response.headers.get("cache-control")).toBe("no-store");
+		expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+	});
+});

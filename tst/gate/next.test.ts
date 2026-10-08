@@ -27,3 +27,11 @@ describe("safeNext", () => {
 		expect(safeNext(value)).toBe("/");
 	});
 });
+
+describe("safeNext, length", () => {
+	it("keeps a path of 512 characters and sends a longer one to the root", () => {
+		const longest = `/${"a".repeat(511)}`;
+		expect(safeNext(longest)).toBe(longest);
+		expect(safeNext(`${longest}a`)).toBe("/");
+	});
+});

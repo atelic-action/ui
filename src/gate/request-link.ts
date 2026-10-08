@@ -66,7 +66,19 @@ export function linkBase(request: Request, env: Record<string, string | undefine
 	return new URL(request.url).origin;
 }
 
-function linkEmailHtml(link: string, noun: string): string {
+/** Text made safe to set inside an HTML element or a quoted attribute. */
+function escapeHtml(text: string): string {
+	return text
+		.replaceAll("&", "&amp;")
+		.replaceAll("<", "&lt;")
+		.replaceAll(">", "&gt;")
+		.replaceAll('"', "&quot;")
+		.replaceAll("'", "&#39;");
+}
+
+function linkEmailHtml(rawLink: string, rawNoun: string): string {
+	const link = escapeHtml(rawLink);
+	const noun = escapeHtml(rawNoun);
 	// Gmail renders inline styles only, no style blocks.
 	return `
 		<div style="font-family: Helvetica, Arial, sans-serif; color: #211c17; line-height: 1.6; max-width: 520px;">
@@ -146,7 +158,12 @@ export function createRequestLink(options: RequestLinkOptions = {}) {
 			const ttlMinutes = positive(process.env.GATE_LINK_TTL_MIN, 15);
 			try {
 				const token = await signToken(
-					{ e: email, x: Math.floor(Date.now() / 1000) + ttlMinutes * 60, p: "link", n: next },
+					{
+						e: email,
+						x: Math.floor(Date.now() / 1000) + Math.max(1, Math.round(ttlMinutes * 60)),
+						p: "link",
+						n: next,
+					},
 					secret,
 				);
 				const link = `${linkBase(request, process.env)}/api/auth/verify?token=${encodeURIComponent(token)}`;

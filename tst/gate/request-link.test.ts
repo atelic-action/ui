@@ -277,3 +277,43 @@ describe("linkBase, a configured base", () => {
 		logged.mockRestore();
 	});
 });
+
+describe("POST /api/auth/request-link, what the email carries", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.stubEnv("GATE_SESSION_SECRET", SECRET);
+		vi.stubEnv("GATE_ALLOWLIST", "sharon@example.com");
+		vi.stubEnv("RESEND_API_KEY", "re_test_key");
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
+	});
+
+	const sent = () => JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
+
+	it("escapes the noun in the HTML and leaves the text as written", async () => {
+		const handler = createRequestLink({ noun: "Q&A <draft>" });
+		await answer(handler(request({ email: "sharon@example.com" })));
+		expect(sent().html).toContain("Open the Q&amp;A &lt;draft&gt;");
+		expect(sent().html).not.toContain("<draft>");
+		expect(sent().text).toContain("Your private link to the Q&A <draft>:");
+	});
+
+	it("signs a whole second expiry from a fractional lifetime", async () => {
+		vi.stubEnv("GATE_LINK_TTL_MIN", "0.51");
+		const before = Math.floor(Date.now() / 1000);
+		await answer(POST(request({ email: "sharon@example.com" })));
+		const token = new URL(sent().text.match(/https?:\S+/)[0]).searchParams.get("token");
+		expect((await verifyToken(token, SECRET))?.x).toBe(before + 31);
+	});
+
+	it("drops a next too long to be a real path", async () => {
+		await answer(POST(request({ email: "sharon@example.com", next: `/${"a".repeat(4000)}` })));
+		const token = new URL(sent().text.match(/https?:\S+/)[0]).searchParams.get("token");
+		expect((await verifyToken(token, SECRET))?.n).toBe("/");
+	});
+});
