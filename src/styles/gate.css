@@ -23,7 +23,7 @@
 		font-family: var(--font-serif);
 		font-style: italic;
 		font-size: 24px;
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 	}
 	:is(.mkt, .atelic-ui) .gate-brand-sub {
 		font-family: var(--font-mono);
@@ -47,7 +47,7 @@
 		font-size: 12px;
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 		margin: 0 0 16px;
 	}
 	:is(.mkt, .atelic-ui) .gate-headline {
@@ -85,12 +85,12 @@
 		padding: 15px 22px;
 		border-radius: var(--radius-pill);
 		border: 1px solid var(--neutral-200);
-		background: var(--card);
+		background: var(--ui-card, var(--card));
 		color: var(--ink);
 		outline: none;
 	}
 	:is(.mkt, .atelic-ui) .gate-input:focus-visible {
-		border-color: var(--primary);
+		border-color: var(--ui-primary, var(--primary));
 		box-shadow: 0 0 0 3px var(--primary-focus-ring);
 	}
 	:is(.mkt, .atelic-ui) .gate-input::placeholder {
@@ -104,7 +104,7 @@
 		color: var(--neutral-500);
 	}
 	:is(.mkt, .atelic-ui) .gate-fine a {
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 		text-decoration: none;
 	}
 	:is(.mkt, .atelic-ui) .gate-fine a:hover {
@@ -139,7 +139,7 @@
 	:is(.mkt, .atelic-ui) .gate-link-button {
 		background: none;
 		border: none;
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 		cursor: pointer;
 		font: inherit;
 		padding: 0;
@@ -199,7 +199,7 @@
 		position: absolute;
 		font-family: var(--font-mono);
 		font-size: 12px;
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 		opacity: 0.12;
 		white-space: nowrap;
 		transform: rotate(-30deg);

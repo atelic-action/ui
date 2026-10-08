@@ -265,7 +265,7 @@ body {
    an example, and its button borrows a plain look, since the gallery has no
    site button classes for it to wear. */
 .mkt .gallery-gate {
-	border: 1px solid var(--line);
+	border: 1px solid var(--hairline);
 	border-radius: 12px;
 	overflow: hidden;
 }

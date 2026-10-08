@@ -149,3 +149,96 @@ describe("readCookie", () => {
 		expect(readCookie("gate_email")).toBe("");
 	});
 });
+
+describe("GateLogin, what a reader is told", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+		window.history.replaceState(null, "", "/");
+	});
+
+	const type = (email: string) =>
+		fireEvent.change(screen.getByLabelText("Your email"), { target: { value: email } });
+	const form = () => screen.getByLabelText("Your email").closest("form") as HTMLFormElement;
+
+	it("says an address is not an email, marks the field, and puts focus back in it", () => {
+		vi.stubGlobal("fetch", vi.fn());
+		render(<GateLogin brandName="Summit" />);
+		type("not an email");
+		fireEvent.submit(form());
+		expect(screen.getByRole("alert")).toHaveTextContent(/does not look like an email/);
+		const field = screen.getByLabelText("Your email");
+		expect(field).toHaveAttribute("aria-invalid", "true");
+		expect(field).toHaveAccessibleDescription(/does not look like an email/);
+		expect(field).toHaveFocus();
+		type("sharon@example.com");
+		fireEvent.submit(form());
+		expect(screen.queryByText(/does not look like an email/)).not.toBeInTheDocument();
+	});
+
+	it("sends once however many times the form is submitted while the first is in flight", async () => {
+		let settle: (response: Response) => void = () => {};
+		const send = vi.fn(() => new Promise<Response>((resolve) => (settle = resolve)));
+		vi.stubGlobal("fetch", send);
+		render(<GateLogin brandName="Summit" />);
+		type("sharon@example.com");
+		fireEvent.submit(form());
+		await waitFor(() => expect(screen.getByRole("button", { name: /Sending/ })).toBeDisabled());
+		fireEvent.submit(form());
+		fireEvent.submit(form());
+		expect(send).toHaveBeenCalledTimes(1);
+		settle(new Response("{}", { status: 200 }));
+		await waitFor(() => expect(screen.getByText("Check your inbox.")).toBeInTheDocument());
+	});
+
+	it("moves focus to the confirmation, so it is read out and focus is not lost", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+		render(<GateLogin brandName="Summit" />);
+		type("sharon@example.com");
+		fireEvent.submit(form());
+		await waitFor(() => expect(screen.getByRole("heading", { level: 1 })).toHaveFocus());
+	});
+
+	it("announces a failure and an expired link as alerts", async () => {
+		window.history.replaceState(null, "", "/login?e=expired");
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 500 })));
+		render(<GateLogin brandName="Summit" />);
+		await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent(/has expired/));
+		type("sharon@example.com");
+		fireEvent.submit(form());
+		await waitFor(() =>
+			expect(
+				screen
+					.getAllByRole("alert")
+					.some((alert) => /Something went wrong/.test(alert.textContent ?? "")),
+			).toBe(true),
+		);
+	});
+
+	it("keeps the arrow out of the button's name", () => {
+		render(<GateLogin brandName="Summit" />);
+		expect(screen.getByRole("button", { name: "Email me my link" })).toBeInTheDocument();
+	});
+});
+
+describe("readCookie, a name with pattern characters", () => {
+	afterEach(clearCookies);
+
+	it("reads the cookie of that exact name and no near miss", () => {
+		document.cookie = "axb=wrong; path=/";
+		document.cookie = "a.b=right; path=/";
+		expect(readCookie("a.b")).toBe("right");
+		clearCookies();
+		document.cookie = "axb=wrong; path=/";
+		expect(readCookie("a.b")).toBe("");
+	});
+
+	it("does not throw on a name that is no valid pattern", () => {
+		expect(readCookie("gate[")).toBe("");
+		expect(readCookie("")).toBe("");
+	});
+
+	it("does not read a cookie whose name merely ends with the one asked for", () => {
+		document.cookie = "not_gate_email=wrong; path=/";
+		expect(readCookie("gate_email")).toBe("");
+	});
+});

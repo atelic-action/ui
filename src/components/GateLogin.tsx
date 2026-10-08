@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
 type Status = "idle" | "sending" | "sent" | "failed";
 
@@ -44,17 +44,35 @@ export function GateLogin({
 	const [status, setStatus] = useState<Status>("idle");
 	const [sentTo, setSentTo] = useState("");
 	const [expired, setExpired] = useState(false);
+	const [invalid, setInvalid] = useState(false);
+	const input = useRef<HTMLInputElement>(null);
+	const confirmation = useRef<HTMLHeadingElement>(null);
 
 	useEffect(() => {
 		const params = new URLSearchParams(window.location.search);
 		if (params.get("e") === "expired") setExpired(true);
 	}, []);
 
+	// The form leaves the page when the confirmation arrives, and focus would
+	// fall to the body with it. Moving it to the heading is also what tells a
+	// screen reader the request went through.
+	useEffect(() => {
+		if (status === "sent") confirmation.current?.focus();
+	}, [status]);
+
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		const form = event.currentTarget;
+		// A second submit while the first is in flight would post twice, and a
+		// late failure would then pull the confirmation back to the form.
+		if (status === "sending") return;
 		const email = String(new FormData(form).get("email") ?? "").trim();
-		if (!EMAIL_PATTERN.test(email)) return;
+		if (!EMAIL_PATTERN.test(email)) {
+			setInvalid(true);
+			input.current?.focus();
+			return;
+		}
+		setInvalid(false);
 
 		const next = new URLSearchParams(window.location.search).get("next") ?? "/";
 		setStatus("sending");
@@ -85,7 +103,9 @@ export function GateLogin({
 
 				{status === "sent" ? (
 					<>
-						<h1 className="gate-headline">Check your inbox.</h1>
+						<h1 className="gate-headline" ref={confirmation} tabIndex={-1}>
+							Check your inbox.
+						</h1>
 						<div className="gate-sent">
 							If <strong>{sentTo}</strong> is on the list, a sign in link is on its way. The link
 							expires shortly if unused, and once you are in, you stay signed in for a while.
@@ -101,7 +121,7 @@ export function GateLogin({
 					<>
 						<h1 className="gate-headline">{headline}</h1>
 						{expired && (
-							<p className="gate-error">
+							<p className="gate-error" role="alert">
 								That link has expired. Enter your email and we will send a fresh one.
 							</p>
 						)}
@@ -114,15 +134,29 @@ export function GateLogin({
 								placeholder="you@company.com"
 								autoComplete="email"
 								aria-label="Your email"
+								aria-invalid={invalid || undefined}
+								aria-describedby={invalid ? "gate-email-error" : undefined}
+								ref={input}
 								required
 							/>
-							<button type="submit" className="btn btn-primary btn-lg">
+							<button
+								type="submit"
+								className="btn btn-primary btn-lg"
+								disabled={status === "sending"}
+							>
 								{status === "sending" ? "Sending…" : "Email me my link"}
-								<span className="arrow">→</span>
+								<span className="arrow" aria-hidden="true">
+									→
+								</span>
 							</button>
 						</form>
+						{invalid && (
+							<p className="gate-error gate-error-after" id="gate-email-error" role="alert">
+								That does not look like an email address. Check it and try again.
+							</p>
+						)}
 						{status === "failed" && (
-							<p className="gate-error gate-error-after">
+							<p className="gate-error gate-error-after" role="alert">
 								Something went wrong. Please try again in a moment.
 							</p>
 						)}

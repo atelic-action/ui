@@ -189,11 +189,12 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 	/>
 </div>;
 
-// the site's shell, once, so every page behind the gate wears it
+// the site's shell, once, inside its `.mkt` wrapper, so every page behind
+// the gate wears it (the styles are scoped there, like every sheet's)
 <Watermark />;
 ```
 
-`GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader both use: empty during prerender, for a missing cookie, and for one that will not decode.
+`GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader `Watermark` uses and a site's own code can: empty during prerender, for a missing cookie, and for one that will not decode. `GateLogin` says so when an address is not an email, holds a second submit while the first is in flight, and announces each outcome to a screen reader.
 
 This is the one corner of the package that ships compiled. Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
 
