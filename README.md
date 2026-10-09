@@ -229,7 +229,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 `@atelic-action/ui/artifact` is everything the artifact template shared across its cuts, so a fix reaches every business's documents with one version bump:
 
-- **The documents:** `Writeup`, `Report`, and `Gate` (the sealed document, with its `GatePayload` type; a reader's address is the key, so a payload never lists it, and the component identifies a reader to HubSpot by the address they typed), plus the `GradeChip` and `SignOff` the first two share, and every content type they take (`WriteupProps`, `ReportProps`, `GateProps`, and the rest).
+- **The documents:** `Writeup`, `Report`, `Note`, and `Gate` (the sealed document, with its `GatePayload` type; a reader's address is the key, so a payload never lists it, and the component identifies a reader to HubSpot by the address they typed), plus the `GradeChip` and `SignOff` they share, and every content type they take (`WriteupProps`, `ReportProps`, `NoteProps`, `GateProps`, and the rest).
 - **The shell:** `ArtifactShell`, the `.mkt` scope with the skip link, the dark header, the credit band, and the watermark around a page.
 - **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
 - **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
@@ -247,6 +247,8 @@ export function ArtifactShell(props: Omit<ArtifactShellProps, "currentPath">) {
 	return <Shell {...props} currentPath={currentPath} />;
 }
 ```
+
+**The note** is the first touch for a business whose site publishes no email address, served at `/notes` and wrapped in `ArtifactShell` exactly as the writeup is. It is the writeup's sibling, not a variant: a title and a dateline, the opener, two lanes of findings (what the customer sees, what sits under the hood), the steps the work would start with, and the close over the shared `SignOff`. Every prop is plain data, so a routine can write a note as JSON; a paragraph is a string or an array of strings and `{ text, href }` links, and the sign off person's `role` is the one field that also takes a node. A finding is a `Callout` with its `WriteupShot` under it. It reads on a phone first, sets the two lanes side by side when wide and on paper, and prints to one letter sheet under the writeup's `@page`.
 
 The documents import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css` and before its `theme.css`, so every page carries the rules whichever route it is. The sheet holds two `@page` rules, the monthly page's and then the writeup's, and the later one wins for every page a site prints; the order inside the sheet is the order the template's build bundled them in and is load bearing.
 

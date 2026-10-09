@@ -19,9 +19,11 @@ import {
 } from "../components";
 import { newTabProps } from "../lib/newTabProps";
 import { GradeChip, gradeLabel, type WriteupGrade } from "./GradeChip";
+import { Shot, type WriteupShot } from "./Shot";
 import { SignOff, type WriteupPerson } from "./SignOff";
 
 export type { WriteupGrade } from "./GradeChip";
+export type { WriteupShot } from "./Shot";
 export type { WriteupPerson } from "./SignOff";
 
 /**
@@ -42,15 +44,6 @@ export type { WriteupPerson } from "./SignOff";
 
 /** How a mark, a bar segment, or a zone reads; the shared package's tones. */
 export type WriteupTone = Tone;
-
-export interface WriteupShot {
-	/** The crop shown on the page. */
-	src: string;
-	alt: string;
-	/** The full screenshot the crop opens in a new tab; omit to render the crop alone. */
-	href?: string;
-	caption: string;
-}
 
 export interface WriteupBullet {
 	/** The point, in a full sentence. The icon sits beside it. */
@@ -388,23 +381,6 @@ function Table({ block }: { block: WriteupTable }) {
 		<Block className="op-table" block={block}>
 			<DataTable columns={block.columns} rows={rows} defaultSort={block.sort} />
 		</Block>
-	);
-}
-
-function Shot({ shot }: { shot: WriteupShot }) {
-	return (
-		<figure className="op-shot">
-			{shot.href ? (
-				<a href={shot.href} {...newTabProps(shot.href, true)}>
-					<img src={shot.src} alt={shot.alt} loading="lazy" />
-				</a>
-			) : (
-				<span className="op-shot-frame">
-					<img src={shot.src} alt={shot.alt} loading="lazy" />
-				</span>
-			)}
-			<figcaption>{shot.caption}</figcaption>
-		</figure>
 	);
 }
 

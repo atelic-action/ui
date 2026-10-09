@@ -11,6 +11,7 @@ export type {
 export { ErrorFallback } from "./ErrorFallback";
 export { Gate, type GatePayload, type GatePerson, type GateProps, normalizeEmail } from "./Gate";
 export { GradeChip, gradeLabel } from "./GradeChip";
+export * from "./Note";
 export { buildPageHead, canonicalUrl, type PageMeta } from "./pageHead";
 export * from "./Report";
 export {

@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { name as packageName, version } from "../package.json";
+import { Note, type NoteProps } from "../src/artifact/Note";
 import { CreditBar, type PageStop, SiteHeader, SkipLink } from "../src/chrome";
 import {
 	Callout,
@@ -20,8 +21,9 @@ import {
 import { Button, Chip, Eyebrow, Lead, SectionHeading } from "../src/primitives";
 
 /*
- * Every figure and name on this page is made up. The business throughout is
- * Kestrel Hollow Bakehouse, a fictional neighborhood bakery.
+ * Every figure and name on this page is made up, save the note's sender, which
+ * is the practice's own close. The business throughout is Kestrel Hollow
+ * Bakehouse, a fictional neighborhood bakery.
  */
 
 const stops: PageStop[] = [
@@ -36,6 +38,7 @@ const stops: PageStop[] = [
 	{ id: "threshold-scale", label: "ThresholdScale" },
 	{ id: "star-rating", label: "StarRating" },
 	{ id: "gate-login", label: "GateLogin" },
+	{ id: "note", label: "Note" },
 	{ id: "primitives", label: "Primitives" },
 	{ id: "tones", label: "Tones" },
 ];
@@ -94,6 +97,93 @@ function EditableStars() {
 	const [rating, setRating] = useState<number | null>(4);
 	return <StarRating value={rating} onChange={setRating} />;
 }
+
+/*
+ * A first touch note, as a routine would write it: plain data throughout.
+ * The bakery, its numbers, and its pages are made up; the sender is the
+ * practice's own close, as every note carries it.
+ */
+const note: NoteProps = {
+	title: "A Note for Kestrel Hollow Bakehouse",
+	preparedFor: "Kestrel Hollow Bakehouse",
+	date: "2026-10-09",
+	opener: [
+		"I walked past Kestrel Hollow on Alder Street on Tuesday morning, and the line out the door for the morning buns said everything about the bread. ",
+		"Online, though, the bakery is harder to find than it is on the sidewalk, and a few small fixes would close that gap.",
+	],
+	lanes: [
+		{
+			heading: "What your customer sees",
+			findings: [
+				{
+					lead: "The menu is a photo of the chalkboard.",
+					body: "On a phone it weighs 4.2 MB and has to be pinched to read, so someone choosing lunch from the bus stop gives up before finding the soup.",
+					shot: {
+						src: "/images/note-menu.svg",
+						alt: "The menu page on a phone: a dark photo of a chalkboard, too small to read",
+						href: "/images/note-menu.svg",
+						caption: "The menu page at phone width",
+					},
+				},
+				{
+					lead: "Sunday hours disagree.",
+					body: "The site says 08:00 to 14:00 and the map listing says closed, so the Sunday crowd reads the one that turns them away.",
+				},
+			],
+		},
+		{
+			heading: "What I see under the hood",
+			findings: [
+				{
+					lead: "Every page is titled Home.",
+					body: "Search shows the same word for all six pages, so nothing tells Google, or anyone scanning the results, that this is a bakery on Alder Street.",
+				},
+				{
+					lead: "A phone waits 6.8 seconds for the first screen.",
+					body: "Most of it is the chalkboard photo and three fonts the site never uses; on a cell signal that is long enough to hit back.",
+					href: "https://pagespeed.web.dev/",
+				},
+			],
+		},
+	],
+	start: {
+		lead: "I would start by:",
+		items: [
+			{
+				lead: "Setting the menu as text,",
+				body: "so it reads on any phone and search can find the soup.",
+			},
+			{ lead: "Making the hours agree everywhere,", body: "starting with the map listing." },
+			{
+				lead: "Giving each page a real title:",
+				body: "the bakery's name and what the page is for.",
+			},
+		],
+	},
+	close: {
+		paragraphs: [
+			[
+				"My name is Matthew and I run ",
+				{ text: "Atelic", href: "https://atelic.me" },
+				", a small Denver shop that helps companies grow by managing how they show up on the web.",
+			],
+			[
+				"If any of this is useful, ",
+				{ text: "grab a time that suits you", href: "https://meet.atelic.me" },
+				" and I will walk you through it. If not, no worries at all, and thank you for the morning buns.",
+			],
+		],
+		signOff: "Reliably Yours,",
+		person: {
+			photoSrc: "/images/note-person.svg",
+			photoAlt: "Matthew Fornaciari",
+			name: "Matthew Fornaciari",
+			role: "Atelic",
+			mailHref: "mailto:matt@atelic.me",
+			mailLabel: "matt@atelic.me",
+		},
+	},
+};
 
 function Example({ caption, children }: { caption?: string; children: ReactNode }) {
 	return (
@@ -565,6 +655,18 @@ export function Gallery() {
 									contactEmail="hello@example.test"
 									endpoint="/gallery-has-no-gate"
 								/>
+							</div>
+						</Example>
+					</Piece>
+
+					<Piece
+						id="note"
+						title="Note"
+						lead="The first touch, for a business whose site publishes no email address, set as a short page at /notes: the opener, what the customer sees and what sits under the hood, where the work would start, and the close. It reads on a phone first and prints to one letter sheet, and every prop is plain data a routine can write as JSON. A site wraps it in ArtifactShell, as it wraps the writeup; here it is framed to sit in the page."
+					>
+						<Example caption="Two lanes, one finding with the owner's screen under it, one linked">
+							<div className="gallery-document">
+								<Note {...note} />
 							</div>
 						</Example>
 					</Piece>
