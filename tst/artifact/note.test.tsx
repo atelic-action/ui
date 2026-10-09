@@ -162,6 +162,30 @@ describe("Note", () => {
 		expect(finding("The hours disagree.")).not.toHaveClass("has-shot");
 	});
 
+	it("opens a finding's shot in a new tab when it has an address, and says so", () => {
+		const full = "https://assets.example.com/menu-full.png";
+		render(
+			<Note
+				{...note({
+					lanes: [
+						{
+							heading: "What your customer sees",
+							findings: [{ lead: "A lead.", body: "A body.", shot: { ...shot, href: full } }],
+						},
+					],
+				})}
+			/>,
+		);
+		const figure = within(finding("A lead.")).getByRole("figure");
+		const link = within(figure).getByRole("link", { name: "The menu page on a phone" });
+		expect(link).toHaveAttribute("href", full);
+		expect(link).toHaveAttribute("target", "_blank");
+		expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
+		expect(link).toHaveAttribute("title", "Open the full picture");
+		expect(within(link).getByRole("img", { name: "The menu page on a phone" })).toBeInTheDocument();
+		expect(link.querySelector(".op-shot-open")).toHaveAttribute("aria-hidden", "true");
+	});
+
 	it("renders a shot with no full screenshot as the crop alone", () => {
 		const { href: _, ...crop } = shot;
 		render(
@@ -178,6 +202,7 @@ describe("Note", () => {
 		);
 		const figure = screen.getByRole("figure");
 		expect(within(figure).queryByRole("link")).toBeNull();
+		expect(figure.querySelector(".op-shot-open")).toBeNull();
 		expect(
 			within(figure).getByRole("img", { name: "The menu page on a phone" }),
 		).toBeInTheDocument();

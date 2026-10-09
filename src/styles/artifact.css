@@ -1392,6 +1392,10 @@
 	:is(.mkt, .atelic-ui) .op-shot a {
 		cursor: zoom-in;
 	}
+	/* The expand badge on a linked crop: off here, the note turns it on. */
+	:is(.mkt, .atelic-ui) .op-shot-open {
+		display: none;
+	}
 	:is(.mkt, .atelic-ui) .op-shot img {
 		width: 100%;
 		height: auto;
@@ -1863,10 +1867,9 @@
 
 	/* =================================================================
 	   THE NOTE: the first touch set as a page (Note.tsx). A letter, not a
-	   report, read on a phone first. Its column is the header's: the
-	   chrome's --max-width and --gutter, so the dateline starts under the
-	   wordmark and the page ends under the header's right edge; running
-	   text keeps a readable measure inside it.
+	   report, read on a phone first. Its column is the writeup's 920px,
+	   centered under the header with the header's own gutters, and every
+	   line of text runs the column's full width.
 
 	   - The two lanes are separate sections stacked top to bottom at
 	     every width and on paper, never side by side.
@@ -1895,11 +1898,10 @@
 		color: var(--ink);
 		background: var(--surface);
 	}
-	/* The header's inner container, measure for measure (chrome.css,
-	   .nav-inner). */
+	/* The writeup's column (.op-doc, 920px), centered under the header and
+	   held off the edges by the header's gutters (chrome.css, .nav-inner). */
 	:is(.mkt, .atelic-ui) .nt-doc {
-		--nt-measure: 72ch;
-		max-width: var(--max-width);
+		max-width: calc(920px + 2 * var(--gutter));
 		margin: 0 auto;
 		padding: calc(var(--nav-height) + 22px) var(--gutter) 48px;
 		font-size: 17px;
@@ -1945,7 +1947,6 @@
 
 	/* ---- the opener: the letter's first paragraph ---- */
 	:is(.mkt, .atelic-ui) .nt-opener {
-		max-width: var(--nt-measure);
 		margin: 18px 0 0;
 		font-size: 18px;
 		line-height: 1.6;
@@ -1983,13 +1984,12 @@
 		gap: 18px;
 	}
 	:is(.mkt, .atelic-ui) .nt-finding .callout {
-		max-width: var(--nt-measure);
 		font-size: 16px;
 		line-height: 1.5;
 	}
-	/* The screen sits under its finding, set in from the icon so it lines up
-	   with the words. It keeps its own shape, never wider than the lane and
-	   never so tall it carries the page. */
+	/* The screen is a thumbnail under its finding, set in from the icon so it
+	   lines up with the words. It keeps its own shape, held to 200px tall and
+	   never the lane's full width; a click opens the full picture. */
 	:is(.mkt, .atelic-ui) .nt-finding .op-shot {
 		margin: 10px 0 0 28px;
 	}
@@ -2000,8 +2000,40 @@
 	}
 	:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
 		width: auto;
-		max-width: 100%;
-		max-height: 340px;
+		max-width: min(100%, 280px);
+		max-height: 200px;
+	}
+	/* A linked thumbnail says it opens: the badge in its corner, and the
+	   frame takes the accent on hover and focus. */
+	:is(.mkt, .atelic-ui) .nt-finding .op-shot a {
+		position: relative;
+		color: inherit;
+		text-decoration: none;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+	:is(.mkt, .atelic-ui) .nt-finding .op-shot a:hover,
+	:is(.mkt, .atelic-ui) .nt-finding .op-shot a:focus-visible {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+	}
+	:is(.mkt, .atelic-ui) .nt-finding .op-shot-open {
+		position: absolute;
+		right: 4px;
+		bottom: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--ink) 72%, transparent);
+		color: var(--surface);
+	}
+	:is(.mkt, .atelic-ui) .nt-finding .op-shot a:hover .op-shot-open,
+	:is(.mkt, .atelic-ui) .nt-finding .op-shot a:focus-visible .op-shot-open {
+		background: var(--primary);
 	}
 	/* The caption wraps to the picture's width and never sets the column's. */
 	:is(.mkt, .atelic-ui) .nt-finding .op-shot figcaption {
@@ -2025,7 +2057,6 @@
 	}
 	/* The site base strips list markers; the steps want theirs back. */
 	:is(.mkt, .atelic-ui) .nt-start ul {
-		max-width: var(--nt-measure);
 		margin: 0;
 		padding-left: 1.2em;
 		list-style: disc;
@@ -2051,7 +2082,6 @@
 		border-top: 1px solid var(--neutral-100);
 	}
 	:is(.mkt, .atelic-ui) .nt-close p {
-		max-width: var(--nt-measure);
 		margin: 0 0 14px;
 		text-wrap: pretty;
 	}
@@ -2088,9 +2118,10 @@
 	}
 
 	/* A finding with a screen is one row: the words left, the screen right,
-	   top aligned. The screen's column is the picture's own width, held
-	   to 45% of the row, and the picture's height is held so a phone
-	   crop comes out about 260px wide while a wide card reaches the 45%. */
+	   top aligned. The screen is a thumbnail about as tall as a three line
+	   finding, so a phone crop reads as a tall one about 80px wide and a
+	   wide card as a short wide one; the column shrinks to it, held to 45%
+	   of the row, with room enough for the caption under it. */
 	@media print, (min-width: 721px) {
 		:is(.mkt, .atelic-ui) .nt-finding.has-shot {
 			display: grid;
@@ -2100,16 +2131,21 @@
 		}
 		:is(.mkt, .atelic-ui) .nt-finding.has-shot .op-shot {
 			margin: 0;
+			min-width: 150px;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
-			max-height: 560px;
+			max-width: 100%;
+			max-height: 170px;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding .op-shot figcaption {
+			font-size: 12px;
 		}
 	}
 
 	/* ---- print: one letter sheet ----
 	   The rows hold on paper, since they are shorter than the stacked page.
-	   The sheet is the page at the writeup's three quarters, the screens are
-	   held short, and a phone crop's column keeps room for its caption. */
+	   The sheet is the page at the writeup's three quarters, the thumbnails
+	   are held short with room for their captions, and the badge drops. */
 	@media print {
 		html:has(:is(.mkt, .atelic-ui) .nt-doc) {
 			zoom: 0.74;
@@ -2118,7 +2154,6 @@
 			background: none;
 		}
 		:is(.mkt, .atelic-ui) .nt-doc {
-			--nt-measure: none;
 			max-width: none;
 			padding: 0;
 			font-size: 15px;
@@ -2154,11 +2189,14 @@
 			grid-template-columns: minmax(0, 1fr) fit-content(40%);
 			column-gap: 24px;
 		}
-		:is(.mkt, .atelic-ui) .nt-finding .op-shot {
-			min-width: 1.9in;
+		:is(.mkt, .atelic-ui) .nt-finding.has-shot .op-shot {
+			min-width: 1.6in;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
-			max-height: 1.7in;
+			max-height: 1.5in;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding .op-shot-open {
+			display: none;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .op-shot figcaption {
 			font-size: 11.5px;
