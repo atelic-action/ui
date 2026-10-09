@@ -1865,9 +1865,10 @@
 	   THE NOTE: the first touch set as a page (Note.tsx). A letter, not a
 	   report: one narrow column of running text, read on a phone first.
 
-	   - Phone first: the base rules are the phone's. The two lanes stack,
-	     each finding a Callout with the owner's screen under it.
-	   - Wide (721px and up) and print: the two lanes sit side by side.
+	   - Phone first, and the one layout: the two lanes are separate
+	     sections stacked top to bottom at every width and on paper, never
+	     side by side, each finding a Callout with the owner's screen
+	     under it. Wide (721px and up) only gives the page more room.
 	   - Print: one letter sheet. The chrome steps aside (the writeup's print
 	     rules already hide the header and the credit band on any artifact
 	     page), the type comes down, and the screens shrink. The note sets
@@ -1941,7 +1942,8 @@
 		text-wrap: pretty;
 	}
 
-	/* ---- the two lanes, each a heading and its findings ---- */
+	/* ---- the two lanes, each a heading and its findings, one above the
+	   other at every width ---- */
 	:is(.mkt, .atelic-ui) .nt-lanes {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -2057,13 +2059,12 @@
 		text-decoration: none;
 	}
 
-	/* ---- wide, and on paper: the two lanes side by side ---- */
-	@media print, (min-width: 721px) {
+	/* ---- wide: the same stacked page with room ---- */
+	@media (min-width: 721px) {
 		:is(.mkt, .atelic-ui) .nt-doc {
 			padding: calc(var(--nav-height) + 36px) 24px 64px;
 		}
 		:is(.mkt, .atelic-ui) .nt-lanes {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: 32px;
 		}
 	}
