@@ -1863,12 +1863,19 @@
 
 	/* =================================================================
 	   THE NOTE: the first touch set as a page (Note.tsx). A letter, not a
-	   report: one narrow column of running text, read on a phone first.
+	   report, read on a phone first. Its column is the header's: the
+	   chrome's --max-width and --gutter, so the dateline starts under the
+	   wordmark and the page ends under the header's right edge; running
+	   text keeps a readable measure inside it.
 
-	   - Phone first, and the one layout: the two lanes are separate
-	     sections stacked top to bottom at every width and on paper, never
-	     side by side, each finding a Callout with the owner's screen
-	     under it. Wide (721px and up) only gives the page more room.
+	   - The two lanes are separate sections stacked top to bottom at
+	     every width and on paper, never side by side.
+	   - Phone first: a finding is its Callout with the owner's screen
+	     under it. Wide (721px and up) and on paper, a finding with a
+	     screen is one row, the words left and the screen right, top
+	     aligned; the screen's column sizes to the picture, a phone crop
+	     about 260px and a wide card up to 45% of the row. A finding
+	     with no screen takes the full width.
 	   - Print: one letter sheet. The chrome steps aside (the writeup's print
 	     rules already hide the header and the credit band on any artifact
 	     page), the type comes down, and the screens shrink. The note sets
@@ -1888,10 +1895,13 @@
 		color: var(--ink);
 		background: var(--surface);
 	}
+	/* The header's inner container, measure for measure (chrome.css,
+	   .nav-inner). */
 	:is(.mkt, .atelic-ui) .nt-doc {
-		max-width: 760px;
+		--nt-measure: 72ch;
+		max-width: var(--max-width);
 		margin: 0 auto;
-		padding: calc(var(--nav-height) + 22px) 18px 48px;
+		padding: calc(var(--nav-height) + 22px) var(--gutter) 48px;
 		font-size: 17px;
 		line-height: 1.6;
 		print-color-adjust: exact;
@@ -1935,6 +1945,7 @@
 
 	/* ---- the opener: the letter's first paragraph ---- */
 	:is(.mkt, .atelic-ui) .nt-opener {
+		max-width: var(--nt-measure);
 		margin: 18px 0 0;
 		font-size: 18px;
 		line-height: 1.6;
@@ -1972,6 +1983,7 @@
 		gap: 18px;
 	}
 	:is(.mkt, .atelic-ui) .nt-finding .callout {
+		max-width: var(--nt-measure);
 		font-size: 16px;
 		line-height: 1.5;
 	}
@@ -1991,7 +2003,10 @@
 		max-width: 100%;
 		max-height: 340px;
 	}
+	/* The caption wraps to the picture's width and never sets the column's. */
 	:is(.mkt, .atelic-ui) .nt-finding .op-shot figcaption {
+		width: 0;
+		min-width: 100%;
 		font-size: 12.5px;
 		line-height: 1.45;
 		color: var(--neutral-500);
@@ -2010,6 +2025,7 @@
 	}
 	/* The site base strips list markers; the steps want theirs back. */
 	:is(.mkt, .atelic-ui) .nt-start ul {
+		max-width: var(--nt-measure);
 		margin: 0;
 		padding-left: 1.2em;
 		list-style: disc;
@@ -2035,6 +2051,7 @@
 		border-top: 1px solid var(--neutral-100);
 	}
 	:is(.mkt, .atelic-ui) .nt-close p {
+		max-width: var(--nt-measure);
 		margin: 0 0 14px;
 		text-wrap: pretty;
 	}
@@ -2059,13 +2076,33 @@
 		text-decoration: none;
 	}
 
-	/* ---- wide: the same stacked page with room ---- */
+	/* ---- wide: more room, and each screen beside its finding ---- */
 	@media (min-width: 721px) {
 		:is(.mkt, .atelic-ui) .nt-doc {
-			padding: calc(var(--nav-height) + 36px) 24px 64px;
+			padding-top: calc(var(--nav-height) + 36px);
+			padding-bottom: 64px;
 		}
 		:is(.mkt, .atelic-ui) .nt-lanes {
 			gap: 32px;
+		}
+	}
+
+	/* A finding with a screen is one row: the words left, the screen right,
+	   top aligned. The screen's column is the picture's own width, held
+	   to 45% of the row, and the picture's height is held so a phone
+	   crop comes out about 260px wide while a wide card reaches the 45%. */
+	@media print, (min-width: 721px) {
+		:is(.mkt, .atelic-ui) .nt-finding.has-shot {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) fit-content(45%);
+			column-gap: 32px;
+			align-items: start;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding.has-shot .op-shot {
+			margin: 0;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
+			max-height: 560px;
 		}
 	}
 
@@ -2078,6 +2115,7 @@
 			background: none;
 		}
 		:is(.mkt, .atelic-ui) .nt-doc {
+			--nt-measure: none;
 			max-width: none;
 			padding: 0;
 			font-size: 15px;
@@ -2096,7 +2134,10 @@
 			font-size: 14.5px;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
-			max-height: 1.9in;
+			max-height: 2.6in;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding.has-shot {
+			column-gap: 24px;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .op-shot a {
 			cursor: auto;

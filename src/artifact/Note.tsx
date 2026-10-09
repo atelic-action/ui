@@ -121,7 +121,7 @@ function Paragraph({ paragraph, className }: { paragraph: NoteParagraph; classNa
 
 function Finding({ finding }: { finding: NoteFinding }) {
 	return (
-		<li className="nt-finding">
+		<li className={finding.shot ? "nt-finding has-shot" : "nt-finding"}>
 			<Callout
 				tone="warn"
 				title={

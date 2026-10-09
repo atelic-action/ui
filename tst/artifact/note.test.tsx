@@ -155,6 +155,13 @@ describe("Note", () => {
 		expect(within(finding("The hours disagree.")).queryByRole("figure")).toBeNull();
 	});
 
+	it("marks a finding that carries a shot, so it can set the shot beside its words", () => {
+		render(<Note {...note()} />);
+		expect(finding("The menu is a picture.")).toHaveClass("nt-finding", "has-shot");
+		expect(finding("The hours disagree.")).toHaveClass("nt-finding");
+		expect(finding("The hours disagree.")).not.toHaveClass("has-shot");
+	});
+
 	it("renders a shot with no full screenshot as the crop alone", () => {
 		const { href: _, ...crop } = shot;
 		render(
