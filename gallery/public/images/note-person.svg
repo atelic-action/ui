@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="112" height="112" viewBox="0 0 112 112" role="img" aria-label="A monogram standing in for the sender's photo">
+	<rect width="112" height="112" fill="#151515"/>
+	<text x="56" y="70" font-family="system-ui, sans-serif" font-size="44" font-weight="600" fill="#f6f1e7" text-anchor="middle">M</text>
+	<rect x="34" y="82" width="44" height="3" rx="1.5" fill="#fc4a1a"/>
+</svg>

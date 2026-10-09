@@ -118,7 +118,8 @@ body {
 	padding-block: clamp(32px, 5vw, 56px);
 	border-top: 1px solid var(--neutral-100);
 }
-.mkt .gallery-piece h2 {
+/* The piece's own heading only, so a heading inside an example keeps its size. */
+.mkt .gallery-piece > .wrap > h2 {
 	font-size: clamp(1.6rem, 4vw, 2.2rem);
 }
 .mkt .gallery-lead {
@@ -143,7 +144,8 @@ body {
 	border-radius: var(--radius-md);
 	padding: clamp(16px, 3vw, 28px);
 }
-.mkt .gallery-example figcaption {
+/* The example's own caption only, so a figure inside an example keeps its own. */
+.mkt .gallery-example > figcaption {
 	margin-bottom: 14px;
 	font-family: var(--font-mono);
 	font-size: 0.72rem;
@@ -270,6 +272,15 @@ body {
 }
 .mkt .gallery-gate .gate-screen {
 	min-height: 560px;
+}
+
+/* An artifact document fills a page under the site's fixed header. Here it
+   sits mid page, framed to an example, with no header above it to clear. */
+.mkt .gallery-document {
+	--nav-height: 0px;
+	border: 1px solid var(--hairline-strong);
+	border-radius: 12px;
+	overflow: hidden;
 }
 
 /* The primitives sit in a row so their sizes and surfaces compare at a glance. */

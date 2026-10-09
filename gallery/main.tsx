@@ -5,6 +5,7 @@ import "../src/styles/chrome.css";
 import "../src/styles/components.css";
 import "../src/styles/primitives.css";
 import "../src/styles/gate.css";
+import "../src/styles/artifact.css";
 import "./gallery.css";
 import { Gallery } from "./Gallery";
 
