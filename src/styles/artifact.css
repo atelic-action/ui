@@ -1878,7 +1878,11 @@
 	   the screen the writeup's .op-shot, the sign off the shared .op-who;
 	   this sheet sets the letter around them and their sizes here.
 	   ================================================================= */
+	/* The borrowed .op-shot reads the writeup's own two tokens, mapped here as
+	   the writeup's .op root maps them. */
 	:is(.mkt, .atelic-ui) .nt {
+		--op-card: var(--card);
+		--op-ink-faint: var(--neutral-500);
 		font-family: var(--font-sans);
 		color: var(--ink);
 		background: var(--surface);

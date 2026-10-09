@@ -257,6 +257,22 @@ describe("Note, empty sections", () => {
 		expect(text.container.querySelector(".nt-opener")).toBeNull();
 	});
 
+	it("treats runs that are all blank as empty, in the opener and the close, and keeps a lone link", () => {
+		const blank = render(
+			<Note
+				{...note({
+					opener: ["", "  "],
+					close: { paragraphs: [[""], ["Kept."]], signOff: "Reliably Yours,", person },
+				})}
+			/>,
+		);
+		expect(blank.container.querySelector(".nt-opener")).toBeNull();
+		expect(blank.container.querySelectorAll(".nt-close p")).toHaveLength(1);
+		blank.unmount();
+		render(<Note {...note({ opener: ["", { text: "A link", href: "https://example.com" }] })} />);
+		expect(screen.getByRole("link", { name: "A link" }).closest("p")).toHaveClass("nt-opener");
+	});
+
 	it("renders no close paragraphs when there are none, and still signs off", () => {
 		const { container } = render(
 			<Note {...note({ close: { paragraphs: [], signOff: "Reliably Yours,", person } })} />,

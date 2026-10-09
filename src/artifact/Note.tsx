@@ -34,7 +34,10 @@ export interface NoteFinding {
 	lead: string;
 	/** The consequence: what it costs the business. */
 	body: string;
-	/** Where the defect can be seen for oneself; the lead links there, in a new tab. */
+	/**
+	 * Where the defect can be seen for oneself. The lead links there: in a new
+	 * tab for an http(s) link, in place otherwise.
+	 */
 	href?: string;
 	/** The owner's own screen, rendered under the finding. */
 	shot?: WriteupShot;
@@ -92,8 +95,10 @@ function NoteAnchor({ href, children }: { href: string; children: string }) {
 	);
 }
 
+/** A paragraph with nothing to read: a blank string, or runs that are all blank strings. A link always counts. */
 function isEmpty(paragraph: NoteParagraph): boolean {
-	return typeof paragraph === "string" ? paragraph.trim() === "" : paragraph.length === 0;
+	const runs = typeof paragraph === "string" ? [paragraph] : paragraph;
+	return runs.every((run) => typeof run === "string" && run.trim() === "");
 }
 
 function Paragraph({ paragraph, className }: { paragraph: NoteParagraph; className?: string }) {
