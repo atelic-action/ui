@@ -2106,10 +2106,13 @@
 		}
 	}
 
-	/* ---- print: one letter sheet ---- */
+	/* ---- print: one letter sheet ----
+	   The rows hold on paper, since they are shorter than the stacked page.
+	   The sheet is the page at the writeup's three quarters, the screens are
+	   held short, and a phone crop's column keeps room for its caption. */
 	@media print {
 		html:has(:is(.mkt, .atelic-ui) .nt-doc) {
-			zoom: 0.8;
+			zoom: 0.74;
 		}
 		:is(.mkt, .atelic-ui) .nt {
 			background: none;
@@ -2119,28 +2122,59 @@
 			max-width: none;
 			padding: 0;
 			font-size: 15px;
-			line-height: 1.5;
+			line-height: 1.45;
+		}
+		:is(.mkt, .atelic-ui) .nt h1 {
+			font-size: 32px;
 		}
 		:is(.mkt, .atelic-ui) .nt-opener {
+			margin-top: 12px;
 			font-size: 16px;
 		}
 		:is(.mkt, .atelic-ui) .nt-lanes,
 		:is(.mkt, .atelic-ui) .nt-start,
 		:is(.mkt, .atelic-ui) .nt-close {
-			margin-top: 20px;
-			padding-top: 16px;
+			margin-top: 16px;
+			padding-top: 14px;
+		}
+		:is(.mkt, .atelic-ui) .nt-lanes {
+			gap: 18px;
+		}
+		:is(.mkt, .atelic-ui) .nt-lane h2 {
+			margin-bottom: 10px;
+			break-after: avoid;
+		}
+		:is(.mkt, .atelic-ui) .nt-findings {
+			gap: 14px;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .callout {
 			font-size: 14.5px;
 		}
-		:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
-			max-height: 2.6in;
-		}
 		:is(.mkt, .atelic-ui) .nt-finding.has-shot {
+			grid-template-columns: minmax(0, 1fr) fit-content(40%);
 			column-gap: 24px;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding .op-shot {
+			min-width: 1.9in;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding .op-shot img {
+			max-height: 1.7in;
+		}
+		:is(.mkt, .atelic-ui) .nt-finding .op-shot figcaption {
+			font-size: 11.5px;
+			line-height: 1.35;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding .op-shot a {
 			cursor: auto;
+		}
+		:is(.mkt, .atelic-ui) .nt-start ul {
+			gap: 4px;
+		}
+		:is(.mkt, .atelic-ui) .nt-close p {
+			margin-bottom: 10px;
+		}
+		:is(.mkt, .atelic-ui) .nt-close .op-who {
+			margin-top: 14px;
 		}
 		:is(.mkt, .atelic-ui) .nt-finding,
 		:is(.mkt, .atelic-ui) .nt-start,
