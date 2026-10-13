@@ -51,6 +51,20 @@ describe("marketingConfig", () => {
 		expect(options.prerender).toEqual({ enabled: true, crawlLinks: true });
 		expect(options.pages).toEqual([NOT_FOUND_PAGE, { path: "/blog/first-post" }]);
 		expect(options.sitemap).toEqual({ enabled: true, host: "https://summit.example.com" });
+	});
+
+	it("leaves CSS code splitting at Vite's default, since no component imports a sheet", () => {
+		// Forced off, TanStack Start fails the build looking for a style.css
+		// that a site importing every sheet through its base sheet never emits.
+		expect(marketingConfig({ site: SITE, env: {} }).build?.cssCodeSplit).toBeUndefined();
+	});
+
+	it("lets a site that does import a sheet from a component fold them again", () => {
+		const config = marketingConfig({
+			site: SITE,
+			env: {},
+			extend: { build: { cssCodeSplit: false } },
+		});
 		expect(config.build?.cssCodeSplit).toBe(false);
 	});
 

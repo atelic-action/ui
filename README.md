@@ -508,7 +508,7 @@ import { site } from "./src/site.config";
 export default marketingConfig({ site, pages: [{ path: "/blog/first-post" }] });
 ```
 
-`marketingConfig` carries what the template's `vite.config.ts` did: Vite's `base` and the router's `basepath` from `site.basePath` (or a `VITE_BASE_PATH` rehearsal), a refusal when a based `site.url` does not end with its base, one CSS bundle, TanStack Start prerendering with the crawler and the 404 page (copied to `404.html` by the build), the pages a site names, a sitemap on the origin of `site.url` (`sitemapHost` to change it) and none for a based cut, React, the `@` alias, and `ssr.noExternal`. `extend` merges a site's own needs over it. A site's scripts:
+`marketingConfig` carries what the template's `vite.config.ts` did: Vite's `base` and the router's `basepath` from `site.basePath` (or a `VITE_BASE_PATH` rehearsal), a refusal when a based `site.url` does not end with its base, TanStack Start prerendering with the crawler and the 404 page (copied to `404.html` by the build), the pages a site names, a sitemap on the origin of `site.url` (`sitemapHost` to change it) and none for a based cut, React, the `@` alias, and `ssr.noExternal`. `extend` merges a site's own needs over it. It leaves `build.cssCodeSplit` at Vite's default (1.0.0): every sheet rides in the site's one base sheet, so no component imports a stylesheet, and with the flag forced off TanStack Start fails the build looking for a `style.css` that is never written. A site that gives a component its own stylesheet again passes `extend: { build: { cssCodeSplit: false } }`. A site's scripts:
 
 ```json
 {
