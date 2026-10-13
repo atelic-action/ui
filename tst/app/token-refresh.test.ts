@@ -166,6 +166,21 @@ describe("tokenRefresh", () => {
 			expect(useAuthStore.getState().isAuthenticated).toBe(true);
 		});
 
+		it("does not write tokens back after a sign out during the refresh", async () => {
+			mockFetch.mockImplementationOnce(async () => {
+				useAuthStore.getState().logout();
+				return {
+					ok: true,
+					json: () =>
+						Promise.resolve({ token: "late", refresh_token: "late-refresh", expires_in: 3600 }),
+				};
+			});
+
+			await expect(refreshAccessToken()).rejects.toThrow("Signed out");
+			expect(useAuthStore.getState().token).toBeNull();
+			expect(useAuthStore.getState().isAuthenticated).toBe(false);
+		});
+
 		it("logs out when no refresh token available", async () => {
 			useAuthStore.setState({ refreshToken: null });
 
@@ -237,6 +252,14 @@ describe("tokenRefresh", () => {
 			const result = await ensureValidToken();
 
 			expect(result).toBe(false);
+		});
+
+		it("lets the call through on a network failure while the token still serves", async () => {
+			useAuthStore.setState({ expiresAt: Date.now() + 4 * 60 * 1000, isAuthenticated: true });
+			mockFetch.mockRejectedValueOnce(new TypeError("offline"));
+
+			expect(await ensureValidToken()).toBe(true);
+			expect(useAuthStore.getState().isAuthenticated).toBe(true);
 		});
 
 		it("respects custom buffer time", async () => {

@@ -85,7 +85,9 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 										className={cn(
 											ROW,
 											"font-medium",
-											active && !item.children ? "bg-primary/10 text-primary" : "text-foreground",
+											active && !item.children?.length
+												? "bg-primary/10 text-primary"
+												: "text-foreground",
 											item.children && exact && "bg-primary/10 text-primary",
 										)}
 										aria-current={exact ? "page" : undefined}

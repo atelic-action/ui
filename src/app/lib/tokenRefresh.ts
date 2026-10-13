@@ -58,6 +58,12 @@ export async function refreshAccessToken(): Promise<RefreshResponse> {
 		const data = await response.json();
 		const result = transformKeys<RefreshResponse>(data);
 
+		// A sign out while the request was in flight must not be undone by its
+		// answer: only the session that asked may take the new tokens.
+		if (useAuthStore.getState().refreshToken !== refreshToken) {
+			throw new Error("Signed out during refresh");
+		}
+
 		// Update store with new tokens
 		useAuthStore.getState().setTokens(result.token, result.refreshToken, result.expiresIn);
 
@@ -100,8 +106,10 @@ export async function ensureValidToken(bufferMs = DEFAULT_EXPIRY_BUFFER_MS): Pro
 		await refreshAccessToken();
 		return true;
 	} catch {
-		// Refresh failed, user was logged out
-		return false;
+		// A rejected refresh token logged the user out. A network error or a
+		// server error did not: the access token still serves until it expires.
+		const state = useAuthStore.getState();
+		return state.isAuthenticated && !state.isTokenExpiringSoon(0);
 	}
 }
 

@@ -13,6 +13,7 @@ import "./app.css";
 import { appConfig, navItems } from "./data";
 import { KitPage } from "./kit";
 import {
+	AccountPage,
 	BakesPage,
 	IndexPage,
 	OrdersPage,
@@ -51,6 +52,7 @@ const routeTree = rootRoute.addChildren([
 	page("/bakes/recipes", RecipesPage),
 	page("/kit", KitPage),
 	page("/states", StatesPage),
+	page("/profile", AccountPage),
 	page("/u/$username", PublicProfilePage),
 ]);
 

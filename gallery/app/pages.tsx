@@ -345,3 +345,20 @@ export function PublicProfilePage() {
 		</AppPage>
 	);
 }
+
+/** Where the shell's Profile link lands: the account page an app owns. */
+export function AccountPage() {
+	return (
+		<AppPage
+			icon={<UserRound className="h-7 w-7" />}
+			title="Profile"
+			subtitle="The signed in account."
+		>
+			<div className="ap-body">
+				<p className="text-sm text-muted-foreground">
+					The rail and the menu link here. An app owns this page; the shell only carries the link.
+				</p>
+			</div>
+		</AppPage>
+	);
+}
