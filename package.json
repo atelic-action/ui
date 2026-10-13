@@ -47,6 +47,10 @@
 		"./hooks": "./src/hooks/index.ts",
 		"./primitives": "./src/primitives/index.ts",
 		"./routing": "./src/routing/index.ts",
+		"./routing/base-path": {
+			"types": "./dist/routing/basePath.d.ts",
+			"default": "./dist/routing/basePath.js"
+		},
 		"./sections": "./src/sections/index.ts",
 		"./tokens": "./src/tokens/index.ts",
 		"./styles/app.css": "./src/styles/app.css",
@@ -86,7 +90,7 @@
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.server.json",
-		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers']) await import('@atelic-action/ui/' + entry)\"",
+		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path']) await import('@atelic-action/ui/' + entry)\"",
 		"prepack": "bun run build",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",

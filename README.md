@@ -97,6 +97,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a framed image, prose blocks, a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
 | `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, mounting the base path provider | none |
 | `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
+| `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing/base-path` | The same four pure helpers, built, for what Node runs (a Playwright spec, a script) | none |
 | `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call | none |
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
 | `AppProvider`, `AppConfigProvider`, `useAppConfig`, `useNav`, `useUser`, `configureApp`, `getAppConfig`, `AppConfig`, `NavItem`, `AppUser`, `Register` | `@atelic-action/ui/app` | The app shell's seam: the app hands in its config and nav, registers its user type, and reads them back | [app](https://ui.atelic.me/app.html) |
@@ -440,6 +441,16 @@ Moving into the layer changes one thing for a site: a rule in its own unlayered 
 
 A site served under a prefix (`/proto`) says so once. `BasePathProvider` (from `@atelic-action/ui/routing`, a React context whose default base is "") hands the base to everything below it, and `Button`, `Chip`, `ImageFrame`, and every section that builds a link or an image source read it through `useBasePath` and `useWithBase`. A root absolute path gets the prefix; an external URL, a protocol link, a fragment, and a path that already carries the base pass through. `SiteShell` mounts the provider from its `basePath` prop, which defaults to `site.basePath`, so a page rendered inside the shell needs nothing more. The pure helpers (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) are exported beside it for a site's own code.
 
+`@atelic-action/ui/routing` is TypeScript source like the rest, so Node cannot load it, and a Playwright spec runs under Node. The four helpers are therefore also built and exported alone as `@atelic-action/ui/routing/base-path` (1.0.0), the way the readers are, and a site's `e2e/` imports them from there:
+
+```ts
+// e2e/base.ts
+import { marketingBasePath } from "@atelic-action/ui/vite";
+export { hasBase } from "@atelic-action/ui/routing/base-path";
+```
+
+The provider stays in the source entry on purpose. A built copy of it would be a second React context, and a site mounting that copy would hand its base to none of the sections, which read the source one.
+
 ### SiteShell
 
 `SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCta`, `footer`, `pageNav`, `navOnDark`, `hideNavCta`, and `credit` as before. A site keeps a wrapper a few lines long:
@@ -535,7 +546,7 @@ A site that takes 0.19.0 deletes its copies and repoints its own files. The temp
 | `@/shared/lib/hours` | `@atelic-action/ui/sections` (`formatClock`, `formatHoursRange`, `isClosed`) |
 | `@/shared/lib/honeypot` | `@atelic-action/ui/sections` in a component; `api/contact.ts` keeps its own copy, since Vercel runs a function's package imports uncompiled |
 | `@/shared/lib/analytics` (`trackEvent` only) | `@atelic-action/ui/sections`; the rest of the module, the click listener, stays in the site |
-| `@/shared/lib/basePath` (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) | `@atelic-action/ui/routing`; in a component, `useWithBase()` in place of `withBase` |
+| `@/shared/lib/basePath` (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) | `@atelic-action/ui/routing`; in a component, `useWithBase()` in place of `withBase`; in `e2e/`, `@atelic-action/ui/routing/base-path` |
 | `@/shared/lib/basePathAudit`, `@/shared/lib/sitemap` | Gone, inside `atelic-check-base-path` and `atelic-clean-sitemap` |
 | `scripts/clean-sitemap.ts`, `check-base-path.ts`, `contact-canary.ts`, `stamp-health.ts`, `check-links.ts`, `serve-static.ts` | `atelic-clean-sitemap`, `atelic-check-base-path`, `atelic-contact-canary`, `atelic-stamp-health`, `atelic-check-links`, `atelic-serve-static` |
 | `vite.config.ts` | `marketingConfig`, above |
