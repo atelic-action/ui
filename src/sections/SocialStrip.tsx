@@ -2,6 +2,7 @@ import { AtSign } from "lucide-react";
 import type { ReactNode } from "react";
 import { SectionHeading } from "../primitives";
 import { Button } from "../primitives/Button";
+import { useWithBase } from "../routing/BasePathProvider";
 
 export interface SocialPhoto {
 	src?: string;
@@ -44,6 +45,7 @@ export function SocialStrip({
 	surface = "default",
 	id,
 }: SocialStripProps) {
+	const withBase = useWithBase();
 	const sectionClasses = ["section", surface === "alt" && "surface-alt"].filter(Boolean).join(" ");
 	return (
 		<section className={sectionClasses} id={id}>
@@ -58,9 +60,9 @@ export function SocialStrip({
 								href={profileUrl}
 								target="_blank"
 								rel="noopener"
-								aria-label={`${photo.alt} (opens ${handle})`}
+								aria-label={photo.alt ? `${photo.alt} (opens ${handle})` : `Opens ${handle}`}
 							>
-								<img src={photo.src} alt={photo.alt ?? ""} loading="lazy" />
+								<img src={withBase(photo.src)} alt={photo.alt ?? ""} loading="lazy" />
 							</a>
 						) : (
 							<div key={photo.placeholder} className="social-tile ph">

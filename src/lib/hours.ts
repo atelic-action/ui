@@ -8,7 +8,7 @@ import type { OpeningHours } from "../sections/siteConfig";
 export function formatClock(time: string, opts: { short?: boolean } = {}): string {
 	const [hourStr, minuteStr = "00"] = time.split(":");
 	const hour24 = Number(hourStr);
-	const suffix = hour24 >= 12 ? "p" : "a";
+	const suffix = hour24 % 24 >= 12 ? "p" : "a";
 	const hour = hour24 % 12 || 12;
 	if (opts.short && minuteStr === "00") return `${hour}${suffix}`;
 	return `${hour}:${minuteStr}${suffix}`;

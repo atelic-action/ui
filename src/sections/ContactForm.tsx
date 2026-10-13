@@ -65,6 +65,7 @@ export function ContactForm({
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
+		if (status === "sending") return;
 		const form = event.currentTarget;
 		const data = new FormData(form);
 		const name = String(data.get("name") ?? "").trim();
@@ -82,6 +83,10 @@ export function ContactForm({
 		if (nextErrors.name || nextErrors.email || nextErrors.message) return;
 
 		if (!endpoint) {
+			if (!toEmail) {
+				setStatus("failed");
+				return;
+			}
 			const subject = encodeURIComponent(`Website inquiry: ${topic}`);
 			const body = encodeURIComponent(`${name} (${email}) wrote:\n\n${message}`);
 			setStatus("sent");

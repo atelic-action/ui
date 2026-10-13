@@ -127,6 +127,7 @@ export function RevealSlider({
 			onPointerMove={onPointerMove}
 			onPointerUp={endDrag}
 			onPointerLeave={endDrag}
+			onPointerCancel={endDrag}
 		>
 			<Layer slide={after} side="after" />
 			<Layer slide={before} side="before" style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }} />
