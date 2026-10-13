@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" role="img" aria-label="Loaves cooling on a rack">
+  <rect width="1600" height="600" fill="#3b2a1e"/>
+  <rect y="430" width="1600" height="170" fill="#2a1d14"/>
+  <g fill="#c98a4b" stroke="#8a5528" stroke-width="6">
+    <ellipse cx="260" cy="380" rx="170" ry="80"/>
+    <ellipse cx="640" cy="370" rx="190" ry="92"/>
+    <ellipse cx="1030" cy="385" rx="160" ry="76"/>
+    <ellipse cx="1380" cy="372" rx="180" ry="86"/>
+  </g>
+  <g stroke="#f2d3a8" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.7">
+    <path d="M190 350 q70 -30 140 0"/><path d="M560 340 q80 -34 160 0"/>
+    <path d="M960 356 q70 -28 140 0"/><path d="M1300 344 q80 -32 160 0"/>
+  </g>
+  <rect x="80" y="460" width="1440" height="10" rx="5" fill="#6b4a33"/>
+</svg>
