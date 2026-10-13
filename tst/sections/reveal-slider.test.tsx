@@ -1,7 +1,19 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { RevealSlider } from "../../src/sections/RevealSlider";
+
+const sheet = readFileSync(resolve(__dirname, "../../src/styles/sections.css"), "utf8");
+
+/** The declarations of the one rule whose selector is exactly `selector`. */
+function rule(selector: string): string {
+	const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const match = sheet.match(new RegExp(`^\\s*${escaped}\\s*\\{([^}]*)\\}`, "m"));
+	if (!match) throw new Error(`no rule for ${selector}`);
+	return match[1].replace(/\/\*[\s\S]*?\*\//g, "");
+}
 
 const briefs = {
 	before: { label: "Before", placeholder: "Screenshot: the old page" },
@@ -62,5 +74,40 @@ describe("RevealSlider", () => {
 		fireEvent.keyDown(handle, { key: "ArrowLeft" });
 		fireEvent.keyDown(handle, { key: "ArrowLeft" });
 		expect(handle).toHaveAttribute("aria-valuenow", "47");
+	});
+
+	/*
+	 * touch-action: none on the whole frame swallowed every swipe that began
+	 * on it, so a phone could not scroll past a slider that filled the screen.
+	 * The frame lets a vertical pan through; the handle, where a drag starts,
+	 * keeps every touch.
+	 */
+	it("lets a vertical swipe on the frame scroll the page, and keeps the handle's touches", () => {
+		expect(rule(".atelic-ui .rslider")).toMatch(/touch-action:\s*pan-y;/);
+		expect(rule(".atelic-ui .rslider")).not.toMatch(/touch-action:\s*none/);
+		expect(rule(".atelic-ui .rslider-handle")).toMatch(/touch-action:\s*none;/);
+	});
+
+	it("moves the divider only once a drag has started on the handle", () => {
+		// jsdom has no PointerEvent, and the generic Event it falls back to
+		// drops clientX; a MouseEvent carries it.
+		if (typeof globalThis.PointerEvent === "undefined") {
+			vi.stubGlobal("PointerEvent", class extends MouseEvent {});
+		}
+		const { container } = render(<RevealSlider {...briefs} startAt={50} />);
+		const frame = container.querySelector<HTMLElement>(".rslider");
+		const handle = screen.getByRole("slider");
+		if (!frame) throw new Error("no frame");
+		frame.getBoundingClientRect = () => ({ left: 0, width: 200 }) as DOMRect;
+		fireEvent.pointerMove(frame, { clientX: 20 });
+		expect(handle).toHaveAttribute("aria-valuenow", "50");
+		fireEvent.pointerDown(handle, { clientX: 150 });
+		expect(handle).toHaveAttribute("aria-valuenow", "75");
+		fireEvent.pointerMove(frame, { clientX: 40 });
+		expect(handle).toHaveAttribute("aria-valuenow", "20");
+		fireEvent.pointerUp(frame);
+		fireEvent.pointerMove(frame, { clientX: 180 });
+		expect(handle).toHaveAttribute("aria-valuenow", "20");
+		vi.unstubAllGlobals();
 	});
 });

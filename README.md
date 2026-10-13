@@ -97,11 +97,16 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a framed image, prose blocks, a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
 | `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, mounting the base path provider | none |
 | `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
+| `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing/base-path` | The same four pure helpers, built, for what Node runs (a Playwright spec, a script) | none |
 | `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call | none |
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
+| `AppProvider`, `AppConfigProvider`, `useAppConfig`, `useNav`, `useUser`, `configureApp`, `getAppConfig`, `AppConfig`, `NavItem`, `AppUser`, `Register` | `@atelic-action/ui/app` | The app shell's seam: the app hands in its config and nav, registers its user type, and reads them back | [app](https://ui.atelic.me/app.html) |
+| `AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `DesktopRail`, `MobileTabBar`, `MobileMenu`, `UserMenu`, `PageSkeleton`, `PageError`, `ActionButton`, `FormActionButtons`, `activeSection` | `@atelic-action/ui/app` | The app frame: the rails, the tab bar, the page scaffold with its toolbar and right rail | [app](https://ui.atelic.me/app.html) |
+| `AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph`, `useAuthStore`, `useUnitsStore`, `apiFetch`, `publicFetch`, `session`, the hooks and the wire types | `@atelic-action/ui/app` | Auth, transport, the two shell stores, and the helpers the shell runs on | [app](https://ui.atelic.me/app.html) |
+| The shadcn kit (`Button`, `Dialog`, `Select`, `OptionSelect`, `SearchInput`, `BadgeList`, `Callout`, and the rest) | `@atelic-action/ui/app/ui` | The kit the shell is set in; a new kit component lands here, never in an app | [app](https://ui.atelic.me/app.html) |
+| `app.css` | `@atelic-action/ui/styles/app.css` | The shell's Tailwind sheet: the token mapping, the default tokens, the base layer, the `ap-*` scaffold, and the `@source` that points Tailwind at the shell | none |
 | The eleven `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, and contact canary | none |
 
-The app shell (`@atelic-action/ui/app`) is being added on a sibling branch of ATE-643, so it is not in this table yet.
 
 ## Install
 
@@ -109,7 +114,7 @@ The app shell (`@atelic-action/ui/app`) is being added on a sibling branch of AT
 bun add @atelic-action/ui
 ```
 
-The package is below 1.0, where a caret range admits patches only, so a site takes a new minor with `bun update @atelic-action/ui --latest`: a plain `bun update` leaves it on the minor it has and reports nothing wrong.
+From 1.0.0 a caret range admits every minor and patch, so a plain `bun update @atelic-action/ui` takes them; a new major still needs `--latest`. A site still on a `^0.x` range takes 1.0 with `--latest` once.
 
 Peer dependencies: `react` and `react-dom` at `^19.0.0`, and `lucide-react` at `^1.23.0`. Three more are optional, needed only by a site whose `vite.config.ts` imports `@atelic-action/ui/vite`: `vite`, `@tanstack/react-start`, and `@vitejs/plugin-react`. The commands the package installs run under `bun`, with `node` for the sealing command.
 
@@ -347,6 +352,8 @@ export function ArtifactShell(props: Omit<ArtifactShellProps, "currentPath">) {
 
 **The note** is the first touch for a business whose site publishes no email address, served at `/notes` and wrapped in `ArtifactShell` exactly as the writeup is. It is the writeup's sibling, not a variant: a title and a dateline, the opener, two lanes of findings (what the customer sees, what sits under the hood), the steps the work would start with, and the close over the shared `SignOff`. Every prop is plain data, so a routine can write a note as JSON; a paragraph is a string or an array of strings and `{ text, href }` links, and the sign off person's `role` is the one field that also takes a node. A finding is a `Callout` with its `WriteupShot` under it. Its column is the writeup's 920px, centered under the header with the header's `--gutter`, and its text runs the column's full width. A finding sets its screen under its words on a phone and beside them, on the right, when wide and on paper. It reads on a phone first, stacks the two lanes as separate sections top to bottom at every width and on paper, never side by side, and prints to one letter sheet under the writeup's `@page`.
 
+**The sealed document's classes.** `Gate` renders the opened document as the HTML it was sealed from, so its markup is the content's, and `artifact.css` styles what that HTML may wear inside `.gate-content`: the tier row (`.gate-tiers` of `.gate-tier` cards, `.is-picked` on the recommended one, `.gate-tier-name`, `.gate-tier-price`, `.gate-tier-note`, and the `.gate-tier-math` sum column of `.gate-tier-was`, `.gate-tier-credit`, `.gate-tier-mathlabel`, and the price), `ul.icon-list` for a list led by inline lucide icons (sized for the card inside a tier), `ul.gate-checks`, and, from 1.0.0 (ATE-599, pulled up from the Wynkoop and Outdoors Geek hosts), the `.gate-addons` row that seats two `.gate-tier.is-addon` monthly cards side by side under the builds, an inline SVG mark inside `.gate-tier-mathlabel` that stays on the label's line, and the `.gate-footnote` line under the tiers that the mark points at. A folder stylesheet that carried any of these deletes it.
+
 The documents import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css` and before its `theme.css`, so every page carries the rules whichever route it is. The sheet holds two `@page` rules, the monthly page's and then the writeup's, and the later one wins for every page a site prints; the order inside the sheet is the order the template's build bundled them in and is load bearing.
 
 ### The Artifact Vite Config
@@ -436,6 +443,16 @@ Moving into the layer changes one thing for a site: a rule in its own unlayered 
 
 A site served under a prefix (`/proto`) says so once. `BasePathProvider` (from `@atelic-action/ui/routing`, a React context whose default base is "") hands the base to everything below it, and `Button`, `Chip`, `ImageFrame`, and every section that builds a link or an image source read it through `useBasePath` and `useWithBase`. A root absolute path gets the prefix; an external URL, a protocol link, a fragment, and a path that already carries the base pass through. `SiteShell` mounts the provider from its `basePath` prop, which defaults to `site.basePath`, so a page rendered inside the shell needs nothing more. The pure helpers (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) are exported beside it for a site's own code.
 
+`@atelic-action/ui/routing` is TypeScript source like the rest, so Node cannot load it, and a Playwright spec runs under Node. The four helpers are therefore also built and exported alone as `@atelic-action/ui/routing/base-path` (1.0.0), the way the readers are, and a site's `e2e/` imports them from there:
+
+```ts
+// e2e/base.ts
+import { marketingBasePath } from "@atelic-action/ui/vite";
+export { hasBase } from "@atelic-action/ui/routing/base-path";
+```
+
+The provider stays in the source entry on purpose. A built copy of it would be a second React context, and a site mounting that copy would hand its base to none of the sections, which read the source one.
+
 ### SiteShell
 
 `SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCta`, `footer`, `pageNav`, `navOnDark`, `hideNavCta`, and `credit` as before. A site keeps a wrapper a few lines long:
@@ -504,7 +521,7 @@ import { site } from "./src/site.config";
 export default marketingConfig({ site, pages: [{ path: "/blog/first-post" }] });
 ```
 
-`marketingConfig` carries what the template's `vite.config.ts` did: Vite's `base` and the router's `basepath` from `site.basePath` (or a `VITE_BASE_PATH` rehearsal), a refusal when a based `site.url` does not end with its base, one CSS bundle, TanStack Start prerendering with the crawler and the 404 page (copied to `404.html` by the build), the pages a site names, a sitemap on the origin of `site.url` (`sitemapHost` to change it) and none for a based cut, React, the `@` alias, and `ssr.noExternal`. `extend` merges a site's own needs over it. A site's scripts:
+`marketingConfig` carries what the template's `vite.config.ts` did: Vite's `base` and the router's `basepath` from `site.basePath` (or a `VITE_BASE_PATH` rehearsal), a refusal when a based `site.url` does not end with its base, TanStack Start prerendering with the crawler and the 404 page (copied to `404.html` by the build), the pages a site names, a sitemap on the origin of `site.url` (`sitemapHost` to change it) and none for a based cut, React, the `@` alias, and `ssr.noExternal`. `extend` merges a site's own needs over it. It leaves `build.cssCodeSplit` at Vite's default (1.0.0): every sheet rides in the site's one base sheet, so no component imports a stylesheet, and with the flag forced off TanStack Start fails the build looking for a `style.css` that is never written. A site that gives a component its own stylesheet again passes `extend: { build: { cssCodeSplit: false } }`. A site's scripts:
 
 ```json
 {
@@ -531,7 +548,7 @@ A site that takes 0.19.0 deletes its copies and repoints its own files. The temp
 | `@/shared/lib/hours` | `@atelic-action/ui/sections` (`formatClock`, `formatHoursRange`, `isClosed`) |
 | `@/shared/lib/honeypot` | `@atelic-action/ui/sections` in a component; `api/contact.ts` keeps its own copy, since Vercel runs a function's package imports uncompiled |
 | `@/shared/lib/analytics` (`trackEvent` only) | `@atelic-action/ui/sections`; the rest of the module, the click listener, stays in the site |
-| `@/shared/lib/basePath` (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) | `@atelic-action/ui/routing`; in a component, `useWithBase()` in place of `withBase` |
+| `@/shared/lib/basePath` (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) | `@atelic-action/ui/routing`; in a component, `useWithBase()` in place of `withBase`; in `e2e/`, `@atelic-action/ui/routing/base-path` |
 | `@/shared/lib/basePathAudit`, `@/shared/lib/sitemap` | Gone, inside `atelic-check-base-path` and `atelic-clean-sitemap` |
 | `scripts/clean-sitemap.ts`, `check-base-path.ts`, `contact-canary.ts`, `stamp-health.ts`, `check-links.ts`, `serve-static.ts` | `atelic-clean-sitemap`, `atelic-check-base-path`, `atelic-contact-canary`, `atelic-stamp-health`, `atelic-check-links`, `atelic-serve-static` |
 | `vite.config.ts` | `marketingConfig`, above |
@@ -734,9 +751,145 @@ The page components also work in an app that has its own base styles (Tailwind, 
 
 `StarRating` needs none of this: its sheet is unscoped and reads no token. The chrome (`SiteHeader`, `Footer`, and the rest) and `NotFound` remain site shaped and are not meant for a signed in app.
 
+## The App Shell
+
+`@atelic-action/ui/app` is the shell every signed in Atelic app is built on, moved here from `template-application`'s `src/shared` and its two stores in 1.0.0: the mobile first frame (the desktop rail, the tab bar, the menu sheet), the `AppPage` scaffold and its toolbar, the auth guard, Google sign in with a JWT and refresh session against a JSON api, the transport and query layers, the auth and units stores, and the helpers the template carried (dates, phrasing, units, search, envelopes). `@atelic-action/ui/app/ui` is the shadcn kit the shell is set in. Unlike the rest of the package the shell imports TanStack Router and is styled with Tailwind, since an app is built on both. [ui.atelic.me/app](https://ui.atelic.me/app) shows all of it running a made up bakery.
+
+### The Provider
+
+The shell reads nothing from the app's files. The app hands it its facts once, through `AppProvider`, rendered around the router so the stores are hydrated before the first route loads:
+
+```tsx
+// src/main.tsx
+import { AppProvider, ErrorFallback } from "@atelic-action/ui/app";
+import { appConfig } from "@/app/config";
+import { navItems } from "@/app/nav";
+
+createRoot(rootElement).render(
+	<StrictMode>
+		<Sentry.ErrorBoundary
+			fallback={(props) => <ErrorFallback {...props} showDetails={import.meta.env.DEV} />}
+		>
+			<AppProvider config={appConfig} nav={navItems}>
+				<RouterProvider router={router} />
+			</AppProvider>
+		</Sentry.ErrorBoundary>
+	</StrictMode>,
+);
+
+// src/routes/__root.tsx
+function RootLayout() {
+	return (
+		<AuthGuard>
+			<AppLayout>
+				<Outlet />
+			</AppLayout>
+		</AuthGuard>
+	);
+}
+```
+
+| Prop | What it is |
+|---|---|
+| `config` | An `AppConfig`: `name` (aria labels), `mark` (the wordmark), `storagePrefix` (every storage key and cookie), `publicRoutes` (exact paths a signed out visitor may load), `publicPages` (prefix patterns ending in `/*`, rendered in the public chrome), and `apiBaseUrl`, which the app resolves itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`), since the package never reads `import.meta.env` |
+| `nav` | The `NavItem[]` every nav surface reads, sub pages as `children`; the one place a destination is declared |
+| `queryClient` | Optional; defaults to the shell's, whose mutation cache raises `meta.toast` |
+| `toaster` | Optional; sonner's `Toaster` at the top right by default, `false` for none |
+
+Inside it, `useAppConfig()` and `useNav()` read the two facts, and `useUser()` the signed in user. The transport and the stores run outside React, so the provider also records the config where they read it; code that calls the api before the provider first renders calls `configureApp(appConfig)` itself. `AppConfigProvider` is the config and nav alone, for a test that mounts one surface.
+
+**The user type.** The shell knows the fields it reads (`AppUser`: the name, the avatar, the username, the unit preferences). An app registers its own user once, and `useUser`, `useAuthStore`, and `session.me` hand it back typed in full:
+
+```ts
+// src/app/types.ts
+declare module "@atelic-action/ui/app" {
+	interface Register {
+		user: User;
+	}
+}
+```
+
+**The stores moved with the shell**, because the transport cannot work without the auth store and the user context keeps the units store in step with the account. Both persist under the app's prefix exactly as before (`<storagePrefix>-auth`, `<storagePrefix>-units`), so a signed in browser stays signed in across the move. An app's own stores (`cookingStore` in pinole) stay in the app.
+
+### The Stylesheet
+
+The shell is Tailwind and shadcn, shipped as source like everything else here. `@atelic-action/ui/styles/app.css` carries the shadcn token mapping (`@theme`), the default light and dark token values, the base layer, and the `ap-*` scaffold; the app imports it straight after Tailwind, in its own Tailwind entry, and overrides any value in its own theme after it:
+
+```css
+/* src/styles/globals.css */
+@import "tailwindcss";
+@import "@atelic-action/ui/styles/app.css";
+
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
+
+/* The app's @font-face rules (it serves the files), then its own tokens. */
+```
+
+The import has to come before any other rule, or it is dropped without a word: the build passes and the shell renders unstyled. Tailwind never scans `node_modules`, so the sheet carries `@source "../app";`, which points Tailwind at the shell's components relative to the sheet, and the app adds nothing. An app that keeps its own tokens and does not import the sheet adds the equivalent line from its own stylesheet instead:
+
+```css
+@source "../../node_modules/@atelic-action/ui/src/app";
+```
+
+Proven on a copy of pinole-app thinned onto a packed tarball: with the line or the import, the built CSS holds every utility the shell uses; with neither, 165 of them are missing. The sheet sits outside the `atelic-ui` layer on purpose: its tokens and resets are in Tailwind's base layer and the scaffold is unlayered, as the template carried them, so the shell renders as it did.
+
+### The Kit
+
+`@atelic-action/ui/app/ui` exports the shadcn components the template carried: `Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `BadgeList`, `Button`, `Callout`, `Card`, `Checkbox`, `ClearButton`, `Command`, `CountryDropdown`, `Dialog`, `DropdownMenu`, `Form`, `Input`, `Label`, `OptionSelect`, `Pagination`, `Popover`, `Progress`, `SearchInput`, `Select`, `Separator`, `Sheet`, `Slider`, `Switch`, `Textarea`, and `Tooltip`, each with its parts. A new kit component lands here, not in an app, and it is written by hand into `src/app/ui/` and exported from its `index.ts`: the package carries no `components.json`, because `bunx shadcn add` writes its imports through the `@/` aliases the package never uses (consumers resolve none of ours), so a component taken from the shadcn registry has its imports made relative before it lands. The main entry adds the frame and its pieces (`AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `ActionButton`, `FormActionButtons`, `PageSkeleton`, `PageError`, `AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph`).
+
+The app's stack is optional peer dependencies, so a marketing site installs none of it: TanStack Router and Query, Tailwind, `sonner`, `zustand`, `zod`, `react-hook-form`, `class-variance-authority`, `clsx`, `tailwind-merge`, `cmdk`, the Radix primitives the kit uses, `country-data-list`, and `react-circle-flags`, at the ranges `template-application` already pins. An app that imports the shell has them all already.
+
+### Thinning an App onto It
+
+Delete `src/shared/`, `src/stores/authStore.ts`, `src/stores/unitsStore.ts`, and their tests (`tst/shared/`, `tst/stores/authStore.test.ts`, `tst/stores/unitsStore.test.ts`), then repoint every import:
+
+| Old Path | New Path |
+|---|---|
+| `@/shared/components/layout` and every file in it | `@atelic-action/ui/app` |
+| `@/shared/components/ui/<name>` | `@atelic-action/ui/app/ui` |
+| `@/shared/components/AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph` | `@atelic-action/ui/app` |
+| `@/shared/context/SidebarContext`, `@/shared/context/UserContext` | `@atelic-action/ui/app` |
+| `@/shared/hooks/useDebounce`, `useIsDesktop`, `useWakeLock` | `@atelic-action/ui/app` |
+| `@/shared/lib/<name>`, every file but `env` | `@atelic-action/ui/app` |
+| `@/shared/lib/env` | The app's own `src/app/env.ts`: `export const env = parseEnv(import.meta.env);` |
+| `@/shared/types`, `@/shared/types/query` | `@atelic-action/ui/app` |
+| `@/stores/authStore`, `@/stores/unitsStore` | `@atelic-action/ui/app` |
+
+Then the handful of edits the seam asks for:
+
+1. **`src/app/config.ts`** resolves `apiBaseUrl` itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`).
+2. **`src/app/types.ts`** registers its `User` (above).
+3. **`src/main.tsx`** wraps the router in `AppProvider`, and passes `showDetails={import.meta.env.DEV}` to `ErrorFallback`, which no longer reads the environment.
+4. **`src/routes/__root.tsx`** keeps only `AuthGuard` and `AppLayout` around the `Outlet`; the query client, the rail state, the user, and the toaster are the provider's.
+5. **`src/styles/globals.css`** keeps Tailwind, its plugins, its fonts, and any token of its own, and imports `app.css` in place of the `@theme` block, the token sets, the base layer, and the `ap-*` scaffold.
+6. **`activeSection(pathname)`** takes the items now: `activeSection(pathname, navItems)`.
+7. **`components.json`** no longer has a `src/shared` to add to; a new kit component is written by hand in the package's `src/app/ui/` (see [The Kit](#the-kit)).
+
+**Tests.** Mocking `@atelic-action/ui/app` replaces what the app's own code imports from it, and nothing the shell imports from itself. A component that calls `session.me` sees a mock written over the entry (`vi.mock(import("@atelic-action/ui/app"), async (original) => ({ ...(await original()), session: mockSession }))`), but the transport reads the auth store, the token refresh, and the config through its own relative imports, so a mocked `useAuthStore` or `ensureValidToken` never reaches `apiFetch`. A test that runs through the transport (a feature's api module, a query hook) therefore drives the real shell and mocks only `fetch`:
+
+```ts
+import { configureApp, useAuthStore } from "@atelic-action/ui/app";
+import { appConfig } from "@/app/config";
+
+beforeEach(() => {
+	configureApp(appConfig);
+	useAuthStore.setState({
+		token: "test-token",
+		refreshToken: "test-refresh",
+		expiresAt: Date.now() + 60 * 60 * 1000,
+		user: testUser, // the app's own fixture user
+		isAuthenticated: true,
+	});
+	vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ data: [] })));
+});
+```
+
+An `expiresAt` an hour out keeps the refresh path quiet; one inside five minutes sends the transport to the refresh endpoint first, through the same mocked `fetch`.
+
 ## The Gallery
 
-`gallery/` is one static page, The Components, that shows everything the package exports that draws (the chrome, the page components, the documents, and the email) on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published.
+`gallery/` is two static pages. The Components shows everything the package exports that draws (the chrome, the page components, the sections, the documents, and the email) on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published. The second page, [ui.atelic.me/app](https://ui.atelic.me/app) (`gallery/app.html`), runs the app shell for a made up bakery's ops app, on Tailwind through `@tailwindcss/vite`, with its own stylesheet set up the way an app's `globals.css` is; the plugin leaves The Components' plain sheets as they are.
 
 ```bash
 bun run gallery:dev    # a dev server on the repo's own source

@@ -90,12 +90,13 @@ export function marketingConfig({
 		// rebased `url(/...)` in the CSS carries it, and the router's
 		// `basepath`, so the router and the prerender both work under it.
 		base: `${basePath}/`,
-		build: {
-			// One CSS bundle instead of one file per route chunk: each render
-			// blocking stylesheet adds a round trip before first paint, and a
-			// single bundle also ends the per route CSS vanishing trap.
-			cssCodeSplit: false,
-		},
+		// No `build.cssCodeSplit: false`. Every sheet a site carries, the
+		// package's included, rides in the one base sheet its root route links
+		// (src/styles/base.css), so no component imports a stylesheet and there
+		// is no component bundle to fold. With the flag off, TanStack Start
+		// looks for the `style.css` that folding emits, finds none, and fails
+		// the build (ATE-643, as artifactConfig found first). A site that gives
+		// a component its own stylesheet again sets the flag through `extend`.
 		plugins: [
 			tanstackStart({
 				...(basePath ? { router: { basepath: basePath } } : {}),

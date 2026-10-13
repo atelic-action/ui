@@ -189,6 +189,9 @@ export function Gallery() {
 								Everything here renders from the package's own source, so what you see is what the
 								next release ships.
 							</p>
+							<p className="gallery-intro">
+								The app shell has <a href="/app">a page of its own</a>.
+							</p>
 						</div>
 					</header>
 
