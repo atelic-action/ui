@@ -1,6 +1,7 @@
 import { Check, ChevronDown, Link2, Search, X } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
+import { useOpenHeight } from "../lib/useOpenHeight";
 import { useWithBase } from "../routing/BasePathProvider";
 import { JumpRail } from "./JumpRail";
 import { PageHero } from "./PageHero";
@@ -71,7 +72,7 @@ function FAQRow({
 	onToggle: () => void;
 	onCopy: () => void;
 }) {
-	const answerRef = useRef<HTMLDivElement>(null);
+	const { ref, maxHeight } = useOpenHeight(open);
 
 	return (
 		<div className={["faq-row", open && "open"].filter(Boolean).join(" ")} id={item.id}>
@@ -105,12 +106,8 @@ function FAQRow({
 					</button>
 				</div>
 			</div>
-			<div
-				className="faq-row-a"
-				ref={answerRef}
-				style={{ maxHeight: open ? (answerRef.current?.scrollHeight ?? 0) : 0 }}
-			>
-				<div className="faq-row-a-inner">
+			<div className="faq-row-a" style={{ maxHeight }}>
+				<div className="faq-row-a-inner" ref={ref}>
 					{item.answer}
 					{item.cta && <CTALink cta={item.cta} className="faq-answer-cta" />}
 				</div>
@@ -222,7 +219,7 @@ export function FAQBrowser({
 
 			<JumpRail
 				ariaLabel="Question categories"
-				items={categories.map((cat) => ({
+				items={filtered.map((cat) => ({
 					id: `cat-${cat.id}`,
 					label: cat.tabLabel ?? cat.title,
 				}))}

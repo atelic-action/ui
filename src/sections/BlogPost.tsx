@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { displayDate } from "../lib/displayDate";
 import { type ProseBlock, ProseBlocks } from "../primitives/ProseBlocks";
 import { useWithBase } from "../routing/BasePathProvider";
 
@@ -18,27 +19,6 @@ export interface BlogPostProps {
 	backLabel?: string;
 	id?: string;
 	className?: string;
-}
-
-/** See BlogIndex: a bare ISO date parsed by Date() lands a day early west of UTC. */
-function displayDate(iso: string): string {
-	const [year, month, day] = iso.split("-").map(Number);
-	if (!year || !month || !day) return iso;
-	const months = [
-		"January",
-		"February",
-		"March",
-		"April",
-		"May",
-		"June",
-		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December",
-	];
-	return `${months[month - 1]} ${day}, ${year}`;
 }
 
 /**

@@ -86,8 +86,9 @@ export function ReviewCarousel({
 	id,
 	className,
 }: ReviewCarouselProps) {
-	const [index, setIndex] = useState(0);
+	const [rawIndex, setIndex] = useState(0);
 	const count = items.length;
+	const index = Math.min(rawIndex, Math.max(count - 1, 0));
 
 	function go(next: number) {
 		if (count === 0) return;
@@ -184,11 +185,12 @@ export function ReviewCarousel({
 
 					<div className="rc-controls">
 						<div className="rc-dots">
-							{items.map((item, i) => (
+							{items.map((_, i) => (
 								<button
 									type="button"
 									className={["rc-dot", i === index && "is-active"].filter(Boolean).join(" ")}
-									key={item.by + item.quote.slice(0, 12)}
+									// biome-ignore lint/suspicious/noArrayIndexKey: a dot is a position, not an identity; review text can repeat
+									key={`dot-${i}`}
 									aria-label={`Go to review ${i + 1}`}
 									aria-current={i === index}
 									onClick={() => setIndex(i)}

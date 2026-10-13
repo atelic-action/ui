@@ -31,8 +31,7 @@ export function MapEmbed({ site }: MapEmbedProps) {
 			<a
 				className="map-frame map-static"
 				href={site.mapLinkUrl ?? "#"}
-				target="_blank"
-				rel="noopener"
+				{...(site.mapLinkUrl ? { target: "_blank", rel: "noopener" } : {})}
 				aria-label={`Get directions to ${site.name}, ${address}`}
 			>
 				<img src={withBase(site.mapImage)} alt={`Map to ${site.name}, ${address}`} loading="lazy" />

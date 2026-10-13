@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import { displayDate } from "../lib/displayDate";
 import { useWithBase } from "../routing/BasePathProvider";
 
 export interface BlogIndexItem {
@@ -24,26 +25,6 @@ export interface BlogIndexProps {
  * UTC midnight and renders as the previous day west of Greenwich, which is a
  * classic way to publish a post that appears to predate itself.
  */
-function displayDate(iso: string): string {
-	const [year, month, day] = iso.split("-").map(Number);
-	if (!year || !month || !day) return iso;
-	const months = [
-		"January",
-		"February",
-		"March",
-		"April",
-		"May",
-		"June",
-		"July",
-		"August",
-		"September",
-		"October",
-		"November",
-		"December",
-	];
-	return `${months[month - 1]} ${day}, ${year}`;
-}
-
 /**
  * The blog listing: every post, newest first, as a plain readable stack
  * rather than a card grid. These are articles, not products, and a list

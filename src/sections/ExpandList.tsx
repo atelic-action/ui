@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useState } from "react";
+import { useOpenHeight } from "../lib/useOpenHeight";
 
 export interface ExpandListItem {
 	title: string;
@@ -13,7 +14,7 @@ export interface ExpandListProps {
 
 function ExpandRow({ index, item }: { index: number; item: ExpandListItem }) {
 	const [open, setOpen] = useState(false);
-	const bodyRef = useRef<HTMLDivElement>(null);
+	const { ref, maxHeight } = useOpenHeight(open);
 	const num = String(index + 1).padStart(2, "0");
 
 	return (
@@ -28,11 +29,8 @@ function ExpandRow({ index, item }: { index: number; item: ExpandListItem }) {
 				<span className="xl-title">{item.title}</span>
 				<ChevronDown className="xl-chevron" size={18} strokeWidth={2} aria-hidden="true" />
 			</button>
-			<div
-				className="xl-body"
-				style={{ maxHeight: open ? (bodyRef.current?.scrollHeight ?? 0) : 0 }}
-			>
-				<div className="xl-body-inner" ref={bodyRef}>
+			<div className="xl-body" style={{ maxHeight }}>
+				<div className="xl-body-inner" ref={ref}>
 					{item.body}
 				</div>
 			</div>

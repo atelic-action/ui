@@ -80,7 +80,10 @@ export function ContactForm({
 			message: !message,
 		};
 		setErrors(nextErrors);
-		if (nextErrors.name || nextErrors.email || nextErrors.message) return;
+		if (nextErrors.name || nextErrors.email || nextErrors.message) {
+			setStatus("idle");
+			return;
+		}
 
 		if (!endpoint) {
 			if (!toEmail) {
