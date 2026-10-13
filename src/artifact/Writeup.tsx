@@ -4,10 +4,10 @@ import {
 	Callout,
 	Checklist,
 	type ChecklistItem,
-	Collapsible,
 	ColumnChart,
 	type ColumnChartGroup,
 	DataTable,
+	Disclosure,
 	StackedBar,
 	type StackedBarSegment,
 	type StatItem,
@@ -34,7 +34,7 @@ export type { WriteupPerson } from "./SignOff";
  * type brought down, flowing across letter pages; nothing is clipped.
  *
  * Every block is a component from @atelic-action/ui (the checklist, the
- * sortable table, the charts, the stat row, the callout, the collapsible);
+ * sortable table, the charts, the stat row, the callout, the disclosure);
  * this file owns only the document: the overview, the tiers, the section
  * card, the markets table, and the close. Its skeleton is the practice's
  * FOOTPRINT.md, and what it says follows the pitch surface rules
@@ -158,7 +158,7 @@ export interface WriteupShots {
 	shots: WriteupShot[];
 }
 
-/** Blocks that can sit inside a collapsible. */
+/** Blocks that can sit inside a fold (a `more` block). */
 export type WriteupInnerBlock =
 	| WriteupChecks
 	| WriteupTable
@@ -170,8 +170,8 @@ export type WriteupInnerBlock =
 	| WriteupShots;
 
 /**
- * A collapsible: the label says what is inside and the summary says what it
- * shows, so the detail needs no explaining once open.
+ * A fold, the native Disclosure: the label says what is inside and the
+ * summary says what it shows, so the detail needs no explaining once open.
  */
 export interface WriteupMore {
 	kind: "more";
@@ -432,14 +432,14 @@ function Shots({ block }: { block: WriteupShots }) {
 
 function More({ block }: { block: WriteupMore }) {
 	return (
-		<Collapsible className="op-block op-more" label={block.label} summary={block.summary}>
+		<Disclosure className="op-block op-more" label={block.label} summary={block.summary}>
 			<div className="op-more-body">
 				{block.blocks.map((inner, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: blocks are static content in a fixed order
 					<TopicBlock block={inner} key={i} />
 				))}
 			</div>
-		</Collapsible>
+		</Disclosure>
 	);
 }
 

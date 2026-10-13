@@ -4,6 +4,64 @@ Shared UI for the Atelic templates: the site chrome (header, menu, footer, stick
 
 The package ships source, not a build. Its TSX and CSS arrive as written and compile inside each site's own Vite. The one exception is the access gate's server side, which ships compiled (see [The Access Gate](#the-access-gate)).
 
+## Component Index
+
+Every export, grouped by the entry it is imported from. The gallery column links the section of [ui.atelic.me](https://ui.atelic.me) that shows it; none marks an export that draws nothing.
+
+| Export | Entry | What it is | Gallery |
+|---|---|---|---|
+| `SiteHeader` | `@atelic-action/ui/chrome` | The fixed bar: the lockup, the nav or a page's own stops, the call to action, the burger; transparent, solid, or dark | [#site-header](https://ui.atelic.me/#site-header) |
+| `SiteMenu` | `@atelic-action/ui/chrome` | The phone's full screen menu, on a native modal dialog | [#site-menu](https://ui.atelic.me/#site-menu) |
+| `Footer` | `@atelic-action/ui/chrome` | The site's foot: brand column, nav, address, hours, copyright, credit band | [#footer](https://ui.atelic.me/#footer) |
+| `CreditBar` | `@atelic-action/ui/chrome` | The developer credit band | [#credit-bar](https://ui.atelic.me/#credit-bar) |
+| `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
+| `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
+| `SkipLink` | `@atelic-action/ui/chrome` | The keyboard user's jump past the chrome | [#skip-link](https://ui.atelic.me/#skip-link) |
+| `Brand`, `BrandLogo`, `CallToAction`, `HoursRow`, `MenuContact`, `NavLink`, `Phone`, `PostalAddress`, `SiteLink`, `SocialLink`, `PageStop` | `@atelic-action/ui/chrome` | The shapes the chrome renders from (types) | none |
+| `NotFound` | `@atelic-action/ui/components` | The body of the page an unknown path renders | [#not-found](https://ui.atelic.me/#not-found) |
+| `Checklist` | `@atelic-action/ui/components` | A short list of checks, each passed or failed | [#checklist](https://ui.atelic.me/#checklist) |
+| `DataTable` | `@atelic-action/ui/components` | A table whose first column names each row, sortable, stacking on a phone | [#data-table](https://ui.atelic.me/#data-table) |
+| `StatRow` | `@atelic-action/ui/components` | A row of large figures with periods, deltas, and trends | [#stat-row](https://ui.atelic.me/#stat-row) |
+| `Callout` | `@atelic-action/ui/components` | One finding: an icon in its tone, the title, the explainer | [#callout](https://ui.atelic.me/#callout) |
+| `Disclosure` | `@atelic-action/ui/components` | A section that folds: controlled, an app's card; uncontrolled, a native details fold that prints open | [#disclosure](https://ui.atelic.me/#disclosure) |
+| `StackedBar` | `@atelic-action/ui/components` | One bar split into the parts of a whole, with a key | [#stacked-bar](https://ui.atelic.me/#stacked-bar) |
+| `ColumnChart` | `@atelic-action/ui/components` | A bar a period, the periods in labeled groups | [#column-chart](https://ui.atelic.me/#column-chart) |
+| `ThresholdScale` | `@atelic-action/ui/components` | Zones on a scale and a pin for each reading | [#threshold-scale](https://ui.atelic.me/#threshold-scale) |
+| `StarRating`, `describeStarRating` | `@atelic-action/ui/components` | A row of stars in half steps, read only or editable, and its spoken name | [#star-rating](https://ui.atelic.me/#star-rating) |
+| `GateLogin` | `@atelic-action/ui/components` | The access gate's sign in screen | [#gate-login](https://ui.atelic.me/#gate-login) |
+| `Watermark` | `@atelic-action/ui/components` | The signed in reader's confidential stamp, pill or tiled | [#watermark](https://ui.atelic.me/#watermark) |
+| `readCookie`, `Tone` | `@atelic-action/ui/components` | The cookie reader the watermark uses, and the tone type | none |
+| `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading` | `@atelic-action/ui/primitives` | The small pieces a page is set in | [#primitives](https://ui.atelic.me/#primitives) |
+| `Writeup`, `ratingCell` | `@atelic-action/ui/artifact` | The graded document an owner gets, and its star rating table cell | [#writeup](https://ui.atelic.me/#writeup) |
+| `Report` | `@atelic-action/ui/artifact` | The monthly page an Operate client gets | [#report](https://ui.atelic.me/#report) |
+| `Note` | `@atelic-action/ui/artifact` | The first touch page, for a business with no published email | [#note](https://ui.atelic.me/#note) |
+| `Gate`, `normalizeEmail` | `@atelic-action/ui/artifact` | The sealed document, opened in the browser by the reader's own address | [#gate](https://ui.atelic.me/#gate) |
+| `GradeChip`, `gradeLabel`, `SignOff` | `@atelic-action/ui/artifact` | The grade letter and the sign off the documents share | [#writeup](https://ui.atelic.me/#writeup) |
+| `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, credit band, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
+| `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
+| `buildPageHead`, `canonicalUrl`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
+| `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document; the second entry is the same six, built, for what Node runs | none |
+| `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page | [#email](https://ui.atelic.me/#email) |
+| `Card`, `Row`, `FoldRow`, `Eyebrow`, `SubEyebrow`, `Fold`, `BigFold` | `@atelic-action/ui/email` | The containers and labels an email's sections sit in | [#email](https://ui.atelic.me/#email) |
+| `Item`, `TitleLine`, `Note`, `EmptyRow`, `Stat`, `StatsRow`, `List`, `ListRow`, `LeadRow`, `MonoTable`, `ReadBlock`, `Badge` | `@atelic-action/ui/email` | The rows inside a card | [#email](https://ui.atelic.me/#email) |
+| `Scoreboard`, `GroupRow`, `TargetRow`, `Bar`, `WhatMoved`, `DayStrip`, `StatStrip` | `@atelic-action/ui/email` | Targets against what was logged, what moved, and the week by day | [#email](https://ui.atelic.me/#email) |
+| `RecordStack`, `RecordTimelineStrip`, `RecordTimelineLegend`, `Records` | `@atelic-action/ui/email` | Records stacked for a phone, their timeline, and the fixed column table | [#email](https://ui.atelic.me/#email) |
+| `EmailThemeProvider`, `useEmailTheme`, `eyebrowStyle`, the plain text helpers (`recordStackText`, `wrap`, `textTable`, and the rest) | `@atelic-action/ui/email` | The palette context and the plain text twin (see [Email](#email)) | [#email](https://ui.atelic.me/#email) (the text twin) |
+| `renderEmail`, `renderFailureEmail` | `@atelic-action/ui/email/render` | The whole email document, and the failure page's | [#email](https://ui.atelic.me/#email) |
+| `atelicPalette`, `atelicFonts`, `toThemeCSS`, `themeTokenMap`, `Palette`, `Fonts` | `@atelic-action/ui/tokens` | The palette and font stacks, with no React | none |
+| `useScrollSpy` | `@atelic-action/ui/hooks` | Which section is in the reading band; the header's stops use it | [#site-header](https://ui.atelic.me/#site-header) (the dark bar's stops) |
+| `staticNotFoundRouting` | `@atelic-action/ui/routing` | The router options that keep a prerendered not found page alive | none |
+| `signToken`, `verifyToken`, `safeNext`, `needsSession` | `@atelic-action/ui/gate` | The access gate's tokens, the safe post sign in path, and the wall's test | none |
+| `POST`, `createRequestLink` | `@atelic-action/ui/gate/request-link` | The function that emails a sign in link | none |
+| `GET` | `@atelic-action/ui/gate/verify` | The function that turns a link into a session | none |
+| default, `createMiddleware` | `@atelic-action/ui/gate/middleware` | The middleware that holds a host behind the gate | none |
+| `artifactConfig`, `artifactPages` | `@atelic-action/ui/vite` | An artifact site's whole Vite configuration, and its page list | none |
+| `privateChunks`, `isPrivateContent`, `DOC_DIR` | `@atelic-action/ui/vite` and `@atelic-action/ui/vite/private-chunks` | The plugin that keeps private content behind the wall; the second entry loads neither optional peer | none |
+| `base.css`, `chrome.css`, `components.css`, `primitives.css`, `gate.css`, `artifact.css`, `star-rating.css` | `@atelic-action/ui/styles/*` | The stylesheets, in the order under [CSS Import Order](#css-import-order) | every section |
+| The eight `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, and sealing | none |
+
+Sections (`@atelic-action/ui/sections`) and the app shell (`@atelic-action/ui/app`) are being added on sibling branches of ATE-643, so they are not in this table yet.
+
 ## Install
 
 ```bash
@@ -39,42 +97,18 @@ Import the stylesheets in this order, from the root route or the site's base she
 8. The site's own CSS
 9. The site's `theme.css`, last
 
+Every rule in the package sheets is scoped under `.atelic-ui`, the one root class a consumer wears: a site puts it on its outermost wrapper, an app on the region that holds a package component. Which sheets it imports decides what it gets, so a site importing `base.css` gets the resets and typography under that class and an app importing `components.css` alone gets none of them.
+
 The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
 
-## What Is Inside
-
-| Import | Exports |
-|---|---|
-| `@atelic-action/ui/chrome` | `SiteHeader`, `SiteMenu`, `Footer`, `CreditBar`, `StickyCTABar`, `BrandLockup`, `SkipLink`, and their prop types |
-| `@atelic-action/ui/components` | `NotFound`, the access gate's `GateLogin` and `Watermark` (with `readCookie`), and the page components (`Checklist`, `DataTable`, `StatRow`, `Callout`, `Collapsible`, `StackedBar`, `ColumnChart`, `ThresholdScale`, `StarRating`, `Disclosure`), with their prop types (see [The Not Found Page](#the-not-found-page) and [Page Components](#page-components)) |
-| `@atelic-action/ui/artifact` | `Writeup`, `Report`, `Gate`, `GradeChip`, `SignOff`, `ArtifactShell`, the `ArtifactConfig` types, `buildPageHead`, the reader helpers, `AppErrorBoundary`, `newTabProps`, and their prop types (see [The Artifact Documents](#the-artifact-documents)) |
-| `@atelic-action/ui/artifact/readers` | The reader helpers alone, built, for what Node runs as shipped: a site's browser tests |
-| `@atelic-action/ui/primitives` | `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading`, and their prop types (see [Primitives](#primitives)) |
-| `@atelic-action/ui/email` | The email components, the theme provider, the plain text helpers, and their prop types (see [Email](#email)) |
-| `@atelic-action/ui/email/render` | `renderEmail` and `renderFailureEmail`, the only entry that imports `react-dom/server` |
-| `@atelic-action/ui/tokens` | `Palette`, `atelicPalette`, `Fonts`, `atelicFonts`, `toThemeCSS`, `themeTokenMap` |
-| `@atelic-action/ui/hooks` | `useScrollSpy` and its `PageStop` type |
-| `@atelic-action/ui/styles/primitives.css` | Styles for everything under `primitives`, the `.btn` classes included |
-| `@atelic-action/ui/styles/gate.css` | Styles for `GateLogin` and `Watermark` |
-| `@atelic-action/ui/styles/artifact.css` | Styles for everything under `artifact`: the writeup, the monthly page, the sealed document stage, the grade chip, and the sign off |
-| `@atelic-action/ui/vite` | `artifactConfig`, the whole Vite configuration of an artifact site as one call, with `artifactPages`; and `privateChunks`, the Vite plugin that keeps private content in `/assets/doc/`, with `isPrivateContent` and `DOC_DIR` (see [The Artifact Vite Config](#the-artifact-vite-config)) |
-| The `bin` commands | Eight commands a site's `package.json` calls by name, from `atelic-check-access` to `atelic-seal-document` (see [The Commands](#the-commands)) |
-| `@atelic-action/ui/gate` | `signToken`, `verifyToken`, `safeNext`, `needsSession`, and the token types |
-| `@atelic-action/ui/gate/request-link` | `POST`, the handler that emails a sign in link, and `createRequestLink` |
-| `@atelic-action/ui/gate/verify` | `GET`, the handler that turns a link into a session |
-| `@atelic-action/ui/gate/middleware` | The routing middleware as the default export, and `createMiddleware` |
-| `@atelic-action/ui/routing` | `staticNotFoundRouting`, the router options behind the not found page |
-| `@atelic-action/ui/styles/base.css` | Resets, the `.mkt` canvas, typography, and layout helpers |
-| `@atelic-action/ui/styles/chrome.css` | Styles for everything under `chrome` |
-| `@atelic-action/ui/styles/components.css` | Layout defaults for everything under `components` |
-| `@atelic-action/ui/styles/star-rating.css` | `StarRating`'s styles alone, for an app that wears none of the site chrome; `components.css` already imports it |
+## Rendering From Props
 
 Every component renders from props alone. None reads a config file or a router, so a site maps its own config onto the props in its shell:
 
 ```tsx
 import { Footer, SiteHeader, SkipLink, StickyCTABar } from "@atelic-action/ui/chrome";
 
-<div className="mkt">
+<div className="atelic-ui">
 	<SkipLink />
 	<SiteHeader
 		brand={{ name: site.name, logo: site.logo }}
@@ -207,7 +241,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 ```tsx
 // src/routes/login.tsx: the screen alone inside the site's scope, no header
-<div className="mkt">
+<div className="atelic-ui">
 	<GateLogin
 		brandName={site.recipient.name}
 		eyebrow={site.gate?.eyebrow}
@@ -218,7 +252,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 	/>
 </div>;
 
-// the site's shell, once, inside its `.mkt` wrapper, so every page behind
+// the site's shell, once, inside its `.atelic-ui` wrapper, so every page behind
 // the gate wears it (the styles are scoped there, like every sheet's)
 <Watermark />;
 ```
@@ -230,7 +264,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 `@atelic-action/ui/artifact` is everything the artifact template shared across its cuts, so a fix reaches every business's documents with one version bump:
 
 - **The documents:** `Writeup`, `Report`, `Note`, and `Gate` (the sealed document, with its `GatePayload` type; a reader's address is the key, so a payload never lists it, and the component identifies a reader to HubSpot by the address they typed), plus the `GradeChip` and `SignOff` they share, and every content type they take (`WriteupProps`, `ReportProps`, `NoteProps`, `GateProps`, and the rest).
-- **The shell:** `ArtifactShell`, the `.mkt` scope with the skip link, the dark header, the credit band, and the watermark around a page.
+- **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the credit band, and the watermark around a page.
 - **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
 - **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
 - **The error boundary:** `AppErrorBoundary` and its `ErrorFallback`.
@@ -276,7 +310,11 @@ export default artifactConfig({
 
 `privateChunks` is the plugin inside it, exported for a site that writes its own configuration: it writes every chunk carrying private content to `/assets/doc/`, where the access wall holds it, and fails the build when one lands anywhere else.
 
-A `vite.config.ts` is run by Node as shipped, so `src/vite/` is built to `dist/vite/` like the gate. The entry imports `@tanstack/react-start` and `@vitejs/plugin-react` when it loads, so a site that imports anything from it has both installed; they are optional peers only because a site that never imports this entry needs neither.
+A `vite.config.ts` is run by Node as shipped, so `src/vite/` is built to `dist/vite/` like the gate. `@atelic-action/ui/vite` imports `@tanstack/react-start` and `@vitejs/plugin-react` when it loads, so a site that imports anything from it has both installed. A site that writes its own configuration and wants only the plugin imports it from `@atelic-action/ui/vite/private-chunks` (0.18.0), which loads nothing from Vite but its types and needs neither peer:
+
+```ts
+import { privateChunks } from "@atelic-action/ui/vite/private-chunks";
+```
 
 ### The Commands
 
@@ -306,7 +344,7 @@ A site's scripts, whole:
 }
 ```
 
-The logic lives in `src/scripts/` as modules with their functions exported, which is what the tests import, and each file in `bin/` only reads the command line and calls one. The TypeScript commands open on `#!/usr/bin/env bun` and run as source, since `bun` runs TypeScript inside `node_modules`. The sealing command is plain `.mjs` under `#!/usr/bin/env node`, and the print command is `bash`; it needs Chrome (the `CHROME` variable names another binary), `python3`, and `curl`.
+The logic lives in `src/scripts/` as modules with their functions exported, which is what the tests import, and each file in `bin/` only reads the command line and calls one. The TypeScript commands open on `#!/usr/bin/env bun` and run as source, since `bun` runs TypeScript inside `node_modules`. The sealing command is plain `.mjs` under `#!/usr/bin/env node`, its logic in `src/scripts/seal-document.mjs` (named `build-gate-payload.mjs` before 0.18.0), and the print command is `bash`; it needs Chrome (the `CHROME` variable names another binary), `python3`, and `curl`.
 
 ## Email
 
@@ -442,7 +480,7 @@ The palette carries three optional keys beyond the jq's eight: `up` (`#2F7A4B`, 
 
 ## Page Components
 
-The blocks a page composes, each styled in `styles/components.css` inside the `atelic-ui` layer, so a site's own unlayered rule resizes or recolors any of them. They were cut from the SkySpec baseline writeup on 2026-10-02 (ATE-600), which is the worked example of all eight on one page.
+The blocks a page composes, each styled in `styles/components.css` inside the `atelic-ui` layer, so a site's own unlayered rule resizes or recolors any of them. They were cut from the SkySpec baseline writeup on 2026-10-02 (ATE-600), which is the worked example of them on one page.
 
 | Component | What it is | Notes |
 |---|---|---|
@@ -450,24 +488,23 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 | `DataTable` | A table whose first column names each row, sortable by any column marked `sortable` | A click on a heading sorts on a wide screen. On a phone each row stacks, every fact wearing its column's label, and a dropdown sorts. A cell is a node, or `{ display, sort }` when what it shows is not what it sorts by; a formatted number in a string (`"$12,047"`, `"0.24%"`) sorts as a number. It renders in `defaultSort` on the server |
 | `StatRow` | A row of large figures, each over what it counts and its `period`. `variant="quiet"` is the glance row for a working page: a light figure in the text color over a small capitalized label, hairlines between; `unit` sets a figure's unit small beside it | `trend` draws an arrow before a figure that is itself a change. `deltas` list comparisons beneath: an arrow, how far, against what (`basis`), and the earlier figure (`was`), each in its own tone, since a spend falling and a cost falling read differently |
 | `Callout` | One finding: an icon in its tone beside the title, the explainer under it | `variant="box"` sets it apart on a tinted ground, for something missing or owed |
-| `Disclosure` | A section the page opens and closes: a header row that folds a body the caller controls | For an app. The caller holds `open`, so it can remember what was folded, and a closed body is not rendered. The label is the toggle; `meta` (a count, a flag) sits beside it, outside its name, and a tap on it still folds. `headingLevel` makes the label a real heading |
-| `Collapsible` | A labeled line the reader opens for the detail behind it | A native `details`, so it works before any script loads and find in page opens it. `summary` carries the point, so the detail needs no explaining once open. It prints open |
+| `Disclosure` | A section the reader opens and closes, in two forms chosen by whether `open` is passed | Controlled (`open` and `onToggle`), it is an app's card: the caller remembers what was folded, a closed body is not rendered, the label is the toggle, `meta` (a count, a flag) sits beside it outside its name, and `headingLevel` makes the label a real heading. Uncontrolled, it is a document's fold: a native `details` with a `summary` line that carries the point and `defaultOpen`, so it works before any script loads, find in page opens it, and it prints open. `Collapsible`, the fold's old name, was folded in at 0.18.0 |
 | `StackedBar` | One bar split into the parts of a whole, with a key | A part of zero is keyed and not drawn |
 | `ColumnChart` | A bar a period, the periods in groups that carry a label and a total | Months in quarters is the case it was cut for: a quarter reads against the one before it and the same one a year earlier |
 | `ThresholdScale` | Zones on a scale and a pin for each reading | For a number judged against lines, like a load time against good and poor |
 | `StarRating` | A row of stars showing a rating in half star steps, and taking one when given `onChange` | Each star is two hit targets; picking the current rating clears it. Editable, it is one slider to a keyboard and a screen reader; read only, a picture named by the rating. `fillColor` and `outlineColor` take any CSS color, `size` and `max` set the star and the scale |
 
-**StarRating outside a site.** It is the one component that does not sit under `.mkt` or read a theme token: its styles are in `styles/star-rating.css`, and its two colors are the `--star-fill` and `--star-outline` custom properties, falling back to the text color and a faint tint of it. An app that installs the package for this component alone imports that one sheet, not `components.css`.
+**StarRating outside a site.** It is the one component that does not sit under `.atelic-ui` or read a theme token: its styles are in `styles/star-rating.css`, and its two colors are the `--star-fill` and `--star-outline` custom properties, falling back to the text color and a faint tint of it. An app that installs the package for this component alone imports that one sheet, not `components.css`.
 
 **A part's own color.** `StackedBar` takes a `color` on a segment, any CSS color, for parts that are not good or bad (the protein, carbs, and fat of a meal), and it wins over `tone`. `showKey={false}` draws the bar alone for a page that keys the parts its own way; the bar keeps its spoken summary.
 
-**Tones.** `good`, `warn`, `bad`, `info`, and `muted` are the one palette the package carries, because good, a warning, and broken read green, amber, and red whatever the brand is. A component sets `data-tone`, and `--tone`, `--tone-fill`, and `--tone-bg` follow for whatever sits inside. A site's theme may restate `--tone-good` and the rest on `.mkt`; `info` and `muted` come from the theme's own primary and neutral tokens.
+**Tones.** `good`, `warn`, `bad`, `info`, and `muted` are the one palette the package carries, because good, a warning, and broken read green, amber, and red whatever the brand is. A component sets `data-tone`, and `--tone`, `--tone-fill`, and `--tone-bg` follow for whatever sits inside. A site's theme may restate `--tone-good` and the rest on `.atelic-ui`; `info` and `muted` come from the theme's own primary and neutral tokens.
 
 ## In an App
 
 The page components also work in an app that has its own base styles (Tailwind, shadcn) and wears none of the site chrome. Three things make that so (0.10.0):
 
-1. **A second scope.** Every rule in `styles/components.css` answers to `.atelic-ui` as well as `.mkt`. `.atelic-ui` has no resets behind it, so an app puts the class on the region that holds a package component and nothing else in it restyles. Prefer a region to `body`: the components use plain class names (`.stat .num`, `.callout`, `.note`), and an app with markup of its own under those names would have a page wide scope reach it. `body` is right only for an app that has checked it has none, and it is the one way to cover a component rendered in a portal.
+1. **The same root class, without the site base.** Every rule in `styles/components.css` answers to `.atelic-ui`. An app imports no `base.css`, so the class brings no resets with it, and an app puts the class on the region that holds a package component and nothing else in it restyles. Prefer a region to `body`: the components use plain class names (`.stat .num`, `.callout`, `.note`), and an app with markup of its own under those names would have a page wide scope reach it. `body` is right only for an app that has checked it has none, and it is the one way to cover a component rendered in a portal.
 2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind the app **must declare the layer order before any stylesheet loads**, in a `<style>` in the `<head>` of its `index.html`: `@layer properties, theme, base, atelic-ui, components, utilities;`. A layer ranks by where it is first named, and a bundler is free to name the package's first, which ranks it below Tailwind's reset; the reset then strips the padding, margins, and borders off every component, while colors and type still look right, so it is easy to miss. Named there, the package ranks above the reset and below the app's utilities.
 3. **The app maps its tokens** onto the ones the components read, in its own stylesheet on the same scope:
 
@@ -505,14 +542,14 @@ The page components also work in an app that has its own base styles (Tailwind, 
 
 ## The Gallery
 
-`gallery/` is one static page, The Components, that shows every page component on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published.
+`gallery/` is one static page, The Components, that shows everything the package exports that draws (the chrome, the page components, the documents, and the email) on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published.
 
 ```bash
 bun run gallery:dev    # a dev server on the repo's own source
 bun run gallery:build  # the static page, written to gallery/dist
 ```
 
-`vercel.json` builds it the same way and serves `gallery/dist`. Typecheck and lint cover it, and CI builds it, so a component change that breaks the gallery fails CI. **A new page component gets a gallery section in the same change**, with each of its meaningfully different forms shown.
+`vercel.json` builds it the same way and serves `gallery/dist`. Typecheck and lint cover it, and CI builds it, so a component change that breaks the gallery fails CI. **A new component gets a gallery section in the same change**, with each of its meaningfully different forms shown. `gallery/parts.tsx` holds the frame pieces (`Piece`, `Example`, and `Frame`, which holds a fixed piece inside the page), and a group of pieces lives in a file of its own beside `Gallery.tsx` (`chrome.tsx`, `documents.tsx`, `email.tsx`), mounted there with one element. Each document is one whole fictional document, and the sealed one was sealed with the package's own sealing command (`gallery/gate-payload.json`, reader `reader@example.test`).
 
 ## Releasing
 

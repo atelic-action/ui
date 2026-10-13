@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Print an artifact page to PDF with headless Chrome and report its sheet
 # count. The writeup flows across as many letter pages as it needs, its
-# collapsibles printed open, so its count is a record of the print and not a
+# native disclosures printed open, so its count is a record of the print and not a
 # layout check. The monthly page is one sheet by construction, so pass 1 for
 # it and the script fails when it prints as anything else.
 #

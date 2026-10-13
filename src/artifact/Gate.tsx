@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "../primitives/Button";
 
 /**
- * PBKDF2 work factor and hash. Mirrored by scripts/build-gate-payload.mjs;
+ * PBKDF2 work factor and hash. Mirrored by scripts/seal-document.mjs;
  * the two must agree exactly or every sealed payload stops opening.
  */
 const PBKDF2_ITERATIONS = 200000;
@@ -40,7 +40,7 @@ export interface GatePayload {
 }
 
 export interface GateProps {
-	/** Built by scripts/build-gate-payload.mjs. Carries no plaintext. */
+	/** Built by scripts/seal-document.mjs. Carries no plaintext. */
 	payload: GatePayload;
 	/** localStorage key holding the reader's email, so a return visit walks straight in. */
 	storageKey?: string;

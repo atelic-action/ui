@@ -1,6 +1,6 @@
 /* StarRating: a row of stars in half star steps. On its own sheet, and not
-   under .mkt, so an app that wears none of the site chrome can import this
-   file alone; components.css imports it for every site.
+   scoped under .atelic-ui, so an app that wears none of the site chrome can
+   import this file alone; components.css imports it for every site.
 
    The two colors are custom properties with fallbacks off the text color, so
    the row needs no theme token and takes a color from a prop, from a site's

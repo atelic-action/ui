@@ -1,7 +1,7 @@
 import { webcrypto } from "node:crypto";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Gate, type GatePayload } from "../../src/artifact/Gate";
-import { sealDocument } from "../../src/scripts/build-gate-payload.mjs";
+import { sealDocument } from "../../src/scripts/seal-document.mjs";
 
 const HTML = '<h1>A Proposal for Summit</h1><p class="gate-lede">Three tiers, one number each.</p>';
 const EMAIL = "reader@example.com";

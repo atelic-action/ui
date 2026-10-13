@@ -28,7 +28,7 @@ export interface GateLoginProps {
  * addresses. The response is the same either way, so this screen always
  * shows the same "check your inbox" confirmation.
  *
- * It renders the screen only: a site wraps it in its `.mkt` scope with no
+ * It renders the screen only: a site wraps it in its `.atelic-ui` scope with no
  * header, since a header would only point at pages the visitor cannot open
  * yet. The button wears the site's own `.btn` classes, as the chrome's do.
  */

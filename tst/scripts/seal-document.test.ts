@@ -1,5 +1,5 @@
 import { webcrypto } from "node:crypto";
-import { normalizeEmail, sealDocument } from "../../src/scripts/build-gate-payload.mjs";
+import { normalizeEmail, sealDocument } from "../../src/scripts/seal-document.mjs";
 
 /**
  * The payload builder is one half of a contract; Gate in the browser is the
@@ -76,7 +76,7 @@ async function open(payload: Payload, rawEmail: string): Promise<string> {
 	return "";
 }
 
-describe("build-gate-payload", () => {
+describe("seal-document", () => {
 	describe("normalizeEmail", () => {
 		it("reads an email by its letters and digits alone", () => {
 			expect(normalizeEmail("kyle@example.com")).toBe("KYLEEXAMPLECOM");

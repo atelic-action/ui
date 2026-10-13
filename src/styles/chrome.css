@@ -7,7 +7,7 @@
    ================================================================= */
 @layer atelic-ui {
 	/* ---- Skip link (a11y) ---- */
-	.mkt .skip-link {
+	.atelic-ui .skip-link {
 		position: absolute;
 		left: -9999px;
 		top: 0;
@@ -17,14 +17,14 @@
 		z-index: 200;
 		border-radius: 0 0 8px 0;
 	}
-	.mkt .skip-link:focus {
+	.atelic-ui .skip-link:focus {
 		left: 0;
 	}
 
 	/* ---- Brand lockup ---- */
 	/* The brand's trailing fade bar after the wordmark (logo.run), worn in the
 	   header and the footer. */
-	.mkt .wordmark-run {
+	.atelic-ui .wordmark-run {
 		display: inline-block;
 		width: 1.7em;
 		height: 2px;
@@ -38,7 +38,7 @@
 	/* The glyph tile mark (logo.tile): the favicon's design as real DOM text,
 	   so the brand webfont renders it, which an SVG loaded through an img
 	   cannot do. Worn in the header and the footer. */
-	.mkt .logo-tile {
+	.atelic-ui .logo-tile {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -54,7 +54,7 @@
 		position: relative;
 		flex: none;
 	}
-	.mkt .logo-tile::after {
+	.atelic-ui .logo-tile::after {
 		content: "";
 		position: absolute;
 		left: 7px;
@@ -67,7 +67,7 @@
 
 	/* ---- Header ---- */
 	/* Fixed header: transparent over a hero, solid once scrolled, or dark. */
-	.mkt .nav {
+	.atelic-ui .nav {
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -81,7 +81,7 @@
 			box-shadow 0.3s ease,
 			backdrop-filter 0.3s ease;
 	}
-	.mkt .nav-inner {
+	.atelic-ui .nav-inner {
 		width: 100%;
 		max-width: var(--max-width);
 		margin-inline: auto;
@@ -91,7 +91,7 @@
 		justify-content: space-between;
 		gap: 20px;
 	}
-	.mkt .nav-logo {
+	.atelic-ui .nav-logo {
 		display: flex;
 		align-items: center;
 		gap: 10px;
@@ -100,33 +100,33 @@
 		letter-spacing: -0.02em;
 		font-size: 1.02rem;
 	}
-	.mkt .nav-logo .mark {
+	.atelic-ui .nav-logo .mark {
 		height: 30px;
 		width: 30px;
 	}
 	/* The recipient half of a sent artifact's lockup (BrandLockup: recipient):
 	   a quiet times sign in the mono face, then the business's mark at
 	   wordmark height. */
-	.mkt .nav-logo .nav-x {
+	.atelic-ui .nav-logo .nav-x {
 		font-family: var(--font-mono);
 		font-weight: 400;
 		font-size: 0.9rem;
 		color: color-mix(in srgb, currentColor 55%, transparent);
 		margin: 0 2px;
 	}
-	.mkt .nav-logo .nav-recipient {
+	.atelic-ui .nav-logo .nav-recipient {
 		/* Matches the sender's mark, so a square recipient mark reads at the
 		   same size as the sender's would; a wide wordmark simply runs longer. */
 		height: 30px;
 		width: auto;
 		display: block;
 	}
-	.mkt .nav-links {
+	.atelic-ui .nav-links {
 		display: none;
 		align-items: center;
 		gap: 4px;
 	}
-	.mkt .nav-links a {
+	.atelic-ui .nav-links a {
 		padding: 8px 14px;
 		border-radius: var(--radius-pill);
 		font-weight: 600;
@@ -135,11 +135,11 @@
 			background 0.15s,
 			color 0.15s;
 	}
-	.mkt .nav-links a:hover {
+	.atelic-ui .nav-links a:hover {
 		background: rgba(33, 28, 23, 0.06);
 	}
 	/* A page's own stops: the scroll spied active one. */
-	.mkt .nav-links a.active {
+	.atelic-ui .nav-links a.active {
 		color: var(--primary);
 	}
 	/* Desktop only, and hidden until the bar is solid: on small screens the
@@ -147,16 +147,16 @@
 	   width. The class sits on a wrapper around the button, because a site's
 	   .btn display rule lives outside this layer and would outrank a rule here
 	   that hid the button itself. */
-	.mkt .nav .nav-cta {
+	.atelic-ui .nav .nav-cta {
 		display: none;
 	}
-	.mkt .nav-burger {
+	.atelic-ui .nav-burger {
 		display: inline-flex;
 		flex-direction: column;
 		gap: 5px;
 		padding: 10px;
 	}
-	.mkt .nav-burger span {
+	.atelic-ui .nav-burger span {
 		width: 24px;
 		height: 2px;
 		background: currentColor;
@@ -166,16 +166,16 @@
 			opacity 0.2s;
 	}
 	/* A white logo image is tinted to ink when the bar is solid on light. */
-	.mkt .nav.is-solid .nav-logo .mark {
+	.atelic-ui .nav.is-solid .nav-logo .mark {
 		filter: brightness(0) saturate(1);
 	}
-	.mkt .nav.is-transparent {
+	.atelic-ui .nav.is-transparent {
 		color: #fff;
 	}
-	.mkt .nav.is-transparent .nav-logo .wordmark {
+	.atelic-ui .nav.is-transparent .nav-logo .wordmark {
 		color: #fff;
 	}
-	.mkt .nav.is-solid {
+	.atelic-ui .nav.is-solid {
 		background: color-mix(in srgb, var(--surface) 86%, transparent);
 		backdrop-filter: saturate(1.4) blur(14px);
 		-webkit-backdrop-filter: saturate(1.4) blur(14px);
@@ -185,40 +185,40 @@
 	/* The dark bar (an artifact's stage, the audit): it matches the page
 	   instead of capping it with a light band. The white logo mark stays
 	   untinted, and the active stop lifts to the bright primary. */
-	.mkt .nav.is-solid.nav-dark {
+	.atelic-ui .nav.is-solid.nav-dark {
 		background: color-mix(in srgb, var(--surface-dark) 88%, transparent);
 		box-shadow: 0 1px 0 color-mix(in srgb, var(--surface) 12%, transparent);
 		color: color-mix(in srgb, var(--surface) 96%, white);
 	}
-	.mkt .nav.nav-dark .nav-logo .mark {
+	.atelic-ui .nav.nav-dark .nav-logo .mark {
 		filter: none;
 	}
-	.mkt .nav.nav-dark .nav-links a:hover {
+	.atelic-ui .nav.nav-dark .nav-links a:hover {
 		background: rgba(255, 255, 255, 0.08);
 	}
-	.mkt .nav.nav-dark .nav-links a.active {
+	.atelic-ui .nav.nav-dark .nav-links a.active {
 		color: var(--primary-bright);
 	}
 	@media (min-width: 900px) {
-		.mkt .nav-links {
+		.atelic-ui .nav-links {
 			display: flex;
 		}
-		.mkt .nav-burger {
+		.atelic-ui .nav-burger {
 			display: none;
 		}
-		.mkt .nav.is-solid .nav-cta {
+		.atelic-ui .nav.is-solid .nav-cta {
 			display: inline-flex;
 		}
 	}
 	/* The burger folds into an X while the menu is open. State lives on the
 	   button's own aria-expanded, so no extra class plumbing. */
-	.mkt .nav-burger[aria-expanded="true"] span:nth-child(1) {
+	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(1) {
 		transform: translateY(7px) rotate(45deg);
 	}
-	.mkt .nav-burger[aria-expanded="true"] span:nth-child(2) {
+	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(2) {
 		opacity: 0;
 	}
-	.mkt .nav-burger[aria-expanded="true"] span:nth-child(3) {
+	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(3) {
 		transform: translateY(-7px) rotate(-45deg);
 	}
 
@@ -226,7 +226,7 @@
 	/* A native modal dialog, sized to the whole viewport over the dialog's own
 	   box. It renders in the top layer above the header, so it carries its own
 	   close button where the burger sits. */
-	.mkt .mobile-menu {
+	.atelic-ui .mobile-menu {
 		position: fixed;
 		inset: 0;
 		width: 100%;
@@ -243,20 +243,20 @@
 		transform: translateY(-100%);
 		transition: transform 0.4s cubic-bezier(0.7, 0, 0.2, 1);
 	}
-	.mkt .mobile-menu[open] {
+	.atelic-ui .mobile-menu[open] {
 		display: flex;
 		transform: translateY(0);
 	}
 	@starting-style {
-		.mkt .mobile-menu[open] {
+		.atelic-ui .mobile-menu[open] {
 			transform: translateY(-100%);
 		}
 	}
-	.mkt .mobile-menu::backdrop {
+	.atelic-ui .mobile-menu::backdrop {
 		background: transparent;
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.mkt .mobile-menu {
+		.atelic-ui .mobile-menu {
 			transition: none;
 		}
 	}
@@ -264,7 +264,7 @@
 	html:has(dialog.mobile-menu[open]) {
 		overflow: hidden;
 	}
-	.mkt .mobile-menu .mm-close {
+	.atelic-ui .mobile-menu .mm-close {
 		position: absolute;
 		top: calc(var(--nav-height) / 2 - 14.5px);
 		right: var(--gutter);
@@ -273,21 +273,21 @@
 		gap: 5px;
 		padding: 10px;
 	}
-	.mkt .mobile-menu .mm-close span {
+	.atelic-ui .mobile-menu .mm-close span {
 		width: 24px;
 		height: 2px;
 		background: currentColor;
 		border-radius: 2px;
 	}
-	.mkt .mobile-menu .mm-close span:nth-child(1) {
+	.atelic-ui .mobile-menu .mm-close span:nth-child(1) {
 		transform: translateY(3.5px) rotate(45deg);
 	}
-	.mkt .mobile-menu .mm-close span:nth-child(2) {
+	.atelic-ui .mobile-menu .mm-close span:nth-child(2) {
 		transform: translateY(-3.5px) rotate(-45deg);
 	}
 	/* Menu entries only (.mm-link), never bare anchors, so the .btn CTA below
 	   keeps its standard button styling. */
-	.mkt .mobile-menu .mm-link {
+	.atelic-ui .mobile-menu .mm-link {
 		font-size: 1.8rem;
 		font-weight: 800;
 		letter-spacing: -0.02em;
@@ -297,16 +297,16 @@
 		justify-content: space-between;
 		align-items: center;
 	}
-	.mkt .mobile-menu .mm-link .idx {
+	.atelic-ui .mobile-menu .mm-link .idx {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 		color: var(--primary-bright);
 		font-weight: 500;
 	}
-	.mkt .mobile-menu .mm-cta {
+	.atelic-ui .mobile-menu .mm-cta {
 		margin-top: 28px;
 	}
-	.mkt .mobile-menu .mm-contact {
+	.atelic-ui .mobile-menu .mm-contact {
 		margin-top: auto;
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
@@ -316,7 +316,7 @@
 	}
 
 	/* ---- Sticky CTA bar (phones only) ---- */
-	.mkt .sticky-cta {
+	.atelic-ui .sticky-cta {
 		position: fixed;
 		left: 0;
 		right: 0;
@@ -332,37 +332,37 @@
 		transform: translateY(120%);
 		transition: transform 0.35s cubic-bezier(0.7, 0, 0.2, 1);
 	}
-	.mkt .sticky-cta.show {
+	.atelic-ui .sticky-cta.show {
 		transform: translateY(0);
 	}
-	.mkt .sticky-cta .btn {
+	.atelic-ui .sticky-cta .btn {
 		flex: 1;
 	}
-	.mkt .sticky-cta .btn-call {
+	.atelic-ui .sticky-cta .btn-call {
 		flex: 0 0 auto;
 	}
 	@media (min-width: 900px) {
-		.mkt .sticky-cta {
+		.atelic-ui .sticky-cta {
 			display: none;
 		}
 	}
 
 	/* ---- Footer ---- */
-	.mkt .footer {
+	.atelic-ui .footer {
 		background: var(--surface-dark);
 		color: var(--neutral-200);
 		padding-block: clamp(48px, 7vw, 84px) 28px;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .footer, so it never meets the header's link rules */
-	.mkt .footer a:hover {
+	.atelic-ui .footer a:hover {
 		color: #fff;
 	}
-	.mkt .footer-grid {
+	.atelic-ui .footer-grid {
 		display: grid;
 		gap: 40px;
 		grid-template-columns: 1fr;
 	}
-	.mkt .footer h4 {
+	.atelic-ui .footer h4 {
 		color: #fff;
 		font-family: var(--font-mono);
 		font-size: 0.74rem;
@@ -371,41 +371,41 @@
 		font-weight: 500;
 		margin-bottom: 16px;
 	}
-	.mkt .footer-brand img {
+	.atelic-ui .footer-brand img {
 		height: 38px;
 		margin-bottom: 18px;
 	}
-	.mkt .footer-brand p {
+	.atelic-ui .footer-brand p {
 		color: var(--neutral-300);
 		max-width: 30ch;
 	}
-	.mkt .footer nav a {
+	.atelic-ui .footer nav a {
 		display: block;
 		padding: 6px 0;
 		color: var(--neutral-200);
 		font-weight: 500;
 	}
-	.mkt .footer .nap {
+	.atelic-ui .footer .nap {
 		font-style: normal;
 		line-height: 1.9;
 		color: var(--neutral-200);
 	}
-	.mkt .footer .nap a {
+	.atelic-ui .footer .nap a {
 		color: #fff;
 		font-weight: 600;
 	}
-	.mkt .footer-hours {
+	.atelic-ui .footer-hours {
 		font-family: var(--font-mono);
 		font-size: 0.82rem;
 		line-height: 1.9;
 		color: var(--neutral-300);
 	}
-	.mkt .footer-social {
+	.atelic-ui .footer-social {
 		display: flex;
 		gap: 10px;
 		margin-top: 20px;
 	}
-	.mkt .footer .footer-social-link {
+	.atelic-ui .footer .footer-social-link {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -415,11 +415,11 @@
 		border-radius: var(--radius-sm);
 		color: var(--neutral-300);
 	}
-	.mkt .footer .footer-social-link:hover {
+	.atelic-ui .footer .footer-social-link:hover {
 		color: var(--primary-bright);
 		border-color: var(--primary-bright);
 	}
-	.mkt .footer-bottom {
+	.atelic-ui .footer-bottom {
 		margin-top: 48px;
 		padding-top: 24px;
 		border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -431,22 +431,22 @@
 		font-size: 0.82rem;
 		color: var(--neutral-500);
 	}
-	.mkt .footer .footer-bottom a {
+	.atelic-ui .footer .footer-bottom a {
 		color: var(--neutral-300);
 	}
-	.mkt .footer-legal {
+	.atelic-ui .footer-legal {
 		display: flex;
 		gap: 20px;
 		flex-wrap: wrap;
 	}
 	@media (min-width: 760px) {
-		.mkt .footer-grid {
+		.atelic-ui .footer-grid {
 			grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
 			gap: 48px;
 		}
 	}
 	/* Text wordmark for a site with no mark image. */
-	.mkt .footer-wordmark {
+	.atelic-ui .footer-wordmark {
 		color: #fff;
 		font-size: 1.3rem;
 		font-weight: 600;
@@ -459,7 +459,7 @@
 	   small, and muted. Purely token themed (the hairline and hover lift derive
 	   from --surface through color-mix), so it rebrands with theme.css on any
 	   page it renders under, light or dark. */
-	.mkt .credit-bar {
+	.atelic-ui .credit-bar {
 		background: var(--surface-dark);
 		border-top: 1px solid color-mix(in srgb, var(--surface) 10%, transparent);
 		color: var(--neutral-500);
@@ -469,12 +469,12 @@
 		padding: 16px 20px;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .credit-bar, so it never meets the footer's link rules */
-	.mkt .credit-bar a {
+	.atelic-ui .credit-bar a {
 		color: var(--neutral-300);
 		font-weight: 500;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .credit-bar, so it never meets the header's link rules */
-	.mkt .credit-bar a:hover {
+	.atelic-ui .credit-bar a:hover {
 		color: color-mix(in srgb, var(--surface) 96%, white);
 	}
 }
