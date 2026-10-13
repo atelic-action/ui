@@ -739,7 +739,6 @@ export function DocumentPieces() {
 					<div className="gallery-document gallery-sealed">
 						<Gate
 							payload={payload as GatePayload}
-							storageKey="gallery-gate-email"
 							queryParam="gallery-email"
 							sub="This document opens with the email address it was sent to. Here, that is reader@example.test."
 							placeholder="reader@example.test"

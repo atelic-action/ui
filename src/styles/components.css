@@ -262,7 +262,7 @@
 	   card above: no border, no ground, no padding, the body under the line.
 	   Kept at the card's weight or one class over, so a document's own sheet
 	   (artifact.css) can size the parts with a rule of the same weight. ---- */
-	.atelic-ui .is-native {
+	.atelic-ui .disclosure.is-native {
 		border: 0;
 		border-radius: 0;
 		background: none;
@@ -313,7 +313,7 @@
 	}
 	/* Paper cannot be clicked, so a printed native disclosure is open. */
 	@media print {
-		.atelic-ui .is-native::details-content {
+		.atelic-ui .disclosure.is-native::details-content {
 			content-visibility: visible;
 			display: block;
 		}

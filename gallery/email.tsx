@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
 	BigFold,
 	Card,
@@ -186,6 +186,15 @@ function failureEmail(): string {
  */
 function EmailFrame({ html, title }: { html: string; title: string }) {
 	const [height, setHeight] = useState(480);
+	const [doc, setDoc] = useState<Document | null>(null);
+	useEffect(() => {
+		if (!doc) return;
+		const measure = () => setHeight(Math.ceil(doc.body.getBoundingClientRect().height));
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(doc.body);
+		return () => observer.disconnect();
+	}, [doc]);
 	return (
 		<iframe
 			className="gallery-email"
@@ -194,11 +203,7 @@ function EmailFrame({ html, title }: { html: string; title: string }) {
 			sandbox="allow-same-origin allow-popups"
 			style={{ height }}
 			onLoad={(event) => {
-				const doc = event.currentTarget.contentDocument;
-				if (!doc) return;
-				const measure = () => setHeight(Math.ceil(doc.body.getBoundingClientRect().height));
-				measure();
-				new ResizeObserver(measure).observe(doc.body);
+				setDoc(event.currentTarget.contentDocument);
 			}}
 		/>
 	);
