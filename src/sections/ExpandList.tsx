@@ -29,7 +29,9 @@ function ExpandRow({ index, item }: { index: number; item: ExpandListItem }) {
 				<span className="xl-title">{item.title}</span>
 				<ChevronDown className="xl-chevron" size={18} strokeWidth={2} aria-hidden="true" />
 			</button>
-			<div className="xl-body" style={{ maxHeight }}>
+			{/* Closed, the body stays in the HTML but is inert: out of the tab
+			    order and a screen reader's reach while it is clipped to nothing. */}
+			<div className="xl-body" style={{ maxHeight }} inert={!open}>
 				<div className="xl-body-inner" ref={ref}>
 					{item.body}
 				</div>

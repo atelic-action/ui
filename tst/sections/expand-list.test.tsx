@@ -32,4 +32,23 @@ describe("ExpandList", () => {
 		fireEvent.click(first);
 		expect(first).toHaveAttribute("aria-expanded", "false");
 	});
+
+	/*
+	 * A closed body is clipped to nothing but stays in the HTML, so a link
+	 * inside it was still reached by Tab. Inert takes it out of the tab order
+	 * and the accessibility tree until the row opens.
+	 */
+	it("makes a closed body unfocusable, and an open one reachable", () => {
+		const { container } = render(
+			<ExpandList
+				items={[{ title: "Parking", body: <a href="/directions">Directions to the lot</a> }]}
+			/>,
+		);
+		const body = container.querySelector(".xl-body");
+		expect(body).toHaveAttribute("inert");
+		fireEvent.click(screen.getByRole("button", { name: /Parking/ }));
+		expect(body).not.toHaveAttribute("inert");
+		fireEvent.click(screen.getByRole("button", { name: /Parking/ }));
+		expect(body).toHaveAttribute("inert");
+	});
 });

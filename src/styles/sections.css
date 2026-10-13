@@ -1961,7 +1961,11 @@
 		box-shadow: var(--shadow-lg);
 		background: var(--surface-inset);
 		user-select: none;
-		touch-action: none;
+		/* The frame takes up a good part of a phone's screen, so a vertical
+		   swipe across it has to scroll the page. A drag starts on the handle
+		   alone, which keeps every touch for itself (touch-action: none below);
+		   the frame only follows the pointer once that drag is under way. */
+		touch-action: pan-y;
 		cursor: ew-resize;
 	}
 	.atelic-ui .rslider-layer {

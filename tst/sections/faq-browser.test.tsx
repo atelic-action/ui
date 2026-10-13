@@ -121,4 +121,48 @@ describe("FAQBrowser", () => {
 		fireEvent.change(input, { target: { value: "zebra" } });
 		expect(screen.getByText(/No questions match/)).toBeInTheDocument();
 	});
+
+	/*
+	 * A closed answer is clipped to nothing but stays in the HTML, so its
+	 * links were still reached by Tab. Inert takes the closed answer out of
+	 * the tab order until it opens.
+	 */
+	it("makes a closed answer unfocusable, and an open one reachable", () => {
+		render(
+			<FAQBrowser
+				hero={{ title: "FAQs" }}
+				categories={[
+					{
+						id: "visit",
+						title: "Visiting",
+						items: [
+							{
+								id: "parking",
+								question: "Where do I park?",
+								answer: <p>Behind the building.</p>,
+								answerText: "Behind the building.",
+								cta: { label: "Directions", href: "/directions" },
+							},
+						],
+					},
+				]}
+			/>,
+		);
+		const answer = document.querySelector("#parking .faq-row-a");
+		expect(answer).toHaveAttribute("inert");
+		fireEvent.click(screen.getByRole("button", { name: "Where do I park?" }));
+		expect(answer).not.toHaveAttribute("inert");
+	});
+
+	it("points Browse all at the first category the page renders, which a search may change", () => {
+		renderBrowser();
+		const browseAll = () => document.querySelector(".faq-browse-all");
+		expect(browseAll()).toHaveAttribute("href", "#cat-getting-started");
+		const input = screen.getByRole("searchbox", { name: "Search questions" });
+		fireEvent.change(input, { target: { value: "insurance" } });
+		expect(browseAll()).toHaveAttribute("href", "#cat-cost");
+		expect(document.getElementById("cat-cost")).not.toBeNull();
+		fireEvent.change(input, { target: { value: "zebra" } });
+		expect(browseAll()).toBeNull();
+	});
 });

@@ -106,7 +106,10 @@ function FAQRow({
 					</button>
 				</div>
 			</div>
-			<div className="faq-row-a" style={{ maxHeight }}>
+			{/* Closed, the answer stays in the HTML for crawlers but is inert, so
+			    its links are out of the tab order and out of a screen reader's
+			    reach while it is clipped to nothing. */}
+			<div className="faq-row-a" style={{ maxHeight }} inert={!open}>
 				<div className="faq-row-a-inner" ref={ref}>
 					{item.answer}
 					{item.cta && <CTALink cta={item.cta} className="faq-answer-cta" />}
@@ -209,8 +212,10 @@ export function FAQBrowser({
 							</button>
 						)}
 					</div>
-					{browseAllLabel && categories[0] && (
-						<a className="faq-browse-all" href={`#cat-${categories[0].id}`}>
+					{/* The first category the page renders, which a search may have
+					    hidden the first one of; with nothing matching, no link. */}
+					{browseAllLabel && filtered[0] && (
+						<a className="faq-browse-all" href={`#cat-${filtered[0].id}`}>
 							{browseAllLabel}
 						</a>
 					)}
