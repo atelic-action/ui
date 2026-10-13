@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "0.18.0",
+	"version": "0.19.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, and the access gate they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -18,8 +18,11 @@
 	],
 	"bin": {
 		"atelic-check-access": "./bin/atelic-check-access.ts",
+		"atelic-check-base-path": "./bin/atelic-check-base-path.ts",
 		"atelic-check-links": "./bin/atelic-check-links.ts",
 		"atelic-check-wall": "./bin/atelic-check-wall.ts",
+		"atelic-clean-sitemap": "./bin/atelic-clean-sitemap.ts",
+		"atelic-contact-canary": "./bin/atelic-contact-canary.ts",
 		"atelic-print-sheets": "./bin/atelic-print-sheets.sh",
 		"atelic-reader-link": "./bin/atelic-reader-link.ts",
 		"atelic-seal-document": "./bin/atelic-seal-document.mjs",
@@ -42,6 +45,7 @@
 		"./hooks": "./src/hooks/index.ts",
 		"./primitives": "./src/primitives/index.ts",
 		"./routing": "./src/routing/index.ts",
+		"./sections": "./src/sections/index.ts",
 		"./tokens": "./src/tokens/index.ts",
 		"./styles/artifact.css": "./src/styles/artifact.css",
 		"./styles/base.css": "./src/styles/base.css",
@@ -49,6 +53,7 @@
 		"./styles/components.css": "./src/styles/components.css",
 		"./styles/gate.css": "./src/styles/gate.css",
 		"./styles/primitives.css": "./src/styles/primitives.css",
+		"./styles/sections.css": "./src/styles/sections.css",
 		"./styles/star-rating.css": "./src/styles/star-rating.css",
 		"./gate": {
 			"types": "./dist/gate/index.d.ts",

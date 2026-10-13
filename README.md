@@ -58,9 +58,50 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `artifactConfig`, `artifactPages` | `@atelic-action/ui/vite` | An artifact site's whole Vite configuration, and its page list | none |
 | `privateChunks`, `isPrivateContent`, `DOC_DIR` | `@atelic-action/ui/vite` and `@atelic-action/ui/vite/private-chunks` | The plugin that keeps private content behind the wall; the second entry loads neither optional peer | none |
 | `base.css`, `chrome.css`, `components.css`, `primitives.css`, `gate.css`, `artifact.css`, `star-rating.css` | `@atelic-action/ui/styles/*` | The stylesheets, in the order under [CSS Import Order](#css-import-order) | every section |
-| The eight `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, and sealing | none |
+| `BlogIndex` | `@atelic-action/ui/sections` | The post listing as a readable stack | [#blog-index](https://ui.atelic.me/#blog-index) |
+| `BlogPost` | `@atelic-action/ui/sections` | One article: back link, title, byline and dateline, body | [#blog-post](https://ui.atelic.me/#blog-post) |
+| `CTABanner` | `@atelic-action/ui/sections` | A mid page banner behind a directional wash, with the token gradient before any photography | [#c-t-a-banner](https://ui.atelic.me/#c-t-a-banner) |
+| `CTASection` | `@atelic-action/ui/sections` | The standard closer: the site's own primary action and an optional ghost second | [#c-t-a-section](https://ui.atelic.me/#c-t-a-section) |
+| `ComparisonTable` | `@atelic-action/ui/sections` | A graded before and after that scrolls sideways on a phone rather than reflowing | [#comparison-table](https://ui.atelic.me/#comparison-table) |
+| `ContactForm` | `@atelic-action/ui/sections` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event | [#contact-form](https://ui.atelic.me/#contact-form) |
+| `ContactInfoCard` | `@atelic-action/ui/sections` | A dark card of direct contact rows: call, email, visit, portal | [#contact-info-card](https://ui.atelic.me/#contact-info-card) |
+| `CredentialList` | `@atelic-action/ui/sections` | Credential cards with a mono code before each | [#credential-list](https://ui.atelic.me/#credential-list) |
+| `DeviceShowcase` | `@atelic-action/ui/sections` | A desktop browser frame with a phone overlapping it | [#device-showcase](https://ui.atelic.me/#device-showcase) |
+| `ExpandList` | `@atelic-action/ui/sections` | A light accordion of numbered rows whose bodies stay in the HTML while closed | [#expand-list](https://ui.atelic.me/#expand-list) |
+| `FAQBrowser` | `@atelic-action/ui/sections` | The help page: live search, a sticky `JumpRail` of categories with scroll spy, expand all, deep links; `contactHref` sets where the no match line points | [#f-a-q-browser](https://ui.atelic.me/#f-a-q-browser) |
+| `FeatureDetail` | `@atelic-action/ui/sections` | Alternating copy and media rows with tags and a tick list | [#feature-detail](https://ui.atelic.me/#feature-detail) |
+| `FeatureGrid` | `@atelic-action/ui/sections` | Numbered cards with a hover lift; a card is a link or holds one, never both | [#feature-grid](https://ui.atelic.me/#feature-grid) |
+| `Gallery` | `@atelic-action/ui/sections` | A captioned wall of the business's own work, a shot brief where a photo is missing | [#gallery](https://ui.atelic.me/#gallery) |
+| `Hero` | `@atelic-action/ui/sections` | The home page opener: a full bleed image (or the token gradient), a headline with a serif accent, a pair of actions, trust figures, and a scroll cue | [#hero](https://ui.atelic.me/#hero) |
+| `HoursTable` | `@atelic-action/ui/sections` | Day rows with dashed rules and mono times | [#hours-table](https://ui.atelic.me/#hours-table) |
+| `JumpRail` | `@atelic-action/ui/sections` | Sticky in page pill tabs with scroll spy, used by `FAQBrowser` and on its own | [#jump-rail](https://ui.atelic.me/#jump-rail) |
+| `LegalPage` | `@atelic-action/ui/sections` | A legal document from data, its last revised date first | [#legal-page](https://ui.atelic.me/#legal-page) |
+| `LocationSection` | `@atelic-action/ui/sections` | The local search section: service areas as prose, hours, directions, and the map | [#location-section](https://ui.atelic.me/#location-section) |
+| `Locations` | `@atelic-action/ui/sections` | More than one address: the flagship's map beside a card for each location | [#locations](https://ui.atelic.me/#locations) |
+| `LogoMarquee` | `@atelic-action/ui/sections` | A dark band of chips scrolling without end: credentials, clients, or press | [#logo-marquee](https://ui.atelic.me/#logo-marquee) |
+| `MapEmbed` | `@atelic-action/ui/sections` | The map: a screenshot linking to directions, or a click to load facade over the live embed | [#map-embed](https://ui.atelic.me/#map-embed) |
+| `MediaBand` | `@atelic-action/ui/sections` | A plain full bleed image band, cropped from the center | [#media-band](https://ui.atelic.me/#media-band) |
+| `MenuList` | `@atelic-action/ui/sections` | A priced menu group of dotted rows, with fine print under it | [#menu-list](https://ui.atelic.me/#menu-list) |
+| `PageHero` | `@atelic-action/ui/sections` | The interior page opener on the alternate band; children sit under the lead | [#page-hero](https://ui.atelic.me/#page-hero) |
+| `PressQuotes` | `@atelic-action/ui/sections` | Rows of press quotes and awards with source and year, newest first (`sortPress` beside it) | [#press-quotes](https://ui.atelic.me/#press-quotes) |
+| `PricingBand` | `@atelic-action/ui/sections` | A brand colored band with the price in a card beside it, informational by design | [#pricing-band](https://ui.atelic.me/#pricing-band) |
+| `PricingCard` | `@atelic-action/ui/sections` | A standalone price card with a tick list and its booking action | [#pricing-card](https://ui.atelic.me/#pricing-card) |
+| `ProcessSteps` | `@atelic-action/ui/sections` | A dark band of numbered steps beside a frame | [#process-steps](https://ui.atelic.me/#process-steps) |
+| `ProfileCards` | `@atelic-action/ui/sections` | Equal weight cards of media beside a short bio | [#profile-cards](https://ui.atelic.me/#profile-cards) |
+| `RevealSlider` | `@atelic-action/ui/sections` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography | [#reveal-slider](https://ui.atelic.me/#reveal-slider) |
+| `ReviewCarousel` | `@atelic-action/ui/sections` | The aggregate beside one large review at a time, stepped by dots and arrows | [#review-carousel](https://ui.atelic.me/#review-carousel) |
+| `ReviewWall` | `@atelic-action/ui/sections` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more | [#review-wall](https://ui.atelic.me/#review-wall) |
+| `SocialStrip` | `@atelic-action/ui/sections` | A static grid of the business's social photos linking to the profile, never a live embed | [#social-strip](https://ui.atelic.me/#social-strip) |
+| `SplitSection` | `@atelic-action/ui/sections` | The two column band: copy beside copy, or media beside copy | [#split-section](https://ui.atelic.me/#split-section) |
+| `SiteConfig` and its member types, `formatClock`, `formatHoursRange`, `isClosed`, `isHoneypotFilled`, `trackEvent` | `@atelic-action/ui/sections` | The site contract the sections read, and the hours, honeypot, and lead event helpers | none |
+| `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a framed image, prose blocks, a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
+| `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, mounting the base path provider | none |
+| `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
+| `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call | none |
+| `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
+| The eleven `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, and contact canary | none |
 
-Sections (`@atelic-action/ui/sections`) and the app shell (`@atelic-action/ui/app`) are being added on sibling branches of ATE-643, so they are not in this table yet.
+The app shell (`@atelic-action/ui/app`) is being added on a sibling branch of ATE-643, so it is not in this table yet.
 
 ## Install
 
@@ -180,7 +221,7 @@ import { Button, SectionHeading } from "@atelic-action/ui/primitives";
 </Button>;
 ```
 
-`Button` is an anchor when it has an `href` and a real button otherwise. It renders the `href` as given: a site served under a base path wraps it once and applies its own prefix there. Its arrow is hidden from the name a screen reader hears.
+`Button` is an anchor when it has an `href` and a real button otherwise. It puts the base path from `BasePathProvider` on a root path `href` (0.19.0), so a site served under a prefix needs no wrapper; with no provider above it the `href` renders as given. Its arrow is hidden from the name a screen reader hears.
 
 ## The Access Gate
 
@@ -231,9 +272,31 @@ What it holds to, each with a test in `tst/gate/`:
 - The post sign in destination is held to a path on the same host, 512 characters at most (`safeNext`).
 - An open path opens only as written; the held corner is held in any case. Under `/api/`, only `/api/auth/` is open.
 
-What it does not do, by having no store: a link can be used more than once until it expires, and link requests are not rate limited. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
+What it does not do, by having no store: a link can be used more than once until it expires, and the code does not rate limit link requests. That is handled outside the code, by a Vercel firewall rule on `/api/auth/request-link`. Rotating the secret ends every session at once. The `gate_email` and `gate_wm` cookies that feed the watermark are readable and unsigned on purpose: the watermark is drawn in the reader's own browser, so it deters and attributes nothing a reader set on removing it could not already remove.
 
 This is one of the two corners of the package that ship compiled (the other is the Vite entry, under [The Artifact Vite Config](#the-artifact-vite-config)). Vercel runs a function's and a middleware's package imports as shipped and compiles nothing inside `node_modules`, so `bun run build` emits `src/gate/` to `dist/gate/`, and `prepack` runs it before every publish.
+
+### A Marketing Site's Matcher
+
+A website's other functions (the contact relay) are public by design, so a marketing site keeps all of `api/` and the login page away from the middleware and leaves the rest of the deciding to it (0.19.0):
+
+```ts
+// middleware.ts
+export { default } from "@atelic-action/ui/gate/middleware";
+
+// Everything but api/ and the login page reaches the middleware, which lets a
+// request through with no session only when the wall's open paths name it.
+export const config = { matcher: ["/((?!api/|login$|login/).*)"] };
+```
+
+The default middleware holds by allowlist: with the wall armed, a request passes with no session only when the wall's open exact paths and open prefixes name it (`OPEN_PATHS` in `@atelic-action/ui/gate`), which covers what a login page loads (its hashed assets, fonts, and favicon). Anything else is held, so a page whose last path segment carries a dot (`/blog/release-2.0`) or one asked for by its file name (`/about/index.html`) stays behind the wall, where the old matcher let any path with a file extension through. A site with an open file of its own adds it, and never opens the held corner by doing so:
+
+```ts
+import { createMiddleware } from "@atelic-action/ui/gate/middleware";
+export default createMiddleware({ open: { exact: ["/apple-touch-icon.png"], prefixes: ["/icons/"] } });
+```
+
+`createNeedsSession` in `@atelic-action/ui/gate` is the same test on its own. A `needsSession` a site passes still wins over both, for a matcher that already leaves its open paths out.
 
 ### The Screen and the Watermark
 
@@ -330,6 +393,9 @@ The package installs the scripts every artifact site used to carry as files, so 
 | `atelic-serve-static` | Serves `dist/client` on `127.0.0.1` the way Vercel does, on `PORT` or 4173 | The `webServer` command in `playwright.config.ts` |
 | `atelic-print-sheets <url or dist/client> <out.pdf> [sheets] [page] [port]` | Prints a page to PDF with headless Chrome, reports the sheet count, and fails when a count is given and missed | `print` |
 | `atelic-seal-document <config.json> [out.json]` | Seals a document into the payload `Gate` reads, one wrapped key for each reader. The payload names no one: no address, and readers numbered `r1`, `r2` whatever the config calls them | `seal` |
+| `atelic-clean-sitemap` | Strips fragment and trailing slash duplicates out of `dist/client/sitemap.xml`; says so and passes when a based build wrote none | A marketing site's `build`, after vite |
+| `atelic-check-base-path` | Fails the build when a root path in `dist/client` lacks the base path, or `vercel.json` lacks (or strays from) the two rewrites a based cut needs; a `VITE_BASE_PATH` rehearsal only warns about `vercel.json` off Vercel | Last step of a marketing site's `build` |
+| `atelic-contact-canary` | Posts a token bearing test message to `$SITE_URL/api/contact` and passes only on a Resend id and the expected destination (`CONTACT_EXPECTED_TO`, `CONTACT_CANARY_TOKEN`); a `.invalid` `SITE_URL` is the off switch | `check:contact`, run daily by the canary workflow |
 
 A site's scripts, whole:
 
@@ -345,6 +411,134 @@ A site's scripts, whole:
 ```
 
 The logic lives in `src/scripts/` as modules with their functions exported, which is what the tests import, and each file in `bin/` only reads the command line and calls one. The TypeScript commands open on `#!/usr/bin/env bun` and run as source, since `bun` runs TypeScript inside `node_modules`. The sealing command is plain `.mjs` under `#!/usr/bin/env node`, its logic in `src/scripts/seal-document.mjs` (named `build-gate-payload.mjs` before 0.18.0), and the print command is `bash`; it needs Chrome (the `CHROME` variable names another binary), `python3`, and `curl`.
+
+## Sections
+
+`@atelic-action/ui/sections` is the marketing template's page library, moved here in 0.19.0 (ATE-643) so a fix reaches every website with one version bump. A section renders from props alone: the copy, the images, and the links come in as data, and the business's facts come in through a `site` prop typed from the `SiteConfig` contract, which the entry exports. A section that reads the config takes only the keys it uses (`MapEmbedSite`, `LocationSectionSite`, `ContactInfoCardSite`, `Pick<SiteConfig, "cta">` for `CTASection`), so a whole `SiteConfig` passes as it is and an app can pass less. No section imports a router, a site file, or a stylesheet.
+
+```tsx
+import { SiteShell } from "@atelic-action/ui/chrome";
+import { CTASection, Hero } from "@atelic-action/ui/sections";
+
+<SiteShell site={site} currentPath={pathname} heroNav>
+	<Hero title="Bread worth the early line." primaryCta={site.cta} />
+	<CTASection site={site} title="Skip the line, keep the bread." />
+</SiteShell>;
+```
+
+### The Stylesheet
+
+Every rule sits in `@layer atelic-ui` and answers to `.atelic-ui`. A site imports `@atelic-action/ui/styles/sections.css` in its base sheet right after `primitives.css` and before its own sheets, so the order runs fonts, `base.css`, `chrome.css`, `components.css`, `primitives.css`, `sections.css`, `gate.css`, the site's own CSS, then `theme.css`. The five marketing primitives' styles joined `primitives.css`. A section that composes another sits after it in the sheet, the order the template's bundle gave them. One change against the template: a contact card's value column may break a long email address rather than push the page wider than a phone.
+
+Moving into the layer changes one thing for a site: a rule in its own unlayered CSS now wins over a section's rule whatever the specificity, where before the section's rule could win by being more specific or later. Polish a site made to a section moves to `patterns.css` and keeps working; a site rule that only ever lost to a section's should be checked against the page.
+
+### The Base Path
+
+A site served under a prefix (`/proto`) says so once. `BasePathProvider` (from `@atelic-action/ui/routing`, a React context whose default base is "") hands the base to everything below it, and `Button`, `Chip`, `ImageFrame`, and every section that builds a link or an image source read it through `useBasePath` and `useWithBase`. A root absolute path gets the prefix; an external URL, a protocol link, a fragment, and a path that already carries the base pass through. `SiteShell` mounts the provider from its `basePath` prop, which defaults to `site.basePath`, so a page rendered inside the shell needs nothing more. The pure helpers (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) are exported beside it for a site's own code.
+
+### SiteShell
+
+`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCta`, `footer`, `pageNav`, `navOnDark`, `hideNavCta`, and `credit` as before. A site keeps a wrapper a few lines long:
+
+```tsx
+import { SiteShell as Shell, type SiteShellProps } from "@atelic-action/ui/chrome";
+import { useLocation } from "@tanstack/react-router";
+
+export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath">) {
+	const currentPath = useLocation({ select: (location) => location.pathname });
+	return <Shell {...props} currentPath={currentPath} basePath={import.meta.env.BASE_URL} />;
+}
+```
+
+### Every Section
+
+| Section | What it is |
+|---|---|
+| `Hero` | The home page opener: a full bleed image (or the token gradient), a headline with a serif accent, a pair of actions, trust figures, and a scroll cue |
+| `PageHero` | The interior page opener on the alternate band; children sit under the lead |
+| `LogoMarquee` | A dark band of chips scrolling without end: credentials, clients, or press |
+| `SplitSection` | The two column band: copy beside copy, or media beside copy |
+| `PricingBand` | A brand colored band with the price in a card beside it, informational by design |
+| `MediaBand` | A plain full bleed image band, cropped from the center |
+| `CTABanner` | A mid page banner behind a directional wash, with the token gradient before any photography |
+| `CTASection` | The standard closer: the site's own primary action and an optional ghost second |
+| `FeatureGrid` | Numbered cards with a hover lift; a card is a link or holds one, never both |
+| `FeatureDetail` | Alternating copy and media rows with tags and a tick list |
+| `ProcessSteps` | A dark band of numbered steps beside a frame |
+| `PricingCard` | A standalone price card with a tick list and its booking action |
+| `MenuList` | A priced menu group of dotted rows, with fine print under it |
+| `ExpandList` | A light accordion of numbered rows whose bodies stay in the HTML while closed |
+| `ComparisonTable` | A graded before and after that scrolls sideways on a phone rather than reflowing |
+| `RevealSlider` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography |
+| `DeviceShowcase` | A desktop browser frame with a phone overlapping it |
+| `ReviewCarousel` | The aggregate beside one large review at a time, stepped by dots and arrows |
+| `ReviewWall` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more |
+| `PressQuotes` | Rows of press quotes and awards with source and year, newest first (`sortPress` beside it) |
+| `ProfileCards` | Equal weight cards of media beside a short bio |
+| `Gallery` | A captioned wall of the business's own work, a shot brief where a photo is missing |
+| `CredentialList` | Credential cards with a mono code before each |
+| `SocialStrip` | A static grid of the business's social photos linking to the profile, never a live embed |
+| `LocationSection` | The local search section: service areas as prose, hours, directions, and the map |
+| `Locations` | More than one address: the flagship's map beside a card for each location |
+| `MapEmbed` | The map: a screenshot linking to directions, or a click to load facade over the live embed |
+| `HoursTable` | Day rows with dashed rules and mono times |
+| `ContactForm` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event |
+| `ContactInfoCard` | A dark card of direct contact rows: call, email, visit, portal |
+| `FAQBrowser` | The help page: live search, a sticky `JumpRail` of categories with scroll spy, expand all, deep links; `contactHref` sets where the no match line points |
+| `JumpRail` | Sticky in page pill tabs with scroll spy, used by `FAQBrowser` and on its own |
+| `BlogIndex` | The post listing as a readable stack |
+| `BlogPost` | One article: back link, title, byline and dateline, body |
+| `LegalPage` | A legal document from data, its last revised date first |
+
+The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, and `TickList`. `StarRow` stays beside `StarRating` on purpose: it draws only the filled stars a review shows, in whole steps and the brand color, named "4 out of 5 stars", where `StarRating` draws the whole scale with outlines in half steps and can take a rating.
+
+The entry also exports the helpers the sections use, for a site's own code: `formatClock`, `formatHoursRange`, and `isClosed` for hours, `isHoneypotFilled`, and `trackEvent`.
+
+### The Marketing Vite Config and Commands
+
+```ts
+// vite.config.ts
+import { marketingConfig } from "@atelic-action/ui/vite";
+import { site } from "./src/site.config";
+
+export default marketingConfig({ site, pages: [{ path: "/blog/first-post" }] });
+```
+
+`marketingConfig` carries what the template's `vite.config.ts` did: Vite's `base` and the router's `basepath` from `site.basePath` (or a `VITE_BASE_PATH` rehearsal), a refusal when a based `site.url` does not end with its base, one CSS bundle, TanStack Start prerendering with the crawler and the 404 page (copied to `404.html` by the build), the pages a site names, a sitemap on the origin of `site.url` (`sitemapHost` to change it) and none for a based cut, React, the `@` alias, and `ssr.noExternal`. `extend` merges a site's own needs over it. A site's scripts:
+
+```json
+{
+	"build": "tsc -b && vite build && cp dist/client/404/index.html dist/client/404.html && atelic-clean-sitemap && atelic-stamp-health && atelic-check-base-path",
+	"check:links": "atelic-check-links",
+	"check:contact": "atelic-contact-canary"
+}
+```
+
+`playwright.config.ts` serves the build with `atelic-serve-static`, which serves a based build both under its prefix and without it, as the template's copy did.
+
+### Thinning a Marketing Site
+
+A site that takes 0.19.0 deletes its copies and repoints its own files. The template's `src/components/sections/`, the five primitives and their sheets, the `Button` and `Chip` wrappers, `chrome/SiteShell.tsx`'s body, `siteConfig.ts`, and the scripts all go; a route or section the site added that imports one of them repoints:
+
+| Old import | New import |
+|---|---|
+| `@/components/sections/<Name>` (all 35, their types included) | `@atelic-action/ui/sections` |
+| `@/components/primitives/Button`, `Chip` | `@atelic-action/ui/primitives` (the wrappers die; the base comes from `BasePathProvider`) |
+| `@/components/primitives/ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` |
+| `@/components/chrome/SiteShell` | The site's few line wrapper above, around `SiteShell` from `@atelic-action/ui/chrome` |
+| `@/components/siteConfig` | `@atelic-action/ui/sections` (`SiteConfig`, `NavItem`, `CTA`, `OpeningHours`, `Address`, `Founder`, `GateConfig`, `SiteLink`, `SocialLink`) |
+| `@/components/newTabProps` | `@atelic-action/ui/artifact` (`newTabProps`) |
+| `@/shared/lib/hours` | `@atelic-action/ui/sections` (`formatClock`, `formatHoursRange`, `isClosed`) |
+| `@/shared/lib/honeypot` | `@atelic-action/ui/sections` in a component; `api/contact.ts` keeps its own copy, since Vercel runs a function's package imports uncompiled |
+| `@/shared/lib/analytics` (`trackEvent` only) | `@atelic-action/ui/sections`; the rest of the module, the click listener, stays in the site |
+| `@/shared/lib/basePath` (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) | `@atelic-action/ui/routing`; in a component, `useWithBase()` in place of `withBase` |
+| `@/shared/lib/basePathAudit`, `@/shared/lib/sitemap` | Gone, inside `atelic-check-base-path` and `atelic-clean-sitemap` |
+| `scripts/clean-sitemap.ts`, `check-base-path.ts`, `contact-canary.ts`, `stamp-health.ts`, `check-links.ts`, `serve-static.ts` | `atelic-clean-sitemap`, `atelic-check-base-path`, `atelic-contact-canary`, `atelic-stamp-health`, `atelic-check-links`, `atelic-serve-static` |
+| `vite.config.ts` | `marketingConfig`, above |
+| The `import "./<name>.css"` in each component | `@atelic-action/ui/styles/sections.css` in the base sheet, after `primitives.css` |
+| `middleware.ts` | The marketing matcher in [The Access Gate](#a-marketing-sites-matcher) |
+
+The `.mkt` wrapper a site's own routes render becomes `.atelic-ui`, the scope every package sheet answers to.
 
 ## Email
 

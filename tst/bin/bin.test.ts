@@ -36,11 +36,14 @@ function run(command: string, args: string[], cwd: string, env: Record<string, s
  * package publishes, run by the program its first line names.
  */
 describe("the bin map", () => {
-	it("names the eight commands", () => {
+	it("names the eleven commands", () => {
 		expect(Object.keys(manifest.bin).sort()).toEqual([
 			"atelic-check-access",
+			"atelic-check-base-path",
 			"atelic-check-links",
 			"atelic-check-wall",
+			"atelic-clean-sitemap",
+			"atelic-contact-canary",
 			"atelic-print-sheets",
 			"atelic-reader-link",
 			"atelic-seal-document",

@@ -16,17 +16,28 @@
  *
  * That matcher keeps only the two sign in functions away from the middleware,
  * so any other function a host adds is held like a page. The default holds
- * back everything `needsSession` in wall.ts does. A site
- * whose matcher already leaves its open paths out passes its own test to
- * `createMiddleware`.
+ * back everything `needsSession` in wall.ts does. A marketing site, whose
+ * other functions (the contact relay) are public by design, uses the simple
+ * matcher instead, everything but `api/` and the login page:
+ *
+ *   export const config = { matcher: ["/((?!api/|login$|login/).*)"] };
+ *
+ * and leaves the deciding here: a request passes with no session only when
+ * the wall's open exact paths and open prefixes name it, so a page is held by
+ * default whatever its path looks like (`/blog/release-2.0` included), where
+ * a matcher that let file extensions through let it escape. A site with an
+ * open file of its own passes `open`; one whose matcher already leaves its
+ * open paths out may still pass its own `needsSession`, which wins over both.
  */
 import { isAllowed } from "./config.js";
 import { verifyToken } from "./tokens.js";
-import { needsSession as wallNeedsSession } from "./wall.js";
+import { createNeedsSession, type WallOpenings } from "./wall.js";
 
 export interface MiddlewareOptions {
-	/** Whether a path needs a session once the gate is armed. */
+	/** Whether a path needs a session once the gate is armed. Wins over `open`. */
 	needsSession?: (pathname: string) => boolean;
+	/** Paths the site opens beyond the wall's own, added to its allowlist. */
+	open?: WallOpenings;
 }
 
 function readCookie(header: string, name: string): string | undefined {
@@ -40,7 +51,7 @@ function readCookie(header: string, name: string): string | undefined {
 }
 
 export function createMiddleware(options: MiddlewareOptions = {}) {
-	const needsSession = options.needsSession ?? wallNeedsSession;
+	const needsSession = options.needsSession ?? createNeedsSession(options.open);
 
 	return async function middleware(request: Request): Promise<Response | undefined> {
 		const secret = process.env.GATE_SESSION_SECRET;

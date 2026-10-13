@@ -29,3 +29,11 @@ export function staticNotFoundRouting<Page>(page: Page) {
 		defaultPendingComponent: page,
 	};
 }
+
+export {
+	BasePathProvider,
+	type BasePathProviderProps,
+	useBasePath,
+	useWithBase,
+} from "./BasePathProvider";
+export { hasBase, joinBase, normalizeBasePath, stripBase } from "./basePath";

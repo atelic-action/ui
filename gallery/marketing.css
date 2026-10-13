@@ -1,0 +1,76 @@
+/* The marketing groups' own frame: the group band and the label over each
+   section. Unlayered, like the rest of the gallery's sheet, and it styles
+   only the frame, never a section. */
+.mg-group {
+	border-top: 1px solid var(--neutral-100);
+}
+.mg-group-head {
+	padding-block: clamp(40px, 6vw, 72px) clamp(20px, 3vw, 32px);
+	background: var(--surface-dark);
+	color: #f6f1e7;
+}
+.mg-group-head h2 {
+	color: #f6f1e7;
+	font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+}
+.mg-kicker {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--primary-bright);
+	margin-bottom: 10px;
+}
+.mg-lead {
+	margin-top: 12px;
+	max-width: 64ch;
+	color: #cfc6b4;
+}
+.mg-label {
+	padding-block: 14px;
+	background: var(--surface-inset);
+	border-top: 1px solid var(--neutral-200);
+	border-bottom: 1px solid var(--neutral-200);
+}
+.mg-label .wrap {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 6px 14px;
+}
+.mg-label code {
+	font-family: var(--font-mono);
+	font-weight: 600;
+	font-size: 0.92rem;
+	color: var(--ink);
+}
+.mg-label span {
+	font-size: 0.9rem;
+	color: var(--ink-soft);
+	max-width: 80ch;
+}
+/* A section that is a full screen in a site (the hero) is held to a frame
+   here, so the page scrolls past it. */
+.mg-specimen .hero {
+	min-height: 560px;
+}
+.mg-stack {
+	display: grid;
+	gap: 28px;
+}
+.mg-two {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 28px;
+}
+@media (min-width: 900px) {
+	.mg-two {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
+	}
+}
+.mg-dark {
+	padding: 22px;
+	border-radius: 12px;
+	background: var(--surface-dark);
+}

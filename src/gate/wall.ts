@@ -30,6 +30,13 @@
  * it stays open on a private host too: a prospect reads the prototype
  * without a sign in while the documents beside it stay behind the wall.
  *
+ * A marketing site's login page loads the same kinds of file (its hashed
+ * assets, its fonts, its favicon), so the same lists hold a website by
+ * default: any path they do not name, a page whose last segment carries a
+ * dot (`/blog/release-2.0`) included, needs a session. A site with an open
+ * file of its own names it through `createNeedsSession` (or the middleware's
+ * `open` option), which adds to these lists and never opens the held corner.
+ *
  * Pure and dependency free, so the middleware imports it and the tests call
  * it directly.
  */
@@ -49,6 +56,20 @@ const OPEN_PREFIXES = ["/api/auth/", "/assets/", "/brand/", "/fonts/", "/proto/"
 /** The one corner of an open prefix that stays behind the wall. */
 const HELD_PREFIXES = ["/assets/doc/"];
 
+/** What the wall leaves open with no session, exact paths and prefixes, before any a site adds. */
+export const OPEN_PATHS: {
+	readonly exact: readonly string[];
+	readonly prefixes: readonly string[];
+} = { exact: [...OPEN_EXACT], prefixes: [...OPEN_PREFIXES] };
+
+/** Paths a site opens beyond the wall's own, for a file its login page needs. */
+export interface WallOpenings {
+	/** Paths opened as written, each starting with "/" (`/apple-touch-icon.png`). */
+	exact?: readonly string[];
+	/** Folders opened whole, each starting and ending with "/" and never "/" alone (`/icons/`). */
+	prefixes?: readonly string[];
+}
+
 /**
  * Whether a request for this path needs a session when the wall is armed.
  * The path is read the way a file server would read it (decoded, repeated
@@ -62,6 +83,10 @@ const HELD_PREFIXES = ["/assets/doc/"];
  * like an open one names some other file.
  */
 export function needsSession(pathname: string): boolean {
+	return judge(pathname, OPEN_EXACT, OPEN_PREFIXES);
+}
+
+function judge(pathname: string, exact: ReadonlySet<string>, prefixes: readonly string[]): boolean {
 	let path: string;
 	try {
 		path = decodeURIComponent(pathname);
@@ -72,6 +97,39 @@ export function needsSession(pathname: string): boolean {
 	if (path.includes("..") || path.includes("\\") || path.includes("%")) return true;
 	const folded = path.toLowerCase();
 	if (HELD_PREFIXES.some((prefix) => folded.startsWith(prefix))) return true;
-	if (OPEN_EXACT.has(path)) return false;
-	return !OPEN_PREFIXES.some((prefix) => path.startsWith(prefix));
+	if (exact.has(path)) return false;
+	return !prefixes.some((prefix) => path.startsWith(prefix));
+}
+
+/**
+ * `needsSession` with a site's own open paths added to the wall's, read the
+ * same way. Throws on an entry that is not a plain path, or a prefix that
+ * would open the whole host, so a typo cannot quietly unlock a site.
+ */
+export function createNeedsSession(open: WallOpenings = {}): (pathname: string) => boolean {
+	const extraExact = open.exact ?? [];
+	const extraPrefixes = open.prefixes ?? [];
+	for (const path of extraExact) {
+		if (!path.startsWith("/") || path.includes("..") || path.includes("%")) {
+			throw new Error(
+				`An open path must be a plain path starting with "/": ${JSON.stringify(path)}`,
+			);
+		}
+	}
+	for (const prefix of extraPrefixes) {
+		if (
+			prefix === "/" ||
+			!prefix.startsWith("/") ||
+			!prefix.endsWith("/") ||
+			prefix.includes("..")
+		) {
+			throw new Error(
+				`An open prefix must be a folder such as "/icons/", never "/" alone: ${JSON.stringify(prefix)}`,
+			);
+		}
+	}
+	if (extraExact.length === 0 && extraPrefixes.length === 0) return needsSession;
+	const exact = new Set([...OPEN_EXACT, ...extraExact]);
+	const prefixes = [...OPEN_PREFIXES, ...extraPrefixes];
+	return (pathname) => judge(pathname, exact, prefixes);
 }

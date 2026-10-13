@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { newTabProps } from "../lib/newTabProps";
+import { useWithBase } from "../routing/BasePathProvider";
 
 export interface ButtonProps {
 	variant?: "primary" | "dark" | "ghost";
@@ -39,6 +40,7 @@ export function Button({
 	style,
 	children,
 }: ButtonProps) {
+	const withBase = useWithBase();
 	const classes = [
 		"btn",
 		`btn-${variant}`,
@@ -63,7 +65,7 @@ export function Button({
 	if (href) {
 		return (
 			<a
-				href={href}
+				href={withBase(href)}
 				className={classes}
 				style={style}
 				aria-label={ariaLabel}

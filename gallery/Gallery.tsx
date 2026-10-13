@@ -20,6 +20,12 @@ import { Button, Chip, Eyebrow, Lead, SectionHeading } from "../src/primitives";
 import { ChromePieces } from "./chrome";
 import { DocumentPieces } from "./documents";
 import { EmailPiece } from "./email";
+import { MarketingOffer } from "./marketing-offer";
+import { MarketingOpeners } from "./marketing-openers";
+import { MarketingPrimitives } from "./marketing-primitives";
+import { MarketingProof } from "./marketing-proof";
+import { MarketingVisit } from "./marketing-visit";
+import { MarketingWriting } from "./marketing-writing";
 import { NotFoundPiece } from "./not-found";
 import { Example, Piece } from "./parts";
 import { WatermarkPiece } from "./watermark";
@@ -641,6 +647,12 @@ export function Gallery() {
 							</ul>
 						</Example>
 					</Piece>
+					<MarketingOpeners />
+					<MarketingOffer />
+					<MarketingProof />
+					<MarketingVisit />
+					<MarketingWriting />
+					<MarketingPrimitives />
 				</main>
 				<CreditBar />
 			</div>

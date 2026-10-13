@@ -1,5 +1,10 @@
 export { Button, type ButtonProps } from "./Button";
 export { Chip, type ChipProps } from "./Chip";
 export { Eyebrow, type EyebrowProps } from "./Eyebrow";
+export { ImageFrame, type ImageFrameProps } from "./ImageFrame";
 export { Lead, type LeadProps } from "./Lead";
+export { type ProseBlock, ProseBlocks, type ProseBlocksProps } from "./ProseBlocks";
+export { QuoteCard, type QuoteCardProps } from "./QuoteCard";
 export { SectionHeading, type SectionHeadingProps } from "./SectionHeading";
+export { StarRow, type StarRowProps } from "./StarRow";
+export { TickList, type TickListProps } from "./TickList";

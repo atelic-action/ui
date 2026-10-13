@@ -151,3 +151,168 @@
 		max-width: 60ch;
 	}
 }
+
+/* The five primitives that came from template-marketing in 0.19.0 (ATE-643):
+   the image frame, the prose body, the quote card, the star row, and the tick
+   list. Scoped .atelic-ui alone. */
+@layer atelic-ui {
+	/* ---- ImageFrame (image-frame.css) ---- */
+	/* Image frame: rounded, shadowed media container. Auto margins keep a
+	   maxWidth-constrained frame centered when its column is wider than it is
+	   (single-column mobile stacks); full-width frames are unaffected. */
+	.atelic-ui .imgframe {
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: var(--shadow-md);
+		background: var(--surface-inset);
+		position: relative;
+		margin-inline: auto;
+	}
+	/* Lifted variant. A photograph sitting on a warm band reads flat under the
+	   default frame shadow; this raises it a step. Passed through `className`. */
+	.atelic-ui .imgframe.is-lifted {
+		box-shadow: var(--shadow-lg);
+	}
+	.atelic-ui .imgframe img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* Placeholder block for imagery that does not exist yet. */
+	.atelic-ui .ph {
+		position: relative;
+		border-radius: var(--radius-lg);
+		background:
+			repeating-linear-gradient(
+				135deg,
+				rgba(138, 124, 104, 0.1) 0 10px,
+				rgba(138, 124, 104, 0.04) 10px 20px
+			),
+			var(--surface-inset);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--neutral-600);
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		text-align: center;
+		padding: 20px;
+		box-shadow: inset 0 0 0 1px rgba(138, 124, 104, 0.2);
+	}
+
+	/* ---- ProseBlocks (prose-blocks.css) ---- */
+	/* Body prose for ported documents: legal pages and blog posts. Measure is
+	   capped tighter than the marketing sections and the type steps down, because
+	   this is read continuously rather than scanned. Tokens only. */
+
+	.atelic-ui .prose-blocks {
+		max-width: 70ch;
+	}
+
+	.atelic-ui .pb-heading {
+		margin: 40px 0 14px;
+		font-size: 1.15rem;
+		line-height: 1.3;
+		letter-spacing: 0.01em;
+	}
+
+	.atelic-ui .pb-heading:first-child {
+		margin-top: 0;
+	}
+
+	.atelic-ui .pb-body {
+		margin: 0 0 16px;
+		font-size: 1rem;
+		line-height: 1.75;
+		color: var(--neutral-700);
+	}
+
+	/* The base reset strips list markers site wide, which suits nav and card
+	   lists but not running prose: a bulleted list of symptoms reads as a set of
+	   orphaned sentences without them. Restore markers here only. */
+	.atelic-ui .pb-list {
+		margin: 0 0 16px;
+		padding-left: 22px;
+		list-style: disc outside;
+		color: var(--neutral-700);
+	}
+
+	.atelic-ui .pb-list li {
+		margin-bottom: 8px;
+		font-size: 1rem;
+		line-height: 1.75;
+	}
+
+	/* Ported prose carries long unbroken strings (URLs, citations, defined terms
+	   in caps) that would otherwise push the column past the viewport on a phone. */
+	.atelic-ui .pb-body,
+	.atelic-ui .pb-list li {
+		overflow-wrap: break-word;
+	}
+
+	/* ---- QuoteCard (quote-card.css) ---- */
+	.atelic-ui .quote-card {
+		background: var(--card);
+		border-radius: var(--radius-lg);
+		padding: clamp(28px, 5vw, 52px);
+		box-shadow: var(--shadow-sm);
+		border: 1px solid var(--hairline);
+		margin: 0;
+	}
+	.atelic-ui .quote-card blockquote {
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: clamp(1.4rem, 3.4vw, 2.1rem);
+		line-height: 1.34;
+		color: var(--ink);
+		margin: 0;
+	}
+	.atelic-ui .quote-card .by {
+		margin-top: 22px;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+	}
+
+	/* ---- StarRow (star-row.css) ---- */
+	/* Star row: filled rating stars, brand colored. Size comes from the
+	   component's `size` prop so one row can be small in a card and larger
+	   beside an aggregate score. */
+	.atelic-ui .star-row {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		flex: 0 0 auto;
+		color: var(--primary);
+	}
+
+	/* ---- TickList (tick-list.css) ---- */
+	.atelic-ui ul.ticks {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.atelic-ui ul.ticks li {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+		color: var(--ink-soft);
+	}
+	.atelic-ui ul.ticks li .tick {
+		flex: 0 0 auto;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		margin-top: 1px;
+		background: var(--primary-tint);
+		color: var(--primary);
+		display: grid;
+		place-items: center;
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--primary) 45%, transparent);
+	}
+}
