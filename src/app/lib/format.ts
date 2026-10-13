@@ -5,6 +5,12 @@
 
 const DAY_MS = 86_400_000;
 
+/** A date only string (YYYY-MM-DD) is a local calendar day, not UTC midnight. */
+function parse(iso: string): Date {
+	const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+	return day ? new Date(Number(day[1]), Number(day[2]) - 1, Number(day[3])) : new Date(iso);
+}
+
 /**
  * Compact `H:MM` (or `Nm`) duration. Differs from `formatDuration` in
  * src/features/activities — that one is the full `HH:MM:SS`. This one is
@@ -17,7 +23,7 @@ export function fmtTimeShort(seconds: number): string {
 }
 
 export function shortDate(iso: string): string {
-	const d = new Date(iso);
+	const d = parse(iso);
 	return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
@@ -27,7 +33,7 @@ export function shortDate(iso: string): string {
  * Training card mod row.
  */
 export function relDay(iso: string, now: Date = new Date()): string {
-	const then = new Date(iso);
+	const then = parse(iso);
 	const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 	const startOfThen = new Date(then.getFullYear(), then.getMonth(), then.getDate()).getTime();
 	const diffDays = Math.round((startOfNow - startOfThen) / DAY_MS);

@@ -51,3 +51,16 @@ describe("publicFetch", () => {
 		await expect(publicFetch("/v1/users/nobody/notes/1")).rejects.toThrow("API error: Not found");
 	});
 });
+
+describe("apiFetch with no content", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("treats a 204 as a success with nothing to read", async () => {
+		vi.mocked(ensureValidToken).mockResolvedValueOnce(true);
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
+
+		await expect(apiFetch("/v1/recipes/1", { method: "DELETE" })).resolves.toBeUndefined();
+	});
+});

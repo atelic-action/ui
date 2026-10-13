@@ -19,7 +19,7 @@ let refreshPromise: Promise<RefreshResponse> | null = null;
  * Deduplicates concurrent calls to ensure only one refresh request is made.
  *
  * @returns The new token response with updated access and refresh tokens
- * @throws Error if refresh fails (expired refresh token, network error, etc.)
+ * @throws Error if refresh fails. Only a rejected refresh token logs out; a network error or a 5xx keeps the session.
  */
 export async function refreshAccessToken(): Promise<RefreshResponse> {
 	// Return existing promise if refresh is already in progress
@@ -35,34 +35,33 @@ export async function refreshAccessToken(): Promise<RefreshResponse> {
 	}
 
 	refreshPromise = (async () => {
-		try {
-			const response = await fetch(`${getAppConfig().apiBaseUrl}/v1/auth/refresh`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				// The Rails API reads params[:refresh_token], so the body must be
-				// snake_case. This raw fetch does not run through apiFetch's
-				// toSnakeCase, so name the field explicitly here.
-				body: JSON.stringify({ refresh_token: refreshToken }),
-			});
+		const response = await fetch(`${getAppConfig().apiBaseUrl}/v1/auth/refresh`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			// The Rails API reads params[:refresh_token], so the body must be
+			// snake_case. This raw fetch does not run through apiFetch's
+			// toSnakeCase, so name the field explicitly here.
+			body: JSON.stringify({ refresh_token: refreshToken }),
+		});
 
-			if (!response.ok) {
-				throw new Error(`Refresh failed: ${response.status}`);
+		if (!response.ok) {
+			// A rejected refresh token ends the session. A server error or a
+			// throttle says nothing about the token, so the session is kept.
+			if (response.status < 500 && response.status !== 408 && response.status !== 429) {
+				logout();
 			}
-
-			const data = await response.json();
-			const result = transformKeys<RefreshResponse>(data);
-
-			// Update store with new tokens
-			useAuthStore.getState().setTokens(result.token, result.refreshToken, result.expiresIn);
-
-			return result;
-		} catch (error) {
-			// Logout on refresh failure
-			logout();
-			throw error;
+			throw new Error(`Refresh failed: ${response.status}`);
 		}
+
+		const data = await response.json();
+		const result = transformKeys<RefreshResponse>(data);
+
+		// Update store with new tokens
+		useAuthStore.getState().setTokens(result.token, result.refreshToken, result.expiresIn);
+
+		return result;
 	})();
 
 	// Clear the promise after it settles for all consumers.

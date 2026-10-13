@@ -7,6 +7,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { peekAppConfig } from "../config";
 
 interface SidebarContextType {
 	isCollapsed: boolean;
@@ -24,42 +25,50 @@ interface SidebarProviderProps {
 	children: ReactNode;
 }
 
+const SIDEBAR_KEY = "sidebarCollapsed";
+const RAIL_KEY = "railCollapsed";
+
+/** localStorage under the app's prefix; a no op before the app is configured or where storage is refused. */
+function readSaved(name: string): boolean {
+	const config = peekAppConfig();
+	if (!config) return false;
+	try {
+		return localStorage.getItem(config.storagePrefix + "-" + name) === "true";
+	} catch {
+		return false;
+	}
+}
+
+function writeSaved(name: string, value: boolean) {
+	const config = peekAppConfig();
+	if (!config) return;
+	try {
+		localStorage.setItem(config.storagePrefix + "-" + name, String(value));
+	} catch {
+		// Storage refused; the state lives in memory for this visit.
+	}
+}
+
 export function SidebarProvider({ children }: SidebarProviderProps) {
-	const [isCollapsed, setIsCollapsed] = useState(() => {
-		// Load collapsed state from localStorage with error handling
-		try {
-			const saved = localStorage.getItem("sidebarCollapsed");
-			return saved === "true";
-		} catch {
-			// Fallback if localStorage is not available
-			return false;
-		}
-	});
-
-	const [isRailCollapsed, setIsRailCollapsed] = useState(() => {
-		try {
-			return localStorage.getItem("railCollapsed") === "true";
-		} catch {
-			return false;
-		}
-	});
-
-	// Save sidebar state to localStorage with error handling
-	useEffect(() => {
-		try {
-			localStorage.setItem("sidebarCollapsed", String(isCollapsed));
-		} catch {
-			// Silently fail if localStorage is not available
-		}
-	}, [isCollapsed]);
+	// Both start open so a prerender and the first client render agree; the
+	// saved choice is read in an effect, then written back on every change.
+	const [isCollapsed, setIsCollapsed] = useState(false);
+	const [isRailCollapsed, setIsRailCollapsed] = useState(false);
+	const [ready, setReady] = useState(false);
 
 	useEffect(() => {
-		try {
-			localStorage.setItem("railCollapsed", String(isRailCollapsed));
-		} catch {
-			// Silently fail if localStorage is not available
-		}
-	}, [isRailCollapsed]);
+		setIsCollapsed(readSaved(SIDEBAR_KEY));
+		setIsRailCollapsed(readSaved(RAIL_KEY));
+		setReady(true);
+	}, []);
+
+	useEffect(() => {
+		if (ready) writeSaved(SIDEBAR_KEY, isCollapsed);
+	}, [ready, isCollapsed]);
+
+	useEffect(() => {
+		if (ready) writeSaved(RAIL_KEY, isRailCollapsed);
+	}, [ready, isRailCollapsed]);
 
 	const toggleSidebar = useCallback(() => {
 		setIsCollapsed((prev) => !prev);

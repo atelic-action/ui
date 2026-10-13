@@ -34,4 +34,9 @@ describe("format", () => {
 		expect(shortDate(at)).toBe("Sep 7");
 		expect(formatTimeOfDay(at)).toBe("9:38 am");
 	});
+
+	it("reads a date only string as a local day, not UTC midnight", () => {
+		expect(relDay("2026-10-13", new Date(2026, 9, 13, 12))).toBe("today");
+		expect(shortDate("2026-06-08")).toBe("Jun 8");
+	});
 });

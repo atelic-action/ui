@@ -17,6 +17,13 @@ const UserContext = createContext<UserContextValue | null>(null);
 export function UserProvider({ children }: { children: ReactNode }) {
 	const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 	const authUser = useAuthStore((state) => state.user);
+	const queryClient = useQueryClient();
+
+	// Every way out (the menu, a 401, a failed refresh) lands here: a signed out
+	// shell holds no copy of the last person, so the next account never sees it.
+	useEffect(() => {
+		if (!isAuthenticated) queryClient.removeQueries({ queryKey: ["user", "me"] });
+	}, [isAuthenticated, queryClient]);
 
 	const {
 		data: apiUser,
@@ -29,7 +36,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 	});
 
 	// Use auth store user as fallback while fetching, or API user when available
-	const user = apiUser ?? authUser;
+	const user = isAuthenticated ? (apiUser ?? authUser) : null;
 
 	useUnitsSync(apiUser ?? null);
 

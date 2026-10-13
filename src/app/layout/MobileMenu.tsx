@@ -59,6 +59,7 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 
 				<div className="flex h-14 items-center border-b border-border/40 px-5">
 					<Link
+						onClick={() => setOpen(false)}
 						to="/"
 						className="flex items-center space-x-2"
 						aria-label={`${appConfig.name} home`}
@@ -79,6 +80,7 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 							return (
 								<li key={item.href}>
 									<Link
+										onClick={() => setOpen(false)}
 										to={item.href}
 										className={cn(
 											ROW,
@@ -99,6 +101,7 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 												return (
 													<li key={child.href}>
 														<Link
+															onClick={() => setOpen(false)}
 															to={child.href}
 															className={cn(
 																ROW,
@@ -125,6 +128,7 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 
 				<div className="border-t border-border/40 px-2 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
 					<Link
+						onClick={() => setOpen(false)}
 						to="/profile"
 						className={cn(ROW, "min-h-14", pathname.startsWith("/profile") && "bg-primary/10")}
 						aria-current={pathname.startsWith("/profile") ? "page" : undefined}

@@ -156,6 +156,16 @@ describe("tokenRefresh", () => {
 			expect(state.token).toBeNull();
 		});
 
+		it("keeps the session through a network failure or a server error", async () => {
+			mockFetch.mockRejectedValueOnce(new TypeError("offline"));
+			await expect(refreshAccessToken()).rejects.toThrow("offline");
+			expect(useAuthStore.getState().isAuthenticated).toBe(true);
+
+			mockFetch.mockResolvedValueOnce({ ok: false, status: 503 });
+			await expect(refreshAccessToken()).rejects.toThrow("Refresh failed: 503");
+			expect(useAuthStore.getState().isAuthenticated).toBe(true);
+		});
+
 		it("logs out when no refresh token available", async () => {
 			useAuthStore.setState({ refreshToken: null });
 

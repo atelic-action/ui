@@ -61,6 +61,18 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Re
 }
 
 /**
+ * Parse a successful response. A 204 or an empty body (a DELETE the api
+ * answered with no content) is a success with nothing to read, not a parse
+ * error.
+ */
+async function readBody<T>(response: Response): Promise<T> {
+	if (response.status === 204) return undefined as T;
+	const text = await response.text();
+	if (text === "") return undefined as T;
+	return transformKeys<T>(JSON.parse(text));
+}
+
+/**
  * A read that needs no session: what a public page (see publicRoutes.ts)
  * loads for a visitor who is not signed in. No bearer token, no refresh, no
  * logout on failure; the same error shapes and the same camelCase transform
@@ -121,8 +133,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 		throw new Error(`API error: ${errorMessage(errorData, response)}`);
 	}
 
-	const json = await response.json();
-	return transformKeys<T>(json);
+	return readBody<T>(response);
 }
 
 /**
@@ -171,8 +182,7 @@ export async function uploadFormData<T>(endpoint: string, formData: FormData): P
 		throw new Error(`API error: ${errorMessage(errorData, response)}`);
 	}
 
-	const json = await response.json();
-	return transformKeys<T>(json);
+	return readBody<T>(response);
 }
 
 /**
