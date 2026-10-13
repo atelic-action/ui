@@ -1,0 +1,52 @@
+/*
+ * The app page's Tailwind entry, set up the way an app's own globals.css is:
+ * Tailwind, the package's app sheet straight after it (its @source line points
+ * Tailwind at the shell's components), the animation plugin the kit's sheets
+ * and menus use, and the app's own fonts and theme last.
+ */
+@import "tailwindcss";
+@import "../../src/styles/app.css";
+
+@plugin "tailwindcss-animate";
+
+@font-face {
+	font-family: "Geist";
+	src: url("/fonts/Geist-Variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Geist Mono";
+	src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* The bakery's own theme: a warmer accent than the shell's default. */
+@layer base {
+	:root {
+		--brand: 24 80% 46%;
+	}
+}
+
+/* The gallery's own pieces: the kit page's specimens. */
+.kit-grid {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 768px) {
+	.kit-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+.kit-label {
+	font: 600 10px / 1 var(--font-mono);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: hsl(var(--muted-foreground));
+	margin-bottom: 12px;
+}
