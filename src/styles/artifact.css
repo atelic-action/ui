@@ -374,10 +374,22 @@
 		grid-column: 1;
 		text-align: right;
 	}
+	/* The label never wraps, so a mark inside it (the asterisk that points
+	   at the footnote under the tiers) stays on the label's line:
+	     <span class="gate-tier-mathlabel">founding member credit<svg>...</svg></span> */
 	.atelic-ui .gate-tier-mathlabel {
 		grid-column: 2;
 		font-size: 13px;
 		color: var(--gs-faint);
+		white-space: nowrap;
+	}
+	.atelic-ui .gate-tier-mathlabel svg {
+		display: inline-block;
+		width: 11px;
+		height: 11px;
+		vertical-align: -1px;
+		margin-left: 2px;
+		color: var(--primary-bright);
 	}
 	.atelic-ui .gate-tier-was {
 		font-family: var(--font-mono);
@@ -395,6 +407,49 @@
 	   under one-time builds) that applies across every column. */
 	.atelic-ui .gate-tiers .gate-tier.is-addon {
 		grid-column: 1 / -1;
+	}
+
+	/* The add-ons row: two monthly cards (Operate, Operate with Paid) side
+	   by side under the builds, instead of each full width. The row spans
+	   the tier grid; the cards inside it sit in its own two columns, and
+	   stack with the tiers on a phone.
+	     <div class="gate-addons">
+	       <div class="gate-tier is-addon">...</div>
+	       <div class="gate-tier is-addon is-picked">...</div>
+	     </div> */
+	.atelic-ui .gate-tiers .gate-addons {
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 16px;
+	}
+	.atelic-ui .gate-tiers .gate-addons .gate-tier.is-addon {
+		grid-column: auto;
+	}
+	@media (max-width: 860px) {
+		.atelic-ui .gate-tiers .gate-addons {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	/* The footnote under the tiers: a credit's terms in one line, led by
+	   the same mark the card's label carries.
+	     <p class="gate-footnote"><svg>...</svg><span>...</span></p> */
+	.atelic-ui .gate-content .gate-footnote {
+		display: flex;
+		gap: 8px;
+		align-items: flex-start;
+		margin: 14px 0 0;
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--gs-dim);
+	}
+	.atelic-ui .gate-content .gate-footnote svg {
+		width: 14px;
+		height: 14px;
+		flex: 0 0 auto;
+		margin-top: 3px;
+		color: var(--primary-bright);
 	}
 
 	/* The icon list: the standard sent artifact list form, each line led
@@ -421,6 +476,21 @@
 		flex: 0 0 auto;
 		margin-top: 3px;
 		color: var(--primary-bright);
+	}
+	/* The icon list inside a tier card, sized for the card: a tier lists
+	   what it buys with icons that mean the thing, never checks. These tie
+	   the document list's selectors, so they sit after them. */
+	.atelic-ui .gate-tier ul.icon-list {
+		margin: 6px 0 0;
+		gap: 8px;
+		font-size: 14px;
+		line-height: 1.5;
+		color: var(--gs-dim);
+	}
+	.atelic-ui .gate-tier ul.icon-list svg {
+		width: 16px;
+		height: 16px;
+		margin-top: 2px;
 	}
 
 	/* Numbered flow: the ordered list for a step-by-step close. */

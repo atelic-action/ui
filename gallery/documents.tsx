@@ -756,9 +756,9 @@ export function DocumentPieces() {
 			<Piece
 				id="gate"
 				title="Gate"
-				lead="A sealed document: the page carries only ciphertext, and the reader's own email address derives the key that opens it in the browser, with no server to ask. This one was sealed with the package's own sealing command for a made up reader; type reader@example.test to open it."
+				lead="A sealed document: the page carries only ciphertext, and the reader's own email address derives the key that opens it in the browser, with no server to ask. This one was sealed with the package's own sealing command for a made up reader; type reader@example.test to open it. Inside is a proposal's price section: three tier cards with the credit's arithmetic and its mark, icon lists in each card, the two monthly cards side by side beneath them, and the footnote that says what the credit is for."
 			>
-				<Example caption="Sealed, before the address is typed">
+				<Example caption="Sealed, before the address is typed; opened, the tiers, the monthly row, and the footnote">
 					<div className="gallery-document gallery-sealed">
 						<SealedGate />
 					</div>
