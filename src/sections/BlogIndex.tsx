@@ -20,12 +20,6 @@ export interface BlogIndexProps {
 }
 
 /**
- * Formats an ISO date for display without pulling in a date library or
- * tripping over timezones. A bare "2025-03-27" parsed by Date() is treated as
- * UTC midnight and renders as the previous day west of Greenwich, which is a
- * classic way to publish a post that appears to predate itself.
- */
-/**
  * The blog listing: every post, newest first, as a plain readable stack
  * rather than a card grid. These are articles, not products, and a list
  * that reads top to bottom suits a small archive better than a gallery

@@ -7,7 +7,8 @@ const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayout
  * inside the clipped box: the height is measured before paint when the row
  * opens (so a row that mounts already open is never clipped to nothing) and
  * re-measured whenever the content resizes (rotation, font swap, late image).
- * Until a measurement exists an open row is unclamped rather than zero.
+ * The layout effect runs before paint, so the 0 it starts from is never seen
+ * clipped, and the first open animates like every later one.
  */
 export function useOpenHeight(open: boolean) {
 	const ref = useRef<HTMLDivElement>(null);
@@ -23,5 +24,5 @@ export function useOpenHeight(open: boolean) {
 		return () => observer.disconnect();
 	}, [open]);
 
-	return { ref, maxHeight: open ? (height ?? "none") : 0 } as const;
+	return { ref, maxHeight: open ? (height ?? 0) : 0 } as const;
 }
