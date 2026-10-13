@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { isPrivateContent } from "../../src/vite/private-chunks";
 
 const SRC = "/repo/src";
@@ -28,5 +30,24 @@ describe("isPrivateContent", () => {
 		expect(isPrivateContent(`${SRC}/components/writeup/Writeup.tsx`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/routes/writeup.tsx`)).toBe(false);
 		expect(isPrivateContent("/repo/node_modules/react/index.js")).toBe(false);
+	});
+});
+
+/**
+ * `@atelic-action/ui/vite/private-chunks` is the entry for a site that writes
+ * its own configuration and installs neither TanStack Start nor the React
+ * plugin. So the file may import nothing at run time but its own siblings:
+ * from Vite, types alone.
+ */
+describe("the private-chunks entry", () => {
+	it("imports no optional peer when it loads", () => {
+		const source = readFileSync(
+			join(import.meta.dirname, "../../src/vite/private-chunks.ts"),
+			"utf8",
+		);
+		const imports = source.split("\n").filter((line) => /^\s*import\s/.test(line));
+		for (const line of imports) {
+			expect(line.startsWith("import type ") || /from "\.\.?\//.test(line)).toBe(true);
+		}
 	});
 });
