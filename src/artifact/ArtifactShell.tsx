@@ -19,7 +19,7 @@ export interface ArtifactShellProps {
 }
 
 /**
- * The wrapper every artifact page uses: the `.mkt` theming
+ * The wrapper every artifact page uses: the `.atelic-ui` theming
  * scope, the skip link, the header, the credit band, and the access gate's
  * watermark, composed from the chrome. The header is always the dark
  * variant with the sender's lockup and never a site nav or a CTA, because the
@@ -34,7 +34,7 @@ export function ArtifactShell({ site, currentPath, stops, children }: ArtifactSh
 	const recipient = site.recipient.logo;
 
 	return (
-		<div className="mkt">
+		<div className="atelic-ui">
 			<SkipLink />
 			<SiteHeader
 				brand={{ name, href, logo, recipient }}

@@ -16,7 +16,7 @@ describe("server rendering", () => {
 
 	it("renders the marketing chrome to a string, the menu closed", () => {
 		const markup = renderToString(
-			<div className="mkt">
+			<div className="atelic-ui">
 				<SkipLink />
 				<SiteHeader
 					brand={brand}
@@ -42,7 +42,7 @@ describe("server rendering", () => {
 
 	it("renders the artifact chrome: the dark bar with stops, and the credit band alone", () => {
 		const markup = renderToString(
-			<div className="mkt">
+			<div className="atelic-ui">
 				<SiteHeader brand={brand} variant="dark" stops={[{ id: "plan", label: "Plan" }]} />
 				<CreditBar />
 			</div>,

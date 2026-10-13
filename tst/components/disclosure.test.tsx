@@ -57,4 +57,40 @@ describe("Disclosure", () => {
 		expect(screen.queryByRole("heading")).not.toBeInTheDocument();
 		expect(container.querySelector("section")).toBeNull();
 	});
+
+	describe("left uncontrolled", () => {
+		it("is a native details element: label and summary in the summary row, the detail in the page while closed", () => {
+			const { container } = render(
+				<Disclosure label="Your Main Pages" summary="All eight load.">
+					<p>The detail.</p>
+				</Disclosure>,
+			);
+			const details = container.querySelector("details");
+			expect(details).toHaveClass("disclosure", "is-native");
+			expect(details).not.toHaveAttribute("open");
+			const summary = screen.getByText("Your Main Pages").closest("summary");
+			expect(summary).toHaveTextContent("All eight load.");
+			// Find in page and print reach a closed body, so it is rendered.
+			expect(screen.getByText("The detail.")).toBeInTheDocument();
+			expect(screen.queryByRole("button")).not.toBeInTheDocument();
+		});
+
+		it("opens on first render when asked", () => {
+			const { container } = render(
+				<Disclosure label="Open" defaultOpen>
+					<p>The detail.</p>
+				</Disclosure>,
+			);
+			expect(container.querySelector("details")).toHaveAttribute("open");
+		});
+
+		it("keeps the caller's class beside its own", () => {
+			const { container } = render(
+				<Disclosure label="More" className="op-more">
+					<p>The detail.</p>
+				</Disclosure>,
+			);
+			expect(container.querySelector("details")).toHaveClass("disclosure", "is-native", "op-more");
+		});
+	});
 });

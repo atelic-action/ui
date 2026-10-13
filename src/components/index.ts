@@ -1,7 +1,6 @@
 export { readCookie } from "../lib/readCookie";
 export { Callout, type CalloutProps } from "./Callout";
 export { Checklist, type ChecklistItem, type ChecklistProps } from "./Checklist";
-export { Collapsible, type CollapsibleProps } from "./Collapsible";
 export {
 	ColumnChart,
 	type ColumnChartBar,
@@ -17,7 +16,12 @@ export {
 	type DataTableValueCell,
 	type SortDirection,
 } from "./DataTable";
-export { Disclosure, type DisclosureProps } from "./Disclosure";
+export {
+	Disclosure,
+	type DisclosureControlledProps,
+	type DisclosureNativeProps,
+	type DisclosureProps,
+} from "./Disclosure";
 export { GateLogin, type GateLoginProps } from "./GateLogin";
 export { NotFound, type NotFoundProps } from "./NotFound";
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from "./StackedBar";

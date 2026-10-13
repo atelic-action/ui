@@ -8,7 +8,7 @@ import { readCookie } from "../lib/readCookie";
  * faint tiled overlay when the gate runs in "tiled" mode. Renders nothing
  * when there is no session, so it is inert on a public site and during
  * prerender. The email travels into any screenshot. Mount it inside the
- * site's `.mkt` (or `.atelic-ui`) wrapper, where its styles are scoped.
+ * site's `.atelic-ui` wrapper, where its styles are scoped.
  *
  * It deters and attributes; it does not enforce. The cookies it reads are
  * unsigned and it is drawn in the reader's own browser.
