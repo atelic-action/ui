@@ -836,7 +836,7 @@ Proven on a copy of pinole-app thinned onto a packed tarball: with the line or t
 
 ### The Kit
 
-`@atelic-action/ui/app/ui` exports the shadcn components the template carried: `Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `BadgeList`, `Button`, `Callout`, `Card`, `Checkbox`, `ClearButton`, `Command`, `CountryDropdown`, `Dialog`, `DropdownMenu`, `Form`, `Input`, `Label`, `OptionSelect`, `Pagination`, `Popover`, `Progress`, `SearchInput`, `Select`, `Separator`, `Sheet`, `Slider`, `Switch`, `Textarea`, and `Tooltip`, each with its parts. A component added with `bunx shadcn add` lands here, not in an app. The main entry adds the frame and its pieces (`AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `ActionButton`, `FormActionButtons`, `PageSkeleton`, `PageError`, `AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph`).
+`@atelic-action/ui/app/ui` exports the shadcn components the template carried: `Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `BadgeList`, `Button`, `Callout`, `Card`, `Checkbox`, `ClearButton`, `Command`, `CountryDropdown`, `Dialog`, `DropdownMenu`, `Form`, `Input`, `Label`, `OptionSelect`, `Pagination`, `Popover`, `Progress`, `SearchInput`, `Select`, `Separator`, `Sheet`, `Slider`, `Switch`, `Textarea`, and `Tooltip`, each with its parts. A new kit component lands here, not in an app, and it is written by hand into `src/app/ui/` and exported from its `index.ts`: the package carries no `components.json`, because `bunx shadcn add` writes its imports through the `@/` aliases the package never uses (consumers resolve none of ours), so a component taken from the shadcn registry has its imports made relative before it lands. The main entry adds the frame and its pieces (`AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `ActionButton`, `FormActionButtons`, `PageSkeleton`, `PageError`, `AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph`).
 
 The app's stack is optional peer dependencies, so a marketing site installs none of it: TanStack Router and Query, Tailwind, `sonner`, `zustand`, `zod`, `react-hook-form`, `class-variance-authority`, `clsx`, `tailwind-merge`, `cmdk`, the Radix primitives the kit uses, `country-data-list`, and `react-circle-flags`, at the ranges `template-application` already pins. An app that imports the shell has them all already.
 
@@ -864,9 +864,28 @@ Then the handful of edits the seam asks for:
 4. **`src/routes/__root.tsx`** keeps only `AuthGuard` and `AppLayout` around the `Outlet`; the query client, the rail state, the user, and the toaster are the provider's.
 5. **`src/styles/globals.css`** keeps Tailwind, its plugins, its fonts, and any token of its own, and imports `app.css` in place of the `@theme` block, the token sets, the base layer, and the `ap-*` scaffold.
 6. **`activeSection(pathname)`** takes the items now: `activeSection(pathname, navItems)`.
-7. **`components.json`** no longer has a `src/shared` to add to; new kit components go to the package.
+7. **`components.json`** no longer has a `src/shared` to add to; a new kit component is written by hand in the package's `src/app/ui/` (see [The Kit](#the-kit)).
 
-A test that mocked `@/stores/authStore`, `@/shared/lib/session`, or another shell module mocks `@atelic-action/ui/app` as a whole instead, keeping the exports it does not replace (`vi.mock(import("@atelic-action/ui/app"), async (original) => ({ ...(await original()), session: mockSession }))`).
+**Tests.** Mocking `@atelic-action/ui/app` replaces what the app's own code imports from it, and nothing the shell imports from itself. A component that calls `session.me` sees a mock written over the entry (`vi.mock(import("@atelic-action/ui/app"), async (original) => ({ ...(await original()), session: mockSession }))`), but the transport reads the auth store, the token refresh, and the config through its own relative imports, so a mocked `useAuthStore` or `ensureValidToken` never reaches `apiFetch`. A test that runs through the transport (a feature's api module, a query hook) therefore drives the real shell and mocks only `fetch`:
+
+```ts
+import { configureApp, useAuthStore } from "@atelic-action/ui/app";
+import { appConfig } from "@/app/config";
+
+beforeEach(() => {
+	configureApp(appConfig);
+	useAuthStore.setState({
+		token: "test-token",
+		refreshToken: "test-refresh",
+		expiresAt: Date.now() + 60 * 60 * 1000,
+		user: testUser, // the app's own fixture user
+		isAuthenticated: true,
+	});
+	vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ data: [] })));
+});
+```
+
+An `expiresAt` an hour out keeps the refresh path quiet; one inside five minutes sends the transport to the refresh endpoint first, through the same mocked `fetch`.
 
 ## The Gallery
 
