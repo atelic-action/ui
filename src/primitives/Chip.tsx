@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useWithBase } from "../routing/BasePathProvider";
 
 export interface ChipProps {
 	/** Shows the small brand-colored dot before the label. */
@@ -12,6 +13,7 @@ export interface ChipProps {
 
 /** Small mono tag/badge, used for credentials, tags, and service areas. */
 export function Chip({ dot = false, onDark = false, href, children }: ChipProps) {
+	const withBase = useWithBase();
 	const classes = ["chip", onDark && "on-dark"].filter(Boolean).join(" ");
 	const content = (
 		<>
@@ -21,7 +23,7 @@ export function Chip({ dot = false, onDark = false, href, children }: ChipProps)
 	);
 	if (href) {
 		return (
-			<a className={classes} href={href}>
+			<a className={classes} href={withBase(href)}>
 				{content}
 			</a>
 		);
