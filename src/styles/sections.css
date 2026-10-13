@@ -1,0 +1,2648 @@
+/* The marketing sections under src/sections, one block each, the sheets that
+   lived beside each component in template-marketing until 0.19.0 (ATE-643).
+   A section that composes another comes after it, the order the template's
+   bundle put them in. Every rule sits in the package's layer and answers to
+   .atelic-ui, so any rule a site writes outside a layer wins over it. */
+@layer atelic-ui {
+	/* ---- BlogIndex (blog-index.css) ---- */
+	/* A readable stack, not a card grid. A small archive looks thinner in a
+	   gallery than it does in a list, and these are articles to be read rather
+	   than products to be browsed. */
+
+	.atelic-ui .bi-list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		max-width: 760px;
+	}
+
+	.atelic-ui .bi-item {
+		border-top: 1px solid var(--hairline, rgb(0 0 0 / 10%));
+	}
+
+	.atelic-ui .bi-item:last-child {
+		border-bottom: 1px solid var(--hairline, rgb(0 0 0 / 10%));
+	}
+
+	/* The whole row is the target: a small archive should not make anyone aim
+	   at a short headline link. */
+	.atelic-ui .bi-link {
+		display: block;
+		padding: 28px 0;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.atelic-ui .bi-meta {
+		display: block;
+		margin-bottom: 8px;
+		font-size: 0.8rem;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: var(--neutral-500);
+	}
+
+	.atelic-ui .bi-title {
+		margin: 0 0 10px;
+		font-size: 1.4rem;
+		line-height: 1.25;
+	}
+
+	.atelic-ui .bi-arrow {
+		margin-left: 8px;
+		vertical-align: baseline;
+		opacity: 0;
+		transform: translate(-4px, 2px);
+		transition:
+			opacity 0.18s ease,
+			transform 0.18s ease;
+	}
+
+	.atelic-ui .bi-link:hover .bi-arrow,
+	.atelic-ui .bi-link:focus-visible .bi-arrow {
+		opacity: 1;
+		transform: translate(0, 2px);
+	}
+
+	.atelic-ui .bi-excerpt {
+		margin: 0;
+		max-width: 62ch;
+		font-size: 0.98rem;
+		line-height: 1.65;
+		color: var(--neutral-700);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .bi-arrow {
+			transition: none;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.atelic-ui .bi-title {
+			font-size: 1.2rem;
+		}
+	}
+
+	/* ---- BlogPost (blog-post.css) ---- */
+	/* A single article. The title is the content, so it sits in the flow rather
+	   than inside a hero band that would push the writing below the fold. */
+
+	.atelic-ui .bp-wrap {
+		max-width: 760px;
+	}
+
+	.atelic-ui .bp-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-bottom: 28px;
+		font-size: 0.85rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--neutral-500);
+	}
+
+	.atelic-ui .bp-back:hover,
+	.atelic-ui .bp-back:focus-visible {
+		color: var(--primary);
+	}
+
+	.atelic-ui .bp-title {
+		margin: 0 0 14px;
+		font-size: clamp(1.9rem, 4vw, 2.6rem);
+		line-height: 1.15;
+	}
+
+	.atelic-ui .bp-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 14px;
+		margin: 0 0 36px;
+		font-size: 0.85rem;
+		letter-spacing: 0.03em;
+		color: var(--neutral-500);
+	}
+
+	.atelic-ui .bp-author {
+		font-weight: 600;
+		color: var(--neutral-700);
+	}
+
+	.atelic-ui .bp-updated::before {
+		content: "·";
+		margin-right: 14px;
+	}
+
+	/* ---- CTABanner (cta-banner.css) ---- */
+	/* Mid-page full-bleed CTA banner: image backdrop, overlaid copy and actions. */
+	.atelic-ui .cta-banner {
+		position: relative;
+		overflow: hidden;
+	}
+	.atelic-ui .cta-banner-media {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	/* Token gradient backdrop when no image is provided (mirrors .hero-media-fallback). */
+	.atelic-ui .cta-banner-fallback {
+		background: linear-gradient(
+			160deg,
+			var(--surface-dark) 0%,
+			var(--primary-deep) 70%,
+			var(--primary) 110%
+		);
+	}
+	.atelic-ui .cta-banner-wash {
+		position: absolute;
+		inset: 0;
+	}
+	.atelic-ui .cta-banner.dark .cta-banner-wash {
+		background: linear-gradient(
+			90deg,
+			rgba(20, 15, 11, 0.85) 0%,
+			rgba(20, 15, 11, 0.62) 48%,
+			rgba(20, 15, 11, 0.22) 100%
+		);
+	}
+	.atelic-ui .cta-banner.light .cta-banner-wash {
+		background: linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--surface) 94%, transparent) 0%,
+			color-mix(in srgb, var(--surface) 72%, transparent) 48%,
+			color-mix(in srgb, var(--surface) 18%, transparent) 100%
+		);
+	}
+	.atelic-ui .cta-banner .wrap {
+		position: relative;
+		z-index: 1;
+		padding-block: clamp(56px, 9vw, 110px);
+	}
+	.atelic-ui .cta-banner-content {
+		max-width: 620px;
+	}
+	.atelic-ui .cta-banner-content h2 {
+		margin: 10px 0 0;
+	}
+	.atelic-ui .cta-banner-content .lead {
+		margin-top: 16px;
+	}
+	.atelic-ui .cta-banner.dark .cta-banner-content {
+		color: #fff;
+	}
+	.atelic-ui .cta-banner.dark .cta-banner-content .lead {
+		color: rgba(255, 255, 255, 0.88);
+	}
+	.atelic-ui .cta-banner-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin-top: 28px;
+	}
+
+	/* ---- CTASection (cta-section.css) ---- */
+	.atelic-ui .final-cta h2 {
+		margin: 8px 0 16px;
+	}
+	.atelic-ui .final-cta .cta-lead {
+		max-width: 52ch;
+		margin-inline: auto;
+	}
+
+	/* ---- ComparisonTable (comparison-table.css) ---- */
+	/* ComparisonTable: a graded before and after.
+
+	   --cmp-stage sizes the label column, leaving the two halves exactly equal so
+	   before and after line up against each other rather than being sized by
+	   whichever happens to hold more words. */
+	.atelic-ui .comparison {
+		--cmp-stage: 132px;
+		--cmp-gutter: 16px;
+	}
+
+	/* The table keeps its shape and scrolls sideways rather than reflowing: a row
+	   whose two halves no longer sit beside each other is not a comparison. */
+	.atelic-ui .cmp-scroll {
+		overflow-x: auto;
+	}
+	.atelic-ui .cmp-table {
+		width: 100%;
+		min-width: 680px;
+		border-collapse: collapse;
+		font-size: 0.92rem;
+		table-layout: fixed;
+	}
+	.atelic-ui .cmp-col-stage {
+		width: var(--cmp-stage);
+	}
+	/* Equal halves, so before and after line up with each other and with the
+	   summaries above them. */
+	.atelic-ui .cmp-col-half {
+		width: calc((100% - var(--cmp-stage)) / 2);
+	}
+
+	.atelic-ui .cmp-table thead th {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--neutral-500);
+		font-weight: 500;
+		text-align: left;
+		padding: 10px var(--cmp-gutter) 10px 0;
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+
+	.atelic-ui .cmp-table tbody th,
+	.atelic-ui .cmp-table tbody td {
+		padding: 14px var(--cmp-gutter) 14px 0;
+		border-bottom: 1px solid var(--hairline);
+		vertical-align: top;
+		text-align: left;
+	}
+	.atelic-ui .cmp-table tbody th {
+		color: var(--ink);
+		font-weight: 500;
+	}
+	.atelic-ui .cmp-table tbody td {
+		color: var(--ink-soft);
+	}
+	/* The after column is the one the reader is here for. */
+	.atelic-ui .cmp-table tbody td.is-after {
+		color: var(--ink);
+	}
+
+	/* Grade beside its reasoning, baseline aligned so the letter sits on the first
+	   line of text however many points follow. min-width: 0 on the points track
+	   per the library's wide-child rule: a long unbroken string in a fixed table
+	   would otherwise push the column past the viewport. */
+	.atelic-ui .cmp-cell {
+		display: flex;
+		gap: 14px;
+		align-items: baseline;
+	}
+	.atelic-ui .cmp-points {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.atelic-ui .cmp-grade {
+		flex: 0 0 auto;
+		font-family: var(--font-mono);
+		line-height: 1.2;
+		white-space: nowrap;
+		color: var(--neutral-500);
+	}
+	.atelic-ui .cmp-grade.is-letter {
+		font-size: 1.15rem;
+		font-weight: 700;
+		min-width: 1.1em;
+	}
+	.atelic-ui .cmp-grade.is-note {
+		font-size: 0.72rem;
+		font-weight: 500;
+	}
+	.atelic-ui .cmp-grade.is-moved {
+		color: var(--primary);
+	}
+
+	/* Points sit flush with single-point cells, so every row starts on the same
+	   vertical line whether it carries one item or four. */
+	.atelic-ui .cmp-points ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.atelic-ui .cmp-points li + li {
+		margin-top: 8px;
+	}
+
+	.atelic-ui .cmp-footnote {
+		color: var(--neutral-500);
+		font-size: 0.86rem;
+		margin-top: 14px;
+	}
+
+	/* ---- ContactForm (contact-form.css) ---- */
+	/* Contact page layout. */
+	.atelic-ui .contact-grid {
+		display: grid;
+		gap: 40px;
+	}
+	@media (min-width: 920px) {
+		.atelic-ui .contact-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 56px;
+		}
+	}
+	/* Contact form fields. */
+	.atelic-ui .field {
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+		margin-bottom: 18px;
+	}
+	.atelic-ui .field label {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+	}
+	.atelic-ui .field input,
+	.atelic-ui .field textarea,
+	.atelic-ui .field select {
+		font: inherit;
+		padding: 14px 16px;
+		border-radius: var(--radius-md);
+		border: 1.5px solid var(--neutral-200);
+		background: var(--card);
+		color: var(--ink);
+		transition:
+			border-color 0.15s,
+			box-shadow 0.15s;
+		width: 100%;
+	}
+	.atelic-ui .field input:focus,
+	.atelic-ui .field textarea:focus,
+	.atelic-ui .field select:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px var(--primary-focus-ring);
+	}
+	.atelic-ui .field textarea {
+		min-height: 130px;
+		resize: vertical;
+	}
+	/* Replace the inconsistent native select arrow with a styled chevron. */
+	.atelic-ui .field select {
+		appearance: none;
+		-webkit-appearance: none;
+		padding-right: 44px;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M6 8 0 2 1.4.6 6 5.2 10.6.6 12 2z'/%3E%3C/svg%3E");
+		background-repeat: no-repeat;
+		background-position: right 16px center;
+	}
+	.atelic-ui .field .err {
+		color: var(--primary-deep);
+		font-size: 0.82rem;
+		display: none;
+	}
+	.atelic-ui .field.invalid .err {
+		display: block;
+	}
+	.atelic-ui .field.invalid input,
+	.atelic-ui .field.invalid textarea {
+		border-color: var(--primary-deep);
+	}
+	.atelic-ui .form-success {
+		background: var(--secondary-tint);
+		border: 1.5px solid var(--secondary-soft);
+		color: var(--secondary);
+		padding: 20px 22px;
+		border-radius: var(--radius-md);
+		font-weight: 600;
+		margin-bottom: 18px;
+	}
+	.atelic-ui .form-error {
+		background: var(--primary-tint);
+		border: 1.5px solid var(--primary);
+		color: var(--primary-deep);
+		padding: 20px 22px;
+		border-radius: var(--radius-md);
+		font-weight: 600;
+		margin-bottom: 18px;
+	}
+	/* Honeypot: off-canvas rather than display:none so naive bots still fill it. */
+	.atelic-ui .hp-field {
+		position: absolute;
+		left: -9999px;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+	}
+
+	/* ---- ContactInfoCard (contact-info-card.css) ---- */
+	.atelic-ui .contact-info-card {
+		background: var(--surface-dark);
+		color: var(--surface);
+		border-radius: var(--radius-lg);
+		padding: clamp(28px, 5vw, 40px);
+	}
+	.atelic-ui .contact-info-card h3 {
+		color: #fff;
+	}
+	.atelic-ui .contact-info-card .ci-rows {
+		margin-top: 18px;
+	}
+	.atelic-ui .contact-info-card .ci-row {
+		display: flex;
+		gap: 14px;
+		align-items: flex-start;
+		padding: 16px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+	.atelic-ui .contact-info-card .ci-row.last {
+		border-bottom: none;
+	}
+	.atelic-ui .contact-info-card .ci-row .k {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--primary-bright);
+		flex: 0 0 84px;
+		padding-top: 3px;
+	}
+	.atelic-ui .contact-info-card a {
+		color: #fff;
+		font-weight: 600;
+	}
+	.atelic-ui .contact-info-card .ci-row .v {
+		color: var(--neutral-200);
+		/* A long email address breaks inside its column on a phone rather than
+		   pushing the card, and the page, wider than the screen (found moving
+		   the card into the package, 0.19.0). */
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	/* ---- CredentialList (credential-list.css) ---- */
+	.atelic-ui .cert-list {
+		display: grid;
+		gap: 14px;
+		margin-top: 8px;
+	}
+	/* Two-up on wide screens so a long credential stack stays compact;
+	   single column below 900px keeps each card full-width on mobile. */
+	@media (min-width: 900px) {
+		.atelic-ui .cert-list {
+			grid-template-columns: 1fr 1fr;
+			align-items: stretch;
+		}
+	}
+	.atelic-ui .cert-list li {
+		display: flex;
+		gap: 14px;
+		align-items: flex-start;
+		padding: 16px 18px;
+		background: var(--card);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		border: 1px solid var(--hairline);
+	}
+	.atelic-ui .cert-list .ci {
+		flex: 0 0 auto;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--primary);
+		font-weight: 600;
+		padding-top: 2px;
+	}
+	.atelic-ui .cert-list strong {
+		display: block;
+	}
+	.atelic-ui .cert-list small {
+		color: var(--neutral-600);
+		font-size: 0.9rem;
+	}
+
+	/* ---- DeviceShowcase (device-showcase.css) ---- */
+	/* Device mockups: a desktop browser window with a phone overlapping its
+	   lower-left. Tokens only. */
+	.atelic-ui .devices {
+		position: relative;
+		width: 100%;
+		max-width: 640px;
+		padding-bottom: 42px;
+		padding-left: 40px;
+		perspective: 1600px;
+	}
+
+	/* Desktop browser window */
+	.atelic-ui .dv-desktop {
+		border-radius: 14px;
+		overflow: hidden;
+		background: var(--card);
+		box-shadow: var(--shadow-lg);
+		border: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .dv-bar {
+		height: 34px;
+		background: var(--surface-alt);
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		padding: 0 14px;
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .dv-bar i {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--neutral-300);
+	}
+	.atelic-ui .dv-screen {
+		line-height: 0;
+	}
+	.atelic-ui .dv-screen img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	/* Phone, overlapping the lower-left corner, tilted out for a 3D feel. */
+	.atelic-ui .dv-phone {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 30%;
+		max-width: 172px;
+		border-radius: 26px;
+		border: 5px solid var(--ink);
+		background: var(--ink);
+		overflow: hidden;
+		line-height: 0;
+		transform: rotateY(-20deg) rotateX(3deg) rotateZ(-1deg);
+		transform-origin: center center;
+		box-shadow: -22px 26px 46px rgba(20, 16, 12, 0.4);
+	}
+	.atelic-ui .dv-phone img {
+		width: 100%;
+		height: auto;
+		display: block;
+		border-radius: 21px;
+	}
+
+	@media (max-width: 900px) {
+		.atelic-ui .devices {
+			max-width: 460px;
+			margin-inline: auto;
+			padding-left: 20px;
+		}
+	}
+
+	/* ---- ExpandList (expand-list.css) ---- */
+	/* ExpandList: numbered fold-out rows — mono index, title, chevron, and a
+	   collapsing body. The light sibling of the FAQBrowser's card rows. */
+	.atelic-ui .expand-list {
+		border-top: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .xl-row {
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .xl-head {
+		display: flex;
+		align-items: baseline;
+		gap: 18px;
+		width: 100%;
+		padding: 18px 2px;
+		background: none;
+		border: 0;
+		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		color: var(--ink);
+	}
+	.atelic-ui .xl-num {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 500;
+		color: var(--primary);
+		letter-spacing: 0.08em;
+	}
+	.atelic-ui .xl-title {
+		flex: 1;
+		min-width: 0;
+		font-weight: 600;
+		font-size: 1.02rem;
+	}
+	.atelic-ui .xl-chevron {
+		flex-shrink: 0;
+		align-self: center;
+		color: var(--neutral-500);
+		transition: transform 0.25s ease;
+	}
+	.atelic-ui .xl-row.open .xl-chevron {
+		transform: rotate(180deg);
+	}
+	.atelic-ui .xl-body {
+		overflow: hidden;
+		max-height: 0;
+		transition: max-height 0.3s ease;
+	}
+	.atelic-ui .xl-body-inner {
+		padding: 0 2px 20px;
+		padding-left: calc(0.78rem * 2 + 18px + 2px);
+		color: var(--ink-soft);
+		max-width: 68ch;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .xl-chevron,
+		.atelic-ui .xl-body {
+			transition: none;
+		}
+	}
+	@media (max-width: 560px) {
+		.atelic-ui .xl-body-inner {
+			padding-left: 2px;
+		}
+	}
+
+	/* ---- JumpRail (jump-rail.css) ---- */
+	/* Jump rail: the FAQ's categories, and any long page's stops. Sticky under
+	   the fixed header, one tab per section anchor, the active one underlined in
+	   the primary by scroll spy. */
+	.atelic-ui .jump-rail {
+		position: sticky;
+		top: var(--nav-height);
+		z-index: 90;
+		background: color-mix(in srgb, var(--surface) 92%, transparent);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .jump-rail-inner {
+		display: flex;
+		gap: 26px;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.atelic-ui .jump-rail-inner::-webkit-scrollbar {
+		display: none;
+	}
+	.atelic-ui .jump-rail a {
+		flex: 0 0 auto;
+		padding: 15px 0 13px;
+		font-weight: 600;
+		font-size: 0.95rem;
+		color: var(--ink-soft);
+		border-bottom: 2px solid transparent;
+		transition:
+			color 0.15s,
+			border-color 0.15s;
+	}
+	.atelic-ui .jump-rail a:hover {
+		color: var(--ink);
+	}
+	.atelic-ui .jump-rail a.active {
+		color: var(--primary);
+		border-bottom-color: var(--primary);
+	}
+
+	/* ---- PageHero (page-hero.css) ---- */
+	.atelic-ui .page-hero {
+		padding-top: calc(var(--nav-height) + clamp(40px, 7vw, 86px));
+		padding-bottom: clamp(28px, 5vw, 60px);
+		background: var(--surface-alt);
+	}
+	.atelic-ui .page-hero h1 {
+		font-size: clamp(2.4rem, 7vw, 4.2rem);
+		margin: 16px 0 0;
+	}
+	.atelic-ui .page-hero .lead {
+		margin-top: 22px;
+		max-width: 56ch;
+	}
+
+	/* ---- FAQBrowser (faq-browser.css) ---- */
+	/* =================================================================
+	   FAQ BROWSER — help hero search, sticky category tabs, card groups
+	   ================================================================= */
+
+	/* ---- Find block in the page hero ----
+	   The page header stays left-aligned like every other section header on
+	   the site; the find block (search pill + browse-all beneath it) centers
+	   on a comfortable reading width so the input never runs the full page. */
+	.atelic-ui .faq-find {
+		max-width: 34rem;
+		margin: 30px auto 0;
+		text-align: center;
+	}
+	.atelic-ui .faq-search {
+		position: relative;
+		display: flex;
+		align-items: center;
+		margin: 0;
+		background: var(--card);
+		border: 1.5px solid var(--neutral-200);
+		border-radius: var(--radius-pill);
+		padding: 0 20px;
+		transition:
+			border-color 0.15s,
+			box-shadow 0.15s;
+	}
+	.atelic-ui .faq-search:focus-within {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px var(--primary-focus-ring);
+	}
+	.atelic-ui .faq-search > svg {
+		width: 18px;
+		height: 18px;
+		flex: 0 0 auto;
+		color: var(--neutral-500);
+	}
+	.atelic-ui .faq-search input {
+		flex: 1;
+		font: inherit;
+		font-size: 1rem;
+		padding: 15px 14px;
+		border: none;
+		background: none;
+		color: var(--ink);
+		outline: none;
+		min-width: 0;
+	}
+	.atelic-ui .faq-search input::placeholder {
+		color: var(--neutral-500);
+	}
+	.atelic-ui .faq-search input::-webkit-search-cancel-button {
+		display: none;
+	}
+	.atelic-ui .faq-search-clear {
+		flex: 0 0 auto;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		display: grid;
+		place-items: center;
+		font-size: 1.2rem;
+		line-height: 1;
+		color: var(--neutral-500);
+	}
+	.atelic-ui .faq-search-clear:hover {
+		color: var(--ink);
+		background: var(--surface-alt);
+	}
+	.atelic-ui .faq-browse-all {
+		display: inline-block;
+		margin-top: 16px;
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--primary);
+	}
+
+	/* ---- Sticky category tabs ---- */
+	/* The sticky category tab bar is the shared jump rail now; its styles
+	   live in jump-rail.css beside JumpRail. */
+
+	/* ---- Category sections ---- */
+	.atelic-ui .faq-cat {
+		padding-block: clamp(20px, 2.5vw, 32px);
+		scroll-margin-top: calc(var(--nav-height) + 56px);
+	}
+	.atelic-ui .faq-cats {
+		padding-block: clamp(8px, 1.5vw, 16px) clamp(16px, 2.5vw, 32px);
+	}
+	/* Category head: stacked on small screens (description, then the utility
+	   links) so the description keeps its full measure; from 720px up the
+	   description sits left and the utilities right, bottom-aligned so a
+	   wrapping description keeps the links pinned just above the questions. */
+	.atelic-ui .faq-cat-head {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 14px;
+		margin: 10px 0 14px;
+	}
+	.atelic-ui .faq-cat-desc {
+		margin: 0;
+		color: var(--ink-soft);
+		max-width: 60ch;
+	}
+	.atelic-ui .faq-utils {
+		display: flex;
+		gap: 22px;
+		flex: 0 0 auto;
+		white-space: nowrap;
+	}
+	@media (min-width: 720px) {
+		.atelic-ui .faq-cat-head {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-end;
+			gap: 24px;
+		}
+		.atelic-ui .faq-utils {
+			margin-left: auto;
+		}
+	}
+	.atelic-ui .faq-util {
+		font-family: var(--font-mono);
+		font-size: 0.76rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+		padding: 4px 0;
+	}
+	.atelic-ui .faq-util:hover {
+		color: var(--ink);
+	}
+	.atelic-ui .faq-util:first-child {
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* ---- Card group of question rows ---- */
+	.atelic-ui .faq-group {
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+	.atelic-ui .faq-row {
+		border-top: 1px solid var(--hairline);
+	}
+	.atelic-ui .faq-row:first-child {
+		border-top: none;
+	}
+	.atelic-ui .faq-row-head {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 0 18px 0 0;
+	}
+	.atelic-ui .faq-row-q {
+		flex: 1;
+		text-align: left;
+		font-weight: 700;
+		font-size: 1.02rem;
+		letter-spacing: -0.01em;
+		padding: 20px 0 20px 22px;
+		min-width: 0;
+	}
+	.atelic-ui .faq-row-icons {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		flex: 0 0 auto;
+	}
+	.atelic-ui .faq-icon-btn {
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		display: grid;
+		place-items: center;
+		color: var(--neutral-500);
+		transition:
+			color 0.15s,
+			background 0.15s,
+			transform 0.25s;
+	}
+	.atelic-ui .faq-icon-btn svg {
+		width: 16px;
+		height: 16px;
+	}
+	.atelic-ui .faq-icon-btn:hover {
+		color: var(--ink);
+		background: var(--surface-alt);
+	}
+	.atelic-ui .faq-link-btn {
+		color: var(--primary);
+	}
+	.atelic-ui .faq-link-btn.copied {
+		color: var(--secondary);
+	}
+	.atelic-ui .faq-row.open .faq-chevron {
+		transform: rotate(180deg);
+	}
+	.atelic-ui .faq-row-a {
+		max-height: 0;
+		overflow: hidden;
+		transition: max-height 0.35s ease;
+	}
+	.atelic-ui .faq-row-a-inner {
+		padding: 2px 22px 24px;
+		color: var(--ink-soft);
+		line-height: 1.65;
+	}
+	.atelic-ui .faq-answer-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 14px;
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--primary);
+	}
+
+	/* ---- Per-category CTA line ---- */
+	.atelic-ui .faq-cat-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-top: 20px;
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--primary);
+	}
+	.atelic-ui .faq-cat-cta .arrow,
+	.atelic-ui .faq-answer-cta .arrow {
+		transition: transform 0.2s ease;
+	}
+	.atelic-ui .faq-cat-cta:hover .arrow,
+	.atelic-ui .faq-answer-cta:hover .arrow {
+		transform: translateX(3px);
+	}
+
+	/* ---- Empty search state ---- */
+	.atelic-ui .faq-empty {
+		padding-block: clamp(40px, 6vw, 72px);
+		text-align: center;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .faq-empty a {
+		color: var(--primary);
+		font-weight: 700;
+	}
+
+	/* ---- FeatureDetail (feature-detail.css) ---- */
+	/* Alternating copy-and-media feature rows. */
+	.atelic-ui .feature-detail {
+		display: grid;
+		gap: 36px;
+		align-items: center;
+		padding-block: clamp(40px, 6vw, 72px);
+		border-top: 1px solid var(--neutral-200);
+		scroll-margin-top: calc(var(--nav-height) + 20px);
+	}
+	.atelic-ui .feature-detail:first-of-type {
+		border-top: none;
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .feature-detail {
+			grid-template-columns: 1fr 1fr;
+			gap: 64px;
+		}
+		.atelic-ui .feature-detail.flip .feature-detail-media {
+			order: -1;
+		}
+	}
+	.atelic-ui .feature-detail .feature-num {
+		display: block;
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--primary);
+		letter-spacing: 0.1em;
+		margin-bottom: 10px;
+	}
+	.atelic-ui .feature-detail h2 {
+		font-size: clamp(1.8rem, 4vw, 2.6rem);
+	}
+	.atelic-ui .feature-detail .tag-row {
+		gap: 8px;
+		margin: 18px 0 20px;
+	}
+	.atelic-ui .feature-detail .detail-ticks {
+		margin-top: 18px;
+	}
+
+	/* ---- FeatureGrid (feature-grid.css) ---- */
+	/* Numbered feature/service card grid. */
+	.atelic-ui .feature-grid {
+		display: grid;
+		gap: 16px;
+		margin-top: 44px;
+		grid-template-columns: 1fr;
+	}
+	@media (min-width: 560px) {
+		.atelic-ui .feature-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	@media (min-width: 980px) {
+		.atelic-ui .feature-grid {
+			/* Cards per row; the component sets --fg-cols from its `columns` prop. */
+			grid-template-columns: repeat(var(--fg-cols, 4), 1fr);
+		}
+	}
+	.atelic-ui .feature-card {
+		background: var(--card);
+		border-radius: var(--radius-lg);
+		padding: 28px 24px 24px;
+		box-shadow: var(--shadow-sm);
+		border: 1px solid var(--hairline);
+		display: flex;
+		flex-direction: column;
+		min-height: 240px;
+		transition:
+			transform 0.25s ease,
+			box-shadow 0.25s ease;
+	}
+	.atelic-ui .feature-card:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-md);
+	}
+	.atelic-ui .feature-num {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--primary);
+		letter-spacing: 0.1em;
+	}
+	.atelic-ui .feature-card h3 {
+		margin: 14px 0 10px;
+	}
+	.atelic-ui .feature-card p {
+		color: var(--ink-soft);
+		font-size: 0.98rem;
+		flex: 1;
+	}
+	.atelic-ui .feature-link {
+		margin-top: 18px;
+		font-weight: 700;
+		color: var(--primary);
+		font-size: 0.95rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.atelic-ui .feature-link .arrow {
+		transition: transform 0.2s ease;
+	}
+	.atelic-ui .feature-card:hover .feature-link .arrow {
+		transform: translateX(4px);
+	}
+
+	/* ---- Gallery (gallery.css) ---- */
+	/* Gallery — a captioned wall of the client's own work photos. */
+
+	.atelic-ui .gallery-section h2 {
+		margin: 10px 0 14px;
+	}
+
+	.atelic-ui .gallery-grid {
+		list-style: none;
+		margin: 34px 0 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 22px;
+	}
+
+	@media (min-width: 620px) {
+		.atelic-ui .gallery-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 960px) {
+		.atelic-ui .gallery-grid.cols-3 {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	.atelic-ui .gallery-item figure {
+		margin: 0;
+	}
+
+	.atelic-ui .gallery-frame {
+		overflow: hidden;
+		border-radius: var(--radius-md);
+		background: var(--surface-inset);
+		aspect-ratio: 4 / 3;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.atelic-ui .gallery-frame img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* A tile with no photograph yet borrows the shared placeholder block. Both
+	   selectors carry two classes, so the radius is restated at three to beat
+	   `.ph`'s own regardless of bundle order. */
+	.atelic-ui .gallery-frame.ph {
+		border-radius: var(--radius-md);
+		box-shadow: inset 0 0 0 1px rgba(138, 124, 104, 0.2);
+	}
+
+	.atelic-ui .gallery-item figcaption {
+		margin-top: 12px;
+		font-size: 0.92rem;
+		line-height: 1.5;
+		color: var(--ink-soft);
+	}
+
+	.atelic-ui .gallery-footnote {
+		margin-top: 28px;
+		font-size: 0.85rem;
+	}
+
+	/* ---- Hero (hero.css) ---- */
+	/* Full-bleed image hero. */
+	.atelic-ui .hero {
+		position: relative;
+		min-height: 100svh;
+		display: flex;
+		align-items: flex-end;
+		color: #fff;
+		overflow: hidden;
+	}
+	.atelic-ui .hero-media {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+	.atelic-ui .hero-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center 35%;
+	}
+	.atelic-ui .hero-media-fallback {
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(
+			160deg,
+			var(--surface-dark) 0%,
+			var(--primary-deep) 70%,
+			var(--primary) 110%
+		);
+	}
+	.atelic-ui .hero-scrim {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			180deg,
+			rgba(20, 15, 11, 0.45) 0%,
+			rgba(20, 15, 11, 0.12) 30%,
+			rgba(20, 15, 11, 0.55) 78%,
+			rgba(20, 15, 11, 0.86) 100%
+		);
+	}
+	.atelic-ui .hero-content {
+		position: relative;
+		z-index: 2;
+		padding-bottom: clamp(48px, 9vh, 110px);
+		padding-top: calc(var(--nav-height) + 30px);
+	}
+	.atelic-ui .hero h1 {
+		color: #fff;
+		margin: 18px 0 0;
+		text-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+	}
+	.atelic-ui .hero h1 .serif {
+		color: var(--primary-bright);
+	}
+	.atelic-ui .hero-sub {
+		font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+		max-width: 52ch;
+		margin-top: 22px;
+		color: rgba(255, 255, 255, 0.92);
+		line-height: 1.55;
+	}
+	.atelic-ui .hero-trust {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14px 36px;
+		margin-top: 40px;
+	}
+	.atelic-ui .hero-trust li {
+		display: flex;
+		flex-direction: column;
+	}
+	.atelic-ui .hero-trust strong {
+		font-size: 1.7rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		line-height: 1;
+	}
+	.atelic-ui .hero-trust span {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.04em;
+		color: rgba(255, 255, 255, 0.72);
+		margin-top: 5px;
+		text-transform: uppercase;
+	}
+	.atelic-ui .hero-scroll {
+		position: absolute;
+		right: var(--gutter);
+		bottom: 26px;
+		z-index: 2;
+		width: 46px;
+		height: 46px;
+		border-radius: 50%;
+		display: none;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.1rem;
+		color: #fff;
+		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.4);
+		animation: bob 2.4s ease-in-out infinite;
+	}
+	@keyframes bob {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(6px);
+		}
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .hero-scroll {
+			display: inline-flex;
+		}
+	}
+
+	/* ---- HoursTable (hours-table.css) ---- */
+	.atelic-ui .hours-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 9px 0;
+		border-bottom: 1px dashed var(--neutral-200);
+		font-size: 0.95rem;
+	}
+	.atelic-ui .hours-row.closed {
+		color: var(--neutral-500);
+	}
+	.atelic-ui .hours-row .day {
+		font-weight: 600;
+	}
+	.atelic-ui .hours-row .time {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	/* ---- LegalPage (legal-page.css) ---- */
+	/* Legal documents share their body styling with every other ported document
+	   (see primitives/prose-blocks.css). Only the dateline is particular to them:
+	   a legal page leads with when it was last revised, because that is the first
+	   thing anyone checking one wants to know. */
+
+	.atelic-ui .legal-updated {
+		margin: 0 0 32px;
+		font-size: 0.85rem;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: var(--neutral-500);
+	}
+
+	/* ---- MapEmbed (map-embed.css) ---- */
+	.atelic-ui .map-frame {
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: var(--shadow-md);
+		aspect-ratio: 1 / 1;
+		background: var(--surface-inset);
+	}
+	.atelic-ui .map-frame iframe {
+		width: 100%;
+		height: 100%;
+		border: 0;
+		display: block;
+	}
+	.atelic-ui .map-facade {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 10px;
+		padding: 24px;
+		border: 0;
+		background: var(--surface-inset);
+		color: var(--ink-soft);
+		cursor: pointer;
+		font-family: inherit;
+		text-align: center;
+	}
+	.atelic-ui .map-facade svg {
+		color: var(--primary);
+	}
+	.atelic-ui .map-facade-address {
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--ink);
+		max-width: 24ch;
+	}
+	.atelic-ui .map-facade-hint {
+		font-size: 13px;
+		color: var(--neutral-600);
+		border-bottom: 1px solid currentColor;
+		padding-bottom: 1px;
+	}
+	.atelic-ui .map-facade:hover .map-facade-hint,
+	.atelic-ui .map-facade:focus-visible .map-facade-hint {
+		color: var(--primary);
+	}
+	.atelic-ui .map-facade:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: -2px;
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .map-frame {
+			aspect-ratio: 4 / 5;
+		}
+	}
+
+	/* Static map screenshot: shows the whole map at its natural ratio (no crop),
+	   one image request, links to directions. */
+	.atelic-ui .map-frame.map-static {
+		aspect-ratio: auto;
+		position: relative;
+		display: block;
+		line-height: 0;
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .map-frame.map-static {
+			aspect-ratio: auto;
+		}
+	}
+	.atelic-ui .map-static img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+	.atelic-ui .map-directions {
+		position: absolute;
+		right: 12px;
+		bottom: 12px;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: var(--font-sans);
+		font-size: 0.82rem;
+		font-weight: 600;
+		line-height: 1;
+		color: #fff;
+		background: var(--primary);
+		padding: 9px 14px;
+		border-radius: var(--radius-pill);
+		box-shadow: var(--shadow-md);
+	}
+	.atelic-ui .map-static:hover .map-directions,
+	.atelic-ui .map-static:focus-visible .map-directions {
+		background: var(--primary-deep);
+	}
+	.atelic-ui .map-static:focus-visible {
+		outline: 3px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	/* ---- LocationSection (location-section.css) ---- */
+	/* Location / local SEO section. */
+	.atelic-ui .location-grid {
+		display: grid;
+		gap: 44px;
+		align-items: start;
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .location-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 64px;
+		}
+	}
+	.atelic-ui .location-grid h2 {
+		margin: 10px 0 18px;
+	}
+	.atelic-ui .loc-areas {
+		margin-top: 14px;
+		color: var(--neutral-600);
+		font-size: 0.95rem;
+		max-width: 46ch;
+	}
+	.atelic-ui .loc-block {
+		margin: 30px 0;
+		max-width: 420px;
+	}
+	.atelic-ui .loc-block h4 {
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+		margin-bottom: 10px;
+	}
+	.atelic-ui .loc-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+
+	/* ---- Locations (locations.css) ---- */
+	/* Multi-location block: static map beside a grid of location cards. The map
+	   cell stretches to match the cards' height (no sticky scroll oddity); on
+	   desktop the map image fills that height and crops, so the two columns are
+	   the same size. */
+	.atelic-ui .locs-layout {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 40px;
+		align-items: stretch;
+		margin-top: 36px;
+	}
+	@media (max-width: 860px) {
+		.atelic-ui .locs-layout {
+			grid-template-columns: 1fr;
+			gap: 28px;
+		}
+	}
+	.atelic-ui .locs-map {
+		position: relative;
+	}
+	@media (min-width: 861px) {
+		/* The map is absolutely filled so it doesn't drive the row height; the
+		   cards do, and the map matches them. */
+		.atelic-ui .locs-map .map-frame.map-static {
+			position: absolute;
+			inset: 0;
+			height: 100%;
+		}
+		.atelic-ui .locs-map .map-static img {
+			height: 100%;
+			object-fit: cover;
+			object-position: center;
+		}
+	}
+	.atelic-ui .locs-cards {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.atelic-ui .loc-card {
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-md);
+		padding: 20px 22px;
+		box-shadow: var(--shadow-sm);
+	}
+	.atelic-ui .loc-card h3 {
+		margin: 0;
+		font-size: 1.12rem;
+	}
+	.atelic-ui .loc-note {
+		margin: 3px 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.atelic-ui .loc-addr {
+		margin: 10px 0 0;
+		color: var(--ink-soft);
+		font-size: 0.98rem;
+	}
+	.atelic-ui .loc-hours {
+		display: flex;
+		flex-direction: column;
+		margin-top: 8px;
+		color: var(--neutral-600);
+		font-size: 0.9rem;
+	}
+	.atelic-ui .loc-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 18px;
+		margin-top: 14px;
+		padding-top: 14px;
+		border-top: 1px solid var(--hairline);
+	}
+	.atelic-ui .loc-links a {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: var(--ink);
+	}
+	.atelic-ui .loc-links a:hover {
+		color: var(--primary);
+	}
+	.atelic-ui .loc-links svg {
+		color: var(--primary);
+	}
+
+	/* ---- LogoMarquee (logo-marquee.css) ---- */
+	/* Dark credentials band with infinite marquee. */
+	.atelic-ui .creds {
+		background: var(--surface-dark);
+		padding-block: 22px;
+	}
+	.atelic-ui .creds .chip {
+		background: rgba(255, 255, 255, 0.06);
+		color: #efe7da;
+		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+	}
+	.atelic-ui .marquee {
+		overflow: hidden;
+		-webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+	}
+	.atelic-ui .marquee-track {
+		display: flex;
+		gap: 14px;
+		width: max-content;
+		animation: scroll-x 32s linear infinite;
+	}
+	@keyframes scroll-x {
+		to {
+			transform: translateX(-50%);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .marquee-track {
+			animation: none;
+			flex-wrap: wrap;
+			width: auto;
+			justify-content: center;
+		}
+	}
+
+	/* ---- MediaBand (media-band.css) ---- */
+	/* Full-bleed image band: spans the viewport, crops from center. */
+	.atelic-ui .media-band {
+		width: 100%;
+		max-height: 72vh;
+		overflow: hidden;
+	}
+	.atelic-ui .media-band img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	/* ---- MenuList (menu-list.css) ---- */
+	/* A priced menu group, plus the two layouts that stack groups on a
+	   location or menu page. */
+	.atelic-ui .menu-list h3 {
+		margin: 0 0 6px;
+		font-size: 16px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--ink);
+		border-bottom: 2px solid var(--primary);
+		padding-bottom: 8px;
+	}
+	.atelic-ui .menu-list ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	.atelic-ui .menu-list li {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 20px;
+		padding: 8px 0;
+		border-bottom: 1px dotted var(--neutral-300);
+	}
+	.atelic-ui .ml-item {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.atelic-ui .ml-name {
+		font-weight: 600;
+		font-size: 14px;
+		color: var(--ink);
+	}
+	.atelic-ui .ml-note {
+		color: var(--neutral-500);
+		font-size: 12px;
+		line-height: 1.45;
+	}
+	.atelic-ui .ml-price {
+		color: var(--primary);
+		font-weight: 600;
+		font-size: 13px;
+		white-space: nowrap;
+		text-align: right;
+	}
+	.atelic-ui .ml-foot {
+		color: var(--neutral-500);
+		font-size: 12px;
+		font-style: italic;
+		margin: 8px 0 0;
+	}
+	.atelic-ui .menu-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 36px;
+	}
+	/* Two column menu layout for a fuller board; collapses to one column on
+	   phones. Each column track zeroes its min-width so a long dish note can't
+	   force the grid wider than the viewport. */
+	.atelic-ui .menu-cols {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 36px 56px;
+		margin-top: 40px;
+	}
+	@media (max-width: 720px) {
+		.atelic-ui .menu-cols {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	/* ---- PressQuotes (press-quotes.css) ---- */
+	.atelic-ui .press-quotes {
+		list-style: none;
+		margin: 8px 0 0;
+		padding: 0;
+	}
+	.atelic-ui .press-quotes li {
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .press-quotes .pq-row {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+		padding: 18px 0;
+		color: inherit;
+		text-decoration: none;
+	}
+	.atelic-ui .press-quotes .pq-quote {
+		font-family: var(--font-serif);
+		font-size: 1.2rem;
+		font-weight: 600;
+		font-style: italic;
+		transition: color 0.15s ease;
+	}
+	.atelic-ui .press-quotes a.pq-row:hover .pq-quote,
+	.atelic-ui .press-quotes a.pq-row:focus-visible .pq-quote {
+		color: var(--primary);
+	}
+	.atelic-ui .press-quotes .pq-src {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+	}
+
+	/* ---- PricingBand (pricing-band.css) ---- */
+	/* Brand-colored pricing band. */
+	.atelic-ui .price-band {
+		background: var(--primary);
+		color: #fff;
+		padding-block: clamp(56px, 8vw, 100px);
+	}
+	.atelic-ui .price-band h2 {
+		color: #fff;
+	}
+	.atelic-ui .price-band .price-lead {
+		color: rgba(255, 255, 255, 0.82);
+		max-width: 48ch;
+	}
+	.atelic-ui .price-band .eyebrow.on-dark {
+		color: #fff;
+	}
+	.atelic-ui .price-inner {
+		display: grid;
+		gap: 40px;
+		align-items: center;
+	}
+	@media (min-width: 880px) {
+		.atelic-ui .price-inner {
+			grid-template-columns: 1.3fr 0.7fr;
+			gap: 64px;
+		}
+	}
+	.atelic-ui .price-card {
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		border-radius: var(--radius-xl);
+		padding: 38px 32px;
+		text-align: center;
+		backdrop-filter: blur(6px);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
+	.atelic-ui .price-fig {
+		font-size: clamp(3.4rem, 9vw, 5rem);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		line-height: 1;
+	}
+	.atelic-ui .price-unit {
+		font-family: var(--font-mono);
+		font-size: 0.9rem;
+		color: rgba(255, 255, 255, 0.8);
+		letter-spacing: 0.06em;
+		margin-bottom: 20px;
+	}
+	.atelic-ui .price-detail {
+		margin-top: 14px;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		color: rgba(255, 255, 255, 0.85);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* ---- PricingCard (pricing-card.css) ---- */
+	/* Detailed pricing card. */
+	.atelic-ui .cost-card {
+		max-width: 520px;
+		margin-inline: auto;
+		text-align: center;
+		background: var(--card);
+		border-radius: var(--radius-xl);
+		padding: clamp(32px, 6vw, 56px);
+		box-shadow: var(--shadow-lg);
+		border: 1px solid var(--hairline);
+		position: relative;
+	}
+	.atelic-ui .cost-card .ribbon {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--primary);
+	}
+	.atelic-ui .cost-card .big {
+		font-size: clamp(4rem, 12vw, 6rem);
+		font-weight: 800;
+		letter-spacing: -0.04em;
+		line-height: 1;
+		margin: 10px 0 2px;
+	}
+	.atelic-ui .cost-card .per {
+		font-family: var(--font-mono);
+		color: var(--neutral-600);
+		letter-spacing: 0.04em;
+		margin-bottom: 26px;
+	}
+	.atelic-ui .cost-card ul.ticks {
+		text-align: left;
+		max-width: 360px;
+		margin: 0 auto 30px;
+	}
+	.atelic-ui .cost-secondary {
+		display: inline-block;
+		margin-top: 16px;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.04em;
+		color: var(--neutral-600);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+	}
+
+	/* ---- ProcessSteps (process-steps.css) ---- */
+	/* Numbered process steps on a dark band. */
+	.atelic-ui .process {
+		background: var(--surface-dark);
+		color: var(--surface);
+	}
+	.atelic-ui .process h2 {
+		color: #fff;
+	}
+	.atelic-ui .process-grid {
+		display: grid;
+		gap: 44px;
+		align-items: center;
+	}
+	@media (min-width: 920px) {
+		.atelic-ui .process-grid {
+			grid-template-columns: 1.05fr 0.95fr;
+			gap: 72px;
+		}
+	}
+	.atelic-ui .steps {
+		margin-top: 36px;
+		display: flex;
+		flex-direction: column;
+		gap: 30px;
+		list-style: none;
+		padding: 0;
+	}
+	.atelic-ui .steps li {
+		display: flex;
+		gap: 20px;
+		align-items: flex-start;
+	}
+	.atelic-ui .step-n {
+		flex: 0 0 auto;
+		width: 46px;
+		height: 46px;
+		border-radius: 50%;
+		display: grid;
+		place-items: center;
+		font-family: var(--font-mono);
+		font-weight: 600;
+		font-size: 1.05rem;
+		color: var(--primary-bright);
+		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.22);
+	}
+	.atelic-ui .steps h4 {
+		color: #fff;
+		margin-bottom: 6px;
+		font-size: 1.25rem;
+	}
+	.atelic-ui .steps p {
+		color: rgba(248, 244, 237, 0.74);
+		max-width: 46ch;
+	}
+	.atelic-ui .process-media .imgframe,
+	.atelic-ui .process-media .ph {
+		aspect-ratio: 4 / 5;
+	}
+	@media (max-width: 919px) {
+		.atelic-ui .process-media .imgframe,
+		.atelic-ui .process-media .ph {
+			aspect-ratio: 16 / 10;
+		}
+	}
+
+	/* ---- ProfileCards (profile-cards.css) ---- */
+	/* Equal-weight horizontal profile cards (rosters, teams). */
+	.atelic-ui .profile-cards {
+		display: grid;
+		gap: 16px;
+		margin-top: 44px;
+		grid-template-columns: 1fr;
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .profile-cards {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	.atelic-ui .profile-card {
+		display: flex;
+		gap: 20px;
+		align-items: stretch;
+		height: 100%;
+		background: var(--card);
+		border: 1px solid var(--hairline);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
+		padding: 18px;
+		transition:
+			transform 0.25s ease,
+			box-shadow 0.25s ease;
+	}
+	.atelic-ui a.profile-card:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow-md);
+	}
+	.atelic-ui .profile-media {
+		flex: 0 0 clamp(110px, 26%, 168px);
+		border-radius: var(--radius-md);
+		overflow: hidden;
+		background: var(--surface-inset);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 140px;
+	}
+	.atelic-ui .profile-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.atelic-ui .profile-placeholder {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		color: var(--neutral-500);
+		text-align: center;
+		padding: 12px;
+		background: repeating-linear-gradient(
+			-45deg,
+			transparent 0 10px,
+			var(--hairline-strong) 10px 11px
+		);
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.atelic-ui .profile-body {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+	.atelic-ui .profile-body h3 {
+		font-size: 1.3rem;
+	}
+	.atelic-ui .profile-meta {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.04em;
+		color: var(--primary);
+		margin-top: 4px;
+	}
+	.atelic-ui .profile-body p {
+		margin-top: 10px;
+		font-size: 0.95rem;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .profile-link {
+		margin-top: auto;
+		padding-top: 14px;
+		font-weight: 700;
+		font-size: 0.92rem;
+		color: var(--primary);
+	}
+
+	/* ---- RevealSlider (reveal-slider.css) ---- */
+	/* Drag-to-compare before/after slider. Tokens only. */
+	.atelic-ui .rslider {
+		position: relative;
+		width: 100%;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: var(--shadow-lg);
+		background: var(--surface-inset);
+		user-select: none;
+		touch-action: none;
+		cursor: ew-resize;
+	}
+	.atelic-ui .rslider-layer {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		display: block;
+		pointer-events: none;
+	}
+	.atelic-ui .rslider-img {
+		object-fit: cover;
+		object-position: top center;
+	}
+
+	/* A side with no photograph yet renders its shot brief instead. The two
+	   briefs must not look alike: a matched pair of grey blocks makes dragging
+	   the handle look broken, since nothing visibly changes as the divider
+	   crosses. So the before is the plain inset well every other placeholder
+	   uses, warm neutral with warm neutral hatching, and the after is the primary
+	   tint hatched in the primary. Both the fill and the stripe carry the
+	   difference, since a tint swap on its own is too quiet to notice in motion.
+
+	   Each brief also sits against its own outer edge rather than in the middle of
+	   the frame. Both layers are full width and the before one is clipped, so two
+	   centered briefs would print on top of each other behind the divider. */
+	.atelic-ui .rslider-ph {
+		display: grid;
+		align-items: center;
+		padding: 24px 6%;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		line-height: 1.7;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+	}
+	.atelic-ui .rslider-ph span {
+		max-width: 22ch;
+	}
+	/* On a phone each half is barely wider than the brief itself, so the briefs
+	   shrink rather than run under the divider and get cut mid word. */
+	@media (max-width: 719px) {
+		.atelic-ui .rslider-ph {
+			font-size: 0.6rem;
+			line-height: 1.6;
+			letter-spacing: 0.06em;
+			padding: 16px 5%;
+		}
+		.atelic-ui .rslider-ph span {
+			max-width: 15ch;
+		}
+	}
+	.atelic-ui .rslider-ph.is-before {
+		justify-items: start;
+		text-align: left;
+		background:
+			repeating-linear-gradient(135deg, var(--hairline-strong) 0 10px, transparent 10px 20px),
+			var(--surface-inset);
+		color: var(--neutral-600);
+	}
+	.atelic-ui .rslider-ph.is-after {
+		justify-items: end;
+		text-align: right;
+		background:
+			repeating-linear-gradient(135deg, var(--primary-focus-ring) 0 10px, transparent 10px 20px),
+			var(--primary-tint);
+		color: var(--primary-deep);
+	}
+	.atelic-ui .rslider-label {
+		position: absolute;
+		top: 14px;
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		padding: 5px 11px;
+		border-radius: var(--radius-pill);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		z-index: 3;
+	}
+	.atelic-ui .rslider-label-before {
+		left: 14px;
+		background: rgba(20, 16, 12, 0.62);
+		color: #fff;
+	}
+	.atelic-ui .rslider-label-after {
+		right: 14px;
+		background: var(--primary);
+		color: #fff;
+	}
+	.atelic-ui .rslider-line {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 3px;
+		margin-left: -1.5px;
+		background: #fff;
+		box-shadow: 0 0 0 1px rgba(20, 16, 12, 0.15);
+		z-index: 4;
+		pointer-events: none;
+	}
+	.atelic-ui .rslider-handle {
+		position: absolute;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 5;
+		width: 46px;
+		height: 46px;
+		border-radius: var(--radius-pill);
+		border: none;
+		background: #fff;
+		color: var(--ink);
+		box-shadow: var(--shadow-md);
+		display: grid;
+		place-items: center;
+		cursor: ew-resize;
+		touch-action: none;
+	}
+	.atelic-ui .rslider-handle:focus-visible {
+		outline: 3px solid var(--primary);
+		outline-offset: 2px;
+	}
+	.atelic-ui .rslider-grip {
+		display: inline-flex;
+		align-items: center;
+		color: var(--primary);
+	}
+	.atelic-ui .rslider-grip svg {
+		margin: 0 -3px;
+	}
+
+	/* ---- ReviewWall (review-wall.css) ---- */
+	/* =================================================================
+	   REVIEW WALL — header, filter + sort controls, uniform review cards
+	   ================================================================= */
+
+	/* ---- Filter and sort controls ---- */
+	.atelic-ui .rw-controls {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 12px;
+		margin-top: clamp(24px, 3vw, 36px);
+	}
+	.atelic-ui .rw-select {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+	}
+	.atelic-ui .rw-select-end {
+		margin-left: auto;
+	}
+	/* The control's own label is visually hidden — the selected option
+	   already reads as the label ("All services", "Newest") — but screen
+	   readers still get a name for each dropdown. */
+	.atelic-ui .rw-select-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.atelic-ui .rw-select select {
+		appearance: none;
+		font: inherit;
+		font-size: 0.9rem;
+		color: var(--ink);
+		background: var(--card);
+		border: 1px solid var(--neutral-200);
+		border-radius: var(--radius-sm);
+		padding: 10px 38px 10px 14px;
+		cursor: pointer;
+		min-width: 168px;
+	}
+	.atelic-ui .rw-select::after {
+		content: "";
+		position: absolute;
+		right: 15px;
+		width: 8px;
+		height: 8px;
+		border-right: 1.6px solid var(--neutral-500);
+		border-bottom: 1.6px solid var(--neutral-500);
+		transform: translateY(-2px) rotate(45deg);
+		pointer-events: none;
+	}
+	.atelic-ui .rw-select select:hover {
+		border-color: var(--neutral-300);
+	}
+	.atelic-ui .rw-select select:focus-visible {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px var(--primary-focus-ring);
+	}
+
+	/* ---- The grid ---- */
+	.atelic-ui .review-wall {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 18px;
+		margin-top: clamp(28px, 4vw, 44px);
+	}
+	@media (min-width: 680px) {
+		.atelic-ui .review-wall {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (min-width: 1020px) {
+		.atelic-ui .review-wall {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	.atelic-ui .rw-card {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		margin: 0;
+		min-width: 0;
+		padding: clamp(20px, 2.6vw, 28px);
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
+	}
+
+	/* ---- Card top row: stars left, date right ---- */
+	.atelic-ui .rw-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		width: 100%;
+		margin-bottom: 12px;
+	}
+	.atelic-ui .rw-date {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		margin-left: auto;
+		font-family: var(--font-mono);
+		font-size: 0.76rem;
+		color: var(--neutral-500);
+	}
+	.atelic-ui a.rw-date:hover {
+		color: var(--primary);
+	}
+
+	.atelic-ui .rw-quote {
+		margin: 0 0 16px;
+		font-size: 0.98rem;
+		line-height: 1.62;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .rw-quote.clamped {
+		display: -webkit-box;
+		-webkit-line-clamp: 6;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.atelic-ui .rw-more {
+		margin: -6px 0 16px;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--primary);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		padding: 2px 0;
+	}
+	.atelic-ui .rw-more:hover {
+		color: var(--ink);
+	}
+
+	/* ---- Tag chips ---- */
+	.atelic-ui .rw-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin: 0 0 16px;
+	}
+	.atelic-ui .rw-tag {
+		display: inline-flex;
+		align-items: center;
+		padding: 4px 10px;
+		border-radius: var(--radius-pill);
+		background: var(--surface-alt);
+		color: var(--neutral-600);
+		font-size: 0.74rem;
+		line-height: 1.4;
+	}
+
+	.atelic-ui .rw-who {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		width: 100%;
+		margin-top: auto;
+		padding-top: 16px;
+		border-top: 1px solid var(--hairline);
+	}
+	.atelic-ui .rw-avatar {
+		flex: 0 0 auto;
+		width: 38px;
+		height: 38px;
+		border-radius: 50%;
+		display: grid;
+		place-items: center;
+		background: var(--primary-tint);
+		color: var(--primary);
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+	}
+	.atelic-ui .rw-name-block {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+	.atelic-ui .rw-name {
+		font-weight: 700;
+		font-size: 0.92rem;
+		color: var(--ink);
+	}
+	.atelic-ui .rw-detail {
+		font-size: 0.8rem;
+		color: var(--neutral-500);
+	}
+
+	/* ---- ReviewCarousel (review-carousel.css) ---- */
+	/* =================================================================
+	   REVIEW CAROUSEL — aggregate rating beside one review card at a time
+	   ================================================================= */
+
+	.atelic-ui .rc-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: clamp(32px, 4vw, 48px);
+		align-items: center;
+	}
+	@media (min-width: 940px) {
+		.atelic-ui .rc-grid {
+			grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+			gap: clamp(40px, 5vw, 72px);
+		}
+	}
+
+	/* ---- Left column: the aggregate ---- */
+	.atelic-ui .rc-aggregate {
+		min-width: 0;
+	}
+	.atelic-ui .rc-score {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		margin: 6px 0 0;
+	}
+	.atelic-ui .rc-score-num {
+		font-size: clamp(4.2rem, 8vw, 6.6rem);
+		font-weight: 800;
+		line-height: 0.95;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+	}
+	.atelic-ui .rc-score-out {
+		font-size: clamp(1.2rem, 2vw, 1.7rem);
+		font-weight: 500;
+		color: var(--neutral-300);
+	}
+	.atelic-ui .rc-rating {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin: 16px 0 0;
+	}
+	.atelic-ui .rc-caption {
+		font-size: 0.95rem;
+		color: var(--ink-soft);
+	}
+	/* The caption as a link out to the live profile: the same quiet idiom as
+	   the wall's dated source link (trailing arrow, new tab), plus a hairline
+	   underline so it reads as a link inside an otherwise static block. */
+	.atelic-ui a.rc-caption {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		text-decoration: underline;
+		text-decoration-color: var(--neutral-300);
+		text-underline-offset: 3px;
+		transition:
+			color 0.2s ease,
+			text-decoration-color 0.2s ease;
+	}
+	.atelic-ui a.rc-caption:hover {
+		color: var(--primary);
+		text-decoration-color: currentColor;
+	}
+	.atelic-ui a.rc-caption:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+		border-radius: var(--radius-sm);
+	}
+	.atelic-ui .rc-lead {
+		margin: 20px 0 0;
+		max-width: 46ch;
+		font-size: 1.02rem;
+		line-height: 1.65;
+		color: var(--ink-soft);
+	}
+
+	/* ---- Optional mini stat row ---- */
+	.atelic-ui .rc-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0;
+		margin: clamp(24px, 3vw, 34px) 0 0;
+	}
+	.atelic-ui .rc-stat {
+		padding: 2px 22px 2px 0;
+		margin-right: 22px;
+		border-right: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .rc-stat:last-child {
+		border-right: none;
+		margin-right: 0;
+		padding-right: 0;
+	}
+	.atelic-ui .rc-stat-value {
+		font-size: 1.35rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		color: var(--ink);
+	}
+	.atelic-ui .rc-stat-label {
+		margin: 2px 0 0;
+		font-size: 0.8rem;
+		color: var(--neutral-500);
+	}
+
+	/* ---- Right column: the card ---- */
+	.atelic-ui .rc-viewport {
+		min-width: 0;
+		padding: clamp(24px, 3vw, 40px);
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-md);
+	}
+
+	/* Every slide sits in the same grid cell: all quotes stay in the static
+	   HTML, the card is as tall as the longest one, and stepping through
+	   never shifts the page. Inactive slides are hidden (and so are dropped
+	   from the tab order and the accessibility tree) rather than unmounted. */
+	.atelic-ui .rc-stage {
+		display: grid;
+	}
+	.atelic-ui .rc-slide {
+		grid-area: 1 / 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		/* The card is as tall as the longest quote, so a short one centers in
+		   it rather than floating above a hole. */
+		justify-content: center;
+		margin: 0;
+		min-width: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.35s ease;
+	}
+	.atelic-ui .rc-slide.is-active {
+		opacity: 1;
+		visibility: visible;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .rc-slide {
+			transition: none;
+		}
+	}
+	.atelic-ui .rc-slide .star-row {
+		margin-bottom: 18px;
+	}
+
+	.atelic-ui .rc-quote {
+		margin: 0;
+		font-size: clamp(1.15rem, 1.5vw, 1.42rem);
+		font-weight: 500;
+		line-height: 1.5;
+		letter-spacing: -0.01em;
+		color: var(--ink);
+	}
+	/* Longer quotes set smaller, so one paragraph-length review doesn't drive
+	   the shared card height past what the page can hold (see quoteSize). */
+	.atelic-ui .rc-quote.is-medium {
+		font-size: clamp(1.05rem, 1.25vw, 1.2rem);
+		line-height: 1.55;
+	}
+	.atelic-ui .rc-quote.is-compact {
+		font-size: clamp(0.98rem, 1.1vw, 1.06rem);
+		line-height: 1.6;
+		letter-spacing: 0;
+	}
+
+	.atelic-ui .rc-who {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		width: 100%;
+		padding-top: clamp(20px, 2.4vw, 28px);
+	}
+	.atelic-ui .rc-who::before {
+		content: "";
+		display: block;
+		height: 1px;
+		background: var(--hairline-strong);
+		margin-bottom: clamp(18px, 2.2vw, 24px);
+	}
+	.atelic-ui .rc-name {
+		font-weight: 700;
+		font-size: 1rem;
+		color: var(--ink);
+	}
+	.atelic-ui .rc-detail {
+		font-size: 0.86rem;
+		color: var(--neutral-500);
+	}
+
+	/* ---- Pagination and arrows ---- */
+	.atelic-ui .rc-controls {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		margin-top: clamp(20px, 2.4vw, 28px);
+	}
+	.atelic-ui .rc-dots {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.atelic-ui .rc-dot {
+		width: 8px;
+		height: 8px;
+		padding: 0;
+		border-radius: var(--radius-pill);
+		background: var(--neutral-200);
+		transition:
+			width 0.25s ease,
+			background 0.2s ease;
+	}
+	.atelic-ui .rc-dot:hover {
+		background: var(--neutral-500);
+	}
+	.atelic-ui .rc-dot.is-active {
+		width: 26px;
+		background: var(--ink);
+	}
+	.atelic-ui .rc-arrows {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.atelic-ui .rc-arrow {
+		width: 40px;
+		height: 40px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		border: 1px solid var(--neutral-200);
+		color: var(--ink);
+		background: var(--card);
+		transition:
+			background 0.2s ease,
+			border-color 0.2s ease,
+			color 0.2s ease;
+	}
+	.atelic-ui .rc-arrow:hover {
+		background: var(--surface-alt);
+		border-color: var(--neutral-300);
+	}
+	.atelic-ui .rc-arrow:focus-visible,
+	.atelic-ui .rc-dot:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+	}
+
+	/* ---- SocialStrip (social-strip.css) ---- */
+	/* SocialStrip — a static grid of the business's own social photos. */
+
+	/* A 2x2 anchor photo plus four square tiles fills the 4-column grid exactly;
+	   pass five photos for a clean rectangle. */
+	.atelic-ui .social-strip {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 14px;
+		margin-top: 34px;
+	}
+
+	.atelic-ui .social-strip .social-tile:first-child {
+		grid-column: span 2;
+		grid-row: span 2;
+	}
+
+	@media (min-width: 760px) {
+		.atelic-ui .social-strip {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	.atelic-ui .social-tile {
+		display: block;
+		position: relative;
+		overflow: hidden;
+		border-radius: var(--radius-md);
+		background: var(--surface-inset);
+		aspect-ratio: 1;
+		box-shadow: var(--shadow-sm);
+		transition:
+			transform 180ms ease,
+			box-shadow 180ms ease;
+	}
+
+	.atelic-ui .social-tile img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.atelic-ui .social-tile:hover,
+	.atelic-ui .social-tile:focus-visible {
+		transform: translateY(-3px);
+		box-shadow: var(--shadow-md);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .social-tile,
+		.atelic-ui .social-tile:hover {
+			transition: none;
+			transform: none;
+		}
+	}
+
+	.atelic-ui .social-follow {
+		display: flex;
+		justify-content: center;
+		margin-top: 30px;
+	}
+
+	.atelic-ui .social-follow .btn svg {
+		margin-right: 8px;
+	}
+
+	/* ---- SplitSection (split-section.css) ---- */
+	/* Two-column split used across empathy, about, cost, and location sections. */
+	.atelic-ui .split {
+		display: grid;
+		gap: 40px;
+	}
+	@media (min-width: 920px) {
+		.atelic-ui .split.ratio-even {
+			grid-template-columns: 1fr 1fr;
+			gap: 64px;
+		}
+		.atelic-ui .split.ratio-narrow-first {
+			grid-template-columns: 0.9fr 1.1fr;
+			gap: 72px;
+		}
+	}
+	.atelic-ui .split.align-start {
+		align-items: start;
+	}
+	.atelic-ui .split.align-center {
+		align-items: center;
+	}
+}
