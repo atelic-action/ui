@@ -63,6 +63,18 @@ describe("MobileMenu", () => {
 		expect(onLogout).toHaveBeenCalledTimes(1);
 	});
 
+	it("links the account to the app's profileHref when it sets one", () => {
+		render(<MobileMenu pathname="/alpha" user={user} onLogout={vi.fn()} />, {
+			wrapper: ({ children }: { children: ReactNode }) => (
+				<AppConfigProvider config={{ ...testConfig, profileHref: "/account" }} nav={testNav}>
+					{children}
+				</AppConfigProvider>
+			),
+		});
+		fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+		expect(screen.getByText("Ada Lovelace").closest("a")).toHaveAttribute("href", "/account");
+	});
+
 	it("closes itself when the route changes", () => {
 		const { rerender } = render(<MobileMenu pathname="/alpha" user={user} onLogout={vi.fn()} />, {
 			wrapper,

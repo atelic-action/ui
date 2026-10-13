@@ -28,6 +28,7 @@ const ROW =
  */
 export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 	const appConfig = useAppConfig();
+	const profileHref = appConfig.profileHref ?? "/profile";
 	const navItems = useNav();
 	const [open, setOpen] = useState(false);
 	const name = displayName(user);
@@ -131,9 +132,9 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 				<div className="border-t border-border/40 px-2 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
 					<Link
 						onClick={() => setOpen(false)}
-						to="/profile"
-						className={cn(ROW, "min-h-14", pathname.startsWith("/profile") && "bg-primary/10")}
-						aria-current={pathname.startsWith("/profile") ? "page" : undefined}
+						to={profileHref}
+						className={cn(ROW, "min-h-14", pathname.startsWith(profileHref) && "bg-primary/10")}
+						aria-current={pathname.startsWith(profileHref) ? "page" : undefined}
 					>
 						<Avatar className="h-9 w-9 flex-shrink-0 border border-border/40">
 							<AvatarImage src={user?.avatar ?? undefined} alt={name} />

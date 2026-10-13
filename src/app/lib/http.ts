@@ -120,11 +120,10 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
 		}
 	}
 
-	// Handle 401 errors (either from retry or auth endpoints)
-	if (response.status === 401) {
-		if (!skipAuth) {
-			useAuthStore.getState().logout();
-		}
+	// Handle 401 errors from the retry. An auth endpoint's own 401 falls through
+	// to the error branch below, so the server's message reaches the caller.
+	if (response.status === 401 && !skipAuth) {
+		useAuthStore.getState().logout();
 		throw new Error("Session expired. Please log in again.");
 	}
 

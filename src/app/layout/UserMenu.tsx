@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, LogOut, User as UserIcon } from "lucide-react";
 import { useState } from "react";
+import { useAppConfig } from "../context/AppContext";
 import { cn } from "../lib/utils";
 import type { AppUser } from "../types";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -28,6 +29,7 @@ interface UserMenuProps {
  * alone with the name in a tooltip.
  */
 export function UserMenu({ user, onLogout, collapsed = false }: UserMenuProps) {
+	const profileHref = useAppConfig().profileHref ?? "/profile";
 	const [open, setOpen] = useState(false);
 	const name = displayName(user);
 	const initials = avatarInitials(name);
@@ -86,7 +88,7 @@ export function UserMenu({ user, onLogout, collapsed = false }: UserMenuProps) {
 			)}
 			<DropdownMenuContent align="end" className="w-56">
 				<DropdownMenuItem asChild>
-					<Link to="/profile" className="cursor-pointer">
+					<Link to={profileHref} className="cursor-pointer">
 						<UserIcon className="mr-2 h-4 w-4" />
 						<span>Profile</span>
 					</Link>

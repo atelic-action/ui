@@ -27,6 +27,8 @@ export interface AppConfig {
 	 * package never reads the app's environment itself.
 	 */
 	apiBaseUrl: string;
+	/** Where the Profile link in the rail menu and the mobile menu goes. Defaults to "/profile". */
+	profileHref?: string;
 }
 
 let current: AppConfig | null = null;
