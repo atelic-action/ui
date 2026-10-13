@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Gate, type GatePayload } from "../src/artifact/Gate";
 import { Note, type NoteProps } from "../src/artifact/Note";
 import { Report, type ReportProps } from "../src/artifact/Report";
@@ -691,6 +692,28 @@ const note: NoteProps = {
 	},
 };
 
+const SEALED_KEY = "gallery-gate-email";
+
+/** The Gate remembers a reader's address, so the example clears it on mount and stays sealed. */
+function SealedGate() {
+	useState(() => {
+		try {
+			globalThis.localStorage?.removeItem(SEALED_KEY);
+		} catch {
+			// Storage blocked: nothing was remembered.
+		}
+	});
+	return (
+		<Gate
+			payload={payload as GatePayload}
+			queryParam="gallery-email"
+			storageKey={SEALED_KEY}
+			sub="This document opens with the email address it was sent to. Here, that is reader@example.test."
+			placeholder="reader@example.test"
+		/>
+	);
+}
+
 export function DocumentPieces() {
 	return (
 		<>
@@ -737,12 +760,7 @@ export function DocumentPieces() {
 			>
 				<Example caption="Sealed, before the address is typed">
 					<div className="gallery-document gallery-sealed">
-						<Gate
-							payload={payload as GatePayload}
-							queryParam="gallery-email"
-							sub="This document opens with the email address it was sent to. Here, that is reader@example.test."
-							placeholder="reader@example.test"
-						/>
+						<SealedGate />
 					</div>
 				</Example>
 			</Piece>
