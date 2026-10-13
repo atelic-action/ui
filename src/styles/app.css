@@ -2,18 +2,20 @@
  * The app shell's stylesheet: the shadcn token mapping, the default light and
  * dark token values, the base layer, and the AppPage scaffold (the ap-*
  * classes, the house buttons, the breadcrumbs, the section cards, the right
- * rail). It is Tailwind source, so it is imported from inside an app's
- * Tailwind entry, after `@import "tailwindcss"` and before the app's own
- * theme, which overrides any value here:
+ * rail). It is Tailwind source, imported inside an app's Tailwind entry
+ * straight after `@import "tailwindcss"` (an @import below any other rule is
+ * dropped), with the app's own theme after it to override any value here:
  *
  *   @import "tailwindcss";
- *   @plugin "tailwindcss-animate";
  *   @import "@atelic-action/ui/styles/app.css";
- *   @source "../../node_modules/@atelic-action/ui/src/app";
+ *   @plugin "tailwindcss-animate";
  *
- * The @source line is the app's, relative to the app's own stylesheet: it
- * tells Tailwind to read the shell's components for the utilities they use,
- * since Tailwind never scans node_modules on its own.
+ * Tailwind never scans node_modules on its own, so the @source below points
+ * it at the shell's components, relative to this file, and the app adds no
+ * line of its own. An app that keeps its own tokens and does not import this
+ * sheet adds the same thing from its stylesheet instead, relative to that
+ * file: `@source "../../node_modules/@atelic-action/ui/src/app";` from
+ * src/styles/globals.css.
  *
  * Unlike the package's other sheets this one is not in the atelic-ui layer:
  * the tokens and resets sit in Tailwind's base layer and the scaffold stays
@@ -22,6 +24,8 @@
  */
 
 @custom-variant dark (&:is(.dark *));
+
+@source "../app";
 
 @theme {
 	--color-border: hsl(var(--border));
