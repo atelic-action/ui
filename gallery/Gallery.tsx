@@ -1,11 +1,9 @@
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { name as packageName, version } from "../package.json";
-import { Note, type NoteProps } from "../src/artifact/Note";
 import { CreditBar, type PageStop, SiteHeader, SkipLink } from "../src/chrome";
 import {
 	Callout,
 	Checklist,
-	Collapsible,
 	ColumnChart,
 	DataTable,
 	type DataTableColumn,
@@ -19,51 +17,50 @@ import {
 	type Tone,
 } from "../src/components";
 import { Button, Chip, Eyebrow, Lead, SectionHeading } from "../src/primitives";
+import { ChromePieces } from "./chrome";
+import { DocumentPieces } from "./documents";
+import { EmailPiece } from "./email";
+import { NotFoundPiece } from "./not-found";
+import { Example, Piece } from "./parts";
+import { WatermarkPiece } from "./watermark";
 
 /*
- * Every figure and name on this page is made up, save the note's sender, which
- * is the practice's own close. The business throughout is Kestrel Hollow
- * Bakehouse, a fictional neighborhood bakery.
+ * Every figure and name on this page is made up, save the documents'
+ * sender, which is the practice's own close. The business throughout is
+ * Kestrel Hollow Bakehouse, a fictional neighborhood bakery. The pieces for
+ * the chrome, the not found page, the watermark, the documents, and the
+ * email live in files of their own beside this one, each mounted below with
+ * one element.
  */
 
 const stops: PageStop[] = [
+	{ id: "site-header", label: "SiteHeader" },
+	{ id: "site-menu", label: "SiteMenu" },
+	{ id: "footer", label: "Footer" },
+	{ id: "credit-bar", label: "CreditBar" },
+	{ id: "sticky-cta-bar", label: "StickyCTABar" },
+	{ id: "brand-lockup", label: "BrandLockup" },
+	{ id: "skip-link", label: "SkipLink" },
+	{ id: "not-found", label: "NotFound" },
 	{ id: "checklist", label: "Checklist" },
 	{ id: "data-table", label: "DataTable" },
 	{ id: "stat-row", label: "StatRow" },
 	{ id: "callout", label: "Callout" },
-	{ id: "collapsible", label: "Collapsible" },
 	{ id: "disclosure", label: "Disclosure" },
 	{ id: "stacked-bar", label: "StackedBar" },
 	{ id: "column-chart", label: "ColumnChart" },
 	{ id: "threshold-scale", label: "ThresholdScale" },
 	{ id: "star-rating", label: "StarRating" },
 	{ id: "gate-login", label: "GateLogin" },
+	{ id: "watermark", label: "Watermark" },
+	{ id: "writeup", label: "Writeup" },
+	{ id: "report", label: "Report" },
 	{ id: "note", label: "Note" },
+	{ id: "gate", label: "Gate" },
+	{ id: "email", label: "Email" },
 	{ id: "primitives", label: "Primitives" },
 	{ id: "tones", label: "Tones" },
 ];
-
-function Piece({
-	id,
-	title,
-	children,
-	lead,
-}: {
-	id: string;
-	title: string;
-	lead: ReactNode;
-	children: ReactNode;
-}) {
-	return (
-		<section className="gallery-piece" id={id} aria-labelledby={`${id}-title`}>
-			<div className="wrap">
-				<h2 id={`${id}-title`}>{title}</h2>
-				<p className="gallery-lead">{lead}</p>
-				<div className="gallery-examples">{children}</div>
-			</div>
-		</section>
-	);
-}
 
 function Aisles() {
 	const [open, setOpen] = useState<Record<string, boolean>>({ breads: true });
@@ -98,102 +95,6 @@ function EditableStars() {
 	return <StarRating value={rating} onChange={setRating} />;
 }
 
-/*
- * A first touch note, as a routine would write it: plain data throughout.
- * The bakery, its numbers, and its pages are made up; the sender is the
- * practice's own close, as every note carries it.
- */
-const note: NoteProps = {
-	title: "A Note for Kestrel Hollow Bakehouse",
-	preparedFor: "Kestrel Hollow Bakehouse",
-	date: "2026-10-09",
-	opener: [
-		"I walked past Kestrel Hollow on Alder Street on Tuesday morning, and the line out the door for the morning buns said everything about the bread. ",
-		"Online, though, the bakery is harder to find than it is on the sidewalk, and a few small fixes would close that gap.",
-	],
-	lanes: [
-		{
-			heading: "What your customer sees",
-			findings: [
-				{
-					lead: "The menu is a photo of the chalkboard.",
-					body: "On a phone it weighs 4.2 MB and has to be pinched to read, so someone choosing lunch from the bus stop gives up before finding the soup.",
-					shot: {
-						src: "/images/note-menu.svg",
-						alt: "The menu page on a phone: a dark photo of a chalkboard, too small to read",
-						href: "/images/note-menu.svg",
-						caption: "The menu page at phone width",
-					},
-				},
-				{
-					lead: "Sunday hours disagree.",
-					body: "The site says 08:00 to 14:00 and the map listing says closed, so the Sunday crowd reads the one that turns them away.",
-				},
-			],
-		},
-		{
-			heading: "What I see under the hood",
-			findings: [
-				{
-					lead: "Every page is titled Home.",
-					body: "Search shows the same word for all six pages, so nothing tells Google, or anyone scanning the results, that this is a bakery on Alder Street.",
-				},
-				{
-					lead: "A phone waits 6.8 seconds for the first screen.",
-					body: "Most of it is the chalkboard photo and three fonts the site never uses; on a cell signal that is long enough to hit back.",
-					href: "https://pagespeed.web.dev/",
-				},
-			],
-		},
-	],
-	start: {
-		lead: "I would start by:",
-		items: [
-			{
-				lead: "Setting the menu as text,",
-				body: "so it reads on any phone and search can find the soup.",
-			},
-			{ lead: "Making the hours agree everywhere,", body: "starting with the map listing." },
-			{
-				lead: "Giving each page a real title:",
-				body: "the bakery's name and what the page is for.",
-			},
-		],
-	},
-	close: {
-		paragraphs: [
-			[
-				"My name is Matthew and I run ",
-				{ text: "Atelic", href: "https://atelic.me" },
-				", a small Denver shop that helps companies grow by managing how they show up on the web.",
-			],
-			[
-				"If any of this is useful, ",
-				{ text: "grab a time that suits you", href: "https://meet.atelic.me" },
-				" and I will walk you through it. If not, no worries at all, and thank you for the morning buns.",
-			],
-		],
-		signOff: "Reliably Yours,",
-		person: {
-			photoSrc: "/images/note-person.svg",
-			photoAlt: "Matthew Fornaciari",
-			name: "Matthew Fornaciari",
-			role: "Atelic",
-			mailHref: "mailto:matt@atelic.me",
-			mailLabel: "matt@atelic.me",
-		},
-	},
-};
-
-function Example({ caption, children }: { caption?: string; children: ReactNode }) {
-	return (
-		<figure className="gallery-example">
-			{caption && <figcaption>{caption}</figcaption>}
-			<div className="gallery-example-body">{children}</div>
-		</figure>
-	);
-}
-
 const searchColumns: DataTableColumn[] = [
 	{ label: "Search" },
 	{ label: "Times shown", align: "right", sortable: true, firstSort: "desc" },
@@ -219,8 +120,10 @@ const tones: Array<{ tone: Tone; reads: string }> = [
 
 /*
  * The components as an app wears them: outside the site canvas, under the
- * `.atelic-ui` scope alone, on tokens the region maps for itself. Nothing
- * from base.css reaches in here, which is the point of showing it.
+ * `.atelic-ui` class on a region of its own, on tokens the region maps for
+ * itself. An app imports components.css alone; this page also imports
+ * base.css, as a site does, so its resets reach here too, and the region's
+ * own unlayered rules win over them.
  */
 function InAnApp() {
 	return (
@@ -246,9 +149,9 @@ function InAnApp() {
 			<Callout tone="warn" title="The proofing room runs warm.">
 				Two batches overproofed on Tuesday.
 			</Callout>
-			<Collapsible label="This week" summary="The sourdough moved to a cold proof.">
+			<Disclosure label="This week" summary="The sourdough moved to a cold proof.">
 				<p>The sourdough moved to an overnight cold proof.</p>
-			</Collapsible>
+			</Disclosure>
 		</aside>
 	);
 }
@@ -256,7 +159,7 @@ function InAnApp() {
 export function Gallery() {
 	return (
 		<>
-			<div className="mkt">
+			<div className="atelic-ui gallery-page">
 				<SkipLink />
 				<SiteHeader
 					brand={{
@@ -275,12 +178,16 @@ export function Gallery() {
 								{packageName} {version}
 							</p>
 							<p className="gallery-intro">
-								The page components the Atelic templates install, each on its own with made up data
-								for a fictional bakery. Everything here renders from the package's own source, so
-								what you see is what the next release ships.
+								Everything the package exports that draws, each on its own with made up data for a
+								fictional bakery: the chrome, the page components, the documents, and the email.
+								Everything here renders from the package's own source, so what you see is what the
+								next release ships.
 							</p>
 						</div>
 					</header>
+
+					<ChromePieces />
+					<NotFoundPiece />
 
 					<Piece
 						id="checklist"
@@ -470,12 +377,15 @@ export function Gallery() {
 					</Piece>
 
 					<Piece
-						id="collapsible"
-						title="Collapsible"
-						lead="A labeled line the reader opens for the detail behind it. Reach for it when the detail is worth having but not worth everyone's scroll; the summary carries the point, so a reader who never opens it still has it."
+						id="disclosure"
+						title="Disclosure"
+						lead="A section the reader opens and closes, in two forms. Held by the caller (open and onToggle), it is an app's card: the page remembers which are open, a closed body is not rendered, and a count beside the label stays out of its name. Left to the browser, it is a document's fold: a native details element whose summary carries the point, which works before any script loads, opens for find in page, and prints open."
 					>
-						<Example caption="Closed by default">
-							<Collapsible
+						<Example caption="Controlled: an app's sections, the open ones held by the page">
+							<Aisles />
+						</Example>
+						<Example caption="Native, closed by default">
+							<Disclosure
 								label="Your Main Pages"
 								summary="All six load quickly and every one is on Google."
 							>
@@ -483,10 +393,10 @@ export function Gallery() {
 									Home, Menu, Cakes, Catering, Visit, and About each answered in under a second and
 									each appears in search.
 								</p>
-							</Collapsible>
+							</Disclosure>
 						</Example>
-						<Example caption="Open by default">
-							<Collapsible
+						<Example caption="Native, open by default">
+							<Disclosure
 								label="Your Opening Hours"
 								summary="Three listings disagree about Sunday."
 								defaultOpen
@@ -495,17 +405,7 @@ export function Gallery() {
 									The site says 08:00 to 14:00, the map listing says closed, and one directory still
 									shows the summer hours. Anything can sit inside: a table, a chart, or a picture.
 								</p>
-							</Collapsible>
-						</Example>
-					</Piece>
-
-					<Piece
-						id="disclosure"
-						title="Disclosure"
-						lead="A section the page opens and closes. The page holds which are open, so it can remember, and a closed body is not rendered. The label is the toggle; the count beside it stays out of its name, and a tap anywhere on the row folds it."
-					>
-						<Example>
-							<Aisles />
+							</Disclosure>
 						</Example>
 					</Piece>
 
@@ -643,7 +543,7 @@ export function Gallery() {
 					<Piece
 						id="gate-login"
 						title="GateLogin"
-						lead="The access gate's sign in screen: a reader on the allowlist asks for a link and the same confirmation shows whoever asks. It is a whole screen in a site, framed here to fit, and its button wears the site's own button classes. Its companion, Watermark, stamps the signed in reader's email on every page behind the gate and draws nothing without a session, so it has no picture here."
+						lead="The access gate's sign in screen: a reader on the allowlist asks for a link and the same confirmation shows whoever asks. It is a whole screen in a site, framed here to fit, and its button wears the site's own button classes. Its companion, Watermark, follows."
 					>
 						<Example caption="With an eyebrow, the copy a site passes, and the fine print">
 							<div className="gallery-gate">
@@ -659,17 +559,9 @@ export function Gallery() {
 						</Example>
 					</Piece>
 
-					<Piece
-						id="note"
-						title="Note"
-						lead="The first touch, for a business whose site publishes no email address, set as a short page at /notes: the opener, what the customer sees and what sits under the hood, where the work would start, and the close. It reads on a phone first and prints to one letter sheet, and every prop is plain data a routine can write as JSON. A site wraps it in ArtifactShell, as it wraps the writeup; here it is framed to sit in the page."
-					>
-						<Example caption="Two lanes, one finding with the owner's screen under it, one linked">
-							<div className="gallery-document">
-								<Note {...note} />
-							</div>
-						</Example>
-					</Piece>
+					<WatermarkPiece />
+					<DocumentPieces />
+					<EmailPiece />
 
 					<Piece
 						id="primitives"

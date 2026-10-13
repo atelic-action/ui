@@ -22,7 +22,7 @@
 
 /* ---- Theme: the Atelic palette, the artifact template's default theme
    (template-artifact src/styles/theme.css), copied value for value. ---- */
-.mkt {
+.atelic-ui {
 	--surface: #f6f1e7;
 	--surface-alt: #efe8da;
 	--surface-inset: #e9e0cd;
@@ -75,68 +75,58 @@ body {
 	background: #f6f1e7;
 }
 
-/* ---- The header: nine stops fit the bar only on a wide screen, so the
-   burger carries them until then and the links run a size smaller. ---- */
-@media (min-width: 900px) and (max-width: 1099px) {
-	.mkt .nav-links {
-		display: none;
-	}
-	.mkt .nav-burger {
-		display: inline-flex;
-	}
+/* ---- The page's own header: a stop for every piece is more than any bar
+   holds, so the burger carries them at every width. Scoped to the page's
+   bar alone, so the framed headers below keep their own behavior. ---- */
+.gallery-page > .nav .nav-links {
+	display: none;
 }
-@media (min-width: 1100px) {
-	.mkt .nav-links {
-		gap: 0;
-	}
-	.mkt .nav-links a {
-		padding: 6px 9px;
-		font-size: 0.84rem;
-	}
+.gallery-page > .nav .nav-burger {
+	display: inline-flex;
 }
 
 /* ---- The page ---- */
-.mkt .gallery-head {
+.atelic-ui .gallery-head {
 	padding-top: calc(var(--nav-height) + clamp(36px, 6vw, 72px));
 	padding-bottom: clamp(16px, 3vw, 28px);
 }
-.mkt .gallery-meta {
+.atelic-ui .gallery-meta {
 	margin-top: 14px;
 	font-family: var(--font-mono);
 	font-size: 0.85rem;
 	letter-spacing: 0.04em;
 	color: var(--neutral-600);
 }
-.mkt .gallery-intro {
+.atelic-ui .gallery-intro {
 	margin-top: 18px;
 	max-width: 60ch;
 	font-size: 1.08rem;
 	color: var(--ink-soft);
 }
 
-.mkt .gallery-piece {
+.atelic-ui .gallery-piece {
 	padding-block: clamp(32px, 5vw, 56px);
 	border-top: 1px solid var(--neutral-100);
 }
 /* The piece's own heading only, so a heading inside an example keeps its size. */
-.mkt .gallery-piece > .wrap > h2 {
+.atelic-ui .gallery-piece > .wrap > h2 {
 	font-size: clamp(1.6rem, 4vw, 2.2rem);
 }
-.mkt .gallery-lead {
+.atelic-ui .gallery-lead {
 	margin-top: 10px;
 	max-width: 64ch;
 	color: var(--ink-soft);
 }
-.mkt .gallery-lead code {
+.atelic-ui .gallery-lead code {
 	font-family: var(--font-mono);
 	font-size: 0.88em;
 }
-.mkt .gallery-examples {
+.atelic-ui .gallery-examples {
 	display: grid;
 	gap: 18px;
 	margin-top: 22px;
 }
-.mkt .gallery-example {
+.atelic-ui .gallery-example {
 	margin: 0;
 	min-width: 0;
 	background: var(--card);
@@ -145,7 +135,7 @@ body {
 	padding: clamp(16px, 3vw, 28px);
 }
 /* The example's own caption only, so a figure inside an example keeps its own. */
-.mkt .gallery-example > figcaption {
+.atelic-ui .gallery-example > figcaption {
 	margin-bottom: 14px;
 	font-family: var(--font-mono);
 	font-size: 0.72rem;
@@ -153,35 +143,35 @@ body {
 	text-transform: uppercase;
 	color: var(--neutral-500);
 }
-.mkt .gallery-example-body {
+.atelic-ui .gallery-example-body {
 	min-width: 0;
 }
-.mkt .gallery-stack {
+.atelic-ui .gallery-stack {
 	display: grid;
 	gap: 16px;
 }
-.mkt .collapsible-body p {
+.atelic-ui .is-native > .disclosure-body p {
 	color: var(--ink-soft);
 }
 
 /* A row tone is the site's to color (DataTable sets data-tone and leaves it). */
-.mkt .data-table tbody tr[data-tone] th,
-.mkt .data-table tbody tr[data-tone] td {
+.atelic-ui .data-table tbody tr[data-tone] th,
+.atelic-ui .data-table tbody tr[data-tone] td {
 	color: var(--tone);
 }
 
 /* ---- Tones ---- */
-.mkt .gallery-tones {
+.atelic-ui .gallery-tones {
 	display: grid;
 	gap: 12px;
 }
-.mkt .gallery-tones li {
+.atelic-ui .gallery-tones li {
 	display: grid;
 	grid-template-columns: 44px 5.5em minmax(0, 1fr);
 	align-items: center;
 	gap: 14px;
 }
-.mkt .gallery-swatch {
+.atelic-ui .gallery-swatch {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -190,25 +180,25 @@ body {
 	border-radius: var(--radius-sm);
 	background: var(--tone-bg);
 }
-.mkt .gallery-swatch span {
+.atelic-ui .gallery-swatch span {
 	width: 22px;
 	height: 22px;
 	border-radius: 50%;
 	background: var(--tone-fill);
 	box-shadow: 0 0 0 2px var(--tone);
 }
-.mkt .gallery-tone-name {
+.atelic-ui .gallery-tone-name {
 	font-family: var(--font-mono);
 	font-weight: 600;
 	color: var(--tone);
 }
-.mkt .gallery-tone-reads {
+.atelic-ui .gallery-tone-reads {
 	color: var(--ink-soft);
 }
 
-/* ---- In an App: a region outside .mkt, wearing .atelic-ui alone. It maps
-   its own tokens, the way an app's stylesheet would, and sets only what a
-   page needs to hold it: a ground, a measure, and room. ---- */
+/* ---- In an App: a region outside the site canvas, wearing .atelic-ui on
+   its own. It maps its own tokens, the way an app's stylesheet would, and
+   sets only what a page needs to hold it: a ground, a measure, and room. ---- */
 .gallery-app {
 	--ink: #f4efe6;
 	--ink-soft: #b9b2a4;
@@ -244,7 +234,7 @@ body {
 }
 
 /* ---- Disclosure example: a count pill and plain rows ---- */
-.mkt .gallery-count {
+.atelic-ui .gallery-count {
 	min-width: 22px;
 	height: 22px;
 	padding: 0 7px;
@@ -255,42 +245,125 @@ body {
 	background: var(--surface-alt);
 	font: 500 11.5px / 1 var(--font-mono);
 }
-.mkt .gallery-rows li {
+.atelic-ui .gallery-rows li {
 	padding: 12px 18px;
 	border-top: 1px solid var(--neutral-100);
 }
-.mkt .gallery-rows li:first-child {
+.atelic-ui .gallery-rows li:first-child {
 	border-top: none;
 }
 
 /* GateLogin is a full screen in a site. Here it is framed to the height of
    an example. */
-.mkt .gallery-gate {
+.atelic-ui .gallery-gate {
 	border: 1px solid var(--hairline);
 	border-radius: 12px;
 	overflow: hidden;
 }
-.mkt .gallery-gate .gate-screen {
+.atelic-ui .gallery-gate .gate-screen {
 	min-height: 560px;
 }
 
 /* An artifact document fills a page under the site's fixed header. Here it
    sits mid page, framed to an example, with no header above it to clear. */
-.mkt .gallery-document {
+.atelic-ui .gallery-document {
 	--nav-height: 0px;
 	border: 1px solid var(--hairline-strong);
 	border-radius: 12px;
 	overflow: hidden;
 }
 
+/* ---- Frames: a box that is the containing block for anything fixed or
+   absolute inside it (a transform makes it one), so the header, the sticky
+   bar, the skip link, and the watermark sit on the box here as they sit on
+   the viewport in a site. ---- */
+.atelic-ui .gallery-frame {
+	position: relative;
+	transform: translateZ(0);
+	overflow: hidden;
+	border: 1px solid var(--hairline-strong);
+	border-radius: 12px;
+	background: var(--surface);
+}
+.atelic-ui .gallery-frame-page {
+	padding: calc(var(--nav-height) + 24px) 24px 24px;
+	color: var(--ink-soft);
+}
+.atelic-ui .gallery-frame-dark {
+	background: var(--surface-dark);
+}
+.atelic-ui .gallery-frame-dark .gallery-frame-page {
+	color: var(--neutral-300);
+}
+.atelic-ui .gallery-hero {
+	min-height: 100%;
+	background:
+		radial-gradient(circle at 75% 30%, rgba(252, 74, 26, 0.35), transparent 55%),
+		linear-gradient(160deg, #3a2a1c, #151515);
+	color: #f4efe6;
+	font-size: 1.4rem;
+	font-weight: 700;
+}
+/* A site shows the bar on a phone only; the frame shows it at every width. */
+.atelic-ui .gallery-frame .sticky-cta {
+	display: flex;
+}
+/* The watermark's pill keeps inside the frame, not the viewport. */
+.atelic-ui .gallery-frame .gate-wm {
+	max-width: calc(100% - 32px);
+}
+/* The skip link held where focus puts it. */
+.atelic-ui .gallery-skip .skip-link {
+	left: 0;
+}
+.atelic-ui .gallery-on-dark {
+	color: #f4efe6;
+}
+
+/* ---- Controls and output the gallery adds around a piece ---- */
+.atelic-ui .gallery-select {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 14px;
+	font-family: var(--font-mono);
+	font-size: 0.8rem;
+	color: var(--neutral-600);
+}
+.atelic-ui .gallery-select select {
+	padding: 6px 10px;
+	border: 1px solid var(--neutral-200);
+	border-radius: var(--radius-sm);
+	background: var(--card);
+	font: inherit;
+	color: var(--ink);
+}
+.atelic-ui .gallery-email {
+	display: block;
+	width: 100%;
+	border: 1px solid var(--hairline-strong);
+	border-radius: 12px;
+	background: #fff;
+}
+.atelic-ui .gallery-pre {
+	margin: 0;
+	overflow-x: auto;
+	font: 0.8rem / 1.5 var(--font-mono);
+	color: var(--ink);
+}
+/* The sealed document's hall fills a screen in a site; framed, a box. */
+.atelic-ui .gallery-sealed .gate-hall {
+	min-height: 420px;
+}
+
 /* The primitives sit in a row so their sizes and surfaces compare at a glance. */
-.mkt .gallery-row {
+.atelic-ui .gallery-row {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 14px;
 }
-.mkt .gallery-dark {
+.atelic-ui .gallery-dark {
 	padding: 22px;
 	border-radius: 12px;
 	background: var(--surface-dark);
