@@ -53,7 +53,7 @@ export type DisclosureProps = DisclosureControlledProps | DisclosureNativeProps;
 
 /**
  * A section the reader opens and closes, in one of two forms chosen by
- * whether the caller passes `open`.
+ * whether the caller passes `onToggle`.
  *
  * Controlled (`open` and `onToggle`), it is an app's card: a header row that
  * folds a body the caller holds, and a closed body is not rendered, so a long
@@ -68,8 +68,8 @@ export type DisclosureProps = DisclosureControlledProps | DisclosureNativeProps;
  * open. The writeup's "more" blocks are this form.
  */
 export function Disclosure(props: DisclosureProps) {
-	if (props.open === undefined) return <NativeDisclosure {...props} />;
-	return <ControlledDisclosure {...props} />;
+	if (props.onToggle) return <ControlledDisclosure {...props} />;
+	return <NativeDisclosure {...props} />;
 }
 
 function NativeDisclosure({

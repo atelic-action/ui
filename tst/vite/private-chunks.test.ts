@@ -45,9 +45,10 @@ describe("the private-chunks entry", () => {
 			join(import.meta.dirname, "../../src/vite/private-chunks.ts"),
 			"utf8",
 		);
+		expect(source).not.toMatch(/import\(|export\s[^;]*\sfrom\s/);
 		const imports = source.split("\n").filter((line) => /^\s*import\s/.test(line));
 		for (const line of imports) {
-			expect(line.startsWith("import type ") || /from "\.\.?\//.test(line)).toBe(true);
+			expect(line.startsWith("import type ")).toBe(true);
 		}
 	});
 });

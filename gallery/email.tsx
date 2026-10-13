@@ -190,12 +190,15 @@ function EmailFrame({ html, title }: { html: string; title: string }) {
 		<iframe
 			className="gallery-email"
 			title={title}
-			srcDoc={html}
-			sandbox="allow-same-origin"
+			srcDoc={html.replace(/<head[^>]*>/i, (tag) => `${tag}<base target="_blank">`)}
+			sandbox="allow-same-origin allow-popups"
 			style={{ height }}
 			onLoad={(event) => {
 				const doc = event.currentTarget.contentDocument;
-				if (doc) setHeight(Math.ceil(doc.body.getBoundingClientRect().height));
+				if (!doc) return;
+				const measure = () => setHeight(Math.ceil(doc.body.getBoundingClientRect().height));
+				measure();
+				new ResizeObserver(measure).observe(doc.body);
 			}}
 		/>
 	);

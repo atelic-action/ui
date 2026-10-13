@@ -1323,6 +1323,12 @@
 	}
 
 	/* the native disclosure: the shared one, at the writeup's sizes */
+	.atelic-ui .op-block.is-native {
+		border-top: 1px solid var(--op-rule);
+	}
+	.atelic-ui .op-block.is-native {
+		border-top: 1px solid var(--op-rule);
+	}
 	.atelic-ui .op-more .disclosure-label {
 		font-size: 16px;
 	}
@@ -1330,7 +1336,7 @@
 		font-size: 15px;
 		line-height: 1.45;
 	}
-	.atelic-ui .op-more > .disclosure-body {
+	.atelic-ui .op-more.is-native > .disclosure-body {
 		margin-top: 0;
 	}
 	.atelic-ui .op-more-body {

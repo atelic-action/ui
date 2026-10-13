@@ -29,10 +29,10 @@ const bakery: Brand = {
 };
 
 const links: NavLink[] = [
-	{ label: "Menu", href: "/menu" },
-	{ label: "Cakes", href: "/cakes" },
-	{ label: "Catering", href: "/catering" },
-	{ label: "Visit", href: "/visit" },
+	{ label: "Menu", href: "#menu" },
+	{ label: "Cakes", href: "#cakes" },
+	{ label: "Catering", href: "#catering" },
+	{ label: "Visit", href: "#visit" },
 ];
 
 const cta: CallToAction = { label: "Order Ahead", href: "#site-header" };

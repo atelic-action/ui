@@ -249,7 +249,7 @@
 		color: var(--neutral-500);
 		transition: transform 200ms ease;
 	}
-	.atelic-ui .disclosure.is-open .disclosure-chevron {
+	.atelic-ui .disclosure.is-open > .disclosure-head > .disclosure-chevron {
 		transform: rotate(180deg);
 	}
 	.atelic-ui .disclosure-body {
@@ -317,7 +317,7 @@
 			content-visibility: visible;
 			display: block;
 		}
-		.atelic-ui .is-native .disclosure-chevron {
+		.atelic-ui .is-native > .disclosure-head > .disclosure-chevron {
 			display: none;
 		}
 	}
