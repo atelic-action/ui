@@ -1,5 +1,11 @@
 import { Callout } from "../components";
-import { newTabProps } from "../lib/newTabProps";
+import {
+	type ArtifactLink,
+	type ArtifactParagraph,
+	isEmpty,
+	ArtifactAnchor as NoteAnchor,
+	Paragraph,
+} from "./Paragraph";
 import { Shot, type WriteupShot } from "./Shot";
 import { SignOff, type WriteupPerson } from "./SignOff";
 
@@ -20,13 +26,10 @@ import { SignOff, type WriteupPerson } from "./SignOff";
  */
 
 /** A link inside running text: the words the reader clicks and where they go. */
-export interface NoteLink {
-	text: string;
-	href: string;
-}
+export type NoteLink = ArtifactLink;
 
 /** A paragraph: a plain string, or runs of text and links in order. */
-export type NoteParagraph = string | Array<string | NoteLink>;
+export type NoteParagraph = ArtifactParagraph;
 
 /** One defect and what it costs, with the owner's screen under it when there is one. */
 export interface NoteFinding {
@@ -84,39 +87,6 @@ export interface NoteProps {
 	lanes: NoteLane[];
 	start: NoteStart;
 	close: NoteClose;
-}
-
-/** A link opens in a new tab when it leaves the page, and in place when it is an anchor or a mail link. */
-function NoteAnchor({ href, children }: { href: string; children: string }) {
-	return (
-		<a href={href} {...newTabProps(href, /^https?:/i.test(href))}>
-			{children}
-		</a>
-	);
-}
-
-/** A paragraph with nothing to read: a blank string, or runs that are all blank strings. A link always counts. */
-function isEmpty(paragraph: NoteParagraph): boolean {
-	const runs = typeof paragraph === "string" ? [paragraph] : paragraph;
-	return runs.every((run) => typeof run === "string" && run.trim() === "");
-}
-
-function Paragraph({ paragraph, className }: { paragraph: NoteParagraph; className?: string }) {
-	const runs = typeof paragraph === "string" ? [paragraph] : paragraph;
-	return (
-		<p className={className}>
-			{runs.map((run, i) =>
-				typeof run === "string" ? (
-					run
-				) : (
-					// biome-ignore lint/suspicious/noArrayIndexKey: runs are static content in a fixed order
-					<NoteAnchor href={run.href} key={i}>
-						{run.text}
-					</NoteAnchor>
-				),
-			)}
-		</p>
-	);
 }
 
 function Finding({ finding }: { finding: NoteFinding }) {

@@ -60,6 +60,7 @@ const stops: PageStop[] = [
 	{ id: "gate-login", label: "GateLogin" },
 	{ id: "watermark", label: "Watermark" },
 	{ id: "writeup", label: "Writeup" },
+	{ id: "read", label: "Read" },
 	{ id: "report", label: "Report" },
 	{ id: "note", label: "Note" },
 	{ id: "gate", label: "Gate" },
