@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Gate, type GatePayload } from "../src/artifact/Gate";
 import { Note, type NoteProps } from "../src/artifact/Note";
+import { Read, type ReadProps } from "../src/artifact/Read";
 import { Report, type ReportProps } from "../src/artifact/Report";
 import type { WriteupPerson } from "../src/artifact/SignOff";
 import { ratingCell, Writeup, type WriteupProps } from "../src/artifact/Writeup";
@@ -532,6 +533,141 @@ const writeup: WriteupProps = {
 	},
 };
 
+/*
+ * The read, at the end of a made up engagement's first week: the baseline's
+ * grades explained by cause, before anything changes. Two tiers now, with
+ * Conversion to follow as a third entry in `tiers`.
+ */
+const read: ReadProps = {
+	title: "The Read: Health and Visibility",
+	preparedFor: "Kestrel Hollow Bakehouse",
+	date: "2026-10-16",
+	lede: [
+		"A week reading the bakery's site from the inside and from the outside, with nothing changed yet. Each section below says what we found, why it is that way, and what changes. The grades are the ones in ",
+		{ text: "the baseline", href: "#writeup" },
+		".",
+	],
+	gistTitle: "At a Glance",
+	gradeKey: [
+		{ grade: "a", label: "Working well" },
+		{ grade: "b", label: "Mostly there" },
+		{ grade: "c", label: "Needs work" },
+		{ grade: "d", label: "Broken" },
+	],
+	tiers: [
+		{
+			id: "kh-read-health",
+			title: "Health",
+			lead: "Can a phone and a search engine reach the site, and does it load fast?",
+			sections: [
+				{
+					id: "kh-read-technical-seo",
+					name: "Technical SEO",
+					question: "Can Google read the site?",
+					grade: "b",
+					gist: "Every page is reachable; forty pages nobody wrote are reachable too.",
+					found: [
+						"The six real pages are all in Google, and the address is secure and single. Around them sit forty pages the site made on its own, which Google reads as thin copies of the real ones.",
+					],
+					examples: [
+						"A page for every tag on the old blog, each listing one post.",
+						"Three spellings of the menu address, each counted as its own page.",
+						"A page of every photo in the gallery, one photo to a page.",
+					],
+					why: "The site has no setting that tells Google which pages are the real ones.",
+					changes: [
+						"The real six are named as the real six, and the forty are kept out of search without deleting anything.",
+					],
+					sources: [
+						{ label: "Search Console", href: "https://search.google.com/search-console" },
+						{ label: "The site's dashboard" },
+					],
+				},
+				{
+					id: "kh-read-core-web-vitals",
+					name: "Core Web Vitals",
+					question: "Does the site load fast on a phone?",
+					grade: "c",
+					gist: "A phone waits 4.6 seconds, most of it on the server.",
+					found: [
+						"A phone waits two seconds before the server answers at all, and another two for the chalkboard photo at the top of the menu.",
+					],
+					why: "The server is the cheapest plan the host sells, and the menu is a picture rather than text.",
+					changes: [
+						"The site moves to a faster plan, and the menu is set as text with the photo beneath it.",
+					],
+					sources: [{ label: "PageSpeed Insights", href: "https://pagespeed.web.dev/" }],
+				},
+			],
+		},
+		{
+			id: "kh-read-visibility",
+			title: "Visibility",
+			lead: "When someone nearby searches for what the bakery makes, does Google show it?",
+			sections: [
+				{
+					id: "kh-read-local-seo",
+					name: "Local SEO",
+					question: "Does Google show the bakery on the map?",
+					grade: "c",
+					gist: "Third on Alder Street; not on the map in Millbrook.",
+					found: [
+						"On Alder Street the bakery is third on the map for sourdough near me. In Millbrook, where the second shop opened in the spring, it does not show at all.",
+					],
+					shots: [
+						{
+							src: "/images/writeup-listing.svg",
+							alt: "A made up map listing for the Alder Street shop",
+							href: "/images/writeup-listing.svg",
+							caption: "Alder Street: third on the map",
+						},
+						{
+							src: "/images/writeup-search.svg",
+							alt: "A made up search result page for the bakery's site",
+							href: "/images/writeup-search.svg",
+							caption: "Millbrook: not on the map",
+						},
+					],
+					why: "The Millbrook shop has no listing of its own and no page on the site.",
+					changes: [
+						"Millbrook gets its own listing and its own page, and each listing's website button points at its own shop.",
+					],
+					sources: [{ label: "Business Profile", href: "https://business.google.com/" }],
+				},
+			],
+		},
+	],
+	plan: {
+		id: "kh-read-plan",
+		lead: "In this order, each one before the next:",
+		steps: [
+			{
+				title: "The server.",
+				body: "Move to a faster plan with the same host, which takes most of the wait off every page.",
+			},
+			{
+				title: "What Google sees.",
+				body: "Name the six real pages and keep the forty out of search.",
+			},
+			{
+				title: "The menu.",
+				body: "Set it as text, so a phone reads it and search finds the soup.",
+			},
+			{
+				title: "Millbrook's listing.",
+				body: "Claim the second shop's listing; the postcard comes to the shop.",
+				who: "Yours",
+			},
+			{ title: "A page for Millbrook.", body: "Its hours, its menu, and how to find it." },
+		],
+	},
+	close: {
+		line: "Conversion follows as soon as the analytics access lands.",
+		signOff: "Reliably Yours,",
+		person,
+	},
+};
+
 const report: ReportProps = {
 	title: "Kestrel Hollow Bakehouse",
 	period: "September 2026",
@@ -725,6 +861,18 @@ export function DocumentPieces() {
 				<Example caption="A whole writeup: seven sections, every block kind, the markets table, and the rented line">
 					<div className="gallery-document">
 						<Writeup {...writeup} />
+					</div>
+				</Example>
+			</Piece>
+
+			<Piece
+				id="read"
+				title="Read"
+				lead="What a customer gets at the end of an engagement's first week, before anything changes: the baseline's grades explained by cause. A dated lede, the gist table (section, grade, and one line, drawn from the tiers), then each tier's sections as questions in three beats (what we found, why, what changes) with proof pictures and the tools they were read from, then the plan in order and one closing line. A later tier is one more entry in its tiers, and every prop is plain data."
+			>
+				<Example caption="Two tiers, a list of examples, a picture per market, and the plan with the owner's own step named">
+					<div className="gallery-document">
+						<Read {...read} />
 					</div>
 				</Example>
 			</Piece>

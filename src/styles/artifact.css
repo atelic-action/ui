@@ -3,8 +3,8 @@
    share. Moved whole from the artifact template, in the order its build
    bundled them (the shared classes, the stage, the monthly page, the
    writeup), which the two @page rules depend on: the later one wins, and
-   the writeup's is the later one. The note follows the writeup and sets
-   no @page, so the writeup's stays the one that wins. They sit in the package's layer like
+   the writeup's is the later one. The note and the read follow the writeup
+   and set no @page, so the writeup's stays the one that wins. They sit in the package's layer like
    every sheet here, so any rule a site writes outside a layer still wins
    over them whatever its specificity. */
 @layer atelic-ui {
@@ -2291,6 +2291,291 @@
 		.atelic-ui .nt-start,
 		.atelic-ui .nt-close {
 			break-inside: avoid;
+		}
+	}
+
+	/* =================================================================
+	   THE READ: the baseline's grades explained by cause (Read.tsx). The
+	   writeup's sibling: it sits inside the writeup's own .op root, so the
+	   column, the head, the grade chip and its key, the tier heading, the
+	   section card, the screen, the sources, the close, and every print
+	   rule of the writeup's are its own already. This block adds only what
+	   the read has and the writeup does not: the gist table, the three
+	   beats of a section, the proof pictures in a row, and the numbered
+	   plan. It sets no @page; the writeup's, earlier in this sheet and the
+	   later of the two there, sets letter paper for every artifact page.
+
+	   Tokens only (theme.css).
+	   ================================================================= */
+
+	/* Prose links read as links here, where the writeup's are quiet. */
+	.atelic-ui .rd-lede a,
+	.atelic-ui .rd-beat a,
+	.atelic-ui .rd-gist-read a,
+	.atelic-ui .rd-plan a,
+	.atelic-ui .rd-closing a {
+		color: var(--op-accent);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		text-decoration-thickness: 1px;
+		overflow-wrap: anywhere;
+	}
+
+	/* ---- the gist table: section, grade, and one line, under its tier ---- */
+	.atelic-ui .rd-gist {
+		margin-top: 26px;
+	}
+	.atelic-ui .rd-gist-card {
+		min-width: 0;
+		background: var(--op-card);
+		border: 1px solid var(--op-rule);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		overflow: hidden;
+	}
+	.atelic-ui .rd-gist-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 15px;
+		line-height: 1.45;
+	}
+	.atelic-ui .rd-gist-table thead th {
+		padding: 9px 12px;
+		text-align: left;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-faint);
+		border-bottom: 1px solid var(--op-rule);
+	}
+	.atelic-ui .rd-gist-tier th {
+		padding: 7px 12px;
+		background: var(--surface-alt);
+		text-align: left;
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-soft);
+	}
+	.atelic-ui .rd-gist-table tbody tr + tr > * {
+		border-top: 1px solid var(--op-rule);
+	}
+	.atelic-ui .rd-gist-table tbody th[scope="row"],
+	.atelic-ui .rd-gist-table td {
+		padding: 11px 12px;
+		vertical-align: top;
+		text-align: left;
+	}
+	.atelic-ui .rd-gist-table .rd-gist-section {
+		font-weight: 650;
+		letter-spacing: -0.01em;
+		width: 30%;
+	}
+	.atelic-ui .rd-gist-table tbody .rd-gist-section a:hover {
+		color: var(--op-accent);
+	}
+	.atelic-ui .rd-gist-table .rd-gist-grade {
+		width: 1%;
+		white-space: nowrap;
+		text-align: center;
+	}
+	.atelic-ui .rd-gist-table td.rd-gist-read {
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+		min-width: 0;
+	}
+
+	/* ---- a section: the trade name over the question, then three beats ---- */
+	.atelic-ui .rd-name {
+		margin: 0 0 4px;
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-faint);
+	}
+	.atelic-ui .rd-grade .op-grade {
+		width: 42px;
+		height: 42px;
+		border-radius: 12px;
+		font-size: 21px;
+	}
+	.atelic-ui .rd-beat {
+		margin-top: 16px;
+		min-width: 0;
+	}
+	.atelic-ui .rd-beat h4 {
+		margin: 0 0 6px;
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--op-ink-faint);
+	}
+	.atelic-ui .rd-beat p {
+		margin: 0 0 10px;
+		max-width: 68ch;
+		text-wrap: pretty;
+	}
+	.atelic-ui .rd-beat p:last-child {
+		margin-bottom: 0;
+	}
+	.atelic-ui .rd-examples {
+		list-style: disc;
+		margin: 8px 0 0;
+		padding-left: 1.2em;
+		max-width: 68ch;
+		color: var(--op-ink-soft);
+	}
+	.atelic-ui .rd-examples li + li {
+		margin-top: 4px;
+	}
+	/* Why is one sentence, set apart: a tinted panel with the accent's rule. */
+	.atelic-ui .rd-why {
+		padding: 12px 14px;
+		border-left: 3px solid var(--op-accent);
+		border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+		background: var(--surface-alt);
+	}
+	.atelic-ui .rd-why p {
+		font-size: 16.5px;
+		font-weight: 550;
+		line-height: 1.45;
+		color: var(--op-ink);
+	}
+	/* The proof pictures sit in a row at one size, a search capture per
+	   market; a phone stacks them. */
+	.atelic-ui .rd-shots {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 14px;
+		margin-top: 14px;
+	}
+
+	/* ---- the plan: the steps in order, numbered ---- */
+	.atelic-ui .rd-plan {
+		margin-top: 34px;
+		scroll-margin-top: calc(var(--nav-height) + 16px);
+	}
+	.atelic-ui .rd-plan h2 {
+		font-size: 27px;
+		font-weight: 650;
+		letter-spacing: -0.025em;
+		line-height: 1.1;
+		margin: 0;
+		color: var(--op-ink);
+	}
+	.atelic-ui .rd-plan-lead {
+		margin: 6px 0 0;
+		font-size: 16.5px;
+		color: var(--op-ink-soft);
+	}
+	.atelic-ui .rd-steps {
+		list-style: none;
+		counter-reset: rd-step;
+		margin: 12px 0 0;
+		padding: 0;
+		background: var(--op-card);
+		border: 1px solid var(--op-rule);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+	}
+	.atelic-ui .rd-step {
+		counter-increment: rd-step;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		column-gap: 12px;
+		padding: 14px 16px;
+	}
+	.atelic-ui .rd-step + .rd-step {
+		border-top: 1px solid var(--op-rule);
+	}
+	.atelic-ui .rd-step::before {
+		content: counter(rd-step);
+		display: inline-grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		border: 1.5px solid var(--op-accent);
+		border-radius: 999px;
+		color: var(--op-accent);
+		font-size: 14px;
+		font-weight: 700;
+		line-height: 1;
+	}
+	.atelic-ui .rd-step p {
+		margin: 3px 0 0;
+		color: var(--op-ink-soft);
+		text-wrap: pretty;
+	}
+	.atelic-ui .rd-step-title {
+		font-weight: 650;
+		color: var(--op-ink);
+	}
+	.atelic-ui .rd-step-who {
+		display: inline-block;
+		margin-left: 2px;
+		padding: 1px 8px;
+		border: 1px solid var(--neutral-200);
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		vertical-align: 0.15em;
+		color: var(--op-ink-soft);
+	}
+
+	/* ---- the close: one line, then the sign off under its rule ---- */
+	.atelic-ui .rd-closing {
+		margin: 34px 0 0;
+		max-width: 62ch;
+		font-size: 17px;
+		line-height: 1.5;
+		color: var(--op-ink);
+	}
+
+	/* ---- wide and on paper: the pictures beside each other ---- */
+	@media print, (min-width: 721px) {
+		.atelic-ui .rd-gist-table tbody th[scope="row"],
+		.atelic-ui .rd-gist-table td,
+		.atelic-ui .rd-gist-table thead th,
+		.atelic-ui .rd-gist-tier th {
+			padding-left: 20px;
+			padding-right: 16px;
+		}
+		.atelic-ui .rd-shots[data-count="2"] {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.atelic-ui .rd-shots[data-count="3"] {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	/* ---- print: the writeup's rules carry the page; these hold the read's
+	   own blocks whole ---- */
+	@media print {
+		.atelic-ui .rd-gist-card,
+		.atelic-ui .rd-steps {
+			box-shadow: none;
+			border-color: var(--neutral-200);
+		}
+		.atelic-ui .rd-gist-table tr,
+		.atelic-ui .rd-closing,
+		.atelic-ui .rd-why,
+		.atelic-ui .rd-step,
+		.atelic-ui .rd-close,
+		.atelic-ui .rd-shots .op-shot {
+			break-inside: avoid;
+		}
+		.atelic-ui .rd-beat h4,
+		.atelic-ui .rd-plan h2 {
+			break-after: avoid;
 		}
 	}
 }
