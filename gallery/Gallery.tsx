@@ -17,8 +17,8 @@ import {
 	type Tone,
 } from "../src/components";
 import { Button, Chip, Eyebrow, Lead, SectionHeading } from "../src/primitives";
+import { ArtifactPieces } from "./artifact";
 import { ChromePieces } from "./chrome";
-import { DocumentPieces } from "./documents";
 import { EmailPiece } from "./email";
 import { MarketingOffer } from "./marketing-offer";
 import { MarketingOpeners } from "./marketing-openers";
@@ -31,12 +31,12 @@ import { Example, Piece } from "./parts";
 import { WatermarkPiece } from "./watermark";
 
 /*
- * Every figure and name on this page is made up, save the documents'
+ * Every figure and name on this page is made up, save the sign off's
  * sender, which is the practice's own close. The business throughout is
  * Kestrel Hollow Bakehouse, a fictional neighborhood bakery. The pieces for
- * the chrome, the not found page, the watermark, the documents, and the
- * email live in files of their own beside this one, each mounted below with
- * one element.
+ * the chrome, the not found page, the watermark, the artifact pieces, and
+ * the email live in files of their own beside this one, each mounted below
+ * with one element.
  */
 
 const stops: PageStop[] = [
@@ -59,11 +59,10 @@ const stops: PageStop[] = [
 	{ id: "star-rating", label: "StarRating" },
 	{ id: "gate-login", label: "GateLogin" },
 	{ id: "watermark", label: "Watermark" },
-	{ id: "writeup", label: "Writeup" },
-	{ id: "read", label: "Read" },
-	{ id: "report", label: "Report" },
-	{ id: "note", label: "Note" },
-	{ id: "gate", label: "Gate" },
+	{ id: "grade-chip", label: "GradeChip" },
+	{ id: "sign-off", label: "SignOff" },
+	{ id: "shot", label: "Shot" },
+	{ id: "paragraph", label: "Paragraph" },
 	{ id: "email", label: "Email" },
 	{ id: "primitives", label: "Primitives" },
 	{ id: "tones", label: "Tones" },
@@ -186,7 +185,8 @@ export function Gallery() {
 							</p>
 							<p className="gallery-intro">
 								Everything the package exports that draws, each on its own with made up data for a
-								fictional bakery: the chrome, the page components, the documents, and the email.
+								fictional bakery: the chrome, the page components, the pieces a document is built
+								from, and the email. The composed documents live in @atelic-action/artifact.
 								Everything here renders from the package's own source, so what you see is what the
 								next release ships.
 							</p>
@@ -570,7 +570,7 @@ export function Gallery() {
 					</Piece>
 
 					<WatermarkPiece />
-					<DocumentPieces />
+					<ArtifactPieces />
 					<EmailPiece />
 
 					<Piece
