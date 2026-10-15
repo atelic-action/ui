@@ -124,9 +124,11 @@ Prerendering and server rendering have to compile the package too, so keep it ou
 ```ts
 // vite.config.ts
 export default defineConfig({
-	ssr: { noExternal: ["@atelic-action/ui"] },
+	ssr: { noExternal: ["@atelic-action/ui", "@atelic-action/artifact"] },
 });
 ```
+
+A site that renders a document needs `@atelic-action/artifact` kept internal the same way, since it too ships TSX and CSS as written; a site that renders none lists `@atelic-action/ui` alone.
 
 ## CSS Import Order
 
@@ -363,7 +365,7 @@ import { artifactConfig } from "@atelic-action/ui/vite";
 export default artifactConfig({ pages: ["/writeup", "/proposal", "/report"] });
 ```
 
-`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui"]`. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
+`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
 
 A site with a real need of its own passes `extend`, which is merged over the result with Vite's `mergeConfig`:
 

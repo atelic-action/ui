@@ -1,5 +1,5 @@
 /* The pieces the artifact documents are built from, under src/artifact: the
-   grade chip, the sign off, the shot, and the shell's logo rule. The
+   grade chip, the sign off, the shot, and the shell's logo and print rules. The
    composed documents (the writeup, the read, the monthly page, the note,
    and the sealed document stage) and their sheet, with both @page rules,
    live in @atelic-action/artifact (its styles/documents.css), which a site
@@ -155,6 +155,17 @@
 	@media print {
 		.atelic-ui .op-shot a {
 			cursor: auto;
+		}
+	}
+
+	/* ---- print: the shell's chrome steps aside on every artifact page ----
+	   ArtifactShell's header, credit band, and skip link belong to the screen;
+	   a printed document is the page alone. */
+	@media print {
+		.atelic-ui .nav,
+		.atelic-ui .credit-bar,
+		.atelic-ui .skip-link {
+			display: none;
 		}
 	}
 }

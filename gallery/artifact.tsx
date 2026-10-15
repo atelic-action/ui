@@ -30,7 +30,7 @@ const grades: Array<{ grade: WriteupGrade; section: string }> = [
 
 const runs: ArtifactParagraph = [
 	"The menu is a photo of the chalkboard, so ",
-	{ text: "a phone has to pinch it to read", href: "https://pagespeed.web.dev/" },
+	{ text: "a phone has to pinch it to read", href: "https://example.com/" },
 	", and the hours below it ",
 	{ text: "disagree with the map", href: "#paragraph" },
 	". ",

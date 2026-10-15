@@ -264,6 +264,16 @@ body {
 	min-height: 560px;
 }
 
+/* A whole page body (NotFound) fills a page under the site's fixed header.
+   Here it sits mid page, framed to an example, with no header above it to
+   clear. */
+.atelic-ui .gallery-document {
+	--nav-height: 0px;
+	border: 1px solid var(--hairline-strong);
+	border-radius: 12px;
+	overflow: hidden;
+}
+
 /* The artifact pieces: the sign off at a document's close size, and shots
    side by side at the width a document gives them. */
 .atelic-ui .gallery-sign-off {

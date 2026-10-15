@@ -16,9 +16,10 @@ export const gradeLabel: Record<WriteupGrade, string> = {
 };
 
 /**
- * The letter as a chip in its grade's color. The writeup and the monthly page
- * both wear it, so its styles live in the base sheet chain
- * (styles/artifact.css), never in either component's stylesheet.
+ * The letter as a chip in its grade's color. The documents in
+ * @atelic-action/artifact (the writeup, the read, the monthly page) wear it,
+ * so its styles live in the base sheet chain (styles/artifact.css), never in
+ * a document's stylesheet.
  */
 export function GradeChip({ grade }: { grade: WriteupGrade }) {
 	return (

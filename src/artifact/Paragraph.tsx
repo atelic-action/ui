@@ -1,8 +1,8 @@
 import { newTabProps } from "../lib/newTabProps";
 
 /**
- * Plain data text for the documents a routine can write as JSON (the note
- * and the read): a paragraph is a string, or runs of text and links in
+ * Plain data text for the documents in @atelic-action/artifact a routine
+ * can write as JSON (the note and the read): a paragraph is a string, or runs of text and links in
  * order. A link opens in a new tab when it leaves the page, and in place
  * when it is an anchor or a mail link.
  */

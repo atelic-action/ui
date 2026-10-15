@@ -83,8 +83,10 @@ describe("artifactConfig", () => {
 		});
 	});
 
-	it("has the server build compile the package rather than hand it to Node", () => {
-		expect(artifactConfig({ pages: PAGES }).ssr).toEqual({ noExternal: ["@atelic-action/ui"] });
+	it("has the server build compile both packages rather than hand them to Node", () => {
+		expect(artifactConfig({ pages: PAGES }).ssr).toEqual({
+			noExternal: ["@atelic-action/ui", "@atelic-action/artifact"],
+		});
 	});
 
 	it("sets nothing else", () => {
@@ -113,7 +115,11 @@ describe("artifactConfig", () => {
 			"site-own",
 		]);
 		expect(config.server?.proxy).toEqual({ "/proto": "http://127.0.0.1:4000" });
-		expect(config.ssr?.noExternal).toEqual(["@atelic-action/ui", "another-package"]);
+		expect(config.ssr?.noExternal).toEqual([
+			"@atelic-action/ui",
+			"@atelic-action/artifact",
+			"another-package",
+		]);
 		expect(config.resolve?.alias).toEqual({
 			"@": resolve(process.cwd(), "src"),
 			"~": "/site/lib",

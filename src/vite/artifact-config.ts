@@ -55,7 +55,8 @@ export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserCo
 	const config: UserConfig = {
 		// Every stylesheet rides in the one base sheet the root route links
 		// (src/styles/base.css), the documents' own included, since they come from
-		// @atelic-action/ui. Nothing imports CSS from a component, so there is no
+		// @atelic-action/artifact and its pieces from @atelic-action/ui. Nothing
+		// imports CSS from a component, so there is no
 		// component bundle to fold: `build.cssCodeSplit: false`, which sat here to
 		// fold it, now fails the build, because TanStack Start looks for the
 		// `style.css` that setting emits and none is written. A site that gives a
@@ -95,10 +96,11 @@ export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserCo
 				"@": resolve(process.cwd(), "./src"),
 			},
 		},
-		// @atelic-action/ui ships TSX and CSS as written, so the prerender's server build
-		// has to compile it rather than hand it to Node as an external.
+		// @atelic-action/ui and @atelic-action/artifact (the documents) both ship
+		// TSX and CSS as written, so the prerender's server build has to compile
+		// them rather than hand them to Node as externals.
 		ssr: {
-			noExternal: ["@atelic-action/ui"],
+			noExternal: ["@atelic-action/ui", "@atelic-action/artifact"],
 		},
 	};
 	return extend ? mergeConfig(config, extend) : config;
