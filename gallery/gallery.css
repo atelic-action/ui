@@ -264,13 +264,26 @@ body {
 	min-height: 560px;
 }
 
-/* An artifact document fills a page under the site's fixed header. Here it
-   sits mid page, framed to an example, with no header above it to clear. */
+/* A whole page body (NotFound) fills a page under the site's fixed header.
+   Here it sits mid page, framed to an example, with no header above it to
+   clear. */
 .atelic-ui .gallery-document {
 	--nav-height: 0px;
 	border: 1px solid var(--hairline-strong);
 	border-radius: 12px;
 	overflow: hidden;
+}
+
+/* The artifact pieces: the sign off at a document's close size, and shots
+   side by side at the width a document gives them. */
+.atelic-ui .gallery-sign-off {
+	font-size: 14px;
+	color: var(--ink-soft);
+}
+.atelic-ui .gallery-shots {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 240px));
+	gap: 16px;
 }
 
 /* ---- Frames: a box that is the containing block for anything fixed or
@@ -351,11 +364,6 @@ body {
 	font: 0.8rem / 1.5 var(--font-mono);
 	color: var(--ink);
 }
-/* The sealed document's hall fills a screen in a site; framed, a box. */
-.atelic-ui .gallery-sealed .gate-hall {
-	min-height: 420px;
-}
-
 /* The primitives sit in a row so their sizes and surfaces compare at a glance. */
 .atelic-ui .gallery-row {
 	display: flex;

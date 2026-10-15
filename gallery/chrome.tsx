@@ -123,10 +123,10 @@ export function ChromePieces() {
 							}}
 							variant="dark"
 							stops={[
-								{ id: "writeup", label: "Writeup" },
-								{ id: "report", label: "Report" },
-								{ id: "note", label: "Note" },
-								{ id: "gate", label: "Gate" },
+								{ id: "grade-chip", label: "GradeChip" },
+								{ id: "sign-off", label: "SignOff" },
+								{ id: "shot", label: "Shot" },
+								{ id: "paragraph", label: "Paragraph" },
 							]}
 						/>
 						<FramePage />

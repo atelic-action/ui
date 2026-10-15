@@ -6,7 +6,7 @@ The package ships source, not a build. Its TSX and CSS arrive as written and com
 
 ## Component Index
 
-Every export, grouped by the entry it is imported from. The gallery column links the section of [ui.atelic.me](https://ui.atelic.me) that shows it; none marks an export that draws nothing.
+Every export, grouped by the entry it is imported from. The gallery column links the section of [ui.atelic.me](https://ui.atelic.me) that shows it; none marks an export that draws nothing. The composed documents (the writeup, the read, the monthly page, the note, and the sealed document) are not here: since 2.0.0 they live in [`@atelic-action/artifact`](https://github.com/atelic-action/artifact), which builds them from the pieces this package exports.
 
 | Export | Entry | What it is | Gallery |
 |---|---|---|---|
@@ -32,12 +32,10 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `Watermark` | `@atelic-action/ui/components` | The signed in reader's confidential stamp, pill or tiled | [#watermark](https://ui.atelic.me/#watermark) |
 | `readCookie`, `Tone` | `@atelic-action/ui/components` | The cookie reader the watermark uses, and the tone type | none |
 | `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading` | `@atelic-action/ui/primitives` | The small pieces a page is set in | [#primitives](https://ui.atelic.me/#primitives) |
-| `Writeup`, `ratingCell` | `@atelic-action/ui/artifact` | The graded document an owner gets, and its star rating table cell | [#writeup](https://ui.atelic.me/#writeup) |
-| `Read`, `readLabels` | `@atelic-action/ui/artifact` | The read: a customer's baseline grades explained by cause at the end of the first week, with the plan in order, and its default fixed words | [#read](https://ui.atelic.me/#read) |
-| `Report` | `@atelic-action/ui/artifact` | The monthly page an Operate client gets | [#report](https://ui.atelic.me/#report) |
-| `Note` | `@atelic-action/ui/artifact` | The first touch page, for a business with no published email | [#note](https://ui.atelic.me/#note) |
-| `Gate`, `normalizeEmail` | `@atelic-action/ui/artifact` | The sealed document, opened in the browser by the reader's own address | [#gate](https://ui.atelic.me/#gate) |
-| `GradeChip`, `gradeLabel`, `SignOff` | `@atelic-action/ui/artifact` | The grade letter and the sign off the documents share | [#writeup](https://ui.atelic.me/#writeup) |
+| `GradeChip`, `gradeLabel`, `WriteupGrade` | `@atelic-action/ui/artifact` | A section's grade, A to D, as a chip in its color, the letter alone, and the grade type | [#grade-chip](https://ui.atelic.me/#grade-chip) |
+| `SignOff`, `WriteupPerson` | `@atelic-action/ui/artifact` | The close a document ends on, and the person it names | [#sign-off](https://ui.atelic.me/#sign-off) |
+| `Shot`, `WriteupShot` | `@atelic-action/ui/artifact` | The owner's own screen, opening the full picture, over its caption | [#shot](https://ui.atelic.me/#shot) |
+| `Paragraph`, `Runs`, `ArtifactAnchor`, `isEmpty`, `ArtifactLink`, `ArtifactParagraph` | `@atelic-action/ui/artifact` | Plain data text a routine can write as JSON: a paragraph, its runs alone, one link, the empty test, and the two types | [#paragraph](https://ui.atelic.me/#paragraph) |
 | `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, credit band, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
 | `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
 | `buildPageHead`, `canonicalUrl`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
@@ -126,9 +124,11 @@ Prerendering and server rendering have to compile the package too, so keep it ou
 ```ts
 // vite.config.ts
 export default defineConfig({
-	ssr: { noExternal: ["@atelic-action/ui"] },
+	ssr: { noExternal: ["@atelic-action/ui", "@atelic-action/artifact"] },
 });
 ```
+
+A site that renders a document needs `@atelic-action/artifact` kept internal the same way, since it too ships TSX and CSS as written; a site that renders none lists `@atelic-action/ui` alone.
 
 ## CSS Import Order
 
@@ -141,8 +141,9 @@ Import the stylesheets in this order, from the root route or the site's base she
 5. `@atelic-action/ui/styles/primitives.css`
 6. `@atelic-action/ui/styles/gate.css`, on a site that mounts the access gate
 7. `@atelic-action/ui/styles/artifact.css`, on a site that hosts the artifact documents
-8. The site's own CSS
-9. The site's `theme.css`, last
+8. `@atelic-action/artifact/styles/documents.css`, on the same site, for the documents themselves
+9. The site's own CSS
+10. The site's `theme.css`, last
 
 Every rule in the package sheets is scoped under `.atelic-ui`, the one root class a consumer wears: a site puts it on its outermost wrapper, an app on the region that holds a package component. Which sheets it imports decides what it gets, so a site importing `base.css` gets the resets and typography under that class and an app importing `components.css` alone gets none of them.
 
@@ -330,9 +331,9 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 ## The Artifact Documents
 
-`@atelic-action/ui/artifact` is everything the artifact template shared across its cuts, so a fix reaches every business's documents with one version bump:
+`@atelic-action/ui/artifact` is the pieces an artifact document is built from and the site around it, so a fix to a piece reaches every business's documents with one version bump. The composed documents themselves (`Writeup`, `Read`, `Report`, `Note`, and the sealed `Gate`, with their content types and their stylesheet) live in [`@atelic-action/artifact`](https://github.com/atelic-action/artifact) since 2.0.0, which depends on this package for everything below:
 
-- **The documents:** `Writeup`, `Read`, `Report`, `Note`, and `Gate` (the sealed document, with its `GatePayload` type; a reader's address is the key, so a payload never lists it, and the component identifies a reader to HubSpot by the address they typed), plus the `GradeChip` and `SignOff` they share, and every content type they take (`WriteupProps`, `ReadProps`, `ReportProps`, `NoteProps`, `GateProps`, and the rest).
+- **The pieces:** `GradeChip` and `gradeLabel` with the `WriteupGrade` type, `SignOff` with the `WriteupPerson` type, `Shot` with the `WriteupShot` type, and the plain data text (`Paragraph`, `Runs`, `ArtifactAnchor`, and `isEmpty`, with the `ArtifactLink` and `ArtifactParagraph` types: a paragraph is a string or runs of text and `{ text, href }` links, so a routine can write a document as JSON).
 - **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the credit band, and the watermark around a page.
 - **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
 - **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
@@ -351,13 +352,7 @@ export function ArtifactShell(props: Omit<ArtifactShellProps, "currentPath">) {
 }
 ```
 
-**The note** is the first touch for a business whose site publishes no email address, served at `/notes` and wrapped in `ArtifactShell` exactly as the writeup is. It is the writeup's sibling, not a variant: a title and a dateline, the opener, two lanes of findings (what the customer sees, what sits under the hood), the steps the work would start with, and the close over the shared `SignOff`. Every prop is plain data, so a routine can write a note as JSON; a paragraph is a string or an array of strings and `{ text, href }` links, and the sign off person's `role` is the one field that also takes a node. A finding is a `Callout` with its `WriteupShot` under it. Its column is the writeup's 920px, centered under the header with the header's `--gutter`, and its text runs the column's full width. A finding sets its screen under its words on a phone and beside them, on the right, when wide and on paper. It reads on a phone first, stacks the two lanes as separate sections top to bottom at every width and on paper, never side by side, and prints to one letter sheet under the writeup's `@page`.
-
-**The read** is what a customer gets at the end of an engagement's first week, before anything changes: the baseline's grades explained by cause (FOOTPRINT.md, What the Owner Gets). It is the writeup's sibling and wears the writeup's own `.op` root, so its column, head, grade chip and key, tier headings, section cards, screens, sources, close, and print rules are the writeup's; `artifact.css` adds only its `.rd` classes. Top to bottom: a title, the dateline, and a lede of two or three sentences; the gist table (Section, Grade, The Gist), drawn from the tiers so it can never disagree with the body, each section's name linking to its card and a section with no grade showing a quiet dash; then each tier's sections, each headed by its question with its trade name over it and its grade beside it, in three beats (what we found, with an optional short list of examples and any proof pictures in a row under their captions; why, one sentence set apart; what changes) and the tools it was read from; then the plan, numbered, each step a bold title and a sentence or two, with `who` naming a step that is the owner's own; then one closing line over the shared `SignOff`. A later tier (Conversion, once the analytics access lands) is one more entry in `tiers` and appears in the table and the body alike, with no change to the props, and a tier with no sections yet is left out of both. Every prop is plain data, the note's paragraph shape (a string, or runs of text and `{ text, href }` links), so a routine can write a read as JSON. The fixed words (the column heads, the beat labels, the plan's heading) are `readLabels`, and `labels` overrides any of them. A site wraps it in `ArtifactShell` exactly as it wraps the writeup; it sets no `@page`, so the writeup's stays the one that wins.
-
-**The sealed document's classes.** `Gate` renders the opened document as the HTML it was sealed from, so its markup is the content's, and `artifact.css` styles what that HTML may wear inside `.gate-content`: the tier row (`.gate-tiers` of `.gate-tier` cards, `.is-picked` on the recommended one, `.gate-tier-name`, `.gate-tier-price`, `.gate-tier-note`, and the `.gate-tier-math` sum column of `.gate-tier-was`, `.gate-tier-credit`, `.gate-tier-mathlabel`, and the price), `ul.icon-list` for a list led by inline lucide icons (sized for the card inside a tier), `ul.gate-checks`, and, from 1.0.0 (ATE-599, pulled up from the Wynkoop and Outdoors Geek hosts), the `.gate-addons` row that seats two `.gate-tier.is-addon` monthly cards side by side under the builds, an inline SVG mark inside `.gate-tier-mathlabel` that stays on the label's line, and the `.gate-footnote` line under the tiers that the mark points at. A folder stylesheet that carried any of these deletes it.
-
-The documents import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css` and before its `theme.css`, so every page carries the rules whichever route it is. The sheet holds two `@page` rules, the monthly page's and then the writeup's, and the later one wins for every page a site prints; the order inside the sheet is the order the template's build bundled them in and is load bearing.
+The pieces import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css`, then `@atelic-action/artifact/styles/documents.css`, and then its `theme.css`, so every page carries the rules whichever route it is. This sheet holds the pieces alone (the grade chip, the sign off, the shot, and the shell's logo rule) and sets no `@page`; both `@page` rules, the monthly page's and then the writeup's, moved with the documents into their sheet, where their order stays load bearing.
 
 ### The Artifact Vite Config
 
@@ -370,7 +365,7 @@ import { artifactConfig } from "@atelic-action/ui/vite";
 export default artifactConfig({ pages: ["/writeup", "/proposal", "/report"] });
 ```
 
-`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui"]`. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
+`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
 
 A site with a real need of its own passes `extend`, which is merged over the result with Vite's `mergeConfig`:
 
@@ -402,7 +397,7 @@ The package installs the scripts every artifact site used to carry as files, so 
 | `atelic-reader-link <email> [path] [--token <token>] [--qr \| --no-qr]` | Mints a named reader: prints the sealed line for `analytics.identify` and the link to send, and writes `public/images/qr.png` for a public writeup's first reader | `reader` |
 | `atelic-serve-static` | Serves `dist/client` on `127.0.0.1` the way Vercel does, on `PORT` or 4173 | The `webServer` command in `playwright.config.ts` |
 | `atelic-print-sheets <url or dist/client> <out.pdf> [sheets] [page] [port]` | Prints a page to PDF with headless Chrome, reports the sheet count, and fails when a count is given and missed | `print` |
-| `atelic-seal-document <config.json> [out.json]` | Seals a document into the payload `Gate` reads, one wrapped key for each reader. The payload names no one: no address, and readers numbered `r1`, `r2` whatever the config calls them | `seal` |
+| `atelic-seal-document <config.json> [out.json]` | Seals a document into the payload that `@atelic-action/artifact`'s `Gate` reads, one wrapped key for each reader. The payload names no one: no address, and readers numbered `r1`, `r2` whatever the config calls them | `seal` |
 | `atelic-clean-sitemap` | Strips fragment and trailing slash duplicates out of `dist/client/sitemap.xml`; says so and passes when a based build wrote none | A marketing site's `build`, after vite |
 | `atelic-check-base-path` | Fails the build when a root path in `dist/client` lacks the base path, or `vercel.json` lacks (or strays from) the two rewrites a based cut needs; a `VITE_BASE_PATH` rehearsal only warns about `vercel.json` off Vercel | Last step of a marketing site's `build` |
 | `atelic-contact-canary` | Posts a token bearing test message to `$SITE_URL/api/contact` and passes only on a Resend id and the expected destination (`CONTACT_EXPECTED_TO`, `CONTACT_CANARY_TOKEN`); a `.invalid` `SITE_URL` is the off switch | `check:contact`, run daily by the canary workflow |
@@ -892,14 +887,14 @@ An `expiresAt` an hour out keeps the refresh path quiet; one inside five minutes
 
 ## The Gallery
 
-`gallery/` is two static pages. The Components shows everything the package exports that draws (the chrome, the page components, the sections, the documents, and the email) on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published. The second page, [ui.atelic.me/app](https://ui.atelic.me/app) (`gallery/app.html`), runs the app shell for a made up bakery's ops app, on Tailwind through `@tailwindcss/vite`, with its own stylesheet set up the way an app's `globals.css` is; the plugin leaves The Components' plain sheets as they are.
+`gallery/` is two static pages. The Components shows everything the package exports that draws (the chrome, the page components, the sections, the pieces a document is built from, and the email) on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published. The second page, [ui.atelic.me/app](https://ui.atelic.me/app) (`gallery/app.html`), runs the app shell for a made up bakery's ops app, on Tailwind through `@tailwindcss/vite`, with its own stylesheet set up the way an app's `globals.css` is; the plugin leaves The Components' plain sheets as they are.
 
 ```bash
 bun run gallery:dev    # a dev server on the repo's own source
 bun run gallery:build  # the static page, written to gallery/dist
 ```
 
-`vercel.json` builds it the same way and serves `gallery/dist`. Typecheck and lint cover it, and CI builds it, so a component change that breaks the gallery fails CI. **A new component gets a gallery section in the same change**, with each of its meaningfully different forms shown. `gallery/parts.tsx` holds the frame pieces (`Piece`, `Example`, and `Frame`, which holds a fixed piece inside the page), and a group of pieces lives in a file of its own beside `Gallery.tsx` (`chrome.tsx`, `documents.tsx`, `email.tsx`), mounted there with one element. Each document is one whole fictional document, and the sealed one was sealed with the package's own sealing command (`gallery/gate-payload.json`, reader `reader@example.test`).
+`vercel.json` builds it the same way and serves `gallery/dist`. Typecheck and lint cover it, and CI builds it, so a component change that breaks the gallery fails CI. **A new component gets a gallery section in the same change**, with each of its meaningfully different forms shown. `gallery/parts.tsx` holds the frame pieces (`Piece`, `Example`, and `Frame`, which holds a fixed piece inside the page), and a group of pieces lives in a file of its own beside `Gallery.tsx` (`chrome.tsx`, `artifact.tsx`, `email.tsx`), mounted there with one element. The composed documents are shown by `@atelic-action/artifact`, through its own stubs.
 
 ## Releasing
 

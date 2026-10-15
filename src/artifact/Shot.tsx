@@ -12,10 +12,12 @@ export interface WriteupShot {
 
 /**
  * The owner's own screen: the crop, opening the full screenshot in a new tab
- * when it has one, over its caption. The writeup and the note both wear it;
- * its styles (.op-shot) are the writeup's, and the note only sizes it. A
- * linked crop says it opens: a hover title, and an expand badge the note
- * shows on its thumbnails and the writeup keeps hidden.
+ * when it has one, over its caption. The writeup, the read, and the note in
+ * @atelic-action/artifact all wear it, so its styles (.op-shot) live in the
+ * base sheet chain (styles/artifact.css), and each document sizes it in its
+ * own sheet. A linked crop says it opens: a hover title, and an expand badge
+ * hidden by default that a document may turn on (the note does, on its
+ * thumbnails).
  */
 export function Shot({ shot }: { shot: WriteupShot }) {
 	return (
