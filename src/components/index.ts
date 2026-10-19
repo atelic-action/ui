@@ -23,6 +23,7 @@ export {
 	type DisclosureProps,
 } from "./Disclosure";
 export { GateLogin, type GateLoginProps } from "./GateLogin";
+export { IconList, type IconListItem, type IconListProps } from "./IconList";
 export { NotFound, type NotFoundProps } from "./NotFound";
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from "./StackedBar";
 export { describeStarRating, StarRating, type StarRatingProps } from "./StarRating";

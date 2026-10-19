@@ -24,6 +24,24 @@ describe("DataTable", () => {
 		expect(names()).toEqual(["velux skylight", "skylight repair", "velux skylight sizes"]);
 	});
 
+	it("marks a column that hugs its content", () => {
+		const { container } = render(
+			<DataTable
+				columns={[{ label: "Search" }, { label: "", fit: true }]}
+				rows={[{ cells: ["a", "b"] }]}
+			/>,
+		);
+		expect(container.querySelectorAll("[data-fit]")).toHaveLength(2);
+		expect(container.querySelector("th[scope=row]")).not.toHaveAttribute("data-fit");
+	});
+
+	it("stripes every other row by default, and not when told", () => {
+		const { container, rerender } = render(<DataTable columns={columns} rows={rows} />);
+		expect(container.querySelector(".data-table")).toHaveClass("is-striped");
+		rerender(<DataTable columns={columns} rows={rows} striped={false} />);
+		expect(container.querySelector(".data-table")).not.toHaveClass("is-striped");
+	});
+
 	it("opens in the default sort, reading formatted numbers as numbers", () => {
 		render(
 			<DataTable columns={columns} rows={rows} defaultSort={{ column: 1, direction: "desc" }} />,

@@ -390,7 +390,34 @@
 		color: var(--ink-soft);
 	}
 
-	/* ---- The charts' shared key: a swatch, a figure, a label ---- */
+	/* ---- IconList: a list whose bullets are icons, each in a tone ---- */
+	.atelic-ui .icon-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 8px;
+	}
+	.atelic-ui .icon-list li {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		column-gap: 10px;
+		align-items: start;
+		line-height: 1.45;
+		text-wrap: pretty;
+	}
+	/* A list with no tone of its own reads in the text color, whatever tone its ancestor carries; an item's own tone still wins on its row. */
+	.atelic-ui .icon-list:not([data-tone]) {
+		--tone: currentColor;
+	}
+	.atelic-ui .icon-list-bullet {
+		display: inline-flex;
+		margin-top: 0.2em;
+		line-height: 0;
+		color: var(--tone, currentColor);
+	}
+
+	/* ---- The charts' shared key: a swatch, a label, a figure ---- */
 	.atelic-ui .chart-key {
 		list-style: none;
 		margin: 10px 0 0;
@@ -619,6 +646,9 @@
 		border-bottom: 0;
 		padding-bottom: 0;
 	}
+	.atelic-ui .data-table.is-striped tbody tr:nth-child(even) {
+		background: color-mix(in srgb, var(--ink) 3%, transparent);
+	}
 	.atelic-ui .data-table tbody th {
 		width: 100%;
 		text-align: left;
@@ -686,6 +716,10 @@
 		.atelic-ui .data-table [data-align="center"] {
 			text-align: center;
 		}
+		.atelic-ui .data-table [data-fit] {
+			width: 1%;
+			white-space: nowrap;
+		}
 		.atelic-ui .data-table [data-align="right"] {
 			text-align: right;
 		}
@@ -719,10 +753,21 @@
 			color: var(--ui-primary, var(--primary));
 		}
 		.atelic-ui .data-table thead th button svg {
+			flex: none;
 			opacity: 0.55;
 		}
 		.atelic-ui .data-table thead th button[data-active] svg {
 			opacity: 1;
+		}
+		/* Striped, the cells take side padding so the band reads, the last column included. */
+		.atelic-ui .data-table.is-striped th,
+		.atelic-ui .data-table.is-striped td {
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+		.atelic-ui .data-table.is-striped th:last-child,
+		.atelic-ui .data-table.is-striped td:last-child {
+			padding-right: 10px;
 		}
 		.atelic-ui .data-table tbody tr:last-child th,
 		.atelic-ui .data-table tbody tr:last-child td {

@@ -48,8 +48,8 @@ export function StackedBar({ segments, showKey = true, className }: StackedBarPr
 					{segments.map((segment) => (
 						<li key={segment.label} data-tone={segment.tone} style={fill(segment)}>
 							<span className="chart-swatch" aria-hidden="true" />
-							<b>{figure(segment)}</b>
 							<span>{segment.label}</span>
+							<b>{figure(segment)}</b>
 						</li>
 					))}
 				</ul>
