@@ -13,6 +13,8 @@ export interface DataTableColumn {
 	sortable?: boolean;
 	/** The direction a first click sorts in; numbers usually read best largest first. */
 	firstSort?: SortDirection;
+	/** The column hugs its content (a swatch, a mark) instead of sharing the width. */
+	fit?: boolean;
 }
 
 /** A cell whose display is not what it sorts by, e.g. an icon over a number. */
@@ -37,6 +39,8 @@ export interface DataTableProps {
 	defaultSort?: { column: number; direction: SortDirection };
 	/** The label on the phone's sort control. */
 	sortLabel?: string;
+	/** Every other row on a tinted ground, so a wide table reads across. On by default. */
+	striped?: boolean;
 	className?: string;
 }
 
@@ -71,6 +75,7 @@ export function DataTable({
 	rows,
 	defaultSort,
 	sortLabel = "Sort by",
+	striped = true,
 	className,
 }: DataTableProps) {
 	const [sort, setSort] = useState(defaultSort ?? null);
@@ -102,7 +107,7 @@ export function DataTable({
 	};
 
 	return (
-		<div className={["data-table", className].filter(Boolean).join(" ")}>
+		<div className={["data-table", striped && "is-striped", className].filter(Boolean).join(" ")}>
 			{anySortable && (
 				<div className="data-table-sort">
 					<label htmlFor={selectId}>{sortLabel}</label>
@@ -140,6 +145,7 @@ export function DataTable({
 									scope="col"
 									key={column.label}
 									data-align={column.align ?? "left"}
+									data-fit={column.fit || undefined}
 									aria-sort={
 										column.sortable
 											? active
@@ -175,12 +181,17 @@ export function DataTable({
 								const body = isValueCell(cell) ? cell.display : cell;
 								return c === 0 ? (
 									// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
-									<th scope="row" key={c} data-align={align}>
+									<th scope="row" key={c} data-align={align} data-fit={columns[c]?.fit || undefined}>
 										{body}
 									</th>
 								) : (
 									// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
-									<td key={c} data-align={align} data-label={columns[c]?.label}>
+									<td
+										key={c}
+										data-align={align}
+										data-fit={columns[c]?.fit || undefined}
+										data-label={columns[c]?.label}
+									>
 										{body}
 									</td>
 								);

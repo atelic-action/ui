@@ -1,3 +1,4 @@
+import { Globe, Link, MapPin, Plug } from "lucide-react";
 import { useState } from "react";
 import { name as packageName, version } from "../package.json";
 import { CreditBar, type PageStop, SiteHeader, SkipLink } from "../src/chrome";
@@ -10,6 +11,7 @@ import {
 	type DataTableRow,
 	Disclosure,
 	GateLogin,
+	IconList,
 	StackedBar,
 	StarRating,
 	StatRow,
@@ -49,6 +51,7 @@ const stops: PageStop[] = [
 	{ id: "skip-link", label: "SkipLink" },
 	{ id: "not-found", label: "NotFound" },
 	{ id: "checklist", label: "Checklist" },
+	{ id: "icon-list", label: "IconList" },
 	{ id: "data-table", label: "DataTable" },
 	{ id: "stat-row", label: "StatRow" },
 	{ id: "callout", label: "Callout" },
@@ -223,6 +226,42 @@ export function Gallery() {
 										pass: false,
 									},
 									{ label: "A title on every page", pass: true },
+								]}
+							/>
+						</Example>
+					</Piece>
+
+					<Piece
+						id="icon-list"
+						title="IconList"
+						lead="A list whose bullets are icons. One icon and tone for the whole list, or one per item, when each line is a different kind of thing: a list of recommendations, each led by what it touches."
+					>
+						<Example>
+							<IconList
+								icon={<Globe size={16} />}
+								tone="warn"
+								items={[
+									{
+										body: "old.example.com, the previous site, still live with its own contact form.",
+									},
+									{ body: "test.example.com, a one line test page." },
+									{ body: "staging.example.com, a build in progress.", tone: "info" },
+								]}
+							/>
+						</Example>
+						<Example>
+							<IconList
+								items={[
+									{ icon: <Plug size={16} />, body: "Install the SEO plugin and set it once." },
+									{
+										icon: <MapPin size={16} />,
+										body: "Keep a neighborhood page only where five or more jobs sit behind it.",
+									},
+									{
+										icon: <Link size={16} />,
+										body: "Fix the Florida link so it forwards to the Florida site.",
+										tone: "good",
+									},
 								]}
 							/>
 						</Example>

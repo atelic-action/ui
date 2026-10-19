@@ -390,6 +390,29 @@
 		color: var(--ink-soft);
 	}
 
+	/* ---- IconList: a list whose bullets are icons, each in a tone ---- */
+	.atelic-ui .icon-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 8px;
+	}
+	.atelic-ui .icon-list li {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		column-gap: 10px;
+		align-items: start;
+		line-height: 1.45;
+		text-wrap: pretty;
+	}
+	.atelic-ui .icon-list-bullet {
+		display: inline-flex;
+		margin-top: 0.2em;
+		line-height: 0;
+		color: var(--tone, currentColor);
+	}
+
 	/* ---- The charts' shared key: a swatch, a figure, a label ---- */
 	.atelic-ui .chart-key {
 		list-style: none;
@@ -619,6 +642,9 @@
 		border-bottom: 0;
 		padding-bottom: 0;
 	}
+	.atelic-ui .data-table.is-striped tbody tr:nth-child(even) {
+		background: color-mix(in srgb, var(--ink) 3%, transparent);
+	}
 	.atelic-ui .data-table tbody th {
 		width: 100%;
 		text-align: left;
@@ -673,6 +699,11 @@
 			vertical-align: middle;
 			font-weight: 400;
 		}
+		.atelic-ui .data-table.is-striped th,
+		.atelic-ui .data-table.is-striped td {
+			padding-left: 10px;
+			padding-right: 10px;
+		}
 		.atelic-ui .data-table tbody th {
 			width: auto;
 		}
@@ -683,8 +714,16 @@
 		.atelic-ui .data-table td:last-child {
 			padding-right: 0;
 		}
+		.atelic-ui .data-table.is-striped th:last-child,
+		.atelic-ui .data-table.is-striped td:last-child {
+			padding-right: 10px;
+		}
 		.atelic-ui .data-table [data-align="center"] {
 			text-align: center;
+		}
+		.atelic-ui .data-table [data-fit] {
+			width: 1%;
+			white-space: nowrap;
 		}
 		.atelic-ui .data-table [data-align="right"] {
 			text-align: right;
@@ -719,6 +758,7 @@
 			color: var(--ui-primary, var(--primary));
 		}
 		.atelic-ui .data-table thead th button svg {
+			flex: none;
 			opacity: 0.55;
 		}
 		.atelic-ui .data-table thead th button[data-active] svg {
