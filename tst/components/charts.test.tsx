@@ -2,6 +2,15 @@ import { render, screen } from "@testing-library/react";
 import { ColumnChart, StackedBar, ThresholdScale } from "../../src/components";
 
 describe("StackedBar", () => {
+	it("keys each part as its label, then its figure", () => {
+		const { container } = render(
+			<StackedBar segments={[{ label: "< 2.5 s", value: 32, display: "32%", tone: "good" }]} />,
+		);
+		const key = container.querySelector(".chart-key li");
+		expect(key?.textContent).toBe("< 2.5 s32%");
+		expect(key?.lastElementChild?.tagName).toBe("B");
+	});
+
 	it("draws a part for every figure above zero and keys every part", () => {
 		const { container } = render(
 			<StackedBar

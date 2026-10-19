@@ -140,22 +140,20 @@ export function DataTable({
 						{columns.map((column, index) => {
 							const active = sort?.column === index;
 							const Icon = !active ? ArrowUpDown : sort?.direction === "asc" ? ArrowUp : ArrowDown;
+							const head = {
+								"data-align": column.align ?? "left",
+								"data-fit": column.fit || undefined,
+								"aria-sort": column.sortable
+									? active
+										? sort?.direction === "asc"
+											? ("ascending" as const)
+											: ("descending" as const)
+										: ("none" as const)
+									: undefined,
+							};
 							return (
-								<th
-									scope="col"
-									key={column.label}
-									data-align={column.align ?? "left"}
-									data-fit={column.fit || undefined}
-									aria-sort={
-										column.sortable
-											? active
-												? sort?.direction === "asc"
-													? "ascending"
-													: "descending"
-												: "none"
-											: undefined
-									}
-								>
+								// biome-ignore lint/suspicious/noArrayIndexKey: columns sit in order, and two may share a blank label
+								<th scope="col" key={index} {...head}>
 									{column.sortable ? (
 										<button
 											type="button"

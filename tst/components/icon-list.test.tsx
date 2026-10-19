@@ -20,6 +20,15 @@ describe("IconList", () => {
 		expect(screen.getAllByRole("listitem")).toHaveLength(2);
 	});
 
+	it("carries no tone of its own inside a toned ancestor", () => {
+		const { container } = render(
+			<div data-tone="bad">
+				<IconList items={[{ body: "plain" }]} />
+			</div>,
+		);
+		expect(container.querySelector(".icon-list")).not.toHaveAttribute("data-tone");
+	});
+
 	it("lets an item bring its own icon and tone, and falls back to a dot", () => {
 		const { container } = render(
 			<IconList

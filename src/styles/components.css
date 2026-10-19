@@ -406,6 +406,10 @@
 		line-height: 1.45;
 		text-wrap: pretty;
 	}
+	/* A list with no tone of its own reads in the text color, whatever tone its ancestor carries; an item's own tone still wins on its row. */
+	.atelic-ui .icon-list:not([data-tone]) {
+		--tone: currentColor;
+	}
 	.atelic-ui .icon-list-bullet {
 		display: inline-flex;
 		margin-top: 0.2em;
@@ -413,7 +417,7 @@
 		color: var(--tone, currentColor);
 	}
 
-	/* ---- The charts' shared key: a swatch, a figure, a label ---- */
+	/* ---- The charts' shared key: a swatch, a label, a figure ---- */
 	.atelic-ui .chart-key {
 		list-style: none;
 		margin: 10px 0 0;
