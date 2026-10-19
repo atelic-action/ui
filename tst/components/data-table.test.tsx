@@ -26,7 +26,10 @@ describe("DataTable", () => {
 
 	it("marks a column that hugs its content", () => {
 		const { container } = render(
-			<DataTable columns={[{ label: "Search" }, { label: "", fit: true }]} rows={[{ cells: ["a", "b"] }]} />,
+			<DataTable
+				columns={[{ label: "Search" }, { label: "", fit: true }]}
+				rows={[{ cells: ["a", "b"] }]}
+			/>,
 		);
 		expect(container.querySelectorAll("[data-fit]")).toHaveLength(2);
 		expect(container.querySelector("th[scope=row]")).not.toHaveAttribute("data-fit");

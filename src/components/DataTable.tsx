@@ -177,21 +177,19 @@ export function DataTable({
 					{sorted.map(({ row, index }) => (
 						<tr key={index} data-tone={row.tone}>
 							{row.cells.map((cell, c) => {
-								const align = columns[c]?.align ?? "left";
 								const body = isValueCell(cell) ? cell.display : cell;
+								const shape = {
+									"data-align": columns[c]?.align ?? "left",
+									"data-fit": columns[c]?.fit || undefined,
+								};
 								return c === 0 ? (
 									// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
-									<th scope="row" key={c} data-align={align} data-fit={columns[c]?.fit || undefined}>
+									<th scope="row" key={c} {...shape}>
 										{body}
 									</th>
 								) : (
 									// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
-									<td
-										key={c}
-										data-align={align}
-										data-fit={columns[c]?.fit || undefined}
-										data-label={columns[c]?.label}
-									>
+									<td key={c} {...shape} data-label={columns[c]?.label}>
 										{body}
 									</td>
 								);

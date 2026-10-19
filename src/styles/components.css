@@ -699,11 +699,6 @@
 			vertical-align: middle;
 			font-weight: 400;
 		}
-		.atelic-ui .data-table.is-striped th,
-		.atelic-ui .data-table.is-striped td {
-			padding-left: 10px;
-			padding-right: 10px;
-		}
 		.atelic-ui .data-table tbody th {
 			width: auto;
 		}
@@ -713,10 +708,6 @@
 		.atelic-ui .data-table th:last-child,
 		.atelic-ui .data-table td:last-child {
 			padding-right: 0;
-		}
-		.atelic-ui .data-table.is-striped th:last-child,
-		.atelic-ui .data-table.is-striped td:last-child {
-			padding-right: 10px;
 		}
 		.atelic-ui .data-table [data-align="center"] {
 			text-align: center;
@@ -763,6 +754,16 @@
 		}
 		.atelic-ui .data-table thead th button[data-active] svg {
 			opacity: 1;
+		}
+		/* Striped, the cells take side padding so the band reads, the last column included. */
+		.atelic-ui .data-table.is-striped th,
+		.atelic-ui .data-table.is-striped td {
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+		.atelic-ui .data-table.is-striped th:last-child,
+		.atelic-ui .data-table.is-striped td:last-child {
+			padding-right: 10px;
 		}
 		.atelic-ui .data-table tbody tr:last-child th,
 		.atelic-ui .data-table tbody tr:last-child td {
