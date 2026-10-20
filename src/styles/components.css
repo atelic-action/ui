@@ -307,8 +307,7 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.atelic-ui .disclosure-chevron,
-		.atelic-ui .is-native > .disclosure-head .disclosure-chevron,
-		.atelic-ui .rc-row {
+		.atelic-ui .is-native > .disclosure-head .disclosure-chevron {
 			transition: none;
 		}
 	}
@@ -669,6 +668,11 @@
 		}
 		.atelic-ui .rc-go {
 			display: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .rc-row {
+			transition: none;
 		}
 	}
 	.atelic-ui .rc-row:has(.rc-name a):hover,
