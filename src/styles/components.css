@@ -462,6 +462,11 @@
 		border-color: #b3261e;
 		background: #fdecea;
 	}
+	@media screen and (max-width: 899px) {
+		.atelic-ui .op-grade {
+			font-size: 10px;
+		}
+	}
 
 	/* ---- ReportCard: a name, a grade, and a line per row, in labeled
 	   groups ---- */
@@ -519,7 +524,7 @@
 	.atelic-ui .rc-card {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr) auto;
-		background: var(--card);
+		background: var(--ui-card, var(--card));
 		border: 1px solid var(--neutral-100);
 		border-radius: var(--radius-md);
 		box-shadow: var(--shadow-sm, none);
@@ -614,7 +619,7 @@
 	.atelic-ui .rc-line a {
 		position: relative;
 		z-index: 1;
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}
@@ -668,13 +673,13 @@
 	}
 	.atelic-ui .rc-row:has(.rc-name a):hover,
 	.atelic-ui .rc-row:has(.rc-name a):focus-within {
-		background: color-mix(in srgb, var(--primary) 6%, transparent);
+		background: color-mix(in srgb, var(--ui-primary, var(--primary)) 6%, transparent);
 	}
 	.atelic-ui .rc-row:has(.rc-name a):hover .rc-name,
 	.atelic-ui .rc-row:has(.rc-name a):focus-within .rc-name,
 	.atelic-ui .rc-row:has(.rc-name a):hover .rc-go,
 	.atelic-ui .rc-row:has(.rc-name a):focus-within .rc-go {
-		color: var(--primary);
+		color: var(--ui-primary, var(--primary));
 	}
 
 	/* ---- The charts' shared key: a swatch, a label, a figure ---- */

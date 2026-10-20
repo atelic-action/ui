@@ -355,7 +355,7 @@ export function ArtifactShell(props: Omit<ArtifactShellProps, "currentPath">) {
 }
 ```
 
-The pieces import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css`, then `@atelic-action/artifact/styles/documents.css`, and then its `theme.css`, so every page carries the rules whichever route it is. This sheet holds the pieces alone (the sign off, the shot, the shell's logo rule, and the grade chip's phone size; the chip's own rules sit in `components.css`, since `ReportCard` wears it) and sets no `@page`; both `@page` rules, the monthly page's and then the writeup's, moved with the documents into their sheet, where their order stays load bearing.
+The pieces import no stylesheet of their own. A site imports `@atelic-action/ui/styles/artifact.css` in its base sheet after `gate.css`, then `@atelic-action/artifact/styles/documents.css`, and then its `theme.css`, so every page carries the rules whichever route it is. This sheet holds the pieces alone (the sign off, the shot, the shell's logo rule, ; the grade chip's rules sit in `components.css`, since `ReportCard` wears it) and sets no `@page`; both `@page` rules, the monthly page's and then the writeup's, moved with the documents into their sheet, where their order stays load bearing.
 
 ### The Artifact Vite Config
 

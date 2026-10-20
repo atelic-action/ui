@@ -17,8 +17,8 @@
 	   Tokens only.
 	   ================================================================= */
 
-	/* The grade chip's rules live in components.css, since ReportCard wears
-	   it there; this sheet keeps only its size on a phone. */
+	/* The grade chip's rules, its phone size included, live in components.css,
+	   since ReportCard wears it there and an app may load that sheet alone. */
 
 	/* ---- the sign off lockup: its container sets the size and the color ---- */
 	.atelic-ui .op-who {
@@ -52,9 +52,6 @@
 	}
 
 	@media screen and (max-width: 899px) {
-		.atelic-ui .op-grade {
-			font-size: 10px;
-		}
 		.atelic-ui .op-sign {
 			font-size: 22px;
 		}
