@@ -44,6 +44,7 @@ describe("ReportCard", () => {
 			"Visibility",
 		]);
 		expect(screen.getAllByRole("heading")).toHaveLength(1);
+		expect(screen.getByRole("region", { name: "At a Glance" })).toHaveClass("report-card");
 		const legend = container.querySelector(".rc-legend") as HTMLElement;
 		expect(within(legend).getByText("Clean")).toBeInTheDocument();
 		expect(legend.querySelector(".op-grade")).toHaveAttribute("data-grade", "a");

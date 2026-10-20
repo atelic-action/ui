@@ -1,5 +1,5 @@
 import { ChevronRight } from "lucide-react";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode, useId } from "react";
 import { GradeChip, gradeLabel, type WriteupGrade } from "../artifact/GradeChip";
 
 export interface ReportCardRow {
@@ -72,6 +72,7 @@ export function ReportCard({
 	className,
 }: ReportCardProps) {
 	// An override left undefined keeps the default, so a caller can pass what it has.
+	const titleId = useId();
 	const labels = { ...reportCardLabels };
 	for (const key of Object.keys(labels) as Array<keyof ReportCardLabels>) {
 		const word = overrides?.[key];
@@ -93,17 +94,23 @@ export function ReportCard({
 		<section
 			className={["report-card", className].filter(Boolean).join(" ")}
 			id={id}
+			aria-labelledby={title ? titleId : undefined}
 			aria-label={title ? undefined : label}
 		>
 			{(title || (hasLegend && legendAt === "head")) && (
 				<div className="rc-head">
-					{title && <h2 className="rc-title">{title}</h2>}
+					{title && (
+						<h2 className="rc-title" id={titleId}>
+							{title}
+						</h2>
+					)}
 					{legendAt === "head" && key}
 				</div>
 			)}
 			<div className="rc-card">
-				{shown.map((group) => (
-					<Fragment key={group.title}>
+				{shown.map((group, g) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: two groups may share a title
+					<Fragment key={`${g}-${group.title}`}>
 						<div className="rc-group">{group.title}</div>
 						{group.rows.map((row, i) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: rows are static content in a fixed order
