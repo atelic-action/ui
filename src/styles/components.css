@@ -417,6 +417,212 @@
 		color: var(--tone, currentColor);
 	}
 
+	/* ---- ReportCard: a name, a grade, and a line per row, in labeled
+	   groups ---- */
+	.atelic-ui .report-card {
+		min-width: 0;
+	}
+	.atelic-ui .rc-head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px 20px;
+		margin-bottom: 10px;
+	}
+	.atelic-ui .rc-title {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--neutral-500);
+	}
+	.atelic-ui .rc-legend {
+		list-style: none;
+		margin: 0 0 0 auto;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 16px;
+		font-size: 13.5px;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .rc-legend-foot {
+		justify-content: flex-end;
+		margin: 10px 0 0;
+		padding: 0 4px;
+	}
+	.atelic-ui .rc-legend li {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+	}
+	.atelic-ui .rc-legend .op-grade {
+		width: 22px;
+		height: 22px;
+		margin-left: 0;
+		border-radius: 6px;
+		font-size: 12px;
+	}
+	.atelic-ui .rc-card {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		background: var(--card);
+		border: 1px solid var(--neutral-100);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm, none);
+		overflow: hidden;
+	}
+	.atelic-ui .rc-group {
+		grid-column: 1 / -1;
+		margin: 0;
+		padding: 7px 16px;
+		background: var(--surface-alt, var(--neutral-100));
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
+	}
+	/* A row is a subgrid of the card, so its parts line up down the card. On
+	   a phone the name sits over the line; wide, they sit side by side. The
+	   name's link stretches over the whole row. */
+	.atelic-ui .rc-row {
+		position: relative;
+		grid-column: 1 / -1;
+		display: grid;
+		grid-template-columns: subgrid;
+		grid-template-rows: auto auto;
+		column-gap: 12px;
+		row-gap: 2px;
+		align-items: center;
+		align-content: center;
+		padding: 12px 12px 12px 16px;
+		border-top: 1px solid var(--neutral-100);
+		transition: background-color 120ms ease;
+	}
+	.atelic-ui .rc-grade {
+		grid-row: 1 / span 2;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.atelic-ui .rc-grade .op-grade {
+		width: 30px;
+		height: 30px;
+		margin-left: 0;
+		border-radius: 9px;
+		font-size: 15px;
+	}
+	.atelic-ui .rc-before .op-grade {
+		opacity: 0.45;
+	}
+	.atelic-ui .rc-dash {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		color: var(--neutral-500);
+	}
+	.atelic-ui .rc-dash::before {
+		content: "";
+		width: 12px;
+		border-top: 2px solid currentColor;
+	}
+	.atelic-ui .rc-name {
+		grid-column: 2;
+		font-size: 16px;
+		font-weight: 650;
+		letter-spacing: -0.01em;
+		line-height: 1.35;
+		color: var(--ink);
+	}
+	.atelic-ui .rc-name a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.atelic-ui .rc-name a::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+	.atelic-ui .rc-line {
+		grid-column: 2;
+		font-size: 15px;
+		line-height: 1.45;
+		color: var(--ink-soft);
+		text-wrap: pretty;
+	}
+	.atelic-ui .rc-line a {
+		position: relative;
+		z-index: 1;
+		color: var(--primary);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.atelic-ui .rc-go {
+		grid-column: 3;
+		grid-row: 1 / span 2;
+		color: var(--neutral-500);
+	}
+	.atelic-ui .rc-sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	@media print, (min-width: 721px) {
+		.atelic-ui .rc-card {
+			grid-template-columns: auto 232px minmax(0, 1fr) auto;
+		}
+		.atelic-ui .rc-group {
+			padding: 7px 20px;
+		}
+		.atelic-ui .rc-row {
+			grid-template-rows: auto;
+			column-gap: 16px;
+			padding: 11px 14px 11px 20px;
+		}
+		.atelic-ui .rc-grade,
+		.atelic-ui .rc-go {
+			grid-row: 1;
+		}
+		.atelic-ui .rc-line {
+			grid-column: 3;
+		}
+		.atelic-ui .rc-go {
+			grid-column: 4;
+		}
+	}
+	@media print {
+		.atelic-ui .rc-card {
+			box-shadow: none;
+			border-color: var(--neutral-200);
+		}
+		.atelic-ui .rc-go {
+			display: none;
+		}
+	}
+	.atelic-ui .rc-row:hover,
+	.atelic-ui .rc-row:focus-within {
+		background: color-mix(in srgb, var(--primary) 6%, transparent);
+	}
+	.atelic-ui .rc-row:hover .rc-name,
+	.atelic-ui .rc-row:focus-within .rc-name,
+	.atelic-ui .rc-row:hover .rc-go,
+	.atelic-ui .rc-row:focus-within .rc-go {
+		color: var(--primary);
+	}
+
 	/* ---- The charts' shared key: a swatch, a label, a figure ---- */
 	.atelic-ui .chart-key {
 		list-style: none;
@@ -445,6 +651,24 @@
 		background: var(--tone-fill);
 		align-self: center;
 		flex: none;
+	}
+
+	/* ---- Rank: a figure with its badge; the figure's slot is a fixed
+	   width, so every rank in a column is the same width and the badges
+	   line up down it ---- */
+	.atelic-ui .rank {
+		display: inline-grid;
+		grid-template-columns: auto minmax(2.4em, auto);
+		column-gap: 8px;
+		align-items: center;
+	}
+	.atelic-ui .rank .chart-swatch {
+		justify-self: start;
+	}
+	.atelic-ui .rank > a,
+	.atelic-ui .rank > span:last-child {
+		justify-self: end;
+		font-variant-numeric: tabular-nums;
 	}
 
 	/* ---- StackedBar: one bar, the parts of a whole ---- */

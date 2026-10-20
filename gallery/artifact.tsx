@@ -2,6 +2,7 @@ import { GradeChip, gradeLabel, type WriteupGrade } from "../src/artifact/GradeC
 import { type ArtifactParagraph, isEmpty, Paragraph, Runs } from "../src/artifact/Paragraph";
 import { Shot } from "../src/artifact/Shot";
 import { SignOff, type WriteupPerson } from "../src/artifact/SignOff";
+import { ReportCard } from "../src/components/ReportCard";
 import { Example, Piece } from "./parts";
 
 /*
@@ -66,6 +67,101 @@ export function ArtifactPieces() {
 				</Example>
 				<Example caption="gradeLabel, the letter alone">
 					<p>{grades.map(({ grade }) => gradeLabel[grade]).join(" ")}</p>
+				</Example>
+			</Piece>
+
+			<Piece
+				id="report-card"
+				title="ReportCard"
+				lead="A name, a grade, and one line on it per row, in labeled groups. A row with an href is a link from edge to edge, with a chevron at its end, and a link inside the line still goes where it points. On a later card the earlier grade sits faded beside the grade, and a section not yet read carries a dash."
+			>
+				<Example caption="The first card, with a legend">
+					<ReportCard
+						title="At a Glance"
+						legend={[
+							{ grade: "a", label: "Clean" },
+							{ grade: "b", label: "Works, with a quick win left" },
+							{ grade: "c", label: "A customer feels it" },
+							{ grade: "d", label: "Broken" },
+						]}
+						groups={[
+							{
+								title: "Health",
+								rows: [
+									{
+										name: "Technical SEO",
+										href: "#report-card",
+										grade: "b",
+										line: "Every page that matters is in Google. Two of the menu pages copy each other, and Google shows the older one.",
+									},
+									{
+										name: "Core Web Vitals",
+										href: "#report-card",
+										grade: "c",
+										line: "The home page shows its first loaf in ~4 s on a phone, where Google's line is 2.5 s.",
+									},
+								],
+							},
+							{
+								title: "Visibility",
+								rows: [
+									{
+										name: "Local SEO",
+										href: "#report-card",
+										grade: "a",
+										line: "First on the map for bakery near me across the neighborhood, with a review a week.",
+									},
+									{
+										name: "GEO",
+										href: "#report-card",
+										grade: "b",
+										line: (
+											<>
+												Named in 9 of 12 answers; the three misses ask about{" "}
+												<a href="#report-card">gluten free</a>, which the site never says.
+											</>
+										),
+									},
+								],
+							},
+						]}
+					/>
+				</Example>
+				<Example caption="A later card: what moved, and a section not yet read">
+					<ReportCard
+						label="At a glance"
+						labels={{ before: "June 2026" }}
+						groups={[
+							{
+								title: "Health",
+								rows: [
+									{
+										name: "Technical SEO",
+										href: "#report-card",
+										grade: "a",
+										before: "b",
+										line: "The duplicate menu page is gone, and Google shows the right one.",
+									},
+									{
+										name: "Core Web Vitals",
+										href: "#report-card",
+										grade: "c",
+										before: "c",
+										line: "Still ~4 s on a phone; the hero photo is the next cut.",
+									},
+								],
+							},
+							{
+								title: "Conversion",
+								rows: [
+									{
+										name: "Analytics and Conversion Tracking",
+										line: "Read once the Analytics access lands.",
+									},
+								],
+							},
+						]}
+					/>
 				</Example>
 			</Piece>
 
