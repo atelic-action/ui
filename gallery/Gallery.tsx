@@ -12,6 +12,7 @@ import {
 	Disclosure,
 	GateLogin,
 	IconList,
+	Rank,
 	StackedBar,
 	StarRating,
 	StatRow,
@@ -53,6 +54,7 @@ const stops: PageStop[] = [
 	{ id: "checklist", label: "Checklist" },
 	{ id: "icon-list", label: "IconList" },
 	{ id: "data-table", label: "DataTable" },
+	{ id: "rank", label: "Rank" },
 	{ id: "stat-row", label: "StatRow" },
 	{ id: "callout", label: "Callout" },
 	{ id: "disclosure", label: "Disclosure" },
@@ -63,6 +65,7 @@ const stops: PageStop[] = [
 	{ id: "gate-login", label: "GateLogin" },
 	{ id: "watermark", label: "Watermark" },
 	{ id: "grade-chip", label: "GradeChip" },
+	{ id: "report-card", label: "ReportCard" },
 	{ id: "sign-off", label: "SignOff" },
 	{ id: "shot", label: "Shot" },
 	{ id: "paragraph", label: "Paragraph" },
@@ -281,6 +284,44 @@ export function Gallery() {
 						</Example>
 						<Example caption="With a row tone, listed as given">
 							<DataTable columns={searchColumns} rows={searchRows} />
+						</Example>
+					</Piece>
+
+					<Piece
+						id="rank"
+						title="Rank"
+						lead="A figure with its badge, for a table cell: a rank, a place in an answer, or a dash for none, each in a tone, linked when it has somewhere to go. The figure's slot is a fixed width, so every rank in a column is the same width and the badges line up down it."
+					>
+						<Example caption="Where each search lands, on two sites">
+							<DataTable
+								columns={[
+									{ label: "Search" },
+									{ label: "Main site", align: "right" },
+									{ label: "Bakehouse site", align: "right" },
+								]}
+								rows={[
+									{
+										cells: [
+											"sourdough near me",
+											<Rank key="a" figure="2" tone="good" meaning="Top three" href="#rank" />,
+											<Rank
+												key="b"
+												figure="14"
+												tone="bad"
+												meaning="Beyond the top ten"
+												href="#rank"
+											/>,
+										],
+									},
+									{
+										cells: [
+											"bakery denver",
+											<Rank key="a" figure="7" tone="warn" meaning="Top ten" href="#rank" />,
+											<Rank key="b" figure="–" tone="bad" meaning="Not ranked" />,
+										],
+									},
+								]}
+							/>
 						</Example>
 					</Piece>
 

@@ -25,6 +25,15 @@ export {
 export { GateLogin, type GateLoginProps } from "./GateLogin";
 export { IconList, type IconListItem, type IconListProps } from "./IconList";
 export { NotFound, type NotFoundProps } from "./NotFound";
+export { Rank, type RankProps } from "./Rank";
+export {
+	ReportCard,
+	type ReportCardGroup,
+	type ReportCardLabels,
+	type ReportCardProps,
+	type ReportCardRow,
+	reportCardLabels,
+} from "./ReportCard";
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from "./StackedBar";
 export { describeStarRating, StarRating, type StarRatingProps } from "./StarRating";
 export {
