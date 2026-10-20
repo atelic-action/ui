@@ -14,11 +14,11 @@
 	   rather than in a component's stylesheet, so it can never vanish from
 	   a page that does not import the component that defined it.
 
-	   Tokens only, with one deliberate literal set: the four grade colors.
+	   Tokens only.
 	   ================================================================= */
 
 	/* The grade chip's rules live in components.css, since ReportCard wears
-	   it there; this sheet keeps only its print size. */
+	   it there; this sheet keeps only its size on a phone. */
 
 	/* ---- the sign off lockup: its container sets the size and the color ---- */
 	.atelic-ui .op-who {

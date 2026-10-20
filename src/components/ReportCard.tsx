@@ -82,8 +82,9 @@ export function ReportCard({
 	const hasLegend = legend !== undefined && legend.length > 0;
 	const key = hasLegend && (
 		<ul className={legendAt === "foot" ? "rc-legend rc-legend-foot" : "rc-legend"}>
-			{legend.map((entry) => (
-				<li key={entry.grade}>
+			{legend.map((entry, i) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: a legend is static, and two entries may share a letter
+				<li key={`${i}-${entry.grade}`}>
 					<GradeChip grade={entry.grade} />
 					<span>{entry.label}</span>
 				</li>
@@ -133,7 +134,7 @@ export function ReportCard({
 										</>
 									) : (
 										<>
-											<span className="rc-sr">{labels.notGraded}</span>
+											<span className="rc-sr">{`${labels.notGraded}: `}</span>
 											<span className="rc-dash" aria-hidden="true" />
 										</>
 									)}

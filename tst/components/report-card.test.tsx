@@ -79,7 +79,7 @@ describe("ReportCard", () => {
 			"true",
 		);
 		const unread = row("Core Web Vitals");
-		expect(within(unread).getByText("Not graded yet")).toBeInTheDocument();
+		expect(within(unread).getByText("Not graded yet:")).toBeInTheDocument();
 		expect(unread.querySelector(".rc-dash")).toHaveAttribute("aria-hidden", "true");
 		expect(unread.querySelector(".op-grade")).toBeNull();
 		expect(within(row("Technical SEO")).queryByText(/Before:/)).toBeNull();
@@ -97,7 +97,7 @@ describe("ReportCard", () => {
 		expect(container.querySelector(".rc-head")).toBeNull();
 		expect(within(row("Local SEO")).getByText("June 2026: C.")).toBeInTheDocument();
 		expect(within(row("Local SEO")).getByText("Now A:")).toBeInTheDocument();
-		expect(within(row("Core Web Vitals")).getByText("Unread")).toBeInTheDocument();
+		expect(within(row("Core Web Vitals")).getByText("Unread:")).toBeInTheDocument();
 	});
 
 	it("sets the legend under the card when asked, leaving the head to the title", () => {

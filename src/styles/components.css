@@ -307,7 +307,8 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.atelic-ui .disclosure-chevron,
-		.atelic-ui .is-native > .disclosure-head .disclosure-chevron {
+		.atelic-ui .is-native > .disclosure-head .disclosure-chevron,
+		.atelic-ui .rc-row {
 			transition: none;
 		}
 	}
