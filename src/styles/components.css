@@ -666,6 +666,9 @@
 			box-shadow: none;
 			border-color: var(--neutral-200);
 		}
+		.atelic-ui .rc-row {
+			break-inside: avoid;
+		}
 		.atelic-ui .rc-go {
 			display: none;
 		}
