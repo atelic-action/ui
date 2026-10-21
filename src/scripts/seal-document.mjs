@@ -82,15 +82,15 @@ async function deriveKey(email, salt) {
 }
 
 /**
- * Encrypt `contentHtml` once and wrap the content key for each person.
+ * Encrypt `contentHTML` once and wrap the content key for each person.
  * `people` is [{ id, email }]. The email is the reader's secret, the thing
  * their key derives from, so it never reaches the payload; nor does the id,
  * which is often a first name. A sealed reader is an ordinal (`r1`, `r2`)
  * and their wrap, and nothing that says who they are.
  */
-export async function sealDocument(contentHtml, people) {
-	if (typeof contentHtml !== "string" || contentHtml.length === 0) {
-		throw new Error("contentHtml is empty; nothing to seal");
+export async function sealDocument(contentHTML, people) {
+	if (typeof contentHTML !== "string" || contentHTML.length === 0) {
+		throw new Error("contentHTML is empty; nothing to seal");
 	}
 	if (!Array.isArray(people) || people.length === 0) {
 		throw new Error("no people; a payload nobody can open is not worth building");
@@ -109,7 +109,7 @@ export async function sealDocument(contentHtml, people) {
 		await webcrypto.subtle.encrypt(
 			{ name: "AES-GCM", iv: civ },
 			contentKey,
-			encoder.encode(contentHtml),
+			encoder.encode(contentHTML),
 		),
 	);
 
@@ -160,8 +160,8 @@ export async function main(args = argv.slice(2)) {
 	const config = JSON.parse(readFileSync(configFile, "utf8"));
 	if (!config.content) throw new Error(`${configPath} has no "content" path`);
 
-	const contentHtml = readFileSync(resolve(dirname(configFile), config.content), "utf8");
-	const payload = await sealDocument(contentHtml, config.people);
+	const contentHTML = readFileSync(resolve(dirname(configFile), config.content), "utf8");
+	const payload = await sealDocument(contentHTML, config.people);
 
 	const out = resolve(outPath ?? "gate-payload.json");
 	writeFileSync(out, `${JSON.stringify(payload, null, "\t")}\n`);

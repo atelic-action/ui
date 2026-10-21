@@ -41,7 +41,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `Paragraph`, `Runs`, `ArtifactAnchor`, `isEmpty`, `ArtifactLink`, `ArtifactParagraph` | `@atelic-action/ui/artifact` | Plain data text a routine can write as JSON: a paragraph, its runs alone, one link, the empty test, and the two types | [#paragraph](https://ui.atelic.me/#paragraph) |
 | `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, credit band, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
 | `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
-| `buildPageHead`, `canonicalUrl`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
+| `buildPageHead`, `canonicalURL`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
 | `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document; the second entry is the same six, built, for what Node runs | none |
 | `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page | [#email](https://ui.atelic.me/#email) |
 | `Card`, `Row`, `FoldRow`, `Eyebrow`, `SubEyebrow`, `Fold`, `BigFold` | `@atelic-action/ui/email` | The containers and labels an email's sections sit in | [#email](https://ui.atelic.me/#email) |
@@ -338,7 +338,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 - **The pieces:** `GradeChip` and `gradeLabel` with the `WriteupGrade` type, `SignOff` with the `WriteupPerson` type, `Shot` with the `WriteupShot` type, and the plain data text (`Paragraph`, `Runs`, `ArtifactAnchor`, and `isEmpty`, with the `ArtifactLink` and `ArtifactParagraph` types: a paragraph is a string or runs of text and `{ text, href }` links, so a routine can write a document as JSON).
 - **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the credit band, and the watermark around a page.
-- **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
+- **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalURL` with their `PageMeta` type.
 - **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
 - **The error boundary:** `AppErrorBoundary` and its `ErrorFallback`.
 - **`newTabProps`,** for the links a content module writes.
