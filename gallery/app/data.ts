@@ -18,7 +18,7 @@ export const appConfig: AppConfig = {
 	publicRoutes: ["/"],
 	publicPages: ["/u/*"],
 	// Nothing is fetched: the gallery seeds the signed in user into the cache.
-	apiBaseUrl: "https://api.example.test",
+	apiBaseURL: "https://api.example.test",
 };
 
 export const navItems: NavItem[] = [

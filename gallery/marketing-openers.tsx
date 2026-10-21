@@ -33,8 +33,8 @@ export function MarketingOpeners() {
 						</>
 					}
 					subtitle="Sourdough, morning buns, and cakes to order, baked in the back of the shop every day but Monday."
-					primaryCta={{ label: "Order ahead", href: "#hero" }}
-					secondaryCta={{ label: "See the menu", href: "#hero" }}
+					primaryCTA={{ label: "Order ahead", href: "#hero" }}
+					secondaryCTA={{ label: "See the menu", href: "#hero" }}
 					trust={[
 						{ value: "1,200", label: "Loaves a week" },
 						{ value: "4.9", label: "Average review" },
@@ -138,8 +138,8 @@ export function MarketingOpeners() {
 						</>
 					}
 					lead="Two days' notice for most cakes, a week for anything tiered."
-					primaryCta={{ label: "Order a cake", href: "#cta-banner" }}
-					secondaryCta={{ label: "See flavors", href: "#cta-banner" }}
+					primaryCTA={{ label: "Order a cake", href: "#cta-banner" }}
+					secondaryCTA={{ label: "See flavors", href: "#cta-banner" }}
 				/>
 			</Specimen>
 

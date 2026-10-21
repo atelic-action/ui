@@ -35,7 +35,7 @@ export async function refreshAccessToken(): Promise<RefreshResponse> {
 	}
 
 	refreshPromise = (async () => {
-		const response = await fetch(`${getAppConfig().apiBaseUrl}/v1/auth/refresh`, {
+		const response = await fetch(`${getAppConfig().apiBaseURL}/v1/auth/refresh`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

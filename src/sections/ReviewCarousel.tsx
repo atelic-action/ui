@@ -28,7 +28,7 @@ export interface ReviewCarouselProps {
 	 * the prop is inert. Prefer a count the profile can't outgrow ("100+"),
 	 * since the live number climbs and the caption doesn't.
 	 */
-	profileUrl?: string;
+	profileURL?: string;
 	/** Short paragraph under the caption: where the reviews come from. */
 	lead?: ReactNode;
 	/** Optional value/label row (three reads well). Omit to hide entirely. */
@@ -68,7 +68,7 @@ function quoteSize(quote: string): string {
  * Per-review stars are opt-in per item (`rating`), like `ReviewWall`:
  * render them only when the source actually shows them.
  *
- * `profileUrl` turns the caption into a link out to the live review
+ * `profileURL` turns the caption into a link out to the live review
  * profile, carrying the wall's dated-source idiom (quiet text, trailing
  * arrow, new tab) so a visitor can check the aggregate at the source.
  */
@@ -78,7 +78,7 @@ export function ReviewCarousel({
 	outOf = "5",
 	rating,
 	caption,
-	profileUrl,
+	profileURL,
 	lead,
 	stats,
 	items,
@@ -123,10 +123,10 @@ export function ReviewCarousel({
 						<p className="rc-rating">
 							{rating != null && <StarRow rating={rating} size={19} />}
 							{caption &&
-								(profileUrl ? (
+								(profileURL ? (
 									<a
 										className="rc-caption"
-										href={profileUrl}
+										href={profileURL}
 										target="_blank"
 										rel="noopener"
 										aria-label={`${caption}, opens the review profile in a new tab`}

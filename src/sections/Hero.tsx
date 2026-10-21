@@ -30,8 +30,8 @@ export interface HeroProps {
 		 */
 		position?: string;
 	};
-	primaryCta?: HeroCTA;
-	secondaryCta?: HeroCTA;
+	primaryCTA?: HeroCTA;
+	secondaryCTA?: HeroCTA;
 	/** Trust indicators rendered under the CTAs. */
 	trust?: HeroTrustItem[];
 	/** Anchor target for the scroll-down affordance, e.g. "#pain". */
@@ -44,8 +44,8 @@ export function Hero({
 	title,
 	subtitle,
 	image,
-	primaryCta,
-	secondaryCta,
+	primaryCTA,
+	secondaryCTA,
 	trust,
 	scrollTarget,
 }: HeroProps) {
@@ -75,16 +75,16 @@ export function Hero({
 				{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}
 				<h1>{title}</h1>
 				{subtitle && <p className="hero-sub">{subtitle}</p>}
-				{(primaryCta || secondaryCta) && (
+				{(primaryCTA || secondaryCTA) && (
 					<div className="cta-row">
-						{primaryCta && (
-							<Button {...ctaProps(primaryCta, { size: "lg", arrow: true })}>
-								{primaryCta.label}
+						{primaryCTA && (
+							<Button {...ctaProps(primaryCTA, { size: "lg", arrow: true })}>
+								{primaryCTA.label}
 							</Button>
 						)}
-						{secondaryCta && (
-							<Button {...ctaProps(secondaryCta, { variant: "ghost", size: "lg", onDark: true })}>
-								{secondaryCta.label}
+						{secondaryCTA && (
+							<Button {...ctaProps(secondaryCTA, { variant: "ghost", size: "lg", onDark: true })}>
+								{secondaryCTA.label}
 							</Button>
 						)}
 					</div>

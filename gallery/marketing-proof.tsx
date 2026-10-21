@@ -29,7 +29,7 @@ export function MarketingProof() {
 					outOf="5"
 					rating={5}
 					caption="212 reviews"
-					profileUrl="https://reviews.example.com"
+					profileURL="https://reviews.example.com"
 					lead="From the reviews on our profile, the newest first."
 					stats={[
 						{ value: "212", label: "Reviews" },
@@ -159,7 +159,7 @@ export function MarketingProof() {
 					eyebrow="Follow along"
 					title="The bake, every morning."
 					handle="@kestrelhollow"
-					profileUrl="https://social.example.com/kestrelhollow"
+					profileURL="https://social.example.com/kestrelhollow"
 					photos={[
 						{ placeholder: "The morning shelf" },
 						{ placeholder: "Scoring" },

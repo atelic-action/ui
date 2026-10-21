@@ -5,7 +5,7 @@
  * modules under src/features/<feature>/api.ts build on `apiFetch` and never
  * touch `fetch` themselves; swapping the backend means swapping this file and
  * the session module beside it, not the features. The base URL is the app's
- * `apiBaseUrl`, read on every call.
+ * `apiBaseURL`, read on every call.
  */
 
 import { getAppConfig } from "../config";
@@ -81,7 +81,7 @@ async function readBody<T>(response: Response): Promise<T> {
  * page that needs none. GET only by design: nothing public writes.
  */
 export async function publicFetch<T>(endpoint: string): Promise<T> {
-	const response = await fetch(`${getAppConfig().apiBaseUrl}${endpoint}`, {
+	const response = await fetch(`${getAppConfig().apiBaseURL}${endpoint}`, {
 		headers: { Accept: "application/json" },
 	});
 
@@ -98,7 +98,7 @@ export async function publicFetch<T>(endpoint: string): Promise<T> {
  * Handles authentication headers, proactive token refresh, and 401 retry.
  */
 export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-	const url = `${getAppConfig().apiBaseUrl}${endpoint}`;
+	const url = `${getAppConfig().apiBaseURL}${endpoint}`;
 	const skipAuth = isAuthEndpoint(endpoint);
 
 	// Proactive refresh: skip for auth endpoints (login/refresh)
@@ -145,7 +145,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
  * all mirror apiFetch.
  */
 export async function uploadFormData<T>(endpoint: string, formData: FormData): Promise<T> {
-	const url = `${getAppConfig().apiBaseUrl}${endpoint}`;
+	const url = `${getAppConfig().apiBaseURL}${endpoint}`;
 
 	if (!(await ensureValidToken())) {
 		throw new Error("Session expired. Please log in again.");

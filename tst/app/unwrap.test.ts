@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-	type ApiCollectionEnvelope,
-	type ApiEntityEnvelope,
+	type APICollectionEnvelope,
+	type APIEntityEnvelope,
 	unwrapCollection,
 	unwrapEntity,
 } from "../../src/app/lib/unwrap";
@@ -13,7 +13,7 @@ interface TestItem {
 
 describe("unwrapCollection", () => {
 	it("extracts collection array into data", () => {
-		const envelope: ApiCollectionEnvelope<TestItem> = {
+		const envelope: APICollectionEnvelope<TestItem> = {
 			data: {
 				collection: [
 					{ id: "1", name: "First" },
@@ -64,7 +64,7 @@ describe("unwrapCollection", () => {
 	});
 
 	it("handles empty collection", () => {
-		const envelope: ApiCollectionEnvelope<TestItem> = {
+		const envelope: APICollectionEnvelope<TestItem> = {
 			data: { collection: [] },
 			meta: {
 				currentPage: 1,
@@ -83,7 +83,7 @@ describe("unwrapCollection", () => {
 
 describe("unwrapEntity", () => {
 	it("extracts entity from envelope", () => {
-		const envelope: ApiEntityEnvelope<TestItem> = {
+		const envelope: APIEntityEnvelope<TestItem> = {
 			data: { entity: { id: "1", name: "Test" } },
 			meta: {},
 		};
@@ -100,7 +100,7 @@ describe("unwrapEntity", () => {
 			nested: { value: number };
 		}
 
-		const envelope: ApiEntityEnvelope<DetailedItem> = {
+		const envelope: APIEntityEnvelope<DetailedItem> = {
 			data: { entity: { id: "1", name: "Test", nested: { value: 42 } } },
 			meta: { updatedAt: "2025-01-01" },
 		};

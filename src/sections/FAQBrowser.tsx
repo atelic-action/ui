@@ -6,7 +6,7 @@ import { useWithBase } from "../routing/BasePathProvider";
 import { JumpRail } from "./JumpRail";
 import { PageHero } from "./PageHero";
 
-export interface FAQCta {
+export interface FAQCTA {
 	label: string;
 	href: string;
 	newTab?: boolean;
@@ -20,7 +20,7 @@ export interface FAQEntry {
 	/** Plain-text answer for search matching and FAQPage structured data. */
 	answerText: string;
 	/** Optional link rendered at the end of the open answer. */
-	cta?: FAQCta;
+	cta?: FAQCTA;
 }
 
 export interface FAQCategory {
@@ -31,7 +31,7 @@ export interface FAQCategory {
 	tabLabel?: string;
 	description?: string;
 	/** Optional link line rendered under the category's card group. */
-	cta?: FAQCta;
+	cta?: FAQCTA;
 	items: FAQEntry[];
 }
 
@@ -50,7 +50,7 @@ function matches(query: string, item: FAQEntry): boolean {
 	return item.question.toLowerCase().includes(q) || item.answerText.toLowerCase().includes(q);
 }
 
-function CTALink({ cta, className }: { cta: FAQCta; className?: string }) {
+function CTALink({ cta, className }: { cta: FAQCTA; className?: string }) {
 	const withBase = useWithBase();
 	return (
 		<a className={className} href={withBase(cta.href)} {...newTabProps(cta.href, cta.newTab)}>

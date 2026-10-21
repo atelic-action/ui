@@ -6,7 +6,7 @@ import type { SiteConfig } from "./siteConfig";
 /** The keys of the site config the map reads; a whole `SiteConfig` passes as it is. */
 export type MapEmbedSite = Pick<
 	SiteConfig,
-	"name" | "address" | "mapImage" | "mapLinkUrl" | "mapEmbedUrl"
+	"name" | "address" | "mapImage" | "mapLinkURL" | "mapEmbedURL"
 >;
 
 export interface MapEmbedProps {
@@ -30,8 +30,8 @@ export function MapEmbed({ site }: MapEmbedProps) {
 		return (
 			<a
 				className="map-frame map-static"
-				href={site.mapLinkUrl ?? "#"}
-				{...(site.mapLinkUrl ? { target: "_blank", rel: "noopener" } : {})}
+				href={site.mapLinkURL ?? "#"}
+				{...(site.mapLinkURL ? { target: "_blank", rel: "noopener" } : {})}
 				aria-label={`Get directions to ${site.name}, ${address}`}
 			>
 				<img src={withBase(site.mapImage)} alt={`Map to ${site.name}, ${address}`} loading="lazy" />
@@ -43,7 +43,7 @@ export function MapEmbed({ site }: MapEmbedProps) {
 		);
 	}
 
-	if (!site.mapEmbedUrl) return null;
+	if (!site.mapEmbedURL) return null;
 
 	if (!loaded) {
 		return (
@@ -66,7 +66,7 @@ export function MapEmbed({ site }: MapEmbedProps) {
 		<div className="map-frame">
 			<iframe
 				title={`Map to ${site.name}, ${address}`}
-				src={site.mapEmbedUrl}
+				src={site.mapEmbedURL}
 				loading="lazy"
 				referrerPolicy="no-referrer-when-downgrade"
 			/>

@@ -108,7 +108,7 @@ describe("ReviewCarousel", () => {
 			<ReviewCarousel
 				score="5.0"
 				caption="from 100+ Google reviews"
-				profileUrl="https://maps.google.com/?cid=529966634563468011"
+				profileURL="https://maps.google.com/?cid=529966634563468011"
 				items={items}
 			/>,
 		);
@@ -122,7 +122,7 @@ describe("ReviewCarousel", () => {
 	});
 
 	it("has nothing to link without a caption", () => {
-		render(<ReviewCarousel score="5.0" profileUrl="https://example.com/reviews" items={items} />);
+		render(<ReviewCarousel score="5.0" profileURL="https://example.com/reviews" items={items} />);
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
 	});
 

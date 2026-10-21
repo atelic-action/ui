@@ -33,7 +33,7 @@ export interface SiteShellProps {
 	 * A page that closes on its own ask turns the mobile booking bar off,
 	 * since that ask is the conversion surface there.
 	 */
-	stickyCta?: boolean;
+	stickyCTA?: boolean;
 	/**
 	 * Such a page also drops the site footer: when a page ends on its own
 	 * sign off, the NAP footer after it steps on the close.
@@ -44,7 +44,7 @@ export interface SiteShellProps {
 	/** Match the header to a dark page surface. */
 	navOnDark?: boolean;
 	/** Hide the header's primary CTA (e.g. a reveal, where the ask is the letter). The menu keeps it. */
-	hideNavCta?: boolean;
+	hideNavCTA?: boolean;
 	/**
 	 * The developer credit band. Defaults on (client sites carry it); the
 	 * practice's own site turns it off, since crediting yourself on your
@@ -67,11 +67,11 @@ export function SiteShell({
 	basePath,
 	nav,
 	heroNav = false,
-	stickyCta = true,
+	stickyCTA = true,
 	footer = true,
 	pageNav,
 	navOnDark = false,
-	hideNavCta = false,
+	hideNavCTA = false,
 	credit = true,
 	children,
 }: SiteShellProps) {
@@ -106,11 +106,11 @@ export function SiteShell({
 					variant={variant}
 					currentPath={pathname}
 					stops={pageNav}
-					hideCTA={hideNavCta}
+					hideCTA={hideNavCTA}
 					contact={{ phone: site.phone, email: site.email, address: site.address }}
 				/>
 				<main id="main">{children}</main>
-				{stickyCta && <StickyCTABar primaryCTA={cta} phone={site.phone} />}
+				{stickyCTA && <StickyCTABar primaryCTA={cta} phone={site.phone} />}
 				{footer ? (
 					<Footer
 						brand={brand}

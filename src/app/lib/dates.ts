@@ -20,7 +20,7 @@ export const MONTHS = [
 // Today as a local YYYY-MM-DD string, for lexical comparison against other ISO
 // dates and for asking the api about the day the user is standing in. `now` is
 // injectable for tests.
-export function todayIso(now: Date = new Date()): string {
+export function todayISO(now: Date = new Date()): string {
 	const month = String(now.getMonth() + 1).padStart(2, "0");
 	const day = String(now.getDate()).padStart(2, "0");
 	return `${now.getFullYear()}-${month}-${day}`;
@@ -41,7 +41,7 @@ export function localTimeZone(): string | undefined {
 // Format an ISO date without constructing a Date. "2026-06-08" -> "Jun 8, 2026".
 // Returns the input untouched when it does not parse, so a bad value is visible
 // rather than blank.
-export function formatIsoDate(iso: string | null): string | null {
+export function formatISODate(iso: string | null): string | null {
 	if (!iso) return null;
 	const [year, month, day] = iso.split("-").map(Number);
 	if (!year || !month || !day || month < 1 || month > 12) return iso;

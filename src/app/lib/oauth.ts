@@ -6,7 +6,7 @@ import { getAppConfig } from "../config";
  * 2.0's POST-only default for resistance to login CSRF.
  */
 export function startGoogleAuth(): void {
-	postNavigate(`${getAppConfig().apiBaseUrl}/auth/google_oauth2`);
+	postNavigate(`${getAppConfig().apiBaseURL}/auth/google_oauth2`);
 }
 
 /**

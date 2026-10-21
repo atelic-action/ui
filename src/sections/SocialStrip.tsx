@@ -20,7 +20,7 @@ export interface SocialStripProps {
 	/** Display handle, e.g. "@platformstrength". */
 	handle: string;
 	/** The profile the strip links out to. */
-	profileUrl: string;
+	profileURL: string;
 	photos: SocialPhoto[];
 	/** Follow button label; defaults to "Follow {handle}". */
 	followLabel?: string;
@@ -39,7 +39,7 @@ export function SocialStrip({
 	title,
 	lead,
 	handle,
-	profileUrl,
+	profileURL,
 	photos,
 	followLabel,
 	surface = "default",
@@ -57,7 +57,7 @@ export function SocialStrip({
 							<a
 								key={photo.src}
 								className="social-tile"
-								href={profileUrl}
+								href={profileURL}
 								target="_blank"
 								rel="noopener"
 								aria-label={photo.alt ? `${photo.alt} (opens ${handle})` : `Opens ${handle}`}
@@ -72,7 +72,7 @@ export function SocialStrip({
 					)}
 				</div>
 				<div className="social-follow">
-					<Button href={profileUrl} newTab variant="dark">
+					<Button href={profileURL} newTab variant="dark">
 						<AtSign size={17} aria-hidden />
 						{followLabel ?? `Follow ${handle}`}
 					</Button>

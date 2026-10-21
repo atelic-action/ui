@@ -429,7 +429,7 @@ import { SiteShell } from "@atelic-action/ui/chrome";
 import { CTASection, Hero } from "@atelic-action/ui/sections";
 
 <SiteShell site={site} currentPath={pathname} heroNav>
-	<Hero title="Bread worth the early line." primaryCta={site.cta} />
+	<Hero title="Bread worth the early line." primaryCTA={site.cta} />
 	<CTASection site={site} title="Skip the line, keep the bread." />
 </SiteShell>;
 ```
@@ -456,7 +456,7 @@ The provider stays in the source entry on purpose. A built copy of it would be a
 
 ### SiteShell
 
-`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCta`, `footer`, `pageNav`, `navOnDark`, `hideNavCta`, and `credit` as before. A site keeps a wrapper a few lines long:
+`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCTA`, `footer`, `pageNav`, `navOnDark`, `hideNavCTA`, and `credit` as before. A site keeps a wrapper a few lines long:
 
 ```tsx
 import { SiteShell as Shell, type SiteShellProps } from "@atelic-action/ui/chrome";
@@ -795,7 +795,7 @@ function RootLayout() {
 
 | Prop | What it is |
 |---|---|
-| `config` | An `AppConfig`: `name` (aria labels), `mark` (the wordmark), `storagePrefix` (every storage key and cookie), `publicRoutes` (exact paths a signed out visitor may load), `publicPages` (prefix patterns ending in `/*`, rendered in the public chrome), and `apiBaseUrl`, which the app resolves itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`), since the package never reads `import.meta.env` |
+| `config` | An `AppConfig`: `name` (aria labels), `mark` (the wordmark), `storagePrefix` (every storage key and cookie), `publicRoutes` (exact paths a signed out visitor may load), `publicPages` (prefix patterns ending in `/*`, rendered in the public chrome), and `apiBaseURL`, which the app resolves itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`), since the package never reads `import.meta.env` |
 | `nav` | The `NavItem[]` every nav surface reads, sub pages as `children`; the one place a destination is declared |
 | `queryClient` | Optional; defaults to the shell's, whose mutation cache raises `meta.toast` |
 | `toaster` | Optional; sonner's `Toaster` at the top right by default, `false` for none |
@@ -862,7 +862,7 @@ Delete `src/shared/`, `src/stores/authStore.ts`, `src/stores/unitsStore.ts`, and
 
 Then the handful of edits the seam asks for:
 
-1. **`src/app/config.ts`** resolves `apiBaseUrl` itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`).
+1. **`src/app/config.ts`** resolves `apiBaseURL` itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`).
 2. **`src/app/types.ts`** registers its `User` (above).
 3. **`src/main.tsx`** wraps the router in `AppProvider`, and passes `showDetails={import.meta.env.DEV}` to `ErrorFallback`, which no longer reads the environment.
 4. **`src/routes/__root.tsx`** keeps only `AuthGuard` and `AppLayout` around the `Outlet`; the query client, the rail state, the user, and the toaster are the provider's.

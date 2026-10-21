@@ -21,8 +21,8 @@ export interface CTABannerProps {
 	 * works before photography exists.
 	 */
 	image?: { src: string; alt?: string };
-	primaryCta?: CTABannerCTA;
-	secondaryCta?: CTABannerCTA;
+	primaryCTA?: CTABannerCTA;
+	secondaryCTA?: CTABannerCTA;
 	/**
 	 * Wash over the image so the copy pops: "dark" (light text over a dark
 	 * gradient, the hero treatment) or "light" (ink text over a surface wash,
@@ -43,8 +43,8 @@ export function CTABanner({
 	title,
 	lead,
 	image,
-	primaryCta,
-	secondaryCta,
+	primaryCTA,
+	secondaryCTA,
 	tone = "dark",
 }: CTABannerProps) {
 	const withBase = useWithBase();
@@ -67,21 +67,21 @@ export function CTABanner({
 					{eyebrow && <Eyebrow onDark={onDark}>{eyebrow}</Eyebrow>}
 					<h2>{title}</h2>
 					{lead && <Lead>{lead}</Lead>}
-					{(primaryCta || secondaryCta) && (
+					{(primaryCTA || secondaryCTA) && (
 						<div className="cta-banner-actions">
-							{primaryCta && (
-								<Button href={primaryCta.href} newTab={primaryCta.newTab} arrow>
-									{primaryCta.label}
+							{primaryCTA && (
+								<Button href={primaryCTA.href} newTab={primaryCTA.newTab} arrow>
+									{primaryCTA.label}
 								</Button>
 							)}
-							{secondaryCta && (
+							{secondaryCTA && (
 								<Button
 									variant="ghost"
 									onDark={onDark}
-									href={secondaryCta.href}
-									newTab={secondaryCta.newTab}
+									href={secondaryCTA.href}
+									newTab={secondaryCTA.newTab}
 								>
-									{secondaryCta.label}
+									{secondaryCTA.label}
 								</Button>
 							)}
 						</div>
