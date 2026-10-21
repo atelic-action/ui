@@ -38,15 +38,15 @@ export interface ReaderArgs {
 	/** A token already in a sent link, when --token gave one. */
 	token?: string;
 	/** --qr: write the QR for this reader even when another is already named. */
-	forceQr: boolean;
+	forceQR: boolean;
 	/** --no-qr: never write the QR. */
-	noQr: boolean;
+	noQR: boolean;
 }
 
 /** Reads the command line; undefined when it does not name a reader, which is a usage error. */
 export function parseReaderArgs(flags: string[]): ReaderArgs | undefined {
-	const noQr = flags.includes("--no-qr");
-	const forceQr = flags.includes("--qr");
+	const noQR = flags.includes("--no-qr");
+	const forceQR = flags.includes("--qr");
 	const args = flags.filter((flag) => flag !== "--no-qr" && flag !== "--qr");
 	const at = args.indexOf("--token");
 	const given = at === -1 ? undefined : args[at + 1];
@@ -56,7 +56,7 @@ export function parseReaderArgs(flags: string[]): ReaderArgs | undefined {
 	const path = `/${givenPath.replace(/^\/+|\/+$/g, "")}`;
 
 	if (!email?.includes("@") || (at !== -1 && !given)) return undefined;
-	return { email, path, token: given, forceQr, noQr };
+	return { email, path, token: given, forceQR, noQR };
 }
 
 /**
@@ -69,7 +69,7 @@ export async function main(flags: string[], cwd: string = process.cwd()): Promis
 		console.error(USAGE);
 		process.exit(1);
 	}
-	const { email, path, forceQr, noQr } = parsed;
+	const { email, path, forceQR, noQR } = parsed;
 	let site: Awaited<ReturnType<typeof loadSite>>;
 	try {
 		site = await loadSite(cwd);
@@ -90,14 +90,14 @@ export async function main(flags: string[], cwd: string = process.cwd()): Promis
 	// The sheet's QR is the reader's link. A private artifact identifies by sign
 	// in and never by a token, so its QR stays on the bare host.
 	const named = site.analytics?.identify.length ?? 0;
-	const sheetIsFree = named === 0 || forceQr;
-	if (path === "/writeup" && !noQr && site.access === "public" && !sheetIsFree) {
+	const sheetIsFree = named === 0 || forceQR;
+	if (path === "/writeup" && !noQR && site.access === "public" && !sheetIsFree) {
 		console.log("");
 		console.log(
 			"Left public/images/qr.png alone: a reader is already named, and the sheet is theirs. Pass --qr to give the sheet to this reader.",
 		);
 	}
-	if (path === "/writeup" && !noQr && site.access === "public" && sheetIsFree) {
+	if (path === "/writeup" && !noQR && site.access === "public" && sheetIsFree) {
 		const qr = resolve(cwd, "public/images/qr.png");
 		await QRCode.toFile(qr, link, { width: 330, margin: 4, errorCorrectionLevel: "M" });
 		console.log("");

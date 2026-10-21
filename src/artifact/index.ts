@@ -24,7 +24,7 @@ export {
 	Paragraph,
 	Runs,
 } from "./Paragraph";
-export { buildPageHead, canonicalUrl, type PageMeta } from "./pageHead";
+export { buildPageHead, canonicalURL, type PageMeta } from "./pageHead";
 export {
 	mintToken,
 	openReader,

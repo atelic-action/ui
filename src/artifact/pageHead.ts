@@ -22,7 +22,7 @@ export interface PageMeta {
 }
 
 /** Canonical URL for a path under the artifact's origin. */
-export function canonicalUrl(site: ArtifactConfig, path: string): string {
+export function canonicalURL(site: ArtifactConfig, path: string): string {
 	return path === "/" ? `${site.url}/` : `${site.url}${path}`;
 }
 
@@ -34,7 +34,7 @@ export function canonicalUrl(site: ArtifactConfig, path: string): string {
  * to one business is asking nothing of the kind.
  */
 export function buildPageHead(site: ArtifactConfig, page: PageMeta) {
-	const canonical = canonicalUrl(site, page.path);
+	const canonical = canonicalURL(site, page.path);
 	// og:image must be a full URL per the OG spec; site-relative paths
 	// (self-hosted images under public/) resolve against the host origin.
 	const ogImageRaw = page.ogImage ?? site.ogImage;

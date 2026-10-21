@@ -32,7 +32,7 @@ export {
 	FAQBrowser,
 	type FAQBrowserProps,
 	type FAQCategory,
-	type FAQCta,
+	type FAQCTA,
 	type FAQEntry,
 } from "./FAQBrowser";
 export { FeatureDetail, type FeatureDetailProps } from "./FeatureDetail";

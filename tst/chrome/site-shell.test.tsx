@@ -67,23 +67,23 @@ describe("SiteShell", () => {
 		expect(creditBand(bare.container)).toBeNull();
 	});
 
-	it("puts the site CTA in the bar and the menu, and hideNavCta clears only the bar", () => {
+	it("puts the site CTA in the bar and the menu, and hideNavCTA clears only the bar", () => {
 		const shown = renderShell();
 		expect(shown.container.querySelector(".nav-cta a")).toHaveAttribute("href", testSite.cta.href);
 		expect(shown.container.querySelector(".mm-cta")).toHaveAttribute("href", testSite.cta.href);
 		shown.unmount();
 
-		const hidden = renderShell({ hideNavCta: true });
+		const hidden = renderShell({ hideNavCTA: true });
 		expect(hidden.container.querySelector(".nav-cta")).toBeNull();
 		expect(hidden.container.querySelector(".mm-cta")).not.toBeNull();
 	});
 
-	it("renders the sticky CTA bar unless stickyCta is off", () => {
+	it("renders the sticky CTA bar unless stickyCTA is off", () => {
 		const shown = renderShell();
 		expect(shown.container.querySelector(".sticky-cta")).not.toBeNull();
 		shown.unmount();
 
-		const hidden = renderShell({ stickyCta: false });
+		const hidden = renderShell({ stickyCTA: false });
 		expect(hidden.container.querySelector(".sticky-cta")).toBeNull();
 	});
 

@@ -29,14 +29,14 @@ import type { ArtifactReader } from "./artifactConfig.js";
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-function toBase64Url(bytes: Uint8Array): string {
+function toBase64URL(bytes: Uint8Array): string {
 	return btoa(String.fromCharCode(...bytes))
 		.replaceAll("+", "-")
 		.replaceAll("/", "_")
 		.replaceAll("=", "");
 }
 
-function fromBase64Url(text: string): Uint8Array<ArrayBuffer> {
+function fromBase64URL(text: string): Uint8Array<ArrayBuffer> {
 	const padded = text.replaceAll("-", "+").replaceAll("_", "/");
 	return Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
 }
@@ -60,7 +60,7 @@ async function keyFor(token: string): Promise<CryptoKey> {
 
 /** A fresh token for one reader's links: twelve characters, safe in a URL. */
 export function mintToken(): string {
-	return toBase64Url(crypto.getRandomValues(new Uint8Array(9)));
+	return toBase64URL(crypto.getRandomValues(new Uint8Array(9)));
 }
 
 /** Seal a reader's email under their token: the entry site.config.ts lists. */
@@ -76,7 +76,7 @@ export async function sealReader(email: string, token: string): Promise<Artifact
 	const packed = new Uint8Array(iv.length + sealed.length);
 	packed.set(iv);
 	packed.set(sealed, iv.length);
-	return { id: await readerId(token), sealed: toBase64Url(packed) };
+	return { id: await readerId(token), sealed: toBase64URL(packed) };
 }
 
 /** The email a link's token opens, or undefined when it opens nobody's. */
@@ -89,7 +89,7 @@ export async function openReader(
 	const reader = readers.find((entry) => entry.id === id);
 	if (!reader) return undefined;
 	try {
-		const packed = fromBase64Url(reader.sealed);
+		const packed = fromBase64URL(reader.sealed);
 		const opened = await crypto.subtle.decrypt(
 			{ name: "AES-GCM", iv: packed.slice(0, 12) },
 			await keyFor(token),
@@ -139,8 +139,8 @@ export async function whoIsReading(visit: {
 }
 
 /** The link to send a reader: the artifact's page with their token on it. */
-export function readerLink(siteUrl: string, token: string, path = "/writeup"): string {
-	const url = new URL(path, siteUrl);
+export function readerLink(siteURL: string, token: string, path = "/writeup"): string {
+	const url = new URL(path, siteURL);
 	url.searchParams.set("k", token);
 	return url.toString();
 }

@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { formatIsoDate, localTimeZone, monthDay, todayIso } from "../../src/app/lib/dates";
+import { formatISODate, localTimeZone, monthDay, todayISO } from "../../src/app/lib/dates";
 
-describe("todayIso", () => {
+describe("todayISO", () => {
 	it("reads the local date parts, never the UTC instant", () => {
 		// 23:30 local on Aug 30 is already Aug 31 in UTC for any zone west of it;
 		// the local date is the one the user is standing in.
-		expect(todayIso(new Date(2026, 7, 30, 23, 30))).toBe("2026-08-30");
+		expect(todayISO(new Date(2026, 7, 30, 23, 30))).toBe("2026-08-30");
 	});
 
 	it("pads the month and the day", () => {
-		expect(todayIso(new Date(2026, 0, 5))).toBe("2026-01-05");
+		expect(todayISO(new Date(2026, 0, 5))).toBe("2026-01-05");
 	});
 });
 
@@ -19,14 +19,14 @@ describe("localTimeZone", () => {
 	});
 });
 
-describe("formatIsoDate", () => {
+describe("formatISODate", () => {
 	it("formats without shifting a day", () => {
-		expect(formatIsoDate("2026-06-08")).toBe("Jun 8, 2026");
+		expect(formatISODate("2026-06-08")).toBe("Jun 8, 2026");
 	});
 
 	it("passes an unreadable value through and a missing one as null", () => {
-		expect(formatIsoDate("nonsense")).toBe("nonsense");
-		expect(formatIsoDate(null)).toBeNull();
+		expect(formatISODate("nonsense")).toBe("nonsense");
+		expect(formatISODate(null)).toBeNull();
 	});
 });
 

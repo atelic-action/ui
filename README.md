@@ -41,7 +41,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `Paragraph`, `Runs`, `ArtifactAnchor`, `isEmpty`, `ArtifactLink`, `ArtifactParagraph` | `@atelic-action/ui/artifact` | Plain data text a routine can write as JSON: a paragraph, its runs alone, one link, the empty test, and the two types | [#paragraph](https://ui.atelic.me/#paragraph) |
 | `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, credit band, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
 | `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
-| `buildPageHead`, `canonicalUrl`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
+| `buildPageHead`, `canonicalURL`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
 | `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document; the second entry is the same six, built, for what Node runs | none |
 | `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page | [#email](https://ui.atelic.me/#email) |
 | `Card`, `Row`, `FoldRow`, `Eyebrow`, `SubEyebrow`, `Fold`, `BigFold` | `@atelic-action/ui/email` | The containers and labels an email's sections sit in | [#email](https://ui.atelic.me/#email) |
@@ -338,7 +338,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 - **The pieces:** `GradeChip` and `gradeLabel` with the `WriteupGrade` type, `SignOff` with the `WriteupPerson` type, `Shot` with the `WriteupShot` type, and the plain data text (`Paragraph`, `Runs`, `ArtifactAnchor`, and `isEmpty`, with the `ArtifactLink` and `ArtifactParagraph` types: a paragraph is a string or runs of text and `{ text, href }` links, so a routine can write a document as JSON).
 - **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the credit band, and the watermark around a page.
-- **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalUrl` with their `PageMeta` type.
+- **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalURL` with their `PageMeta` type.
 - **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
 - **The error boundary:** `AppErrorBoundary` and its `ErrorFallback`.
 - **`newTabProps`,** for the links a content module writes.
@@ -429,7 +429,7 @@ import { SiteShell } from "@atelic-action/ui/chrome";
 import { CTASection, Hero } from "@atelic-action/ui/sections";
 
 <SiteShell site={site} currentPath={pathname} heroNav>
-	<Hero title="Bread worth the early line." primaryCta={site.cta} />
+	<Hero title="Bread worth the early line." primaryCTA={site.cta} />
 	<CTASection site={site} title="Skip the line, keep the bread." />
 </SiteShell>;
 ```
@@ -456,7 +456,7 @@ The provider stays in the source entry on purpose. A built copy of it would be a
 
 ### SiteShell
 
-`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCta`, `footer`, `pageNav`, `navOnDark`, `hideNavCta`, and `credit` as before. A site keeps a wrapper a few lines long:
+`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCTA`, `footer`, `pageNav`, `navOnDark`, `hideNavCTA`, and `credit` as before. A site keeps a wrapper a few lines long:
 
 ```tsx
 import { SiteShell as Shell, type SiteShellProps } from "@atelic-action/ui/chrome";
@@ -795,7 +795,7 @@ function RootLayout() {
 
 | Prop | What it is |
 |---|---|
-| `config` | An `AppConfig`: `name` (aria labels), `mark` (the wordmark), `storagePrefix` (every storage key and cookie), `publicRoutes` (exact paths a signed out visitor may load), `publicPages` (prefix patterns ending in `/*`, rendered in the public chrome), and `apiBaseUrl`, which the app resolves itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`), since the package never reads `import.meta.env` |
+| `config` | An `AppConfig`: `name` (aria labels), `mark` (the wordmark), `storagePrefix` (every storage key and cookie), `publicRoutes` (exact paths a signed out visitor may load), `publicPages` (prefix patterns ending in `/*`, rendered in the public chrome), and `apiBaseURL`, which the app resolves itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`), since the package never reads `import.meta.env` |
 | `nav` | The `NavItem[]` every nav surface reads, sub pages as `children`; the one place a destination is declared |
 | `queryClient` | Optional; defaults to the shell's, whose mutation cache raises `meta.toast` |
 | `toaster` | Optional; sonner's `Toaster` at the top right by default, `false` for none |
@@ -862,7 +862,7 @@ Delete `src/shared/`, `src/stores/authStore.ts`, `src/stores/unitsStore.ts`, and
 
 Then the handful of edits the seam asks for:
 
-1. **`src/app/config.ts`** resolves `apiBaseUrl` itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`).
+1. **`src/app/config.ts`** resolves `apiBaseURL` itself (`env.VITE_API_BASE_URL ?? "https://api.example.com"`).
 2. **`src/app/types.ts`** registers its `User` (above).
 3. **`src/main.tsx`** wraps the router in `AppProvider`, and passes `showDetails={import.meta.env.DEV}` to `ErrorFallback`, which no longer reads the environment.
 4. **`src/routes/__root.tsx`** keeps only `AuthGuard` and `AppLayout` around the `Outlet`; the query client, the rail state, the user, and the toaster are the provider's.

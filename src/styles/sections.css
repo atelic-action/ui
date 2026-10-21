@@ -2307,56 +2307,56 @@
 	   REVIEW CAROUSEL — aggregate rating beside one review card at a time
 	   ================================================================= */
 
-	.atelic-ui .rc-grid {
+	.atelic-ui .rvc-grid {
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: clamp(32px, 4vw, 48px);
 		align-items: center;
 	}
 	@media (min-width: 940px) {
-		.atelic-ui .rc-grid {
+		.atelic-ui .rvc-grid {
 			grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
 			gap: clamp(40px, 5vw, 72px);
 		}
 	}
 
 	/* ---- Left column: the aggregate ---- */
-	.atelic-ui .rc-aggregate {
+	.atelic-ui .rvc-aggregate {
 		min-width: 0;
 	}
-	.atelic-ui .rc-score {
+	.atelic-ui .rvc-score {
 		display: flex;
 		align-items: baseline;
 		gap: 10px;
 		margin: 6px 0 0;
 	}
-	.atelic-ui .rc-score-num {
+	.atelic-ui .rvc-score-num {
 		font-size: clamp(4.2rem, 8vw, 6.6rem);
 		font-weight: 800;
 		line-height: 0.95;
 		letter-spacing: -0.045em;
 		color: var(--ink);
 	}
-	.atelic-ui .rc-score-out {
+	.atelic-ui .rvc-score-out {
 		font-size: clamp(1.2rem, 2vw, 1.7rem);
 		font-weight: 500;
 		color: var(--neutral-300);
 	}
-	.atelic-ui .rc-rating {
+	.atelic-ui .rvc-rating {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 10px;
 		margin: 16px 0 0;
 	}
-	.atelic-ui .rc-caption {
+	.atelic-ui .rvc-caption {
 		font-size: 0.95rem;
 		color: var(--ink-soft);
 	}
 	/* The caption as a link out to the live profile: the same quiet idiom as
 	   the wall's dated source link (trailing arrow, new tab), plus a hairline
 	   underline so it reads as a link inside an otherwise static block. */
-	.atelic-ui a.rc-caption {
+	.atelic-ui a.rvc-caption {
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
@@ -2367,16 +2367,16 @@
 			color 0.2s ease,
 			text-decoration-color 0.2s ease;
 	}
-	.atelic-ui a.rc-caption:hover {
+	.atelic-ui a.rvc-caption:hover {
 		color: var(--primary);
 		text-decoration-color: currentColor;
 	}
-	.atelic-ui a.rc-caption:focus-visible {
+	.atelic-ui a.rvc-caption:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 3px;
 		border-radius: var(--radius-sm);
 	}
-	.atelic-ui .rc-lead {
+	.atelic-ui .rvc-lead {
 		margin: 20px 0 0;
 		max-width: 46ch;
 		font-size: 1.02rem;
@@ -2385,36 +2385,36 @@
 	}
 
 	/* ---- Optional mini stat row ---- */
-	.atelic-ui .rc-stats {
+	.atelic-ui .rvc-stats {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0;
 		margin: clamp(24px, 3vw, 34px) 0 0;
 	}
-	.atelic-ui .rc-stat {
+	.atelic-ui .rvc-stat {
 		padding: 2px 22px 2px 0;
 		margin-right: 22px;
 		border-right: 1px solid var(--hairline-strong);
 	}
-	.atelic-ui .rc-stat:last-child {
+	.atelic-ui .rvc-stat:last-child {
 		border-right: none;
 		margin-right: 0;
 		padding-right: 0;
 	}
-	.atelic-ui .rc-stat-value {
+	.atelic-ui .rvc-stat-value {
 		font-size: 1.35rem;
 		font-weight: 800;
 		letter-spacing: -0.02em;
 		color: var(--ink);
 	}
-	.atelic-ui .rc-stat-label {
+	.atelic-ui .rvc-stat-label {
 		margin: 2px 0 0;
 		font-size: 0.8rem;
 		color: var(--neutral-500);
 	}
 
 	/* ---- Right column: the card ---- */
-	.atelic-ui .rc-viewport {
+	.atelic-ui .rvc-viewport {
 		min-width: 0;
 		padding: clamp(24px, 3vw, 40px);
 		background: var(--card);
@@ -2427,10 +2427,10 @@
 	   HTML, the card is as tall as the longest one, and stepping through
 	   never shifts the page. Inactive slides are hidden (and so are dropped
 	   from the tab order and the accessibility tree) rather than unmounted. */
-	.atelic-ui .rc-stage {
+	.atelic-ui .rvc-stage {
 		display: grid;
 	}
-	.atelic-ui .rc-slide {
+	.atelic-ui .rvc-slide {
 		grid-area: 1 / 1;
 		display: flex;
 		flex-direction: column;
@@ -2444,20 +2444,20 @@
 		visibility: hidden;
 		transition: opacity 0.35s ease;
 	}
-	.atelic-ui .rc-slide.is-active {
+	.atelic-ui .rvc-slide.is-active {
 		opacity: 1;
 		visibility: visible;
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .rc-slide {
+		.atelic-ui .rvc-slide {
 			transition: none;
 		}
 	}
-	.atelic-ui .rc-slide .star-row {
+	.atelic-ui .rvc-slide .star-row {
 		margin-bottom: 18px;
 	}
 
-	.atelic-ui .rc-quote {
+	.atelic-ui .rvc-quote {
 		margin: 0;
 		font-size: clamp(1.15rem, 1.5vw, 1.42rem);
 		font-weight: 500;
@@ -2467,54 +2467,54 @@
 	}
 	/* Longer quotes set smaller, so one paragraph-length review doesn't drive
 	   the shared card height past what the page can hold (see quoteSize). */
-	.atelic-ui .rc-quote.is-medium {
+	.atelic-ui .rvc-quote.is-medium {
 		font-size: clamp(1.05rem, 1.25vw, 1.2rem);
 		line-height: 1.55;
 	}
-	.atelic-ui .rc-quote.is-compact {
+	.atelic-ui .rvc-quote.is-compact {
 		font-size: clamp(0.98rem, 1.1vw, 1.06rem);
 		line-height: 1.6;
 		letter-spacing: 0;
 	}
 
-	.atelic-ui .rc-who {
+	.atelic-ui .rvc-who {
 		display: flex;
 		flex-direction: column;
 		gap: 3px;
 		width: 100%;
 		padding-top: clamp(20px, 2.4vw, 28px);
 	}
-	.atelic-ui .rc-who::before {
+	.atelic-ui .rvc-who::before {
 		content: "";
 		display: block;
 		height: 1px;
 		background: var(--hairline-strong);
 		margin-bottom: clamp(18px, 2.2vw, 24px);
 	}
-	.atelic-ui .rc-name {
+	.atelic-ui .rvc-name {
 		font-weight: 700;
 		font-size: 1rem;
 		color: var(--ink);
 	}
-	.atelic-ui .rc-detail {
+	.atelic-ui .rvc-detail {
 		font-size: 0.86rem;
 		color: var(--neutral-500);
 	}
 
 	/* ---- Pagination and arrows ---- */
-	.atelic-ui .rc-controls {
+	.atelic-ui .rvc-controls {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
 		margin-top: clamp(20px, 2.4vw, 28px);
 	}
-	.atelic-ui .rc-dots {
+	.atelic-ui .rvc-dots {
 		display: flex;
 		align-items: center;
 		gap: 8px;
 	}
-	.atelic-ui .rc-dot {
+	.atelic-ui .rvc-dot {
 		width: 8px;
 		height: 8px;
 		padding: 0;
@@ -2524,19 +2524,19 @@
 			width 0.25s ease,
 			background 0.2s ease;
 	}
-	.atelic-ui .rc-dot:hover {
+	.atelic-ui .rvc-dot:hover {
 		background: var(--neutral-500);
 	}
-	.atelic-ui .rc-dot.is-active {
+	.atelic-ui .rvc-dot.is-active {
 		width: 26px;
 		background: var(--ink);
 	}
-	.atelic-ui .rc-arrows {
+	.atelic-ui .rvc-arrows {
 		display: flex;
 		align-items: center;
 		gap: 8px;
 	}
-	.atelic-ui .rc-arrow {
+	.atelic-ui .rvc-arrow {
 		width: 40px;
 		height: 40px;
 		display: grid;
@@ -2550,12 +2550,12 @@
 			border-color 0.2s ease,
 			color 0.2s ease;
 	}
-	.atelic-ui .rc-arrow:hover {
+	.atelic-ui .rvc-arrow:hover {
 		background: var(--surface-alt);
 		border-color: var(--neutral-300);
 	}
-	.atelic-ui .rc-arrow:focus-visible,
-	.atelic-ui .rc-dot:focus-visible {
+	.atelic-ui .rvc-arrow:focus-visible,
+	.atelic-ui .rvc-dot:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 3px;
 	}

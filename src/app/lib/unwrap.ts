@@ -7,7 +7,7 @@
 /**
  * API response envelope for collection (index) endpoints.
  */
-export interface ApiCollectionEnvelope<T> {
+export interface APICollectionEnvelope<T> {
 	data: { collection: T[] };
 	meta: {
 		currentPage: number;
@@ -20,7 +20,7 @@ export interface ApiCollectionEnvelope<T> {
 /**
  * API response envelope for entity (show/create/update) endpoints.
  */
-export interface ApiEntityEnvelope<T> {
+export interface APIEntityEnvelope<T> {
 	data: { entity: T };
 	meta: Record<string, unknown>;
 }
@@ -43,6 +43,6 @@ export function unwrapCollection<T, M>(envelope: {
 /**
  * Extract a single entity from the API envelope.
  */
-export function unwrapEntity<T>(envelope: ApiEntityEnvelope<T>): T {
+export function unwrapEntity<T>(envelope: APIEntityEnvelope<T>): T {
 	return envelope.data.entity;
 }

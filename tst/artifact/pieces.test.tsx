@@ -44,7 +44,7 @@ describe("the artifact entry", () => {
 			"AppErrorBoundary",
 			"ErrorFallback",
 			"buildPageHead",
-			"canonicalUrl",
+			"canonicalURL",
 			"mintToken",
 			"openReader",
 			"readerId",

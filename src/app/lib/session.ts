@@ -9,7 +9,7 @@ import type { RegisteredUser, TokenResponse } from "../types";
 import { apiFetch } from "./http";
 import { toSnakeCase } from "./transformKeys";
 import type { UnitPreferences } from "./units";
-import { type ApiEntityEnvelope, unwrapEntity } from "./unwrap";
+import { type APIEntityEnvelope, unwrapEntity } from "./unwrap";
 
 export const session = {
 	/** Exchange an OAuth code for the JWT pair. */
@@ -21,13 +21,13 @@ export const session = {
 
 	/** The signed in user. */
 	me: async () => {
-		const envelope = await apiFetch<ApiEntityEnvelope<RegisteredUser>>("/v1/users/me");
+		const envelope = await apiFetch<APIEntityEnvelope<RegisteredUser>>("/v1/users/me");
 		return unwrapEntity(envelope);
 	},
 
 	/** Save the person's unit preferences, a system per measure. */
 	updateUnits: async (units: UnitPreferences) => {
-		const envelope = await apiFetch<ApiEntityEnvelope<RegisteredUser>>("/v1/users/me", {
+		const envelope = await apiFetch<APIEntityEnvelope<RegisteredUser>>("/v1/users/me", {
 			method: "PATCH",
 			body: JSON.stringify({ user: { units: toSnakeCase(units) } }),
 		});

@@ -12,8 +12,8 @@ describe("parseReaderArgs", () => {
 			email: "reader@example.com",
 			path: "/writeup",
 			token: undefined,
-			forceQr: false,
-			noQr: false,
+			forceQR: false,
+			noQR: false,
 		});
 	});
 
@@ -31,9 +31,9 @@ describe("parseReaderArgs", () => {
 
 	it("reads the two QR flags and keeps them out of the page", () => {
 		const forced = parseReaderArgs(["--qr", "reader@example.com"]);
-		expect(forced).toMatchObject({ forceQr: true, noQr: false, path: "/writeup" });
+		expect(forced).toMatchObject({ forceQR: true, noQR: false, path: "/writeup" });
 		const never = parseReaderArgs(["reader@example.com", "--no-qr"]);
-		expect(never).toMatchObject({ forceQr: false, noQr: true, path: "/writeup" });
+		expect(never).toMatchObject({ forceQR: false, noQR: true, path: "/writeup" });
 	});
 
 	it("refuses a line with no email, one that is not an address, or a token flag with no token", () => {

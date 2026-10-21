@@ -45,8 +45,8 @@ export function LocationSection({ site, eyebrow = "Find us", title, lead }: Loca
 					</div>
 
 					<div className="loc-actions">
-						{site.mapLinkUrl && (
-							<Button variant="dark" href={site.mapLinkUrl} newTab arrow>
+						{site.mapLinkURL && (
+							<Button variant="dark" href={site.mapLinkURL} newTab arrow>
 								Get Directions
 							</Button>
 						)}

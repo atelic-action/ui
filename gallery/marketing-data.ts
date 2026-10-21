@@ -27,7 +27,7 @@ export const bakery: SiteConfig = {
 		country: "US",
 	},
 	mapImage: "/images/bakery-map.svg",
-	mapLinkUrl: "https://maps.example.com/?q=418+Alder+Street",
+	mapLinkURL: "https://maps.example.com/?q=418+Alder+Street",
 	hours: [
 		{
 			label: "Tuesday to Friday",
@@ -54,7 +54,7 @@ export const bakery: SiteConfig = {
 export const bakeryNoImage: SiteConfig = {
 	...bakery,
 	mapImage: undefined,
-	mapEmbedUrl: "https://maps.example.com/embed?q=418+Alder+Street",
+	mapEmbedURL: "https://maps.example.com/embed?q=418+Alder+Street",
 };
 
 export const reviews: ReviewItem[] = [
@@ -65,7 +65,7 @@ export const reviews: ReviewItem[] = [
 		detail: "Regular since 2019",
 		rating: 5,
 		date: "2026-09-14",
-		sourceUrl: "https://reviews.example.com/1",
+		sourceURL: "https://reviews.example.com/1",
 		tags: ["Pastry"],
 	},
 	{
@@ -74,7 +74,7 @@ export const reviews: ReviewItem[] = [
 		by: "Marcus T.",
 		rating: 5,
 		date: "2026-08-02",
-		sourceUrl: "https://reviews.example.com/2",
+		sourceURL: "https://reviews.example.com/2",
 		tags: ["Cakes"],
 	},
 	{

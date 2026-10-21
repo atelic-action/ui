@@ -12,7 +12,7 @@ export const testConfig: AppConfig = {
 	storagePrefix: "test",
 	publicRoutes: ["/", "/oauth/callback"],
 	publicPages: ["/u/*"],
-	apiBaseUrl: "https://api.example.test",
+	apiBaseURL: "https://api.example.test",
 };
 
 setAppConfig(testConfig);

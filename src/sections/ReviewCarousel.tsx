@@ -28,7 +28,7 @@ export interface ReviewCarouselProps {
 	 * the prop is inert. Prefer a count the profile can't outgrow ("100+"),
 	 * since the live number climbs and the caption doesn't.
 	 */
-	profileUrl?: string;
+	profileURL?: string;
 	/** Short paragraph under the caption: where the reviews come from. */
 	lead?: ReactNode;
 	/** Optional value/label row (three reads well). Omit to hide entirely. */
@@ -68,7 +68,7 @@ function quoteSize(quote: string): string {
  * Per-review stars are opt-in per item (`rating`), like `ReviewWall`:
  * render them only when the source actually shows them.
  *
- * `profileUrl` turns the caption into a link out to the live review
+ * `profileURL` turns the caption into a link out to the live review
  * profile, carrying the wall's dated-source idiom (quiet text, trailing
  * arrow, new tab) so a visitor can check the aggregate at the source.
  */
@@ -78,7 +78,7 @@ export function ReviewCarousel({
 	outOf = "5",
 	rating,
 	caption,
-	profileUrl,
+	profileURL,
 	lead,
 	stats,
 	items,
@@ -112,21 +112,21 @@ export function ReviewCarousel({
 			className={["section", "review-carousel", className].filter(Boolean).join(" ")}
 			id={id}
 		>
-			<div className="wrap rc-grid">
-				<div className="rc-aggregate">
+			<div className="wrap rvc-grid">
+				<div className="rvc-aggregate">
 					{eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-					<p className="rc-score">
-						<span className="rc-score-num">{score}</span>
-						{outOf && <span className="rc-score-out">/ {outOf}</span>}
+					<p className="rvc-score">
+						<span className="rvc-score-num">{score}</span>
+						{outOf && <span className="rvc-score-out">/ {outOf}</span>}
 					</p>
 					{(rating != null || caption) && (
-						<p className="rc-rating">
+						<p className="rvc-rating">
 							{rating != null && <StarRow rating={rating} size={19} />}
 							{caption &&
-								(profileUrl ? (
+								(profileURL ? (
 									<a
-										className="rc-caption"
-										href={profileUrl}
+										className="rvc-caption"
+										href={profileURL}
 										target="_blank"
 										rel="noopener"
 										aria-label={`${caption}, opens the review profile in a new tab`}
@@ -135,17 +135,17 @@ export function ReviewCarousel({
 										<ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" />
 									</a>
 								) : (
-									<span className="rc-caption">{caption}</span>
+									<span className="rvc-caption">{caption}</span>
 								))}
 						</p>
 					)}
-					{lead && <p className="rc-lead">{lead}</p>}
+					{lead && <p className="rvc-lead">{lead}</p>}
 					{stats && stats.length > 0 && (
-						<dl className="rc-stats">
+						<dl className="rvc-stats">
 							{stats.map((stat) => (
-								<div className="rc-stat" key={stat.label}>
-									<dt className="rc-stat-value">{stat.value}</dt>
-									<dd className="rc-stat-label">{stat.label}</dd>
+								<div className="rvc-stat" key={stat.label}>
+									<dt className="rvc-stat-value">{stat.value}</dt>
+									<dd className="rvc-stat-label">{stat.label}</dd>
 								</div>
 							))}
 						</dl>
@@ -155,15 +155,15 @@ export function ReviewCarousel({
 				{/* A named <section> is an ARIA region, the carousel pattern's
 				    wrapper — spelled semantically rather than role="group". */}
 				<section
-					className="rc-viewport"
+					className="rvc-viewport"
 					aria-roledescription="carousel"
 					aria-label={ariaLabel}
 					onKeyDown={onKeyDown}
 				>
-					<div className="rc-stage" aria-live="polite">
+					<div className="rvc-stage" aria-live="polite">
 						{items.map((item, i) => (
 							<figure
-								className={["rc-slide", i === index && "is-active"].filter(Boolean).join(" ")}
+								className={["rvc-slide", i === index && "is-active"].filter(Boolean).join(" ")}
 								key={item.by + item.quote.slice(0, 24)}
 								aria-hidden={i !== index}
 								aria-roledescription="slide"
@@ -171,24 +171,24 @@ export function ReviewCarousel({
 							>
 								{item.rating != null && <StarRow rating={item.rating} size={17} />}
 								<blockquote
-									className={["rc-quote", quoteSize(item.quote)].filter(Boolean).join(" ")}
+									className={["rvc-quote", quoteSize(item.quote)].filter(Boolean).join(" ")}
 								>
 									“{item.quote}”
 								</blockquote>
-								<figcaption className="rc-who">
-									<span className="rc-name">{item.by}</span>
-									{item.detail && <span className="rc-detail">{item.detail}</span>}
+								<figcaption className="rvc-who">
+									<span className="rvc-name">{item.by}</span>
+									{item.detail && <span className="rvc-detail">{item.detail}</span>}
 								</figcaption>
 							</figure>
 						))}
 					</div>
 
-					<div className="rc-controls">
-						<div className="rc-dots">
+					<div className="rvc-controls">
+						<div className="rvc-dots">
 							{items.map((_, i) => (
 								<button
 									type="button"
-									className={["rc-dot", i === index && "is-active"].filter(Boolean).join(" ")}
+									className={["rvc-dot", i === index && "is-active"].filter(Boolean).join(" ")}
 									// biome-ignore lint/suspicious/noArrayIndexKey: a dot is a position, not an identity; review text can repeat
 									key={`dot-${i}`}
 									aria-label={`Go to review ${i + 1}`}
@@ -197,10 +197,10 @@ export function ReviewCarousel({
 								/>
 							))}
 						</div>
-						<div className="rc-arrows">
+						<div className="rvc-arrows">
 							<button
 								type="button"
-								className="rc-arrow"
+								className="rvc-arrow"
 								aria-label="Previous review"
 								onClick={() => go(index - 1)}
 							>
@@ -208,7 +208,7 @@ export function ReviewCarousel({
 							</button>
 							<button
 								type="button"
-								className="rc-arrow"
+								className="rvc-arrow"
 								aria-label="Next review"
 								onClick={() => go(index + 1)}
 							>

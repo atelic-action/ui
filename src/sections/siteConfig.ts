@@ -121,8 +121,8 @@ export interface SiteConfig {
 	email: string;
 	address: Address;
 	geo?: { latitude: number; longitude: number };
-	mapEmbedUrl?: string;
-	mapLinkUrl?: string;
+	mapEmbedURL?: string;
+	mapLinkURL?: string;
 	/**
 	 * Path to a static map screenshot (e.g. "/images/map.jpg"). When set, the
 	 * map renders as a lightweight image linking to directions instead of the

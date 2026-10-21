@@ -30,7 +30,7 @@ describe("ReviewCarousel", () => {
 				items={[items[0], { quote: long, by: "Medium M." }, { quote: veryLong, by: "Long L." }]}
 			/>,
 		);
-		expect(screen.getByText(`“${items[0].quote}”`).className).toBe("rc-quote");
+		expect(screen.getByText(`“${items[0].quote}”`).className).toBe("rvc-quote");
 		expect(screen.getByText(`“${long}”`)).toHaveClass("is-medium");
 		expect(screen.getByText(`“${veryLong}”`)).toHaveClass("is-compact");
 	});
@@ -99,7 +99,7 @@ describe("ReviewCarousel", () => {
 		render(<ReviewCarousel score="5.0" caption="from 100+ Google reviews" items={items} />);
 		const caption = screen.getByText("from 100+ Google reviews");
 		expect(caption.tagName).toBe("SPAN");
-		expect(caption).toHaveClass("rc-caption");
+		expect(caption).toHaveClass("rvc-caption");
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
 	});
 
@@ -108,7 +108,7 @@ describe("ReviewCarousel", () => {
 			<ReviewCarousel
 				score="5.0"
 				caption="from 100+ Google reviews"
-				profileUrl="https://maps.google.com/?cid=529966634563468011"
+				profileURL="https://maps.google.com/?cid=529966634563468011"
 				items={items}
 			/>,
 		);
@@ -118,11 +118,11 @@ describe("ReviewCarousel", () => {
 		expect(link).toHaveAttribute("href", "https://maps.google.com/?cid=529966634563468011");
 		expect(link).toHaveAttribute("target", "_blank");
 		expect(link).toHaveAttribute("rel", "noopener");
-		expect(link).toHaveClass("rc-caption");
+		expect(link).toHaveClass("rvc-caption");
 	});
 
 	it("has nothing to link without a caption", () => {
-		render(<ReviewCarousel score="5.0" profileUrl="https://example.com/reviews" items={items} />);
+		render(<ReviewCarousel score="5.0" profileURL="https://example.com/reviews" items={items} />);
 		expect(screen.queryByRole("link")).not.toBeInTheDocument();
 	});
 

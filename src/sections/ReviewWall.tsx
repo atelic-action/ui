@@ -22,7 +22,7 @@ export interface ReviewItem {
 	 */
 	date?: string;
 	/** Permalink to the review at its source; turns the date into a link. */
-	sourceUrl?: string;
+	sourceURL?: string;
 	/** Short labels (service, program, location) that drive the filter. */
 	tags?: string[];
 }
@@ -73,10 +73,10 @@ function ReviewCard({ item, clampAt }: { item: ReviewItem; clampAt: number }) {
 				<div className="rw-top">
 					{item.rating != null && <StarRow rating={item.rating} />}
 					{item.date &&
-						(item.sourceUrl ? (
+						(item.sourceURL ? (
 							<a
 								className="rw-date"
-								href={item.sourceUrl}
+								href={item.sourceURL}
 								target="_blank"
 								rel="noopener"
 								aria-label={`Read the ${item.date} review from ${item.by} at its source`}

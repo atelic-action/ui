@@ -26,7 +26,7 @@ export interface AppConfig {
 	 * `import.meta.env.VITE_API_BASE_URL ?? "https://api.example.com"`), so the
 	 * package never reads the app's environment itself.
 	 */
-	apiBaseUrl: string;
+	apiBaseURL: string;
 	/** Where the Profile link in the rail menu and the mobile menu goes. Defaults to "/profile". */
 	profileHref?: string;
 }

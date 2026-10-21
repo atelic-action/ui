@@ -62,7 +62,7 @@ const tagged = [
 		by: "Priya S.",
 		date: "2026-01-08",
 		tags: ["Back pain"],
-		sourceUrl: "https://example.com/review",
+		sourceURL: "https://example.com/review",
 	},
 ];
 
