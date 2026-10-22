@@ -33,7 +33,7 @@ function readSaved(name: string): boolean {
 	const config = peekAppConfig();
 	if (!config) return false;
 	try {
-		return localStorage.getItem(config.storagePrefix + "-" + name) === "true";
+		return localStorage.getItem(`${config.storagePrefix}-${name}`) === "true";
 	} catch {
 		return false;
 	}
@@ -43,7 +43,7 @@ function writeSaved(name: string, value: boolean) {
 	const config = peekAppConfig();
 	if (!config) return;
 	try {
-		localStorage.setItem(config.storagePrefix + "-" + name, String(value));
+		localStorage.setItem(`${config.storagePrefix}-${name}`, String(value));
 	} catch {
 		// Storage refused; the state lives in memory for this visit.
 	}
