@@ -23,7 +23,8 @@ import type { Plugin } from "vite";
 /** Where the client build writes the chunks the wall holds back. */
 export const DOC_DIR = "assets/doc";
 
-const PUBLIC_CONTENT = /\/src\/content\/(not-found\.tsx|proposal[^/]*|notes\.(?:tsx|json)|[^/]+\.meta\.ts)$/;
+const PUBLIC_CONTENT =
+	/\/src\/content\/(not-found\.tsx|proposal[^/]*|notes\.(?:tsx|json)|[^/]+\.meta\.ts)$/;
 
 /** Whether a module id is content that must never ship to the login page. */
 export function isPrivateContent(id: string): boolean {
