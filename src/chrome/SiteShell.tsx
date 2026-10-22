@@ -124,7 +124,7 @@ export function SiteShell({
 						email={site.email}
 						hours={site.hours.map((row) => ({
 							label: row.labelShort,
-							range: formatHoursRange(row, { short: true }),
+							range: formatHoursRange(row, { short: true, clock: site.clock }),
 						}))}
 						attribution={site.attribution}
 						note={site.footer?.note}

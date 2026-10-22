@@ -34,6 +34,19 @@ describe("formatClock", () => {
 		expect(formatClock("11:00", { short: true })).toBe("11a");
 		expect(formatClock("15:30", { short: true })).toBe("3:30p");
 	});
+
+	it("stays on the 12 hour clock when asked for it by name", () => {
+		expect(formatClock("09:00", { clock: "12h" })).toBe("9:00a");
+		expect(formatClock("17:00", { short: true, clock: "12h" })).toBe("5p");
+	});
+
+	it("prints the 24 hour clock with leading zeros, short or not", () => {
+		expect(formatClock("09:00", { clock: "24h" })).toBe("09:00");
+		expect(formatClock("17:00", { clock: "24h" })).toBe("17:00");
+		expect(formatClock("9:30", { clock: "24h" })).toBe("09:30");
+		expect(formatClock("00:00", { clock: "24h" })).toBe("00:00");
+		expect(formatClock("12:00", { short: true, clock: "24h" })).toBe("12:00");
+	});
 });
 
 describe("formatHoursRange", () => {
@@ -43,6 +56,20 @@ describe("formatHoursRange", () => {
 
 	it("formats compactly in short mode", () => {
 		expect(formatHoursRange(monday, { short: true })).toBe("11a to 7p");
+	});
+
+	it("formats on the 24 hour clock, and short changes nothing there", () => {
+		const weekdays: OpeningHours = {
+			label: "Monday to Friday",
+			labelShort: "Mon to Fri",
+			days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+			opens: "09:00",
+			closes: "17:00",
+		};
+		expect(formatHoursRange(weekdays, { clock: "24h" })).toBe("09:00 to 17:00");
+		expect(formatHoursRange(weekdays, { short: true, clock: "24h" })).toBe("09:00 to 17:00");
+		expect(formatHoursRange(weekdays, { short: true, clock: "12h" })).toBe("9a to 5p");
+		expect(formatHoursRange(weekend, { clock: "24h" })).toBe("Closed");
 	});
 
 	it("returns Closed for closed rows", () => {

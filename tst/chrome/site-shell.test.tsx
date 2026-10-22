@@ -127,6 +127,27 @@ describe("SiteShell", () => {
 		expect(hours).toContain("Sun Closed");
 	});
 
+	it("prints the footer hours on the 24 hour clock when the site opts in", () => {
+		const site: SiteConfig = {
+			...testSite,
+			clock: "24h",
+			hours: [
+				{
+					label: "Monday to Friday",
+					labelShort: "Mon to Fri",
+					days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+					opens: "09:00",
+					closes: "17:00",
+				},
+			],
+		};
+		renderShell({}, site);
+
+		const footer = screen.getByRole("contentinfo");
+		const hours = footer.querySelector(".footer-hours")?.textContent?.replace(/\s+/g, " ");
+		expect(hours).toContain("Mon to Fri 09:00 to 17:00");
+	});
+
 	it("wears the .atelic-ui scope", () => {
 		const { container } = renderShell();
 		expect(container.firstElementChild).toHaveClass("atelic-ui");
