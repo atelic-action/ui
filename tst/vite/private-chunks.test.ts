@@ -18,12 +18,15 @@ describe("isPrivateContent", () => {
 		expect(isPrivateContent(`${SRC}/content/writeup.tsx?tsr-split=component`)).toBe(true);
 	});
 
-	it("lets the heads, the 404's copy, and the sealed proposal ship to every page", () => {
+	it("lets the heads, the 404's copy, the sealed proposal, and the note ship to every page", () => {
 		expect(isPrivateContent(`${SRC}/content/writeup.meta.ts`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/content/report.meta.ts`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/content/not-found.tsx`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/content/proposal.tsx`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/content/proposal-payload.json`)).toBe(false);
+		expect(isPrivateContent(`${SRC}/content/notes.tsx`)).toBe(false);
+		expect(isPrivateContent(`${SRC}/content/notes.json`)).toBe(false);
+		expect(isPrivateContent(`${SRC}/content/notes.tsx?tsr-split=component`)).toBe(false);
 	});
 
 	it("leaves everything outside src/content alone", () => {
