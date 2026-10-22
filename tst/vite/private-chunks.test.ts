@@ -27,6 +27,7 @@ describe("isPrivateContent", () => {
 		expect(isPrivateContent(`${SRC}/content/notes.tsx`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/content/notes.json`)).toBe(false);
 		expect(isPrivateContent(`${SRC}/content/notes.tsx?tsr-split=component`)).toBe(false);
+		expect(isPrivateContent(`${SRC}/content/notes-internal.ts`)).toBe(true);
 	});
 
 	it("leaves everything outside src/content alone", () => {

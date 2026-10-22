@@ -13,8 +13,8 @@
  * Public content is the short list that is safe to ship to every page: the
  * 404's copy, the sealed proposal (ciphertext by design, GATE.md), the note
  * (built from public signals only, the practice's FOOTPRINT.md, Privacy,
- * and read at /notes with no sign in on a private host, which the folder's
- * middleware opens), and the heads in `*.meta.ts`, which carry a title and
+ * and meant to be read at /notes with no sign in, which a host opens through
+ * the gate's `open` option), and the heads in `*.meta.ts`, which carry a title and
  * nothing a snapshot produced. Every other module under src/content/ is
  * treated as private, so a new artifact starts behind the wall.
  */
@@ -23,7 +23,7 @@ import type { Plugin } from "vite";
 /** Where the client build writes the chunks the wall holds back. */
 export const DOC_DIR = "assets/doc";
 
-const PUBLIC_CONTENT = /\/src\/content\/(not-found\.tsx|proposal[^/]*|notes[^/]*|[^/]+\.meta\.ts)$/;
+const PUBLIC_CONTENT = /\/src\/content\/(not-found\.tsx|proposal[^/]*|notes\.(?:tsx|json)|[^/]+\.meta\.ts)$/;
 
 /** Whether a module id is content that must never ship to the login page. */
 export function isPrivateContent(id: string): boolean {
