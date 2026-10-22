@@ -45,11 +45,16 @@ export function MarketingVisit() {
 			<Specimen
 				id="hours-table"
 				name="HoursTable"
-				lead="Day rows with dashed rules and mono times; a row without times reads Closed or its note."
+				lead="Day rows with dashed rules and mono times; a row without times reads Closed or its note. The second table is the same hours on the 24 hour clock, which a site opts into by setting clock to 24h in its config."
 			>
 				<Band>
 					<div style={{ maxWidth: 420 }}>
 						<HoursTable hours={bakery.hours} />
+					</div>
+				</Band>
+				<Band alt>
+					<div style={{ maxWidth: 420 }}>
+						<HoursTable hours={bakery.hours} clock="24h" />
 					</div>
 				</Band>
 			</Specimen>

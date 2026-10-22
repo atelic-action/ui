@@ -512,6 +512,8 @@ The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFra
 
 The entry also exports the helpers the sections use, for a site's own code: `formatClock`, `formatHoursRange`, and `isClosed` for hours, `isHoneypotFilled`, and `trackEvent`.
 
+Hours print on the 12 hour clock unless the site's config sets `clock: "24h"`, which turns "9a to 5p" into "09:00 to 17:00" everywhere hours appear: the footer through `SiteShell`, `LocationSection`, and `HoursTable` (which takes `clock` as a prop when used on its own). `formatClock` and `formatHoursRange` take the same `clock` option for a site's own code.
+
 ### The Marketing Vite Config and Commands
 
 ```ts

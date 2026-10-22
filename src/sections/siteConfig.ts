@@ -24,6 +24,9 @@ export interface CTA {
 	external?: boolean;
 }
 
+/** How opening hours print: "12h" reads "9a to 5p", "24h" reads "09:00 to 17:00". */
+export type Clock = "12h" | "24h";
+
 export interface OpeningHours {
 	/** Row label as displayed, e.g. "Monday" or "Friday to Sunday". */
 	label: string;
@@ -137,6 +140,14 @@ export interface SiteConfig {
 	 */
 	mapImage?: string;
 	hours: OpeningHours[];
+	/**
+	 * The clock the hours print on, wherever they appear (the footer, the
+	 * hours table, the location section). "12h" (the default) reads "9a to 5p"
+	 * in the footer and "9:00a to 5:00p" in the table; "24h" reads "09:00 to
+	 * 17:00" in both, with leading zeros. Structured data is unaffected, since
+	 * `opens` and `closes` are already 24 hour.
+	 */
+	clock?: Clock;
 	/** Neighborhoods or cities served; feeds local SEO copy and structured data. */
 	serviceAreas: string[];
 	priceRange?: string;

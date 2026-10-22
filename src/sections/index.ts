@@ -6,7 +6,7 @@
  * its own.
  */
 export { isHoneypotFilled } from "../lib/honeypot";
-export { formatClock, formatHoursRange, isClosed } from "../lib/hours";
+export { type ClockOptions, formatClock, formatHoursRange, isClosed } from "../lib/hours";
 export { type EventParams, trackEvent } from "../lib/trackEvent";
 export { BlogIndex, type BlogIndexItem, type BlogIndexProps } from "./BlogIndex";
 export { BlogPost, type BlogPostDoc, type BlogPostProps } from "./BlogPost";
@@ -65,6 +65,7 @@ export { type SocialPhoto, SocialStrip, type SocialStripProps } from "./SocialSt
 export { SplitSection, type SplitSectionProps } from "./SplitSection";
 export type {
 	Address,
+	Clock,
 	CTA,
 	Founder,
 	GateConfig,
