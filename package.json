@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "3.1.0",
+	"version": "3.2.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
