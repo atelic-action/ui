@@ -56,6 +56,12 @@ export interface Founder {
 	jobTitle: string;
 	honorificSuffix?: string;
 	alumniOf?: string;
+	/**
+	 * Profile URLs for the founder's own schema.org sameAs (their personal site
+	 * and profiles), kept off the business's sameAs so the two entities stay
+	 * distinct in the graph.
+	 */
+	sameAs?: string[];
 }
 
 /**
