@@ -15,8 +15,8 @@ import {
 } from "../../src/scripts/check-wall";
 
 const ORIGIN = "https://summit.atelic.me";
-const writeup: Probe = { path: "/writeup", kind: "document" };
-const pdf: Probe = { path: "/writeup.pdf", kind: "file" };
+const theRead: Probe = { path: "/the-read", kind: "document" };
+const pdf: Probe = { path: "/the-read.pdf", kind: "file" };
 const image: Probe = { path: "/images/profile.jpg", kind: "file" };
 
 function answer(status: number, headers: Record<string, string> = {}): WallAnswer {
@@ -35,14 +35,14 @@ function answer(status: number, headers: Record<string, string> = {}): WallAnswe
 describe("classifyWall", () => {
 	it("passes the wall's redirect to /login, absolute or relative, with its next", () => {
 		const absolute = answer(302, { location: `${ORIGIN}/login?next=%2Fwriteup` });
-		expect(classifyWall(writeup, absolute, ORIGIN).ok).toBe(true);
+		expect(classifyWall(theRead, absolute, ORIGIN).ok).toBe(true);
 		const relative = answer(307, { location: "/login?next=/writeup" });
-		expect(classifyWall(writeup, relative, ORIGIN).ok).toBe(true);
+		expect(classifyWall(theRead, relative, ORIGIN).ok).toBe(true);
 	});
 
 	it("fails a document served with no wall", () => {
 		const verdict = classifyWall(
-			writeup,
+			theRead,
 			answer(200, { "content-type": "text/html; charset=utf-8" }),
 			ORIGIN,
 		);
@@ -51,24 +51,24 @@ describe("classifyWall", () => {
 	});
 
 	it("fails a redirect that is not the wall's", () => {
-		const verdict = classifyWall(writeup, answer(308, { location: "/writeup/" }), ORIGIN);
+		const verdict = classifyWall(theRead, answer(308, { location: "/writeup/" }), ORIGIN);
 		expect(verdict.ok).toBe(false);
 		expect(verdict.reason).toContain("not the wall's /login");
 	});
 
 	it("fails a 5xx as a host that is down, with the note to verify it answers", () => {
-		const verdict = classifyWall(writeup, answer(500), ORIGIN);
+		const verdict = classifyWall(theRead, answer(500), ORIGIN);
 		expect(verdict.ok).toBe(false);
 		expect(verdict.reason).toContain("ATE-537");
 		expect(verdict.reason).toContain("verify the host answers before any link goes out");
 	});
 
 	it("fails Deployment Protection, which is a lock but not the wall", () => {
-		expect(classifyWall(writeup, answer(401), ORIGIN).ok).toBe(false);
+		expect(classifyWall(theRead, answer(401), ORIGIN).ok).toBe(false);
 	});
 
 	it("fails a document the host does not serve", () => {
-		expect(classifyWall(writeup, answer(404), ORIGIN).ok).toBe(false);
+		expect(classifyWall(theRead, answer(404), ORIGIN).ok).toBe(false);
 	});
 
 	it("passes a file only behind the wall's redirect, never served and never missing", () => {
@@ -91,16 +91,16 @@ describe("classifyWall", () => {
 });
 
 describe("wallProbes", () => {
-	it("asks for the writeup and its printed copy, and the report and proposal when carried", () => {
+	it("asks for the read and its printed copy, and the report and proposal when carried", () => {
 		expect(wallProbes({ hasRoute: () => false }).map((p) => p.path)).toEqual([
-			"/writeup",
-			"/writeup.pdf",
+			"/the-read",
+			"/the-read.pdf",
 		]);
 		expect(wallProbes({ hasRoute: () => true }).map((p) => p.path)).toEqual([
-			"/writeup",
+			"/the-read",
 			"/report",
 			"/proposal",
-			"/writeup.pdf",
+			"/the-read.pdf",
 		]);
 	});
 
@@ -124,7 +124,7 @@ describe("wallProbes", () => {
 		});
 		expect(probes.at(-1)).toEqual({ path: "/brand/summit.svg", kind: "open" });
 		expect(probes.filter((p) => p.kind === "file").map((p) => p.path)).toEqual([
-			"/writeup.pdf",
+			"/the-read.pdf",
 			"/images/profile.jpg",
 		]);
 		expect(wallProbes({ hasRoute: () => false }).some((p) => p.kind === "open")).toBe(false);
@@ -279,14 +279,14 @@ describe("checkWall", () => {
 		const seen: Array<{ url: string; init: RequestInit }> = [];
 		const results = await checkWall(
 			ORIGIN,
-			[writeup, { path: "/report", kind: "document" }],
+			[theRead, { path: "/report", kind: "document" }],
 			async (url, init) => {
 				seen.push({ url, init });
 				if (url.endsWith("/report")) throw new Error("connection refused");
 				return answer(302, { location: "/login?next=/writeup" });
 			},
 		);
-		expect(seen.map((s) => s.url)).toEqual([`${ORIGIN}/writeup`, `${ORIGIN}/report`]);
+		expect(seen.map((s) => s.url)).toEqual([`${ORIGIN}/the-read`, `${ORIGIN}/report`]);
 		for (const { init } of seen) {
 			expect(init.redirect).toBe("manual");
 			expect(new Headers(init.headers).has("cookie")).toBe(false);
@@ -297,14 +297,14 @@ describe("checkWall", () => {
 
 	it("sends the request for a link as a JSON POST and the verify as a GET, with no cookie", async () => {
 		const seen: Array<{ url: string; init: RequestInit }> = [];
-		const results = await checkWall(ORIGIN, [writeup, ...signinProbes()], async (url, init) => {
+		const results = await checkWall(ORIGIN, [theRead, ...signinProbes()], async (url, init) => {
 			seen.push({ url, init });
 			if (url.endsWith("/api/auth/request-link")) return answer(200);
 			if (url.includes("/api/auth/verify")) return answer(302, { location: "/login?e=expired" });
 			return answer(302, { location: "/login?next=/writeup" });
 		});
 		expect(seen.map((s) => [s.init.method, s.url])).toEqual([
-			["GET", `${ORIGIN}/writeup`],
+			["GET", `${ORIGIN}/the-read`],
 			["POST", `${ORIGIN}/api/auth/request-link`],
 			["GET", `${ORIGIN}/api/auth/verify?token=not-a-token`],
 		]);

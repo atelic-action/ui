@@ -366,7 +366,7 @@ The pieces import no stylesheet of their own. A site imports `@atelic-action/ui/
 // vite.config.ts
 import { artifactConfig } from "@atelic-action/ui/vite";
 
-export default artifactConfig({ pages: ["/writeup", "/proposal", "/report"] });
+export default artifactConfig({ pages: ["/the-read", "/proposal", "/report"] });
 ```
 
 `artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
@@ -375,7 +375,7 @@ A site with a real need of its own passes `extend`, which is merged over the res
 
 ```ts
 export default artifactConfig({
-	pages: ["/writeup"],
+	pages: ["/the-read"],
 	extend: { server: { port: 5180 } },
 });
 ```
@@ -398,7 +398,7 @@ The package installs the scripts every artifact site used to carry as files, so 
 | `atelic-stamp-health` | Writes `dist/client/health.json` with the status, the commit, and the build time | Last step of `build` |
 | `atelic-check-links` | Asks for every external link in the prerendered pages and exits 1 when one is dead | `check:links`, after a build |
 | `atelic-check-wall <host> [path ...]` | Asks a deployed host for each document and held file with no cookie, and passes only when the wall answers every one and the sign in functions respond | `check:wall`, before any private link goes out |
-| `atelic-reader-link <email> [path] [--token <token>] [--qr \| --no-qr]` | Mints a named reader: prints the sealed line for `analytics.identify` and the link to send, and writes `public/images/qr.png` for a public writeup's first reader | `reader` |
+| `atelic-reader-link <email> [path] [--token <token>] [--qr \| --no-qr]` | Mints a named reader: prints the sealed line for `analytics.identify` and the link to send, and writes `public/images/qr.png` for a public read's first reader | `reader` |
 | `atelic-serve-static` | Serves `dist/client` on `127.0.0.1` the way Vercel does, on `PORT` or 4173 | The `webServer` command in `playwright.config.ts` |
 | `atelic-print-sheets <url or dist/client> <out.pdf> [sheets] [page] [port]` | Prints a page to PDF with headless Chrome, reports the sheet count, and fails when a count is given and missed | `print` |
 | `atelic-seal-document <config.json> [out.json]` | Seals a document into the payload that `@atelic-action/artifact`'s `Gate` reads, one wrapped key for each reader. The payload names no one: no address, and readers numbered `r1`, `r2` whatever the config calls them | `seal` |

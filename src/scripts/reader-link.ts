@@ -8,7 +8,7 @@
  * email encrypted under it. The token itself appears only in the link, so
  * keep the link; it cannot be printed again.
  *
- * A writeup's reader also gets the printed copy's QR: public/images/qr.png
+ * A read's reader also gets the printed copy's QR: public/images/qr.png
  * is written to carry the same link, so a scan of the sheet lands on that
  * person's contact as an emailed open does. Mint the reader before printing.
  *
@@ -18,7 +18,7 @@
  *
  * Usage: atelic-reader-link <email> [path] [--token <existing token>] [--qr | --no-qr],
  *   or `bun run reader <email>` in a site, from the site's root.
- *   path defaults to /writeup. --token seals an email under a token that is
+ *   path defaults to /the-read. --token seals an email under a token that is
  *   already in a sent link, so that link keeps working. --qr writes the QR
  *   for this reader even when another is already named; --no-qr never writes it.
  */
@@ -51,8 +51,8 @@ export function parseReaderArgs(flags: string[]): ReaderArgs | undefined {
 	const at = args.indexOf("--token");
 	const given = at === -1 ? undefined : args[at + 1];
 	const rest = at === -1 ? args : args.filter((_, index) => index !== at && index !== at + 1);
-	const [email, givenPath = "/writeup"] = rest;
-	// "writeup", "/writeup", and "/writeup/" are one page.
+	const [email, givenPath = "/the-read"] = rest;
+	// "the-read", "/the-read", and "/the-read/" are one page.
 	const path = `/${givenPath.replace(/^\/+|\/+$/g, "")}`;
 
 	if (!email?.includes("@") || (at !== -1 && !given)) return undefined;
@@ -91,13 +91,13 @@ export async function main(flags: string[], cwd: string = process.cwd()): Promis
 	// in and never by a token, so its QR stays on the bare host.
 	const named = site.analytics?.identify.length ?? 0;
 	const sheetIsFree = named === 0 || forceQR;
-	if (path === "/writeup" && !noQR && site.access === "public" && !sheetIsFree) {
+	if (path === "/the-read" && !noQR && site.access === "public" && !sheetIsFree) {
 		console.log("");
 		console.log(
 			"Left public/images/qr.png alone: a reader is already named, and the sheet is theirs. Pass --qr to give the sheet to this reader.",
 		);
 	}
-	if (path === "/writeup" && !noQR && site.access === "public" && sheetIsFree) {
+	if (path === "/the-read" && !noQR && site.access === "public" && sheetIsFree) {
 		const qr = resolve(cwd, "public/images/qr.png");
 		await QRCode.toFile(qr, link, { width: 330, margin: 4, errorCorrectionLevel: "M" });
 		console.log("");

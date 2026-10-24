@@ -138,7 +138,7 @@ describe("a reader's link", () => {
 
 	it("puts the token on the artifact's page", () => {
 		expect(readerLink("https://summit.atelic.me", "tok-dana")).toBe(
-			"https://summit.atelic.me/writeup?k=tok-dana",
+			"https://summit.atelic.me/the-read?k=tok-dana",
 		);
 		expect(readerLink("https://summit.atelic.me", "tok-dana", "/proposal")).toBe(
 			"https://summit.atelic.me/proposal?k=tok-dana",

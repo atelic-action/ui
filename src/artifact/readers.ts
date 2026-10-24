@@ -139,7 +139,7 @@ export async function whoIsReading(visit: {
 }
 
 /** The link to send a reader: the artifact's page with their token on it. */
-export function readerLink(siteURL: string, token: string, path = "/writeup"): string {
+export function readerLink(siteURL: string, token: string, path = "/the-read"): string {
 	const url = new URL(path, siteURL);
 	url.searchParams.set("k", token);
 	return url.toString();
