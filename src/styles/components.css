@@ -661,10 +661,22 @@
 			grid-column: 4;
 		}
 	}
+	/* A clipping card can defeat a row's break-inside in print engines other
+	   than Chrome, so the card stops clipping there and the first group
+	   label rounds its own top corners instead. A label or a heading never
+	   ends a page alone. */
 	@media print {
 		.atelic-ui .rc-card {
+			overflow: visible;
 			box-shadow: none;
 			border-color: var(--neutral-200);
+		}
+		.atelic-ui .rc-card > .rc-group:first-child {
+			border-radius: calc(var(--radius-md) - 1px) calc(var(--radius-md) - 1px) 0 0;
+		}
+		.atelic-ui .rc-head,
+		.atelic-ui .rc-group {
+			break-after: avoid;
 		}
 		.atelic-ui .rc-row {
 			break-inside: avoid;
