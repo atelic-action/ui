@@ -23,6 +23,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `IconList` | `@atelic-action/ui/components` | A list whose bullets are icons, one for the list or one per item, each in a tone | [#icon-list](https://ui.atelic.me/#icon-list) |
 | `DataTable` | `@atelic-action/ui/components` | A table whose first column names each row, sortable, stacking on a phone | [#data-table](https://ui.atelic.me/#data-table) |
 | `ReportCard` | `@atelic-action/ui/components` | A name, a grade, and a line per row, in labeled groups, each row a link to its section | [#report-card](https://ui.atelic.me/#report-card) |
+| `reportCardLabels`, `ReportCardLabels` | `@atelic-action/ui/components` | The words a screen reader hears around a report card's letters by default, and their type | none |
 | `Rank` | `@atelic-action/ui/components` | A figure with its badge in a tone, for a table cell: a rank, a place in an answer, or a dash | [#rank](https://ui.atelic.me/#rank) |
 | `StatRow` | `@atelic-action/ui/components` | A row of large figures with periods, deltas, and trends | [#stat-row](https://ui.atelic.me/#stat-row) |
 | `Callout` | `@atelic-action/ui/components` | One finding: an icon in its tone, the title, the explainer | [#callout](https://ui.atelic.me/#callout) |
