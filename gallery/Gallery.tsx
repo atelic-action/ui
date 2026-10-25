@@ -313,7 +313,7 @@ export function Gallery() {
 					<Piece
 						id="hint"
 						title="Hint"
-						lead="An info icon beside a word that opens a short explainer. It opens on hover or focus, stays open on a click or a tap, closes on Escape or a tap elsewhere, and flips to its right edge when the bubble would run off the screen. Print hides it. A table column takes one as its hint, shown wide, since the heading row is hidden on a phone."
+						lead="An info icon beside a word that opens a short explainer. It opens on hover or focus, stays open on a click or a tap, closes on Escape or a tap elsewhere, and slides left when the bubble would run off the screen. Print hides it. A table column takes one as its hint, shown wide, since the heading row is hidden on a phone."
 					>
 						<Example caption="Beside a word, and before one">
 							<p>

@@ -1,5 +1,13 @@
 import { Info } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 
 export interface HintProps {
 	/** What the button is called, for a screen reader, e.g. "About First paint". */
@@ -22,7 +30,7 @@ export interface HintProps {
 export function Hint({ label, side = "after", className, children }: HintProps) {
 	const [open, setOpen] = useState(false);
 	const [pinned, setPinned] = useState(false);
-	const [flip, setFlip] = useState(false);
+	const [shift, setShift] = useState(0);
 	const id = useId();
 	const root = useRef<HTMLSpanElement>(null);
 	const bubble = useRef<HTMLSpanElement>(null);
@@ -48,12 +56,15 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 		};
 	}, [open, close]);
 
-	// Measured from the left edge first; flipped when that runs off the screen.
+	// Opens from the icon's left edge, then slides left just far enough to
+	// stay on screen, and never past the screen's left edge.
 	useLayoutEffect(() => {
 		if (!open || !bubble.current || !root.current) return;
 		const icon = root.current.getBoundingClientRect();
 		const width = bubble.current.getBoundingClientRect().width;
-		setFlip(icon.left + width > document.documentElement.clientWidth - 8);
+		const room = document.documentElement.clientWidth - 8;
+		const slide = Math.min(0, room - (icon.left + width));
+		setShift(Math.max(slide, 8 - icon.left));
 	}, [open]);
 
 	return (
@@ -62,13 +73,15 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 			className={["hint", className].filter(Boolean).join(" ")}
 			data-side={side}
 			data-open={open || undefined}
-			data-flip={flip || undefined}
 			onPointerEnter={(event) => {
 				// A finger never hovers: a tap opens through the click instead.
 				if (event.pointerType !== "touch") setOpen(true);
 			}}
 			onPointerLeave={(event) => {
-				if (event.pointerType !== "touch" && !pinned) setOpen(false);
+				if (event.pointerType === "touch" || pinned) return;
+				// A button the keyboard holds keeps its bubble until it blurs.
+				if (root.current?.contains(document.activeElement)) return;
+				setOpen(false);
 			}}
 		>
 			<button
@@ -77,9 +90,7 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 				aria-describedby={id}
 				aria-expanded={open}
 				onFocus={() => setOpen(true)}
-				onBlur={() => {
-					if (!pinned) setOpen(false);
-				}}
+				onBlur={close}
 				onClick={() => {
 					if (pinned) close();
 					else {
@@ -90,7 +101,13 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 			>
 				<Info size={14} aria-hidden="true" />
 			</button>
-			<span ref={bubble} role="tooltip" id={id} className="hint-bubble">
+			<span
+				ref={bubble}
+				role="tooltip"
+				id={id}
+				className="hint-bubble"
+				style={shift ? { left: shift } : undefined}
+			>
 				{children}
 			</span>
 		</span>
