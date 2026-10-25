@@ -899,6 +899,72 @@
 		white-space: nowrap;
 	}
 
+	/* ---- Hint: an info icon that opens a short bubble on hover, focus, or a
+	   tap, from the icon's left edge unless that runs off the screen; hidden
+	   in print ---- */
+	.atelic-ui .hint {
+		position: relative;
+		display: inline-block;
+		vertical-align: middle;
+		margin-left: 4px;
+		line-height: 0;
+	}
+	.atelic-ui .hint[data-side="before"] {
+		margin: 0 4px 0 0;
+	}
+	.atelic-ui .hint > button {
+		display: inline-grid;
+		place-items: center;
+		width: 18px;
+		height: 18px;
+		padding: 0;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--neutral-500);
+		cursor: pointer;
+	}
+	.atelic-ui .hint > button:hover,
+	.atelic-ui .hint > button:focus-visible,
+	.atelic-ui .hint[data-open] > button {
+		color: var(--ink);
+	}
+	.atelic-ui .hint-bubble {
+		display: none;
+		position: absolute;
+		top: calc(100% + 6px);
+		z-index: 20;
+		width: max-content;
+		max-width: min(280px, 80vw);
+		padding: 8px 10px;
+		border: 1px solid var(--neutral-200);
+		border-radius: var(--radius-sm);
+		background: var(--ui-card, var(--card));
+		box-shadow: 0 6px 20px rgb(0 0 0 / 0.1);
+		color: var(--ink);
+		font: 400 0.8rem / 1.45 var(--font-sans, inherit);
+		letter-spacing: normal;
+		text-transform: none;
+		text-align: left;
+		white-space: normal;
+		text-wrap: pretty;
+	}
+	.atelic-ui .hint .hint-bubble {
+		left: 0;
+	}
+	.atelic-ui .hint[data-flip] .hint-bubble {
+		left: auto;
+		right: 0;
+	}
+	.atelic-ui .hint[data-open] .hint-bubble {
+		display: block;
+	}
+	@media print {
+		.atelic-ui .hint {
+			display: none;
+		}
+	}
+
 	/* ---- DataTable: on a phone each row stacks, its facts wearing their
 	   column's label, and a dropdown sorts; wide, it is a table whose
 	   headings sort ---- */

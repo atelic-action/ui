@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { type ReactNode, useId, useMemo, useState } from "react";
+import { Hint } from "./Hint";
 
 export type SortDirection = "asc" | "desc";
 
@@ -15,6 +16,10 @@ export interface DataTableColumn {
 	firstSort?: SortDirection;
 	/** The column hugs its content (a swatch, a mark) instead of sharing the width. */
 	fit?: boolean;
+	/** A short explainer behind an info icon beside the heading, for a measure a reader may not know. */
+	hint?: ReactNode;
+	/** What a screen reader calls the hint's button; defaults to "About" and the label. */
+	hintLabel?: string;
 }
 
 /** A cell whose display is not what it sorts by, e.g. an icon over a number. */
@@ -140,6 +145,16 @@ export function DataTable({
 						{columns.map((column, index) => {
 							const active = sort?.column === index;
 							const Icon = !active ? ArrowUpDown : sort?.direction === "asc" ? ArrowUp : ArrowDown;
+							// The explainer's icon sits after the label, or before it when the
+							// column is right aligned, so the icon stays on the inside edge.
+							const hint = column.hint && (
+								<Hint
+									label={column.hintLabel ?? `About ${column.label}`}
+									side={column.align === "right" ? "before" : "after"}
+								>
+									{column.hint}
+								</Hint>
+							);
 							const head = {
 								"data-align": column.align ?? "left",
 								"data-fit": column.fit || undefined,
@@ -154,6 +169,7 @@ export function DataTable({
 							return (
 								// biome-ignore lint/suspicious/noArrayIndexKey: columns sit in order, and two may share a blank label
 								<th scope="col" key={index} {...head}>
+									{hint && column.align === "right" && hint}
 									{column.sortable ? (
 										<button
 											type="button"
@@ -166,6 +182,7 @@ export function DataTable({
 									) : (
 										column.label
 									)}
+									{hint && column.align !== "right" && hint}
 								</th>
 							);
 						})}
