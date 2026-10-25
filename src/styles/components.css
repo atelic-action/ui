@@ -899,6 +899,78 @@
 		white-space: nowrap;
 	}
 
+	/* ---- Hint: an info icon that opens a short bubble on hover, focus, or a
+	   tap, from the icon's left edge unless that runs off the screen; hidden
+	   in print ---- */
+	.atelic-ui .hint {
+		position: relative;
+		display: inline-block;
+		vertical-align: middle;
+		margin-left: 4px;
+		line-height: 0;
+	}
+	.atelic-ui .hint[data-side="before"] {
+		margin: 0 4px 0 0;
+	}
+	.atelic-ui .hint > button {
+		display: inline-grid;
+		place-items: center;
+		width: 18px;
+		height: 18px;
+		padding: 0;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--neutral-500);
+		cursor: pointer;
+	}
+	.atelic-ui .hint > button:hover,
+	.atelic-ui .hint > button:focus-visible,
+	.atelic-ui .hint[data-open] > button {
+		color: var(--ink);
+	}
+	.atelic-ui .hint-bubble {
+		display: none;
+		position: absolute;
+		top: calc(100% + 6px);
+		left: 0;
+		z-index: 20;
+		width: max-content;
+		max-width: min(280px, 80vw);
+		padding: 8px 10px;
+		border: 1px solid var(--neutral-200);
+		border-radius: var(--radius-sm);
+		background: var(--ui-card, var(--card));
+		box-shadow: var(--shadow-md, 0 6px 20px rgb(0 0 0 / 0.1));
+		color: var(--ink);
+		font-family: var(--font-sans, inherit);
+		font-size: 0.8rem;
+		font-weight: 400;
+		line-height: 1.45;
+		letter-spacing: normal;
+		text-transform: none;
+		text-align: left;
+		white-space: normal;
+		text-wrap: pretty;
+	}
+	/* Bridges the gap to the icon so the pointer can cross into the bubble. */
+	.atelic-ui .hint-bubble::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: -8px;
+		height: 8px;
+	}
+	.atelic-ui .hint[data-open] .hint-bubble {
+		display: block;
+	}
+	@media print {
+		.atelic-ui .hint {
+			display: none;
+		}
+	}
+
 	/* ---- DataTable: on a phone each row stacks, its facts wearing their
 	   column's label, and a dropdown sorts; wide, it is a table whose
 	   headings sort ---- */
@@ -1058,6 +1130,19 @@
 			flex: none;
 			opacity: 0.55;
 		}
+		/* A Hint's button is not a sort button: keep its own look against the bare heading rules. */
+		.atelic-ui .data-table thead th .hint > button {
+			display: inline-grid;
+			color: var(--neutral-500);
+		}
+		.atelic-ui .data-table thead th .hint > button:hover,
+		.atelic-ui .data-table thead th .hint > button:focus-visible,
+		.atelic-ui .data-table thead th .hint[data-open] > button {
+			color: var(--ink);
+		}
+		.atelic-ui .data-table thead th .hint > button svg {
+			opacity: 1;
+		}
 		.atelic-ui .data-table thead th button[data-active] svg {
 			opacity: 1;
 		}
@@ -1074,6 +1159,12 @@
 		.atelic-ui .data-table tbody tr:last-child th,
 		.atelic-ui .data-table tbody tr:last-child td {
 			border-bottom: 0;
+		}
+	}
+	/* The phone hides the heading row, so a column hint goes with it. */
+	@media screen and (width < 721px) {
+		.atelic-ui .data-table thead .hint {
+			display: none;
 		}
 	}
 	@media print {

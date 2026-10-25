@@ -11,6 +11,7 @@ import {
 	type DataTableRow,
 	Disclosure,
 	GateLogin,
+	Hint,
 	IconList,
 	Rank,
 	StackedBar,
@@ -54,6 +55,7 @@ const stops: PageStop[] = [
 	{ id: "checklist", label: "Checklist" },
 	{ id: "icon-list", label: "IconList" },
 	{ id: "data-table", label: "DataTable" },
+	{ id: "hint", label: "Hint" },
 	{ id: "rank", label: "Rank" },
 	{ id: "stat-row", label: "StatRow" },
 	{ id: "callout", label: "Callout" },
@@ -284,6 +286,49 @@ export function Gallery() {
 						</Example>
 						<Example caption="With a row tone, listed as given">
 							<DataTable columns={searchColumns} rows={searchRows} />
+						</Example>
+						<Example caption="A hint on each figure column, before the heading when it is right aligned">
+							<DataTable
+								columns={[
+									{ label: "Page" },
+									{
+										label: "First paint",
+										align: "right",
+										hint: "The first moment anything appears on the screen. Google draws its line for good at 1.8 s.",
+									},
+									{
+										label: "Main content",
+										align: "right",
+										hint: "When the biggest thing on the screen has arrived. Google draws its line at 2.5 s.",
+									},
+								]}
+								rows={[
+									{ cells: ["Home", "2.3 s", "4.1 s"] },
+									{ cells: ["Menu", "1.2 s", "1.9 s"] },
+								]}
+							/>
+						</Example>
+					</Piece>
+
+					<Piece
+						id="hint"
+						title="Hint"
+						lead="An info icon beside a word that opens a short explainer. It opens on hover or focus, stays open on a click or a tap, closes on Escape or a tap elsewhere, and slides left when the bubble would run off the screen. Print hides it. A table column takes one as its hint, shown wide, since the heading row is hidden on a phone."
+					>
+						<Example caption="Beside a word, and before one">
+							<p>
+								Frozen for
+								<Hint label="About frozen for">
+									How long the page ignores a tap or a scroll while its scripts run. Google draws
+									its line at 0.2 s.
+								</Hint>
+							</p>
+							<p>
+								<Hint label="About layout shift" side="before">
+									How much the page jumps around while it loads. Google draws its line at 0.1.
+								</Hint>
+								Layout shift
+							</p>
 						</Example>
 					</Piece>
 
