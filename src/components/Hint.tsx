@@ -92,7 +92,11 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 				aria-describedby={id}
 				aria-expanded={open}
 				onPointerDown={() => {
+					// Focus follows a press in the same task; the flag is spent by then.
 					byPointer.current = true;
+					setTimeout(() => {
+						byPointer.current = false;
+					}, 0);
 				}}
 				onFocus={() => {
 					if (!byPointer.current) {
@@ -123,6 +127,8 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 				id={id}
 				className="hint-bubble"
 				style={shift ? { left: shift } : undefined}
+				// A press on the bubble's text must not pull focus off the button.
+				onMouseDown={(event) => event.preventDefault()}
 			>
 				{children}
 			</span>

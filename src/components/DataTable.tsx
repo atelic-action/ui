@@ -159,6 +159,8 @@ export function DataTable({
 							const head = {
 								"data-align": column.align ?? "left",
 								"data-fit": column.fit || undefined,
+								// The hint button sits in the heading; the heading is still named by its label.
+								"aria-label": column.hint && column.label ? column.label : undefined,
 								"aria-sort": column.sortable
 									? active
 										? sort?.direction === "asc"
