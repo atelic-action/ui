@@ -61,6 +61,54 @@ describe("Hint", () => {
 		expect(root).not.toHaveAttribute("data-open");
 	});
 
+	it("keeps a keyboard focused bubble open through a mouse leave, and closes it on blur", () => {
+		const { container } = render(
+			<Hint label="About first paint">The first moment anything appears.</Hint>,
+		);
+		const root = container.querySelector(".hint") as HTMLElement;
+		const button = screen.getByRole("button");
+		fireEvent.focus(button);
+		expect(root).toHaveAttribute("data-open");
+		fireEvent.pointerOut(root, { pointerType: "mouse" });
+		expect(root).toHaveAttribute("data-open");
+		fireEvent.blur(button);
+		expect(root).not.toHaveAttribute("data-open");
+	});
+
+	it("lets a hover close again after a click has unpinned it, since a click's focus is not the keyboard's", () => {
+		const { container } = render(
+			<Hint label="About first paint">The first moment anything appears.</Hint>,
+		);
+		const root = container.querySelector(".hint") as HTMLElement;
+		const button = screen.getByRole("button");
+		fireEvent.pointerOver(root, { pointerType: "mouse" });
+		fireEvent.pointerDown(button);
+		fireEvent.focus(button);
+		fireEvent.click(button);
+		fireEvent.click(button);
+		expect(root).not.toHaveAttribute("data-open");
+		fireEvent.pointerOver(root, { pointerType: "mouse" });
+		expect(root).toHaveAttribute("data-open");
+		fireEvent.pointerOut(root, { pointerType: "mouse" });
+		expect(root).not.toHaveAttribute("data-open");
+	});
+
+	it("stays pinned when focus moves into the bubble", () => {
+		const { container } = render(
+			<Hint label="About first paint">
+				See <a href="https://example.com/">the line</a>.
+			</Hint>,
+		);
+		const root = container.querySelector(".hint") as HTMLElement;
+		const button = screen.getByRole("button");
+		fireEvent.click(button);
+		expect(root).toHaveAttribute("data-open");
+		fireEvent.blur(button, { relatedTarget: screen.getByRole("link") });
+		expect(root).toHaveAttribute("data-open");
+		fireEvent.blur(button, { relatedTarget: null });
+		expect(root).not.toHaveAttribute("data-open");
+	});
+
 	it("records which side of its word the icon sits on", () => {
 		const { container } = render(
 			<Hint label="About layout shift" side="before">

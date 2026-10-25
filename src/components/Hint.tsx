@@ -30,6 +30,10 @@ export interface HintProps {
 export function Hint({ label, side = "after", className, children }: HintProps) {
 	const [open, setOpen] = useState(false);
 	const [pinned, setPinned] = useState(false);
+	// Keyboard focus holds the bubble open until it leaves; mouse focus, which
+	// a click also gives the button, must not, or a later hover sticks open.
+	const [keyboard, setKeyboard] = useState(false);
+	const byPointer = useRef(false);
 	const [shift, setShift] = useState(0);
 	const id = useId();
 	const root = useRef<HTMLSpanElement>(null);
@@ -78,9 +82,7 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 				if (event.pointerType !== "touch") setOpen(true);
 			}}
 			onPointerLeave={(event) => {
-				if (event.pointerType === "touch" || pinned) return;
-				// A button the keyboard holds keeps its bubble until it blurs.
-				if (root.current?.contains(document.activeElement)) return;
+				if (event.pointerType === "touch" || pinned || keyboard) return;
 				setOpen(false);
 			}}
 		>
@@ -89,8 +91,22 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 				aria-label={label}
 				aria-describedby={id}
 				aria-expanded={open}
-				onFocus={() => setOpen(true)}
-				onBlur={close}
+				onPointerDown={() => {
+					byPointer.current = true;
+				}}
+				onFocus={() => {
+					if (!byPointer.current) {
+						setKeyboard(true);
+						setOpen(true);
+					}
+					byPointer.current = false;
+				}}
+				onBlur={(event) => {
+					// Focus moving into the bubble (a link in it) is not leaving.
+					if (root.current?.contains(event.relatedTarget as Node | null)) return;
+					setKeyboard(false);
+					close();
+				}}
 				onClick={() => {
 					if (pinned) close();
 					else {
