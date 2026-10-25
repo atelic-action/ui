@@ -42,6 +42,7 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 	const close = useCallback(() => {
 		setOpen(false);
 		setPinned(false);
+		setKeyboard(false);
 	}, []);
 
 	useEffect(() => {
@@ -72,11 +73,17 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 	}, [open]);
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: focusout bubbles to the root so focus leaving the button or the bubble closes it
 		<span
 			ref={root}
 			className={["hint", className].filter(Boolean).join(" ")}
 			data-side={side}
 			data-open={open || undefined}
+			onBlur={(event) => {
+				// Focus moving between the button and the bubble is not leaving.
+				if (root.current?.contains(event.relatedTarget as Node | null)) return;
+				close();
+			}}
 			onPointerEnter={(event) => {
 				// A finger never hovers: a tap opens through the click instead.
 				if (event.pointerType !== "touch") setOpen(true);
@@ -104,12 +111,6 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 						setOpen(true);
 					}
 					byPointer.current = false;
-				}}
-				onBlur={(event) => {
-					// Focus moving into the bubble (a link in it) is not leaving.
-					if (root.current?.contains(event.relatedTarget as Node | null)) return;
-					setKeyboard(false);
-					close();
 				}}
 				onClick={() => {
 					if (pinned) close();
