@@ -33,7 +33,6 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 	// Keyboard focus holds the bubble open until it leaves; mouse focus, which
 	// a click also gives the button, must not, or a later hover sticks open.
 	const [keyboard, setKeyboard] = useState(false);
-	const byPointer = useRef(false);
 	const [shift, setShift] = useState(0);
 	const id = useId();
 	const root = useRef<HTMLSpanElement>(null);
@@ -98,19 +97,20 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 				aria-label={label}
 				aria-describedby={id}
 				aria-expanded={open}
-				onPointerDown={() => {
-					// Focus follows a press in the same task; the flag is spent by then.
-					byPointer.current = true;
-					setTimeout(() => {
-						byPointer.current = false;
-					}, 0);
-				}}
-				onFocus={() => {
-					if (!byPointer.current) {
+				onFocus={(event) => {
+					// :focus-visible is the browser's own word for keyboard focus; a press
+					// that focuses the button does not match it. Where the selector is
+					// unknown, focus counts as the keyboard's.
+					let visible = true;
+					try {
+						visible = event.currentTarget.matches(":focus-visible");
+					} catch {
+						visible = true;
+					}
+					if (visible) {
 						setKeyboard(true);
 						setOpen(true);
 					}
-					byPointer.current = false;
 				}}
 				onClick={() => {
 					if (pinned) close();

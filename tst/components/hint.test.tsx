@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { DataTable, Hint } from "../../src/components";
 
 describe("Hint", () => {
@@ -67,11 +67,11 @@ describe("Hint", () => {
 		);
 		const root = container.querySelector(".hint") as HTMLElement;
 		const button = screen.getByRole("button");
-		fireEvent.focus(button);
+		act(() => button.focus());
 		expect(root).toHaveAttribute("data-open");
 		fireEvent.pointerOut(root, { pointerType: "mouse" });
 		expect(root).toHaveAttribute("data-open");
-		fireEvent.blur(button);
+		act(() => button.blur());
 		expect(root).not.toHaveAttribute("data-open");
 	});
 
