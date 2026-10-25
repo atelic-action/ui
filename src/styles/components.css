@@ -940,14 +940,26 @@
 		border: 1px solid var(--neutral-200);
 		border-radius: var(--radius-sm);
 		background: var(--ui-card, var(--card));
-		box-shadow: 0 6px 20px rgb(0 0 0 / 0.1);
+		box-shadow: var(--shadow-md, 0 6px 20px rgb(0 0 0 / 0.1));
 		color: var(--ink);
-		font: 400 0.8rem / 1.45 var(--font-sans, inherit);
+		font-family: var(--font-sans, inherit);
+		font-size: 0.8rem;
+		font-weight: 400;
+		line-height: 1.45;
 		letter-spacing: normal;
 		text-transform: none;
 		text-align: left;
 		white-space: normal;
 		text-wrap: pretty;
+	}
+	/* Bridges the gap to the icon so the pointer can cross into the bubble. */
+	.atelic-ui .hint-bubble::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: -8px;
+		height: 8px;
 	}
 	.atelic-ui .hint .hint-bubble {
 		left: 0;
@@ -1124,6 +1136,19 @@
 			flex: none;
 			opacity: 0.55;
 		}
+		/* A Hint's button is not a sort button: keep its own look against the bare heading rules. */
+		.atelic-ui .data-table thead th .hint > button {
+			display: inline-grid;
+			color: var(--neutral-500);
+		}
+		.atelic-ui .data-table thead th .hint > button:hover,
+		.atelic-ui .data-table thead th .hint > button:focus-visible,
+		.atelic-ui .data-table thead th .hint[data-open] > button {
+			color: var(--ink);
+		}
+		.atelic-ui .data-table thead th .hint > button svg {
+			opacity: 1;
+		}
 		.atelic-ui .data-table thead th button[data-active] svg {
 			opacity: 1;
 		}
@@ -1140,6 +1165,12 @@
 		.atelic-ui .data-table tbody tr:last-child th,
 		.atelic-ui .data-table tbody tr:last-child td {
 			border-bottom: 0;
+		}
+	}
+	/* The phone hides the heading row, so a column hint goes with it. */
+	@media screen and (max-width: 720px) {
+		.atelic-ui .data-table thead .hint {
+			display: none;
 		}
 	}
 	@media print {

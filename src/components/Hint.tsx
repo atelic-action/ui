@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
 export interface HintProps {
 	/** What the button is called, for a screen reader, e.g. "About First paint". */
@@ -27,24 +27,18 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 	const root = useRef<HTMLSpanElement>(null);
 	const bubble = useRef<HTMLSpanElement>(null);
 
-	const close = () => {
+	const close = useCallback(() => {
 		setOpen(false);
 		setPinned(false);
-	};
+	}, []);
 
 	useEffect(() => {
 		if (!open) return;
 		const away = (event: PointerEvent) => {
-			if (!root.current?.contains(event.target as Node)) {
-				setOpen(false);
-				setPinned(false);
-			}
+			if (!root.current?.contains(event.target as Node)) close();
 		};
 		const key = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				setOpen(false);
-				setPinned(false);
-			}
+			if (event.key === "Escape") close();
 		};
 		document.addEventListener("pointerdown", away);
 		document.addEventListener("keydown", key);
@@ -52,7 +46,7 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 			document.removeEventListener("pointerdown", away);
 			document.removeEventListener("keydown", key);
 		};
-	}, [open]);
+	}, [open, close]);
 
 	// Measured from the left edge first; flipped when that runs off the screen.
 	useLayoutEffect(() => {

@@ -147,14 +147,15 @@ export function DataTable({
 							const Icon = !active ? ArrowUpDown : sort?.direction === "asc" ? ArrowUp : ArrowDown;
 							// The explainer's icon sits after the label, or before it when the
 							// column is right aligned, so the icon stays on the inside edge.
-							const hint = column.hint && (
+							const before = column.align === "right";
+							const hint = column.hint ? (
 								<Hint
 									label={column.hintLabel ?? `About ${column.label}`}
-									side={column.align === "right" ? "before" : "after"}
+									side={before ? "before" : "after"}
 								>
 									{column.hint}
 								</Hint>
-							);
+							) : null;
 							const head = {
 								"data-align": column.align ?? "left",
 								"data-fit": column.fit || undefined,
@@ -169,7 +170,7 @@ export function DataTable({
 							return (
 								// biome-ignore lint/suspicious/noArrayIndexKey: columns sit in order, and two may share a blank label
 								<th scope="col" key={index} {...head}>
-									{hint && column.align === "right" && hint}
+									{before && hint}
 									{column.sortable ? (
 										<button
 											type="button"
@@ -182,7 +183,7 @@ export function DataTable({
 									) : (
 										column.label
 									)}
-									{hint && column.align !== "right" && hint}
+									{!before && hint}
 								</th>
 							);
 						})}
