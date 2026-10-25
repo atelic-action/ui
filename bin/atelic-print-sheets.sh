@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # Print an artifact page to PDF with headless Chrome and report its sheet
-# count. The writeup flows across as many letter pages as it needs, its
+# count. The read flows across as many letter pages as it needs, its
 # native disclosures printed open, so its count is a record of the print and not a
 # layout check. The monthly page is one sheet by construction, so pass 1 for
 # it and the script fails when it prints as anything else.
 #
 # Usage: atelic-print-sheets <url | dist/client> <out.pdf> [expected sheets] [page] [port]
-#   atelic-print-sheets dist/client public/writeup.pdf
+#   atelic-print-sheets dist/client public/the-read.pdf
 #   atelic-print-sheets dist/client ../2026-10-01-report.pdf 1 /report
-#   atelic-print-sheets https://summit.atelic.me/writeup ../2026-09-10-writeup.pdf
+#   atelic-print-sheets https://summit.atelic.me/the-read ../2026-09-10-the-read.pdf
 # A site offers the same as `bun run print <...>`. Both paths are read from
 # the directory the command is run in, which is the site's root.
 #
 # A directory is served on a local port for the print (the page loads its
 # fonts and images by absolute path) and the server is stopped after; the
-# page is the path printed from it, /writeup unless named. A URL is printed
-# as given. The writeup's PDF belongs in public/ as writeup.pdf beside the
+# page is the path printed from it, /the-read unless named. A URL is printed
+# as given. The read's PDF belongs in public/ as the-read.pdf beside the
 # page (on a private artifact the wall holds it like the page, see
 # ACCESS-GATE.md), and a dated copy goes in the client folder of the
 # practice repo.
@@ -24,7 +24,7 @@ set -euo pipefail
 TARGET=${1:?url or built directory required}
 OUT=${2:?output pdf path required}
 EXPECT=${3:-}
-PAGE=${4:-/writeup}
+PAGE=${4:-/the-read}
 PORT=${5:-8765}
 CHROME=${CHROME:-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}
 [[ -x "$CHROME" ]] || { echo "Chrome not found at $CHROME" >&2; exit 1; }

@@ -6,9 +6,9 @@
  * readable by anyone holding the link, and a 5xx is a host that is down
  * rather than walled; both fail.
  *
- * The documents are /writeup, plus /report and /proposal when this repo
+ * The documents are /the-read, plus /report and /proposal when this repo
  * carries those routes. The wall holds files too (needsSession in @atelic-action/ui/gate), so it
- * also asks for the printed copy at /writeup.pdf, the first real screenshot
+ * also asks for the printed copy at /the-read.pdf, the first real screenshot
  * under public/images/, and, when the repo has been built, the first chunk
  * under /assets/doc/, where a document's content compiles to. Each of those
  * must answer with the same redirect: the wall holds a path whether or not
@@ -30,7 +30,7 @@
  * Usage: atelic-check-wall <host> [path ...], or `bun run check:wall <host>`
  * in a site, from the site's root
  *   bun run check:wall summit.atelic.me
- *   bun run check:wall https://summit.atelic.me /writeup /report
+ *   bun run check:wall https://summit.atelic.me /the-read /report
  * The sign in functions are asked only when no path is named.
  * Exits 1 unless every path answers as it must.
  */
@@ -93,10 +93,10 @@ export interface WallTargets {
 
 /** The paths to ask for: the documents this repo carries, the held files, then the open mark. */
 export function wallProbes({ hasRoute, image, docChunk, brand }: WallTargets): Probe[] {
-	const probes: Probe[] = [{ path: "/writeup", kind: "document" }];
+	const probes: Probe[] = [{ path: "/the-read", kind: "document" }];
 	if (hasRoute("report")) probes.push({ path: "/report", kind: "document" });
 	if (hasRoute("proposal")) probes.push({ path: "/proposal", kind: "document" });
-	probes.push({ path: "/writeup.pdf", kind: "file" });
+	probes.push({ path: "/the-read.pdf", kind: "file" });
 	if (image) probes.push({ path: image, kind: "file" });
 	if (docChunk) probes.push({ path: docChunk, kind: "file" });
 	if (brand) probes.push({ path: brand, kind: "open" });

@@ -7,10 +7,10 @@ import { parseReaderArgs } from "../../src/scripts/reader-link";
  * and exits on.
  */
 describe("parseReaderArgs", () => {
-	it("takes an email alone and sends the reader to the writeup", () => {
+	it("takes an email alone and sends the reader to the read", () => {
 		expect(parseReaderArgs(["reader@example.com"])).toEqual({
 			email: "reader@example.com",
-			path: "/writeup",
+			path: "/the-read",
 			token: undefined,
 			forceQR: false,
 			noQR: false,
@@ -31,9 +31,9 @@ describe("parseReaderArgs", () => {
 
 	it("reads the two QR flags and keeps them out of the page", () => {
 		const forced = parseReaderArgs(["--qr", "reader@example.com"]);
-		expect(forced).toMatchObject({ forceQR: true, noQR: false, path: "/writeup" });
+		expect(forced).toMatchObject({ forceQR: true, noQR: false, path: "/the-read" });
 		const never = parseReaderArgs(["reader@example.com", "--no-qr"]);
-		expect(never).toMatchObject({ forceQR: false, noQR: true, path: "/writeup" });
+		expect(never).toMatchObject({ forceQR: false, noQR: true, path: "/the-read" });
 	});
 
 	it("refuses a line with no email, one that is not an address, or a token flag with no token", () => {

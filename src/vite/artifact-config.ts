@@ -5,7 +5,7 @@
  *
  *   import { artifactConfig } from "@atelic-action/ui/vite";
  *
- *   export default artifactConfig({ pages: ["/writeup", "/proposal", "/report"] });
+ *   export default artifactConfig({ pages: ["/the-read", "/proposal", "/report"] });
  *
  * The site's own paths (the `@` alias to its src) are found from the
  * directory Vite is run in, which is the site's root.
@@ -18,7 +18,7 @@ import { privateChunks } from "./private-chunks.js";
 
 export interface ArtifactConfigOptions {
 	/**
-	 * The path of each artifact page the site carries, such as "/writeup".
+	 * The path of each artifact page the site carries, such as "/the-read".
 	 * The root and the 404 page are always prerendered and need no entry.
 	 */
 	pages: readonly string[];
@@ -40,7 +40,7 @@ export interface ArtifactPage {
 export function artifactPages(pages: readonly string[]): ArtifactPage[] {
 	const named = pages.filter((path) => path !== "/" && path !== "/404");
 	return [
-		// The root holds no document: it sends the reader to /writeup
+		// The root holds no document: it sends the reader to /the-read
 		// (vercel.json does the same on the host), and its prerendered
 		// index.html is what a static preview serves at the bare host.
 		{ path: "/", prerender: { enabled: true } },
@@ -66,10 +66,10 @@ export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserCo
 				prerender: {
 					enabled: true,
 					crawlLinks: true,
-					// The writeup links each screenshot crop to its full image, and
+					// The read links each screenshot crop to its full image, and
 					// the crawler follows every href it finds: without this filter it
 					// prerenders /images/<shot>.png as an HTML page and writes that
-					// over the real file in dist/client (found on a client's writeup,
+					// over the real file in dist/client (found on a client's read,
 					// 2026-09-24).
 					filter: ({ path }) => !path.startsWith("/images/"),
 				},
