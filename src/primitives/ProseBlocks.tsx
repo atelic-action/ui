@@ -1,16 +1,35 @@
 /**
- * One block of ported prose. A deliberately tiny vocabulary — headings,
- * paragraphs, lists — because that is what survives extraction from a CMS
- * intact, and because anything richer invites rewriting content that was
- * meant to be carried across verbatim.
+ * One block of prose carried as data. A deliberately tiny vocabulary:
+ * headings, paragraphs, lists, and a figure, because that is what survives
+ * extraction from a CMS intact, and because anything richer invites rewriting
+ * content that was meant to be carried across verbatim.
  */
 export interface ProseBlock {
-	type: "h" | "p" | "ul";
+	type: "h" | "p" | "ul" | "figure";
 	/** Present for "h" and "p". */
 	text?: string;
+	/**
+	 * For "h": the heading's level under the page's own h1, where the
+	 * component's `headingLevel` is the default. A post with sections and
+	 * sub sections marks the sub sections 3 and leaves the rest alone.
+	 */
+	level?: 2 | 3;
 	/** Present for "ul". */
 	items?: string[];
+	/**
+	 * Present for "figure": the file the figure shows. A `.mp4` or `.webm`
+	 * plays as a silent loop (a short clip of an exercise, say), anything
+	 * else is an image. Both load lazily, since a figure sits in running prose
+	 * below the fold.
+	 */
+	src?: string;
+	/** For "figure": what the figure shows, for a reader who cannot see it. */
+	alt?: string;
+	/** For "figure": a line under it. */
+	caption?: string;
 }
+
+const CLIP = /\.(mp4|webm)$/i;
 
 export interface ProseBlocksProps {
 	blocks: ProseBlock[];
@@ -37,11 +56,40 @@ export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlo
 		<div className={["prose-blocks", className].filter(Boolean).join(" ")}>
 			{blocks.map((block, i) => {
 				if (block.type === "h") {
+					const Tag = block.level ? (`h${block.level}` as const) : Heading;
+					return (
+						<Tag
+							className={["pb-heading", block.level === 3 ? "pb-h3" : ""].filter(Boolean).join(" ")}
+							// biome-ignore lint/suspicious/noArrayIndexKey: static ported prose; position plus content is the stable key (see above)
+							key={`h-${i}-${block.text?.slice(0, 24)}`}
+						>
+							{block.text}
+						</Tag>
+					);
+				}
+				if (block.type === "figure") {
+					const src = block.src ?? "";
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static ported prose; position plus content is the stable key (see above)
-						<Heading className="pb-heading" key={`h-${i}-${block.text?.slice(0, 24)}`}>
-							{block.text}
-						</Heading>
+						<figure className="pb-figure" key={`figure-${i}-${src.slice(-24)}`}>
+							{CLIP.test(src) ? (
+								// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
+								<video
+									src={src}
+									aria-label={block.alt}
+									autoPlay
+									loop
+									muted
+									playsInline
+									preload="metadata"
+								/>
+							) : (
+								<img src={src} alt={block.alt ?? ""} loading="lazy" decoding="async" />
+							)}
+							{block.caption ? (
+								<figcaption className="pb-caption">{block.caption}</figcaption>
+							) : null}
+						</figure>
 					);
 				}
 				if (block.type === "ul") {

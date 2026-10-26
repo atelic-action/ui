@@ -60,6 +60,17 @@ export function MarketingWriting() {
 									"Lets us bake at six instead of mixing at midnight",
 								],
 							},
+							{ type: "h", level: 3, text: "The shaping" },
+							{
+								type: "figure",
+								src: "/images/bakery-band.svg",
+								alt: "A row of shaped loaves on a floured bench",
+								caption: "Shaped cold, straight from the walk in, and scored before the oven.",
+							},
+							{
+								type: "p",
+								text: "A cold loaf holds its shape under the blade, which is why the ears open the way they do.",
+							},
 						],
 					}}
 				/>

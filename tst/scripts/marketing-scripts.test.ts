@@ -4,6 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { auditBasePath } from "../../src/scripts/check-base-path";
+import { auditImages, isCard } from "../../src/scripts/check-images";
 import { runCanary } from "../../src/scripts/contact-canary";
 import { siteBasePath } from "../../src/scripts/serve-static";
 
@@ -144,5 +145,43 @@ describe("siteBasePath", () => {
 	it("takes the rehearsal override over the config, an empty one meaning the root", async () => {
 		expect(await siteBasePath(site, { VITE_BASE_PATH: "/preview" })).toBe("/preview");
 		expect(await siteBasePath(site, { VITE_BASE_PATH: "" })).toBe("");
+	});
+});
+
+describe("auditImages", () => {
+	const kb = (n: number) => n * 1024;
+
+	it("passes WebP photos within budget, marks, and the sharing cards", () => {
+		const report = auditImages([
+			{ path: "public/images/hero.webp", bytes: kb(38) },
+			{ path: "public/images/logo-mark.png", bytes: kb(12) },
+			{ path: "public/images/og.jpg", bytes: kb(63) },
+			{ path: "public/images/about-og.jpg", bytes: kb(210) },
+			{ path: "public/images/map.svg", bytes: kb(9) },
+		]);
+		expect(report).toEqual({ checked: 5, problems: [] });
+	});
+
+	it("names a JPEG that is not a card, a PNG photo, and anything over the budget", () => {
+		const report = auditImages([
+			{ path: "public/images/hero.jpg", bytes: kb(138) },
+			{ path: "public/images/team.png", bytes: kb(900) },
+			{ path: "public/images/portrait.webp", bytes: kb(476) },
+		]);
+		expect(report.checked).toBe(3);
+		expect(report.problems).toHaveLength(4);
+		expect(report.problems[0]).toContain("public/images/hero.jpg ships as JPEG (138 KB)");
+		expect(report.problems[1]).toContain("public/images/team.png is a 900 KB PNG");
+		expect(report.problems[2]).toContain(
+			"public/images/team.png weighs 900 KB, over the 250 KB budget",
+		);
+		expect(report.problems[3]).toContain("public/images/portrait.webp weighs 476 KB");
+	});
+
+	it("knows a card by its name alone", () => {
+		expect(isCard("public/images/og.jpg")).toBe(true);
+		expect(isCard("public/images/about-og.jpeg")).toBe(true);
+		expect(isCard("public/images/dog.jpg")).toBe(false);
+		expect(isCard("public/images/og-hero.jpg")).toBe(false);
 	});
 });

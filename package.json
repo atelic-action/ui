@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "3.5.0",
+	"version": "3.6.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -19,6 +19,7 @@
 	"bin": {
 		"atelic-check-access": "./bin/atelic-check-access.ts",
 		"atelic-check-base-path": "./bin/atelic-check-base-path.ts",
+		"atelic-check-images": "./bin/atelic-check-images.ts",
 		"atelic-check-links": "./bin/atelic-check-links.ts",
 		"atelic-check-wall": "./bin/atelic-check-wall.ts",
 		"atelic-clean-sitemap": "./bin/atelic-clean-sitemap.ts",
