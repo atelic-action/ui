@@ -109,6 +109,17 @@ describe("DataTable", () => {
 		expect(screen.getByRole("cell")).toHaveTextContent("\u2013");
 	});
 
+	it("draws a cell left out of a short row as empty", () => {
+		const { container } = render(
+			<DataTable
+				columns={[{ label: "Market" }, { label: "Change" }]}
+				rows={[{ cells: ["Denver"] }]}
+			/>,
+		);
+		expect(container.querySelector("td .data-table-empty")).not.toBeNull();
+		expect(screen.getByRole("cell")).toHaveAttribute("data-label", "Change");
+	});
+
 	it("lets a column say what its empty cell means", () => {
 		render(
 			<DataTable

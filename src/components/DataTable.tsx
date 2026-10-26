@@ -31,11 +31,12 @@ export interface DataTableValueCell {
 }
 
 /**
- * A cell is a node, or a value cell. `null` or `undefined` is an empty cell:
- * it draws a short gray rule and sorts last either way. A string is always
- * content, a typed dash included, since a dash can mean "unchanged".
+ * A cell is a node, or a value cell. `null` or `undefined`, or a cell left
+ * out, is an empty cell: it draws a short gray rule and sorts last either way.
+ * A string is always content, a typed dash included, since a dash can mean
+ * "unchanged".
  */
-export type DataTableCell = ReactNode | DataTableValueCell | null | undefined;
+export type DataTableCell = ReactNode | DataTableValueCell;
 
 export interface DataTableRow {
 	/** One cell per column; the first names the row. */
@@ -61,7 +62,7 @@ function isValueCell(cell: DataTableCell): cell is DataTableValueCell {
 }
 
 /** No value to show. The first cell names the row, so it is never empty. */
-function isEmpty(cell: DataTableCell, column: number): cell is null | undefined {
+function isEmpty(cell: DataTableCell, column: number): boolean {
 	return column !== 0 && (cell === null || cell === undefined);
 }
 
@@ -209,7 +210,9 @@ export function DataTable({
 				<tbody>
 					{sorted.map(({ row, index }) => (
 						<tr key={index} data-tone={row.tone}>
-							{row.cells.map((cell, c) => {
+							{/* One cell per column at least, so a cell left out draws as empty. */}
+							{Array.from({ length: Math.max(columns.length, row.cells.length) }, (_, c) => {
+								const cell = row.cells[c];
 								const body = isEmpty(cell, c) ? (
 									<>
 										<span className="data-table-empty" aria-hidden="true" />
