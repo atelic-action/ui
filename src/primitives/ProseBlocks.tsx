@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useWithBase } from "../routing/BasePathProvider";
 
@@ -32,8 +33,8 @@ export interface ProseBlock {
 	caption?: string;
 	/**
 	 * For "figure": the file's own width and height in pixels. With both, the
-	 * figure holds its shape before the file arrives (no layout shift), and a
-	 * tall one is narrowed so it never runs taller than most of the screen.
+	 * tile keeps the file's shape at the row's height and holds it before the
+	 * file arrives (no layout shift); without them it is 4 by 5.
 	 */
 	width?: number;
 	height?: number;
@@ -43,17 +44,9 @@ export interface ProseBlock {
 
 const CLIP = /\.(mp4|webm)([?#].*)?$/i;
 
-/**
- * The box a figure's file draws in: its own shape, and never taller than most
- * of the screen, so a portrait clip in a text column does not fill a desktop
- * from top to bottom. Nothing without both dimensions.
- */
-function frameStyle(width?: number, height?: number) {
-	if (!width || !height) return undefined;
-	return {
-		aspectRatio: `${width} / ${height}`,
-		maxWidth: `min(100%, calc(75vh * ${width} / ${height}))`,
-	};
+/** A tile keeps its file's shape; the row sets its height. */
+function tileStyle(width?: number, height?: number) {
+	return { aspectRatio: width && height ? `${width} / ${height}` : "4 / 5" };
 }
 
 /**
@@ -62,17 +55,7 @@ function frameStyle(width?: number, height?: number) {
  * with a clip beside every exercise costs nothing up front. A reader who asked
  * for reduced motion gets it still, with controls to start it.
  */
-function Clip({
-	src,
-	alt,
-	poster,
-	style,
-}: {
-	src: string;
-	alt?: string;
-	poster?: string;
-	style?: ReturnType<typeof frameStyle>;
-}) {
+function Clip({ src, alt, poster }: { src: string; alt?: string; poster?: string }) {
 	const ref = useRef<HTMLVideoElement>(null);
 	const [still, setStill] = useState(false);
 	useEffect(() => {
@@ -113,7 +96,6 @@ function Clip({
 			src={src}
 			poster={poster}
 			aria-label={alt}
-			style={style}
 			loop
 			muted
 			playsInline
@@ -122,6 +104,121 @@ function Clip({
 			preload={still && !poster ? "metadata" : "none"}
 		/>
 	);
+}
+
+/**
+ * One figure: a small tile, the caption laid over its foot, that opens the
+ * file large in a modal dialog. The platform's dialog gives Escape, focus
+ * containment, and focus return to the tile; a click on the backdrop closes
+ * it too. The large clip mounts only while the dialog is open, so it costs
+ * nothing until a reader asks for it.
+ */
+function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: string) => string }) {
+	const dialogRef = useRef<HTMLDialogElement>(null);
+	const [open, setOpen] = useState(false);
+	const src = block.src ? withBase(block.src) : "";
+	const poster = block.poster ? withBase(block.poster) : undefined;
+	const clip = CLIP.test(src);
+	const label = block.caption ?? block.alt ?? "Figure";
+
+	useEffect(() => {
+		const dialog = dialogRef.current;
+		if (!dialog) return;
+		if (open && !dialog.open) dialog.showModal();
+		if (!open && dialog.open) dialog.close();
+	}, [open]);
+
+	if (!src) {
+		return (
+			<figure className="pb-figure">
+				<div className="ph" style={tileStyle(block.width, block.height)}>
+					{block.alt ?? "Figure"}
+				</div>
+				{block.caption ? <figcaption className="pb-caption">{block.caption}</figcaption> : null}
+			</figure>
+		);
+	}
+
+	return (
+		<figure className="pb-figure">
+			<button
+				type="button"
+				className="pb-tile"
+				style={tileStyle(block.width, block.height)}
+				aria-label={`Open larger: ${label}`}
+				onClick={() => setOpen(true)}
+			>
+				{clip ? (
+					<Clip src={src} alt={block.alt} poster={poster} />
+				) : (
+					<img
+						src={src}
+						alt={block.alt ?? ""}
+						width={block.width}
+						height={block.height}
+						loading="lazy"
+						decoding="async"
+					/>
+				)}
+			</button>
+			{block.caption ? <figcaption className="pb-caption">{block.caption}</figcaption> : null}
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: the backdrop click is a pointer shortcut; the dialog closes on Escape natively and has a close button */}
+			<dialog
+				ref={dialogRef}
+				className="pb-lightbox"
+				aria-label={label}
+				onClose={() => setOpen(false)}
+				onClick={(event) => {
+					// A click on the dialog itself, not its contents, is a click on the backdrop.
+					if (event.target === event.currentTarget) setOpen(false);
+				}}
+			>
+				<button
+					type="button"
+					className="pb-lightbox-close"
+					aria-label="Close"
+					onClick={() => setOpen(false)}
+				>
+					<X size={20} strokeWidth={2} aria-hidden="true" />
+				</button>
+				{open ? (
+					clip ? (
+						// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the caption below carries the words
+						<video
+							src={src}
+							poster={poster}
+							aria-label={block.alt}
+							autoPlay
+							loop
+							muted
+							playsInline
+							controls
+						/>
+					) : (
+						<img src={src} alt={block.alt ?? ""} />
+					)
+				) : null}
+				{open && block.caption ? <p className="pb-lightbox-caption">{block.caption}</p> : null}
+			</dialog>
+		</figure>
+	);
+}
+
+/** Runs of consecutive figures become one row of tiles; everything else stands alone. */
+function segments(blocks: ProseBlock[]) {
+	const out: Array<
+		{ figures: ProseBlock[]; start: number } | { block: ProseBlock; index: number }
+	> = [];
+	blocks.forEach((block, index) => {
+		const last = out[out.length - 1];
+		if (block.type === "figure") {
+			if (last && "figures" in last) last.figures.push(block);
+			else out.push({ figures: [block], start: index });
+		} else {
+			out.push({ block, index });
+		}
+	});
+	return out;
 }
 
 export interface ProseBlocksProps {
@@ -148,7 +245,18 @@ export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlo
 	const withBase = useWithBase();
 	return (
 		<div className={["prose-blocks", className].filter(Boolean).join(" ")}>
-			{blocks.map((block, i) => {
+			{segments(blocks).map((segment) => {
+				if ("figures" in segment) {
+					return (
+						<div className="pb-figures" key={`figures-${segment.start}`}>
+							{segment.figures.map((block, j) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: static prose; position plus file is the stable key (see above)
+								<Figure block={block} withBase={withBase} key={`figure-${j}-${block.src ?? ""}`} />
+							))}
+						</div>
+					);
+				}
+				const { block, index: i } = segment;
 				if (block.type === "h") {
 					const Tag = block.level ? (`h${block.level}` as const) : Heading;
 					return (
@@ -159,38 +267,6 @@ export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlo
 						>
 							{block.text}
 						</Tag>
-					);
-				}
-				if (block.type === "figure") {
-					const src = block.src ? withBase(block.src) : "";
-					const style = frameStyle(block.width, block.height);
-					return (
-						// biome-ignore lint/suspicious/noArrayIndexKey: static ported prose; position plus content is the stable key (see above)
-						<figure className="pb-figure" key={`figure-${i}-${src.slice(-24)}`}>
-							{!src ? (
-								<div className="ph">{block.alt ?? "Figure"}</div>
-							) : CLIP.test(src) ? (
-								<Clip
-									src={src}
-									alt={block.alt}
-									poster={block.poster ? withBase(block.poster) : undefined}
-									style={style}
-								/>
-							) : (
-								<img
-									src={src}
-									alt={block.alt ?? ""}
-									width={block.width}
-									height={block.height}
-									style={style}
-									loading="lazy"
-									decoding="async"
-								/>
-							)}
-							{block.caption ? (
-								<figcaption className="pb-caption">{block.caption}</figcaption>
-							) : null}
-						</figure>
 					);
 				}
 				if (block.type === "ul") {

@@ -147,7 +147,7 @@ describe("ProseBlocks", () => {
 			const video = container.querySelector("video");
 			expect(video).toHaveAttribute("preload", "none");
 			expect(video).toHaveAttribute("poster", "/videos/a.webp");
-			expect(video?.style.aspectRatio).toBe("540 / 960");
+			expect(container.querySelector<HTMLElement>(".pb-tile")?.style.aspectRatio).toBe("540 / 960");
 			expect(play).not.toHaveBeenCalled();
 			act(() => report?.([{ isIntersecting: true }]));
 			expect(play).toHaveBeenCalledTimes(1);
@@ -171,6 +171,48 @@ describe("ProseBlocks", () => {
 		const img = screen.getByRole("img", { name: "A still" });
 		expect(img).toHaveAttribute("width", "960");
 		expect(img).toHaveAttribute("height", "720");
+	});
+
+	it("sets a run of figures as one row of tiles, and starts a new row after prose", () => {
+		const { container } = render(
+			<ProseBlocks
+				blocks={[
+					{ type: "figure", src: "/images/a.webp", alt: "A", caption: "First" },
+					{ type: "figure", src: "/images/b.webp", alt: "B", caption: "Second" },
+					{ type: "p", text: "Between the rows." },
+					{ type: "figure", src: "/images/c.webp", alt: "C", caption: "Third" },
+				]}
+			/>,
+		);
+		const rows = container.querySelectorAll(".pb-figures");
+		expect(rows).toHaveLength(2);
+		expect(rows[0].querySelectorAll(".pb-figure")).toHaveLength(2);
+		expect(rows[1].querySelectorAll(".pb-figure")).toHaveLength(1);
+		expect(container.querySelector(".pb-tile")).toHaveStyle({ aspectRatio: "4 / 5" });
+	});
+
+	it("opens a tile large in a dialog, mounting the large clip only while open", () => {
+		const { container } = render(
+			<ProseBlocks
+				blocks={[
+					{ type: "figure", src: "/videos/a.mp4", alt: "A clamshell", caption: "Clamshell" },
+				]}
+			/>,
+		);
+		const dialog = container.querySelector("dialog");
+		expect(dialog?.open).toBe(false);
+		expect(container.querySelectorAll("video")).toHaveLength(1);
+
+		act(() => screen.getByRole("button", { name: "Open larger: Clamshell" }).click());
+		expect(dialog?.open).toBe(true);
+		const large = dialog?.querySelector("video");
+		expect(large).toHaveAttribute("src", "/videos/a.mp4");
+		expect(large).toHaveAttribute("controls");
+		expect(dialog).toHaveTextContent("Clamshell");
+
+		act(() => screen.getByRole("button", { name: "Close" }).click());
+		expect(dialog?.open).toBe(false);
+		expect(dialog?.querySelector("video")).toBeNull();
 	});
 
 	it("pauses a clip and shows controls for a reader who prefers reduced motion", () => {

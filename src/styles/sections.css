@@ -88,8 +88,12 @@
 	/* A single article. The title is the content, so it sits in the flow rather
 	   than inside a hero band that would push the writing below the fold. */
 
-	.atelic-ui .bp-wrap {
-		max-width: 760px;
+	/* The article takes the site's own width, like every other page, so no
+	   page or site wears a column of its own size (Forni, 2026-10-26). The
+	   body steps up a size on a wide screen to suit the longer line. */
+	.atelic-ui .bp-body .pb-body,
+	.atelic-ui .bp-body .pb-list li {
+		font-size: clamp(1rem, 0.9rem + 0.35vw, 1.125rem);
 	}
 
 	.atelic-ui .bp-back {

@@ -204,13 +204,10 @@
 	}
 
 	/* ---- ProseBlocks (prose-blocks.css) ---- */
-	/* Body prose for ported documents: legal pages and blog posts. Measure is
-	   capped tighter than the marketing sections and the type steps down, because
-	   this is read continuously rather than scanned. Tokens only. */
-
-	.atelic-ui .prose-blocks {
-		max-width: 70ch;
-	}
+	/* Body prose for documents carried as data: legal pages and blog posts. It
+	   takes the width of the page it sits in, the site's own, rather than a
+	   measure of its own, so no page or site wears a column of its own size
+	   (2026-10-26). Tokens only. */
 
 	.atelic-ui .pb-heading {
 		margin: 40px 0 14px;
@@ -229,28 +226,113 @@
 		font-size: 1.02rem;
 	}
 
-	/* A figure in running prose: the image or the silent clip at the column's
-	   width, a rounded frame, and a caption in the body's quiet color. */
-	.atelic-ui .pb-figure {
-		margin: 24px 0;
+	/* Figures in running prose sit as small tiles in a row, each at the row's
+	   height and its own shape, with the caption laid over its foot. A tile
+	   opens its file large in a dialog. A run of figures in the data is one
+	   row; the row wraps on a narrow screen. */
+	.atelic-ui .pb-figures {
+		--pb-tile-height: 240px;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin: 20px 0 28px;
 	}
 
-	.atelic-ui .pb-figure img,
-	.atelic-ui .pb-figure video {
+	@media (max-width: 600px) {
+		.atelic-ui .pb-figures {
+			--pb-tile-height: 190px;
+			gap: 8px;
+		}
+	}
+
+	.atelic-ui .pb-figure {
+		position: relative;
+		margin: 0;
+		height: var(--pb-tile-height);
+	}
+
+	.atelic-ui .pb-tile,
+	.atelic-ui .pb-figure .ph {
+		display: block;
+		height: 100%;
+		max-width: 100%;
+		padding: 0;
+		border: 0;
+		border-radius: 12px;
+		overflow: hidden;
+		background: var(--surface-alt, var(--surface));
+		cursor: zoom-in;
+	}
+
+	.atelic-ui .pb-tile:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+	}
+
+	.atelic-ui .pb-tile img,
+	.atelic-ui .pb-tile video {
 		display: block;
 		width: 100%;
-		height: auto;
-		margin-inline: auto;
+		height: 100%;
 		object-fit: cover;
-		border-radius: 14px;
-		background: var(--surface-alt, var(--surface));
 	}
 
-	.atelic-ui .pb-caption {
-		margin-top: 10px;
+	/* The caption sits over the tile's foot on a shade, and lets a tap through. */
+	.atelic-ui .pb-figure .pb-caption {
+		position: absolute;
+		inset: auto 0 0;
+		margin: 0;
+		padding: 22px 10px 8px;
+		border-radius: 0 0 12px 12px;
+		background: linear-gradient(to top, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0));
+		color: #fff;
+		font-size: 0.78rem;
+		font-weight: 600;
+		line-height: 1.3;
+		pointer-events: none;
+	}
+
+	/* The panel fits what it shows, so a portrait clip is not adrift in a wide frame. */
+	.atelic-ui .pb-lightbox {
+		width: fit-content;
+		max-width: min(92vw, 1100px);
+		max-height: 92vh;
+		padding: 16px;
+		border: 0;
+		border-radius: 16px;
+		background: var(--surface);
+		color: var(--ink);
+	}
+
+	.atelic-ui .pb-lightbox::backdrop {
+		background: rgb(0 0 0 / 0.72);
+	}
+
+	.atelic-ui .pb-lightbox img,
+	.atelic-ui .pb-lightbox video {
+		display: block;
+		max-width: 100%;
+		max-height: calc(92vh - 96px);
+		margin-inline: auto;
+		border-radius: 10px;
+	}
+
+	.atelic-ui .pb-lightbox-close {
+		display: flex;
+		margin: 0 0 10px auto;
+		padding: 6px;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--ink);
+		cursor: pointer;
+	}
+
+	.atelic-ui .pb-lightbox-caption {
+		margin: 10px 0 0;
+		text-align: center;
 		font-size: 0.9rem;
-		line-height: 1.5;
-		color: var(--neutral-600, var(--neutral-700));
+		color: var(--neutral-700);
 	}
 
 	.atelic-ui .pb-body {
