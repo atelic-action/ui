@@ -97,6 +97,15 @@ describe("SiteShell", () => {
 		expect(container.querySelector(".mm-contact")).toBeNull();
 	});
 
+	it("clears the fixed header in main, except on a hero page whose hero runs under it", () => {
+		const page = renderShell({});
+		expect(page.container.querySelector("main#main")).toHaveClass("clears-nav");
+		page.unmount();
+
+		const hero = renderShell({ heroNav: true });
+		expect(hero.container.querySelector("main#main")).not.toHaveClass("clears-nav");
+	});
+
 	it("maps heroNav to the transparent header and navOnDark to the dark one", () => {
 		const hero = renderShell({ heroNav: true });
 		expect(hero.container.querySelector("header.nav")).toHaveClass("is-transparent");

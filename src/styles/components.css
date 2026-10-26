@@ -16,7 +16,7 @@
    channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
 	.atelic-ui .not-found-hero {
-		padding-top: calc(var(--nav-height, 72px) + clamp(40px, 7vw, 86px));
+		padding-top: clamp(40px, 7vw, 86px);
 		padding-bottom: clamp(28px, 5vw, 60px);
 	}
 	.atelic-ui .not-found-hero h1 {
