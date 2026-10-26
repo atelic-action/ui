@@ -215,7 +215,7 @@ describe("ProseBlocks", () => {
 		expect(dialog?.querySelector("video")).toBeNull();
 	});
 
-	it("pauses a clip and shows controls for a reader who prefers reduced motion", () => {
+	it("holds a tile clip still, without nested controls, for a reader who prefers reduced motion", () => {
 		const original = window.matchMedia;
 		window.matchMedia = ((q: string) => ({
 			matches: q.includes("reduce"),
@@ -226,7 +226,7 @@ describe("ProseBlocks", () => {
 				<ProseBlocks blocks={[{ type: "figure", src: "/images/a.mp4?v=2", alt: "A clip" }]} />,
 			);
 			expect(play).not.toHaveBeenCalled();
-			expect(container.querySelector("video")).toHaveAttribute("controls");
+			expect(container.querySelector("video")).not.toHaveAttribute("controls");
 		} finally {
 			window.matchMedia = original;
 			play.mockRestore();

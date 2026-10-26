@@ -55,7 +55,18 @@ function tileStyle(width?: number, height?: number) {
  * with a clip beside every exercise costs nothing up front. A reader who asked
  * for reduced motion gets it still, with controls to start it.
  */
-function Clip({ src, alt, poster }: { src: string; alt?: string; poster?: string }) {
+function Clip({
+	src,
+	alt,
+	poster,
+	inTile = false,
+}: {
+	src: string;
+	alt?: string;
+	poster?: string;
+	/** Inside a button, where native controls would nest interactive content; the lightbox has them. */
+	inTile?: boolean;
+}) {
 	const ref = useRef<HTMLVideoElement>(null);
 	const [still, setStill] = useState(false);
 	useEffect(() => {
@@ -99,7 +110,7 @@ function Clip({ src, alt, poster }: { src: string; alt?: string; poster?: string
 			loop
 			muted
 			playsInline
-			controls={still}
+			controls={still && !inTile}
 			// A still clip never plays, so without a poster it needs its first frame loaded.
 			preload={still && !poster ? "metadata" : "none"}
 		/>
@@ -121,8 +132,7 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 	const clip = CLIP.test(src);
 	const label = block.caption ?? block.alt ?? "Figure";
 	// A reader who asked for reduced motion gets the large clip still, with controls.
-	const reduceMotion =
-		open && (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+	const [reduceMotion, setReduceMotion] = useState(false);
 
 	useEffect(() => {
 		const dialog = dialogRef.current;
@@ -144,27 +154,6 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 
 	return (
 		<figure className="pb-figure">
-			<button
-				type="button"
-				className="pb-tile"
-				style={tileStyle(block.width, block.height)}
-				aria-label={`Open larger: ${label}`}
-				onClick={() => setOpen(true)}
-			>
-				{clip ? (
-					<Clip src={src} alt={block.alt} poster={poster} />
-				) : (
-					<img
-						src={src}
-						alt={block.alt ?? ""}
-						width={block.width}
-						height={block.height}
-						loading="lazy"
-						decoding="async"
-					/>
-				)}
-			</button>
-			{block.caption ? <figcaption className="pb-caption">{block.caption}</figcaption> : null}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: the backdrop click is a pointer shortcut; the dialog closes on Escape natively and has a close button */}
 			<dialog
 				ref={dialogRef}
@@ -213,6 +202,30 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 				) : null}
 				{open && block.caption ? <p className="pb-lightbox-caption">{block.caption}</p> : null}
 			</dialog>
+			<button
+				type="button"
+				className="pb-tile"
+				style={tileStyle(block.width, block.height)}
+				aria-label={`Open larger: ${label}`}
+				onClick={() => {
+					setReduceMotion(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+					setOpen(true);
+				}}
+			>
+				{clip ? (
+					<Clip src={src} alt={block.alt} poster={poster} inTile />
+				) : (
+					<img
+						src={src}
+						alt={block.alt ?? ""}
+						width={block.width}
+						height={block.height}
+						loading="lazy"
+						decoding="async"
+					/>
+				)}
+			</button>
+			{block.caption ? <figcaption className="pb-caption">{block.caption}</figcaption> : null}
 		</figure>
 	);
 }
