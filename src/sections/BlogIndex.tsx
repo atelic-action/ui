@@ -1,4 +1,3 @@
-import { ArrowUpRight } from "lucide-react";
 import { displayDate } from "../lib/displayDate";
 import { useWithBase } from "../routing/BasePathProvider";
 
@@ -42,10 +41,7 @@ export function BlogIndex({ items, basePath = "/blog", id, className }: BlogInde
 									<time dateTime={item.publishedAt}>{displayDate(item.publishedAt)}</time>
 									{item.readingMinutes ? <span> · {item.readingMinutes} min read</span> : null}
 								</span>
-								<h2 className="bi-title">
-									{item.title}
-									<ArrowUpRight className="bi-arrow" size={20} strokeWidth={2} aria-hidden="true" />
-								</h2>
+								<h2 className="bi-title">{item.title}</h2>
 								{item.description && <p className="bi-excerpt">{item.description}</p>}
 							</a>
 						</li>
