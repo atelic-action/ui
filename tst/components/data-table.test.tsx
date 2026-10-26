@@ -85,6 +85,97 @@ describe("DataTable", () => {
 		expect(within(row).getByText("1")).toHaveAttribute("data-label", "Times shown");
 	});
 
+	it("draws an empty cell as a gray rule a screen reader hears as None", () => {
+		const { container } = render(
+			<DataTable
+				columns={[{ label: "Market" }, { label: "Change" }]}
+				rows={[{ cells: ["Denver", null] }, { cells: ["Boulder", undefined] }]}
+			/>,
+		);
+		const rules = container.querySelectorAll("td .data-table-empty");
+		expect(rules).toHaveLength(2);
+		for (const rule of rules) expect(rule).toHaveAttribute("aria-hidden", "true");
+		expect(screen.getAllByRole("cell").map((cell) => cell.textContent)).toEqual(["None", "None"]);
+	});
+
+	it("reads a typed dash as content, not as an empty cell", () => {
+		const { container } = render(
+			<DataTable
+				columns={[{ label: "Market" }, { label: "Change" }]}
+				rows={[{ cells: ["Denver", "\u2013"] }]}
+			/>,
+		);
+		expect(container.querySelector(".data-table-empty")).toBeNull();
+		expect(screen.getByRole("cell")).toHaveTextContent("\u2013");
+	});
+
+	it("draws a cell left out of a short row as empty", () => {
+		const { container } = render(
+			<DataTable
+				columns={[{ label: "Market" }, { label: "Change" }]}
+				rows={[{ cells: ["Denver"] }]}
+			/>,
+		);
+		expect(container.querySelector("td .data-table-empty")).not.toBeNull();
+		expect(screen.getByRole("cell")).toHaveAttribute("data-label", "Change");
+	});
+
+	it("lets a column say what its empty cell means", () => {
+		render(
+			<DataTable
+				columns={[{ label: "Market" }, { label: "Grade", emptyLabel: "Not read" }]}
+				rows={[{ cells: ["Denver", null] }]}
+			/>,
+		);
+		expect(screen.getByRole("cell")).toHaveTextContent("Not read");
+	});
+
+	it("never treats the first cell, which names the row, as empty", () => {
+		const { container } = render(
+			<DataTable
+				columns={[{ label: "Market" }, { label: "Grade" }]}
+				rows={[{ cells: [null, "B"] }]}
+			/>,
+		);
+		expect(container.querySelector(".data-table-empty")).toBeNull();
+	});
+
+	it("sorts empty cells last in both directions", () => {
+		render(
+			<DataTable
+				columns={[{ label: "Search" }, { label: "Clicks", sortable: true }]}
+				rows={[
+					{ cells: ["none first", null] },
+					{ cells: ["low", "2"] },
+					{ cells: ["none second", undefined] },
+					{ cells: ["high", "9"] },
+				]}
+			/>,
+		);
+		const clicks = screen.getByRole("button", { name: /Clicks/ });
+		fireEvent.click(clicks);
+		expect(names()).toEqual(["low", "high", "none first", "none second"]);
+		fireEvent.click(clicks);
+		expect(names()).toEqual(["high", "low", "none first", "none second"]);
+	});
+
+	it("opens with empty cells last among value cells, and keeps them last from the dropdown", () => {
+		render(
+			<DataTable
+				columns={[{ label: "Search" }, { label: "Rank", sortable: true }]}
+				rows={[
+					{ cells: ["none", null] },
+					{ cells: ["first", { display: <em>1st</em>, sort: 1 }] },
+					{ cells: ["third", { display: <em>3rd</em>, sort: 3 }] },
+				]}
+				defaultSort={{ column: 1, direction: "desc" }}
+			/>,
+		);
+		expect(names()).toEqual(["third", "first", "none"]);
+		fireEvent.change(screen.getByLabelText("Sort by"), { target: { value: "1:asc" } });
+		expect(names()).toEqual(["first", "third", "none"]);
+	});
+
 	it("shows no sort control when no column sorts", () => {
 		render(<DataTable columns={[{ label: "A" }, { label: "B" }]} rows={[{ cells: ["a", "b"] }]} />);
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();

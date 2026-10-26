@@ -308,6 +308,21 @@ export function Gallery() {
 								]}
 							/>
 						</Example>
+						<Example caption="An empty cell draws a dash and sorts last, and a column can name it for a screen reader">
+							<DataTable
+								columns={[
+									{ label: "Bake" },
+									{ label: "Orders", align: "right", sortable: true, firstSort: "desc" },
+									{ label: "Rating", align: "right", sortable: true, emptyLabel: "Not rated" },
+								]}
+								rows={[
+									{ cells: ["Country sourdough", "64", "4.8"] },
+									{ cells: ["Seeded rye", null, "4.6"] },
+									{ cells: ["Morning bun", "41", null] },
+								]}
+								defaultSort={{ column: 2, direction: "desc" }}
+							/>
+						</Example>
 					</Piece>
 
 					<Piece
