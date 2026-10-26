@@ -147,7 +147,9 @@ describe("ProseBlocks", () => {
 			const video = container.querySelector("video");
 			expect(video).toHaveAttribute("preload", "none");
 			expect(video).toHaveAttribute("poster", "/videos/a.webp");
-			expect(container.querySelector<HTMLElement>(".pb-tile")?.style.aspectRatio).toBe("540 / 960");
+			expect(container.querySelector<HTMLElement>(".pb-figure")?.style.aspectRatio).toBe(
+				"540 / 960",
+			);
 			expect(play).not.toHaveBeenCalled();
 			act(() => report?.([{ isIntersecting: true }]));
 			expect(play).toHaveBeenCalledTimes(1);
@@ -188,7 +190,7 @@ describe("ProseBlocks", () => {
 		expect(rows).toHaveLength(2);
 		expect(rows[0].querySelectorAll(".pb-figure")).toHaveLength(2);
 		expect(rows[1].querySelectorAll(".pb-figure")).toHaveLength(1);
-		expect(container.querySelector(".pb-tile")).toHaveStyle({ aspectRatio: "4 / 5" });
+		expect(container.querySelector(".pb-figure")).toHaveStyle({ aspectRatio: "4 / 5" });
 	});
 
 	it("opens a tile large in a dialog, mounting the large clip only while open", () => {
