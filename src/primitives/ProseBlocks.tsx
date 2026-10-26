@@ -30,35 +30,96 @@ export interface ProseBlock {
 	alt?: string;
 	/** For "figure": a line under it. */
 	caption?: string;
+	/**
+	 * For "figure": the file's own width and height in pixels. With both, the
+	 * figure holds its shape before the file arrives (no layout shift), and a
+	 * tall one is narrowed so it never runs taller than most of the screen.
+	 */
+	width?: number;
+	height?: number;
+	/** For a clip: a still shown until it plays, and to a reader who prefers reduced motion. */
+	poster?: string;
 }
 
 const CLIP = /\.(mp4|webm)([?#].*)?$/i;
 
 /**
- * A silent looping clip. It autoplays, except for a reader who asked for
- * reduced motion: that reader gets it still, with controls to start it.
+ * The box a figure's file draws in: its own shape, and never taller than most
+ * of the screen, so a portrait clip in a text column does not fill a desktop
+ * from top to bottom. Nothing without both dimensions.
  */
-function Clip({ src, alt }: { src: string; alt?: string }) {
+function frameStyle(width?: number, height?: number) {
+	if (!width || !height) return undefined;
+	return {
+		aspectRatio: `${width} / ${height}`,
+		maxWidth: `min(100%, calc(75vh * ${width} / ${height}))`,
+	};
+}
+
+/**
+ * A silent looping clip. It plays only while it is on screen and pauses when
+ * it leaves, and it fetches nothing until it first comes into view, so a post
+ * with a clip beside every exercise costs nothing up front. A reader who asked
+ * for reduced motion gets it still, with controls to start it.
+ */
+function Clip({
+	src,
+	alt,
+	poster,
+	style,
+}: {
+	src: string;
+	alt?: string;
+	poster?: string;
+	style?: ReturnType<typeof frameStyle>;
+}) {
 	const ref = useRef<HTMLVideoElement>(null);
 	const [still, setStill] = useState(false);
 	useEffect(() => {
+		const video = ref.current;
+		if (!video) return;
 		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
 			setStill(true);
 			return;
 		}
-		ref.current?.play()?.catch(() => setStill(true));
+		// A pause that interrupts a pending play rejects it with an AbortError;
+		// that is the reader scrolling past, not autoplay being refused.
+		let observer: IntersectionObserver | undefined;
+		const play = () =>
+			video.play()?.catch((err: unknown) => {
+				if ((err as { name?: string } | null)?.name === "AbortError") return;
+				// Autoplay refused: hand the clip to the reader and stop steering it.
+				setStill(true);
+				observer?.disconnect();
+			});
+		if (typeof IntersectionObserver === "undefined") {
+			play();
+			return;
+		}
+		observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[entries.length - 1]?.isIntersecting) play();
+				else video.pause();
+			},
+			{ rootMargin: "200px 0px" },
+		);
+		observer.observe(video);
+		return () => observer?.disconnect();
 	}, []);
 	return (
 		// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
 		<video
 			ref={ref}
 			src={src}
+			poster={poster}
 			aria-label={alt}
+			style={style}
 			loop
 			muted
 			playsInline
 			controls={still}
-			preload="metadata"
+			// A still clip never plays, so without a poster it needs its first frame loaded.
+			preload={still && !poster ? "metadata" : "none"}
 		/>
 	);
 }
@@ -102,15 +163,29 @@ export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlo
 				}
 				if (block.type === "figure") {
 					const src = block.src ? withBase(block.src) : "";
+					const style = frameStyle(block.width, block.height);
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static ported prose; position plus content is the stable key (see above)
 						<figure className="pb-figure" key={`figure-${i}-${src.slice(-24)}`}>
 							{!src ? (
 								<div className="ph">{block.alt ?? "Figure"}</div>
 							) : CLIP.test(src) ? (
-								<Clip src={src} alt={block.alt} />
+								<Clip
+									src={src}
+									alt={block.alt}
+									poster={block.poster ? withBase(block.poster) : undefined}
+									style={style}
+								/>
 							) : (
-								<img src={src} alt={block.alt ?? ""} loading="lazy" decoding="async" />
+								<img
+									src={src}
+									alt={block.alt ?? ""}
+									width={block.width}
+									height={block.height}
+									style={style}
+									loading="lazy"
+									decoding="async"
+								/>
 							)}
 							{block.caption ? (
 								<figcaption className="pb-caption">{block.caption}</figcaption>

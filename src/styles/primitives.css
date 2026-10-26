@@ -240,6 +240,8 @@
 		display: block;
 		width: 100%;
 		height: auto;
+		margin-inline: auto;
+		object-fit: cover;
 		border-radius: 14px;
 		background: var(--surface-alt, var(--surface));
 	}

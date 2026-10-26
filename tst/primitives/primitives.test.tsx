@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { Button, Chip, Eyebrow, Lead, ProseBlocks, SectionHeading } from "../../src/primitives";
 
 describe("Button, the arrow", () => {
@@ -115,6 +115,62 @@ describe("ProseBlocks", () => {
 		);
 		expect(container.querySelector("img")).toBeNull();
 		expect(container.querySelector(".ph")).toHaveTextContent("A clamshell");
+	});
+
+	it("plays a clip only while it is on screen, and fetches nothing before", () => {
+		const original = window.IntersectionObserver;
+		let report: ((entries: Array<{ isIntersecting: boolean }>) => void) | undefined;
+		window.IntersectionObserver = class {
+			constructor(callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
+				report = callback;
+			}
+			observe() {}
+			disconnect() {}
+		} as unknown as typeof IntersectionObserver;
+		const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
+		const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+		try {
+			const { container } = render(
+				<ProseBlocks
+					blocks={[
+						{
+							type: "figure",
+							src: "/videos/a.mp4",
+							poster: "/videos/a.webp",
+							alt: "A clip",
+							width: 540,
+							height: 960,
+						},
+					]}
+				/>,
+			);
+			const video = container.querySelector("video");
+			expect(video).toHaveAttribute("preload", "none");
+			expect(video).toHaveAttribute("poster", "/videos/a.webp");
+			expect(video?.style.aspectRatio).toBe("540 / 960");
+			expect(play).not.toHaveBeenCalled();
+			act(() => report?.([{ isIntersecting: true }]));
+			expect(play).toHaveBeenCalledTimes(1);
+			act(() => report?.([{ isIntersecting: false }]));
+			expect(pause).toHaveBeenCalledTimes(1);
+		} finally {
+			window.IntersectionObserver = original;
+			play.mockRestore();
+			pause.mockRestore();
+		}
+	});
+
+	it("gives an image its own dimensions so it holds its shape before it loads", () => {
+		render(
+			<ProseBlocks
+				blocks={[
+					{ type: "figure", src: "/images/a.webp", alt: "A still", width: 960, height: 720 },
+				]}
+			/>,
+		);
+		const img = screen.getByRole("img", { name: "A still" });
+		expect(img).toHaveAttribute("width", "960");
+		expect(img).toHaveAttribute("height", "720");
 	});
 
 	it("pauses a clip and shows controls for a reader who prefers reduced motion", () => {
