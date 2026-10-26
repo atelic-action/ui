@@ -180,7 +180,7 @@ export function ArtifactPieces() {
 			<Piece
 				id="shot"
 				title="Shot"
-				lead="The owner's own screen: the crop, opening the full picture in a new tab when it has one, over its caption. A document sizes it and lays shots out in its own sheet."
+				lead="The owner's own screen: the crop, opening the full picture in a new tab when it has one, over its caption. A document sizes it and lays shots out in its own sheet. A crop taller than it is wide is marked portrait and held far narrower than its column."
 			>
 				<Example caption="Linked to the full picture, and the crop alone">
 					<div className="gallery-shots">
@@ -197,6 +197,26 @@ export function ArtifactPieces() {
 								src: "/images/note-menu.svg",
 								alt: "The menu page on a phone, with no full picture to open",
 								caption: "The same crop, with nothing to open",
+							}}
+						/>
+					</div>
+				</Example>
+				<Example caption="A phone screen and a laptop screen in the same wide column: the phone is held narrow">
+					<div className="gallery-shot-column">
+						<Shot
+							shot={{
+								src: "/images/bakery-phone.svg",
+								alt: "The bakery's home page on a phone",
+								href: "/images/bakery-phone.svg",
+								caption: "The home page at phone width",
+							}}
+						/>
+						<Shot
+							shot={{
+								src: "/images/bakery-desktop.svg",
+								alt: "The bakery's home page on a laptop",
+								href: "/images/bakery-desktop.svg",
+								caption: "The home page on a laptop",
 							}}
 						/>
 					</div>
