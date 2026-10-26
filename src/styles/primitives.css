@@ -289,7 +289,8 @@
 		position: absolute;
 		inset: auto 0 0;
 		margin: 0;
-		padding: 22px 10px 8px;
+		padding: 22px 10px 0;
+		border-bottom: 8px solid transparent;
 		border-radius: 0 0 12px 12px;
 		background: linear-gradient(to top, rgb(0 0 0 / 0.62), rgb(0 0 0 / 0));
 		color: #fff;
