@@ -249,10 +249,17 @@
 		position: relative;
 		margin: 0;
 		height: var(--pb-tile-height);
+		min-width: 0;
+		max-width: 100%;
 	}
 
-	.atelic-ui .pb-tile,
+	/* A placeholder keeps its own look and takes only the tile's shape. */
 	.atelic-ui .pb-figure .ph {
+		height: 100%;
+		max-width: 100%;
+	}
+
+	.atelic-ui .pb-tile {
 		display: block;
 		height: 100%;
 		max-width: 100%;
@@ -302,6 +309,11 @@
 		border-radius: 16px;
 		background: var(--surface);
 		color: var(--ink);
+	}
+
+	/* Page scroll holds still while the lightbox is open. */
+	html:has(dialog.pb-lightbox[open]) {
+		overflow: hidden;
 	}
 
 	.atelic-ui .pb-lightbox::backdrop {

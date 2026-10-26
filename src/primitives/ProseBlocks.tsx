@@ -120,6 +120,9 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 	const poster = block.poster ? withBase(block.poster) : undefined;
 	const clip = CLIP.test(src);
 	const label = block.caption ?? block.alt ?? "Figure";
+	// A reader who asked for reduced motion gets the large clip still, with controls.
+	const reduceMotion =
+		open && (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
 
 	useEffect(() => {
 		const dialog = dialogRef.current;
@@ -169,8 +172,16 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 				aria-label={label}
 				onClose={() => setOpen(false)}
 				onClick={(event) => {
-					// A click on the dialog itself, not its contents, is a click on the backdrop.
-					if (event.target === event.currentTarget) setOpen(false);
+					// A click that lands outside the panel's box is a click on the backdrop; the
+					// panel's own padding and blank areas also target the dialog, so test coordinates.
+					if (event.target !== event.currentTarget) return;
+					const box = event.currentTarget.getBoundingClientRect();
+					const outside =
+						event.clientX < box.left ||
+						event.clientX > box.right ||
+						event.clientY < box.top ||
+						event.clientY > box.bottom;
+					if (outside) setOpen(false);
 				}}
 			>
 				<button
@@ -188,14 +199,16 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 							src={src}
 							poster={poster}
 							aria-label={block.alt}
-							autoPlay
+							width={block.width}
+							height={block.height}
+							autoPlay={!reduceMotion}
 							loop
 							muted
 							playsInline
 							controls
 						/>
 					) : (
-						<img src={src} alt={block.alt ?? ""} />
+						<img src={src} alt={block.alt ?? ""} width={block.width} height={block.height} />
 					)
 				) : null}
 				{open && block.caption ? <p className="pb-lightbox-caption">{block.caption}</p> : null}

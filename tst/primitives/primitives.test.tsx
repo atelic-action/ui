@@ -232,4 +232,22 @@ describe("ProseBlocks", () => {
 			play.mockRestore();
 		}
 	});
+
+	it("opens the large clip without autoplay for a reader who prefers reduced motion", () => {
+		const original = window.matchMedia;
+		window.matchMedia = ((q: string) => ({
+			matches: q.includes("reduce"),
+		})) as typeof window.matchMedia;
+		try {
+			const { container } = render(
+				<ProseBlocks blocks={[{ type: "figure", src: "/videos/a.mp4", caption: "Clamshell" }]} />,
+			);
+			act(() => screen.getByRole("button", { name: "Open larger: Clamshell" }).click());
+			const large = container.querySelector("dialog video") as HTMLVideoElement;
+			expect(large.autoplay).toBe(false);
+			expect(large).toHaveAttribute("controls");
+		} finally {
+			window.matchMedia = original;
+		}
+	});
 });
