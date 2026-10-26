@@ -13,7 +13,6 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		max-width: 760px;
 	}
 
 	.atelic-ui .bi-item {
@@ -42,40 +41,20 @@
 		color: var(--neutral-500);
 	}
 
+	/* A title fills the line before it wraps, where the base headings balance
+	   their lines; pretty still keeps a last word from standing alone. */
 	.atelic-ui .bi-title {
 		margin: 0 0 10px;
 		font-size: 1.4rem;
 		line-height: 1.25;
-	}
-
-	.atelic-ui .bi-arrow {
-		margin-left: 8px;
-		vertical-align: baseline;
-		opacity: 0;
-		transform: translate(-4px, 2px);
-		transition:
-			opacity 0.18s ease,
-			transform 0.18s ease;
-	}
-
-	.atelic-ui .bi-link:hover .bi-arrow,
-	.atelic-ui .bi-link:focus-visible .bi-arrow {
-		opacity: 1;
-		transform: translate(0, 2px);
+		text-wrap: pretty;
 	}
 
 	.atelic-ui .bi-excerpt {
 		margin: 0;
-		max-width: 62ch;
 		font-size: 0.98rem;
 		line-height: 1.65;
 		color: var(--neutral-700);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .bi-arrow {
-			transition: none;
-		}
 	}
 
 	@media (max-width: 600px) {
@@ -88,8 +67,12 @@
 	/* A single article. The title is the content, so it sits in the flow rather
 	   than inside a hero band that would push the writing below the fold. */
 
-	.atelic-ui .bp-wrap {
-		max-width: 760px;
+	/* The article takes the site's own width, like every other page, so no
+	   page or site wears a column of its own size (Forni, 2026-10-26). The
+	   body steps up a size on a wide screen to suit the longer line. */
+	.atelic-ui .bp-body .pb-body,
+	.atelic-ui .bp-body .pb-list li {
+		font-size: clamp(1rem, 0.9rem + 0.35vw, 1.125rem);
 	}
 
 	.atelic-ui .bp-back {
@@ -112,6 +95,7 @@
 		margin: 0 0 14px;
 		font-size: clamp(1.9rem, 4vw, 2.6rem);
 		line-height: 1.15;
+		text-wrap: pretty;
 	}
 
 	.atelic-ui .bp-meta {

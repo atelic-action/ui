@@ -65,7 +65,13 @@ export function MarketingWriting() {
 								type: "figure",
 								src: "/images/bakery-band.svg",
 								alt: "A row of shaped loaves on a floured bench",
-								caption: "Shaped cold, straight from the walk in, and scored before the oven.",
+								caption: "Shaped cold",
+							},
+							{
+								type: "figure",
+								src: "/images/bakery-phone.svg",
+								alt: "The bakery's site on a phone",
+								caption: "Ordered ahead",
 							},
 							{
 								type: "p",
