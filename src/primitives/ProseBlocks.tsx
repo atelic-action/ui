@@ -82,14 +82,19 @@ function Clip({
 			setStill(true);
 			return;
 		}
-		const play = () => video.play()?.catch(() => setStill(true));
+		// A pause that interrupts a pending play rejects it with an AbortError;
+		// that is the reader scrolling past, not autoplay being refused.
+		const play = () =>
+			video.play()?.catch((err: unknown) => {
+				if ((err as { name?: string } | null)?.name !== "AbortError") setStill(true);
+			});
 		if (typeof IntersectionObserver === "undefined") {
 			play();
 			return;
 		}
 		const observer = new IntersectionObserver(
-			([entry]) => {
-				if (entry?.isIntersecting) play();
+			(entries) => {
+				if (entries[entries.length - 1]?.isIntersecting) play();
 				else video.pause();
 			},
 			{ rootMargin: "200px 0px" },
@@ -109,7 +114,8 @@ function Clip({
 			muted
 			playsInline
 			controls={still}
-			preload="none"
+			// A still clip never plays, so without a poster it needs its first frame loaded.
+			preload={still && !poster ? "metadata" : "none"}
 		/>
 	);
 }
