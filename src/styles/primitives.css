@@ -223,6 +223,34 @@
 		margin-top: 0;
 	}
 
+	/* A sub section heading sits closer to its section and steps down a size. */
+	.atelic-ui .pb-heading.pb-h3 {
+		margin: 28px 0 10px;
+		font-size: 1.02rem;
+	}
+
+	/* A figure in running prose: the image or the silent clip at the column's
+	   width, a rounded frame, and a caption in the body's quiet color. */
+	.atelic-ui .pb-figure {
+		margin: 24px 0;
+	}
+
+	.atelic-ui .pb-figure img,
+	.atelic-ui .pb-figure video {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: 14px;
+		background: var(--surface-alt, var(--surface));
+	}
+
+	.atelic-ui .pb-caption {
+		margin-top: 10px;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--neutral-600, var(--neutral-700));
+	}
+
 	.atelic-ui .pb-body {
 		margin: 0 0 16px;
 		font-size: 1rem;
