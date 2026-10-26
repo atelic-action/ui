@@ -19,6 +19,12 @@
 		padding-top: clamp(40px, 7vw, 86px);
 		padding-bottom: clamp(28px, 5vw, 60px);
 	}
+	/* SiteShell's main clears the fixed header for the page. A shell that does
+	   not (ArtifactShell, whose documents clear it in their own sheet) leaves
+	   the 404 to clear it here, or its heading sits under the header. */
+	.atelic-ui main:not(.clears-nav) .not-found-hero {
+		padding-top: calc(var(--nav-height, 72px) + clamp(40px, 7vw, 86px));
+	}
 	.atelic-ui .not-found-hero h1 {
 		margin: 16px 0 0;
 	}
