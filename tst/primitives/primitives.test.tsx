@@ -108,4 +108,30 @@ describe("ProseBlocks", () => {
 		expect(video).toHaveAttribute("playsinline");
 		expect(container.querySelectorAll("figcaption")).toHaveLength(1);
 	});
+
+	it("renders a placeholder for a figure with no file yet", () => {
+		const { container } = render(
+			<ProseBlocks blocks={[{ type: "figure", alt: "A clamshell", caption: "Soon" }]} />,
+		);
+		expect(container.querySelector("img")).toBeNull();
+		expect(container.querySelector(".ph")).toHaveTextContent("A clamshell");
+	});
+
+	it("pauses a clip and shows controls for a reader who prefers reduced motion", () => {
+		const original = window.matchMedia;
+		window.matchMedia = ((q: string) => ({
+			matches: q.includes("reduce"),
+		})) as typeof window.matchMedia;
+		const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+		try {
+			const { container } = render(
+				<ProseBlocks blocks={[{ type: "figure", src: "/images/a.mp4?v=2", alt: "A clip" }]} />,
+			);
+			expect(pause).toHaveBeenCalled();
+			expect(container.querySelector("video")).toHaveAttribute("controls");
+		} finally {
+			window.matchMedia = original;
+			pause.mockRestore();
+		}
+	});
 });

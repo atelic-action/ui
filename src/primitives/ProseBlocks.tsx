@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 /**
  * One block of prose carried as data. A deliberately tiny vocabulary:
  * headings, paragraphs, lists, and a figure, because that is what survives
@@ -29,7 +31,36 @@ export interface ProseBlock {
 	caption?: string;
 }
 
-const CLIP = /\.(mp4|webm)$/i;
+const CLIP = /\.(mp4|webm)([?#].*)?$/i;
+
+/**
+ * A silent looping clip. It autoplays, except for a reader who asked for
+ * reduced motion: that reader gets it paused with controls to start it.
+ */
+function Clip({ src, alt }: { src: string; alt?: string }) {
+	const ref = useRef<HTMLVideoElement>(null);
+	const [still, setStill] = useState(false);
+	useEffect(() => {
+		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+			ref.current?.pause();
+			setStill(true);
+		}
+	}, []);
+	return (
+		// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
+		<video
+			ref={ref}
+			src={src}
+			aria-label={alt}
+			autoPlay
+			loop
+			muted
+			playsInline
+			controls={still}
+			preload="metadata"
+		/>
+	);
+}
 
 export interface ProseBlocksProps {
 	blocks: ProseBlock[];
@@ -72,17 +103,10 @@ export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlo
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static ported prose; position plus content is the stable key (see above)
 						<figure className="pb-figure" key={`figure-${i}-${src.slice(-24)}`}>
-							{CLIP.test(src) ? (
-								// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
-								<video
-									src={src}
-									aria-label={block.alt}
-									autoPlay
-									loop
-									muted
-									playsInline
-									preload="metadata"
-								/>
+							{!src ? (
+								<div className="ph">{block.alt ?? "Figure"}</div>
+							) : CLIP.test(src) ? (
+								<Clip src={src} alt={block.alt} />
 							) : (
 								<img src={src} alt={block.alt ?? ""} loading="lazy" decoding="async" />
 							)}
