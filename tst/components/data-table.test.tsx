@@ -159,6 +159,23 @@ describe("DataTable", () => {
 		expect(names()).toEqual(["high", "low", "none first", "none second"]);
 	});
 
+	it("opens with empty cells last among value cells, and keeps them last from the dropdown", () => {
+		render(
+			<DataTable
+				columns={[{ label: "Search" }, { label: "Rank", sortable: true }]}
+				rows={[
+					{ cells: ["none", null] },
+					{ cells: ["first", { display: <em>1st</em>, sort: 1 }] },
+					{ cells: ["third", { display: <em>3rd</em>, sort: 3 }] },
+				]}
+				defaultSort={{ column: 1, direction: "desc" }}
+			/>,
+		);
+		expect(names()).toEqual(["third", "first", "none"]);
+		fireEvent.change(screen.getByLabelText("Sort by"), { target: { value: "1:asc" } });
+		expect(names()).toEqual(["first", "third", "none"]);
+	});
+
 	it("shows no sort control when no column sorts", () => {
 		render(<DataTable columns={[{ label: "A" }, { label: "B" }]} rows={[{ cells: ["a", "b"] }]} />);
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
