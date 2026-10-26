@@ -328,7 +328,7 @@
 	.atelic-ui .pb-lightbox video {
 		display: block;
 		max-width: 100%;
-		max-height: calc(92vh - 96px);
+		max-height: calc(92vh - 120px);
 		width: auto;
 		height: auto;
 		margin-inline: auto;
@@ -344,6 +344,11 @@
 		background: transparent;
 		color: var(--ink);
 		cursor: pointer;
+	}
+
+	.atelic-ui .pb-lightbox-close:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
 	}
 
 	.atelic-ui .pb-lightbox-caption {

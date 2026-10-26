@@ -130,7 +130,8 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 	const src = block.src ? withBase(block.src) : "";
 	const poster = block.poster ? withBase(block.poster) : undefined;
 	const clip = CLIP.test(src);
-	const label = block.caption ?? block.alt ?? "Figure";
+	// The description names the tile; the caption is laid over it and read from the figcaption.
+	const label = block.alt || block.caption || "Figure";
 	// A reader who asked for reduced motion gets the large clip still, with controls.
 	const [reduceMotion, setReduceMotion] = useState(false);
 
