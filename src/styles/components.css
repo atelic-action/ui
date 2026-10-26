@@ -1042,6 +1042,26 @@
 		text-transform: uppercase;
 		color: var(--neutral-500);
 	}
+	/* An empty cell's dash: a short gray rule, never a typed character. A
+	   document may wear the class for its own neutral mark. */
+	.atelic-ui .data-table-empty {
+		display: inline-block;
+		width: 14px;
+		height: 1.5px;
+		vertical-align: 0.3em;
+		background: var(--neutral-300);
+	}
+	.atelic-ui .data-table-empty-label {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
 	@media print, (min-width: 721px) {
 		.atelic-ui .data-table-sort {
 			display: none;

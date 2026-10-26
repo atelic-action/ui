@@ -20,6 +20,8 @@ export interface DataTableColumn {
 	hint?: ReactNode;
 	/** What a screen reader calls the hint's button; defaults to "About" and the label. */
 	hintLabel?: string;
+	/** What a screen reader hears for an empty cell in this column; defaults to "None". */
+	emptyLabel?: string;
 }
 
 /** A cell whose display is not what it sorts by, e.g. an icon over a number. */
@@ -28,7 +30,12 @@ export interface DataTableValueCell {
 	sort: number | string;
 }
 
-export type DataTableCell = ReactNode | DataTableValueCell;
+/**
+ * A cell is a node, or a value cell. `null` or `undefined` is an empty cell:
+ * it draws a short gray rule and sorts last either way. A string is always
+ * content, a typed dash included, since a dash can mean "unchanged".
+ */
+export type DataTableCell = ReactNode | DataTableValueCell | null | undefined;
 
 export interface DataTableRow {
 	/** One cell per column; the first names the row. */
@@ -51,6 +58,11 @@ export interface DataTableProps {
 
 function isValueCell(cell: DataTableCell): cell is DataTableValueCell {
 	return typeof cell === "object" && cell !== null && "sort" in cell && "display" in cell;
+}
+
+/** No value to show. The first cell names the row, so it is never empty. */
+function isEmpty(cell: DataTableCell, column: number): cell is null | undefined {
+	return column !== 0 && (cell === null || cell === undefined);
 }
 
 function sortValue(cell: DataTableCell): number | string {
@@ -94,10 +106,13 @@ export function DataTable({
 		if (!sort) return indexed;
 		const direction = sort.direction === "asc" ? 1 : -1;
 		return indexed.sort((a, b) => {
-			const order = compare(
-				sortValue(a.row.cells[sort.column]),
-				sortValue(b.row.cells[sort.column]),
-			);
+			const cellA = a.row.cells[sort.column];
+			const cellB = b.row.cells[sort.column];
+			// An empty cell sorts last whichever way the column runs.
+			const emptyA = isEmpty(cellA, sort.column);
+			const emptyB = isEmpty(cellB, sort.column);
+			if (emptyA || emptyB) return emptyA === emptyB ? a.index - b.index : emptyA ? 1 : -1;
+			const order = compare(sortValue(cellA), sortValue(cellB));
 			return order === 0 ? a.index - b.index : order * direction;
 		});
 	}, [rows, sort]);
@@ -195,7 +210,18 @@ export function DataTable({
 					{sorted.map(({ row, index }) => (
 						<tr key={index} data-tone={row.tone}>
 							{row.cells.map((cell, c) => {
-								const body = isValueCell(cell) ? cell.display : cell;
+								const body = isEmpty(cell, c) ? (
+									<>
+										<span className="data-table-empty" aria-hidden="true" />
+										<span className="data-table-empty-label">
+											{columns[c]?.emptyLabel ?? "None"}
+										</span>
+									</>
+								) : isValueCell(cell) ? (
+									cell.display
+								) : (
+									cell
+								);
 								const shape = {
 									"data-align": columns[c]?.align ?? "left",
 									"data-fit": columns[c]?.fit || undefined,
