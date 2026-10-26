@@ -84,15 +84,19 @@ function Clip({
 		}
 		// A pause that interrupts a pending play rejects it with an AbortError;
 		// that is the reader scrolling past, not autoplay being refused.
+		let observer: IntersectionObserver | undefined;
 		const play = () =>
 			video.play()?.catch((err: unknown) => {
-				if ((err as { name?: string } | null)?.name !== "AbortError") setStill(true);
+				if ((err as { name?: string } | null)?.name === "AbortError") return;
+				// Autoplay refused: hand the clip to the reader and stop steering it.
+				setStill(true);
+				observer?.disconnect();
 			});
 		if (typeof IntersectionObserver === "undefined") {
 			play();
 			return;
 		}
-		const observer = new IntersectionObserver(
+		observer = new IntersectionObserver(
 			(entries) => {
 				if (entries[entries.length - 1]?.isIntersecting) play();
 				else video.pause();
@@ -100,7 +104,7 @@ function Clip({
 			{ rootMargin: "200px 0px" },
 		);
 		observer.observe(video);
-		return () => observer.disconnect();
+		return () => observer?.disconnect();
 	}, []);
 	return (
 		// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
