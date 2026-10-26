@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import * as entry from "../../src/artifact";
 import {
 	ArtifactAnchor,
@@ -132,6 +132,73 @@ describe("Shot", () => {
 			"src",
 			"/images/crop.png",
 		);
+	});
+
+	/** Give the rendered image the size a browser would have read off its file. */
+	function sized(img: HTMLImageElement, width: number, height: number) {
+		Object.defineProperty(img, "naturalWidth", { configurable: true, value: width });
+		Object.defineProperty(img, "naturalHeight", { configurable: true, value: height });
+		Object.defineProperty(img, "complete", { configurable: true, value: true });
+	}
+
+	it("marks a crop taller than it is wide as portrait once it loads, and a wide one not", () => {
+		const { container } = render(
+			<>
+				<Shot shot={{ src: "/images/phone.png", alt: "A phone screen", caption: "Phone" }} />
+				<Shot shot={{ src: "/images/laptop.png", alt: "A laptop screen", caption: "Laptop" }} />
+			</>,
+		);
+		const [phone, laptop] = [...container.querySelectorAll(".op-shot")];
+		expect(phone).not.toHaveAttribute("data-portrait");
+
+		const phoneImage = screen.getByRole("img", { name: "A phone screen" }) as HTMLImageElement;
+		const laptopImage = screen.getByRole("img", { name: "A laptop screen" }) as HTMLImageElement;
+		sized(phoneImage, 390, 844);
+		sized(laptopImage, 1280, 800);
+		fireEvent.load(phoneImage);
+		fireEvent.load(laptopImage);
+
+		expect(phone).toHaveAttribute("data-portrait");
+		expect(laptop).not.toHaveAttribute("data-portrait");
+	});
+
+	it("marks a portrait crop that finished loading before the page hydrated", () => {
+		const complete = vi.spyOn(HTMLImageElement.prototype, "complete", "get").mockReturnValue(true);
+		const width = vi.spyOn(HTMLImageElement.prototype, "naturalWidth", "get").mockReturnValue(390);
+		const height = vi
+			.spyOn(HTMLImageElement.prototype, "naturalHeight", "get")
+			.mockReturnValue(844);
+		try {
+			const { container } = render(
+				<Shot shot={{ src: "/images/phone.png", alt: "A phone screen", caption: "Phone" }} />,
+			);
+			expect(container.querySelector(".op-shot")).toHaveAttribute("data-portrait");
+		} finally {
+			complete.mockRestore();
+			width.mockRestore();
+			height.mockRestore();
+		}
+	});
+
+	it("drops the mark when the crop changes, until the new image measures portrait", () => {
+		const { container, rerender } = render(
+			<Shot shot={{ src: "/images/phone.png", alt: "A screen", caption: "Screen" }} />,
+		);
+		const image = screen.getByRole("img", { name: "A screen" }) as HTMLImageElement;
+		sized(image, 390, 844);
+		fireEvent.load(image);
+		expect(container.querySelector(".op-shot")).toHaveAttribute("data-portrait");
+
+		rerender(<Shot shot={{ src: "/images/laptop.png", alt: "A screen", caption: "Screen" }} />);
+		expect(container.querySelector(".op-shot")).not.toHaveAttribute("data-portrait");
+	});
+
+	it("leaves the mark off an image with no size yet", () => {
+		const { container } = render(
+			<Shot shot={{ src: "/images/phone.png", alt: "A phone screen", caption: "Phone" }} />,
+		);
+		fireEvent.load(screen.getByRole("img", { name: "A phone screen" }));
+		expect(container.querySelector(".op-shot")).not.toHaveAttribute("data-portrait");
 	});
 });
 

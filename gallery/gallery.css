@@ -285,6 +285,12 @@ body {
 	grid-template-columns: repeat(auto-fill, minmax(160px, 240px));
 	gap: 16px;
 }
+.atelic-ui .gallery-shot-column {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	max-width: 420px;
+}
 
 /* ---- Frames: a box that is the containing block for anything fixed or
    absolute inside it (a transform makes it one), so the header, the sticky
