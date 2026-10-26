@@ -65,7 +65,13 @@
 
 	/* ---- BlogPost (blog-post.css) ---- */
 	/* A single article. The title is the content, so it sits in the flow rather
-	   than inside a hero band that would push the writing below the fold. */
+	   than inside a hero band that would push the writing below the fold. With
+	   no hero band to clear the fixed nav, the article clears it itself, the
+	   way .page-hero does; the plain section padding left the back link under
+	   the nav on a phone. */
+	.atelic-ui .blog-post {
+		padding-top: calc(var(--nav-height) + clamp(32px, 6vw, 64px));
+	}
 
 	/* The article takes the site's own width, like every other page, so no
 	   page or site wears a column of its own size (Forni, 2026-10-26). The

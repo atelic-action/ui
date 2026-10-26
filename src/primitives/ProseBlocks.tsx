@@ -79,6 +79,10 @@ function Clip({
 		// A pause that interrupts a pending play rejects it with an AbortError;
 		// that is the reader scrolling past, not autoplay being refused.
 		let observer: IntersectionObserver | undefined;
+		// React sets muted as a property and never renders the attribute, and an
+		// iPhone browser's autoplay check reads the attribute, so set both.
+		video.muted = true;
+		video.setAttribute("muted", "");
 		const play = () =>
 			video.play()?.catch((err: unknown) => {
 				if ((err as { name?: string } | null)?.name === "AbortError") return;
@@ -144,17 +148,15 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 
 	if (!src) {
 		return (
-			<figure className="pb-figure">
-				<div className="ph" style={tileStyle(block.width, block.height)}>
-					{block.alt ?? "Figure"}
-				</div>
+			<figure className="pb-figure" style={tileStyle(block.width, block.height)}>
+				<div className="ph">{block.alt ?? "Figure"}</div>
 				{block.caption ? <figcaption className="pb-caption">{block.caption}</figcaption> : null}
 			</figure>
 		);
 	}
 
 	return (
-		<figure className="pb-figure">
+		<figure className="pb-figure" style={tileStyle(block.width, block.height)}>
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: the backdrop click is a pointer shortcut; the dialog closes on Escape natively and has a close button */}
 			<dialog
 				ref={dialogRef}
@@ -206,7 +208,6 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 			<button
 				type="button"
 				className="pb-tile"
-				style={tileStyle(block.width, block.height)}
 				aria-label={`Open larger: ${label}`}
 				onClick={() => {
 					setReduceMotion(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
