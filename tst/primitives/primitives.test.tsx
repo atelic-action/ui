@@ -122,16 +122,16 @@ describe("ProseBlocks", () => {
 		window.matchMedia = ((q: string) => ({
 			matches: q.includes("reduce"),
 		})) as typeof window.matchMedia;
-		const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+		const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
 		try {
 			const { container } = render(
 				<ProseBlocks blocks={[{ type: "figure", src: "/images/a.mp4?v=2", alt: "A clip" }]} />,
 			);
-			expect(pause).toHaveBeenCalled();
+			expect(play).not.toHaveBeenCalled();
 			expect(container.querySelector("video")).toHaveAttribute("controls");
 		} finally {
 			window.matchMedia = original;
-			pause.mockRestore();
+			play.mockRestore();
 		}
 	});
 });

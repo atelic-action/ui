@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useWithBase } from "../routing/BasePathProvider";
 
 /**
  * One block of prose carried as data. A deliberately tiny vocabulary:
@@ -35,16 +36,17 @@ const CLIP = /\.(mp4|webm)([?#].*)?$/i;
 
 /**
  * A silent looping clip. It autoplays, except for a reader who asked for
- * reduced motion: that reader gets it paused with controls to start it.
+ * reduced motion: that reader gets it still, with controls to start it.
  */
 function Clip({ src, alt }: { src: string; alt?: string }) {
 	const ref = useRef<HTMLVideoElement>(null);
 	const [still, setStill] = useState(false);
 	useEffect(() => {
 		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-			ref.current?.pause();
 			setStill(true);
+			return;
 		}
+		ref.current?.play().catch(() => setStill(true));
 	}, []);
 	return (
 		// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
@@ -52,7 +54,6 @@ function Clip({ src, alt }: { src: string; alt?: string }) {
 			ref={ref}
 			src={src}
 			aria-label={alt}
-			autoPlay
 			loop
 			muted
 			playsInline
@@ -83,6 +84,7 @@ export interface ProseBlocksProps {
  */
 export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlocksProps) {
 	const Heading = headingLevel;
+	const withBase = useWithBase();
 	return (
 		<div className={["prose-blocks", className].filter(Boolean).join(" ")}>
 			{blocks.map((block, i) => {
@@ -99,7 +101,7 @@ export function ProseBlocks({ blocks, headingLevel = "h2", className }: ProseBlo
 					);
 				}
 				if (block.type === "figure") {
-					const src = block.src ?? "";
+					const src = block.src ? withBase(block.src) : "";
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static ported prose; position plus content is the stable key (see above)
 						<figure className="pb-figure" key={`figure-${i}-${src.slice(-24)}`}>
