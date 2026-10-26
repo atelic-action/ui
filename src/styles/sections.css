@@ -65,12 +65,11 @@
 
 	/* ---- BlogPost (blog-post.css) ---- */
 	/* A single article. The title is the content, so it sits in the flow rather
-	   than inside a hero band that would push the writing below the fold. With
-	   no hero band to clear the fixed nav, the article clears it itself, the
-	   way .page-hero does; the plain section padding left the back link under
-	   the nav on a phone. */
+	   than inside a hero band that would push the writing below the fold. The
+	   shell clears the fixed header; the article sits as close under it as a
+	   page hero's content does. */
 	.atelic-ui .blog-post {
-		padding-top: calc(var(--nav-height) + clamp(32px, 6vw, 64px));
+		padding-top: clamp(32px, 6vw, 64px);
 	}
 
 	/* The article takes the site's own width, like every other page, so no
@@ -684,7 +683,7 @@
 
 	/* ---- PageHero (page-hero.css) ---- */
 	.atelic-ui .page-hero {
-		padding-top: calc(var(--nav-height) + clamp(40px, 7vw, 86px));
+		padding-top: clamp(40px, 7vw, 86px);
 		padding-bottom: clamp(28px, 5vw, 60px);
 		background: var(--surface-alt);
 	}

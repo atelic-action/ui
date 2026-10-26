@@ -27,7 +27,11 @@ export interface SiteShellProps {
 	basePath?: string;
 	/** The header's links. Defaults to `site.nav`; the footer lists the same ones. */
 	nav?: NavItem[];
-	/** Home style pages with a full bleed hero get a transparent header. */
+	/**
+	 * Home style pages with a full bleed hero get a transparent header, and
+	 * their hero sits under it. Every other page starts below the fixed
+	 * header: `<main>` clears it here, once, so no section has to.
+	 */
 	heroNav?: boolean;
 	/**
 	 * A page that closes on its own ask turns the mobile booking bar off,
@@ -109,7 +113,9 @@ export function SiteShell({
 					hideCTA={hideNavCTA}
 					contact={{ phone: site.phone, email: site.email, address: site.address }}
 				/>
-				<main id="main">{children}</main>
+				<main id="main" className={heroNav ? undefined : "clears-nav"}>
+					{children}
+				</main>
 				{stickyCTA && <StickyCTABar primaryCTA={cta} phone={site.phone} />}
 				{footer ? (
 					<Footer

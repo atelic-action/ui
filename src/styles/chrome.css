@@ -66,6 +66,13 @@
 	}
 
 	/* ---- Header ---- */
+	/* The page starts below the fixed header, cleared once here rather than by
+	   each opening section. A page with a full bleed hero (heroNav) leaves it
+	   off, so the hero runs under the transparent header. */
+	.atelic-ui main.clears-nav {
+		padding-top: var(--nav-height, 72px);
+	}
+
 	/* Fixed header: transparent over a hero, solid once scrolled, or dark. */
 	.atelic-ui .nav {
 		position: fixed;
