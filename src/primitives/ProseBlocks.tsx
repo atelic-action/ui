@@ -46,7 +46,7 @@ function Clip({ src, alt }: { src: string; alt?: string }) {
 			setStill(true);
 			return;
 		}
-		ref.current?.play().catch(() => setStill(true));
+		ref.current?.play()?.catch(() => setStill(true));
 	}, []);
 	return (
 		// biome-ignore lint/a11y/useMediaCaption: a silent loop has no audio to caption; the figcaption and aria-label carry the words
