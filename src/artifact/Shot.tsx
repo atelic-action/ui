@@ -11,10 +11,10 @@ export interface WriteupShot {
 	caption: string;
 }
 
-/** Whether a loaded image is taller than it is wide; null until it has a size. */
-function isPortrait(img: HTMLImageElement): boolean | null {
+/** The src of a loaded image taller than it is wide; null for any other. */
+function portraitSrcOf(img: HTMLImageElement): string | null {
 	if (!img.naturalWidth || !img.naturalHeight) return null;
-	return img.naturalHeight > img.naturalWidth;
+	return img.naturalHeight > img.naturalWidth ? img.getAttribute("src") : null;
 }
 
 /**
@@ -34,14 +34,17 @@ function isPortrait(img: HTMLImageElement): boolean | null {
  */
 export function Shot({ shot }: { shot: WriteupShot }) {
 	const img = useRef<HTMLImageElement>(null);
-	const [portrait, setPortrait] = useState(false);
+	// The src the portrait mark was measured on, so a new src never wears the
+	// last image's mark while it loads or if it fails.
+	const [portraitSrc, setPortraitSrc] = useState<string | null>(null);
+	const portrait = portraitSrc !== null && portraitSrc === shot.src;
 
 	// An image that loaded before hydration fired its load event before React
 	// was listening, so read its size once on mount. A later src change fires
 	// load again, which the handler below measures.
 	useEffect(() => {
 		const current = img.current;
-		if (current?.complete) setPortrait(isPortrait(current) ?? false);
+		if (current?.complete) setPortraitSrc(portraitSrcOf(current));
 	}, []);
 
 	const picture = (
@@ -50,7 +53,8 @@ export function Shot({ shot }: { shot: WriteupShot }) {
 			src={shot.src}
 			alt={shot.alt}
 			loading="lazy"
-			onLoad={(event) => setPortrait(isPortrait(event.currentTarget) ?? false)}
+			onLoad={(event) => setPortraitSrc(portraitSrcOf(event.currentTarget))}
+			onError={() => setPortraitSrc(null)}
 		/>
 	);
 

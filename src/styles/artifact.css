@@ -114,7 +114,9 @@
 	   it never stands as a tall wall beside its findings. The cap is on the
 	   figure, so the frame, its border, and the caption all hug the picture.
 	   A layout that sizes its shots itself (fixed frames side by side) sets
-	   --op-shot-portrait-max to none to keep them all the same size. */
+	   --op-shot-portrait-max to none to keep them all the same size. The one
+	   property governs print as well; a document that sets a size of its own
+	   restates it under @media print for the sheet. */
 	.atelic-ui .op-shot[data-portrait] {
 		max-width: var(--op-shot-portrait-max, 200px);
 	}

@@ -180,6 +180,19 @@ describe("Shot", () => {
 		}
 	});
 
+	it("drops the mark when the crop changes, until the new image measures portrait", () => {
+		const { container, rerender } = render(
+			<Shot shot={{ src: "/images/phone.png", alt: "A screen", caption: "Screen" }} />,
+		);
+		const image = screen.getByRole("img", { name: "A screen" }) as HTMLImageElement;
+		sized(image, 390, 844);
+		fireEvent.load(image);
+		expect(container.querySelector(".op-shot")).toHaveAttribute("data-portrait");
+
+		rerender(<Shot shot={{ src: "/images/laptop.png", alt: "A screen", caption: "Screen" }} />);
+		expect(container.querySelector(".op-shot")).not.toHaveAttribute("data-portrait");
+	});
+
 	it("leaves the mark off an image with no size yet", () => {
 		const { container } = render(
 			<Shot shot={{ src: "/images/phone.png", alt: "A phone screen", caption: "Phone" }} />,
