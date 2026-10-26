@@ -203,7 +203,7 @@ describe("ProseBlocks", () => {
 		expect(dialog?.open).toBe(false);
 		expect(container.querySelectorAll("video")).toHaveLength(1);
 
-		act(() => screen.getByRole("button", { name: "Open larger: Clamshell" }).click());
+		act(() => screen.getByRole("button", { name: "Open larger: A clamshell" }).click());
 		expect(dialog?.open).toBe(true);
 		const large = dialog?.querySelector("video");
 		expect(large).toHaveAttribute("src", "/videos/a.mp4");
