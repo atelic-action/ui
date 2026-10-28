@@ -32,6 +32,7 @@ import { MarketingVisit } from "./marketing-visit";
 import { MarketingWriting } from "./marketing-writing";
 import { NotFoundPiece } from "./not-found";
 import { Example, Piece } from "./parts";
+import { TabsPiece } from "./tabs";
 import { WatermarkPiece } from "./watermark";
 
 /*
@@ -60,6 +61,7 @@ const stops: PageStop[] = [
 	{ id: "stat-row", label: "StatRow" },
 	{ id: "callout", label: "Callout" },
 	{ id: "disclosure", label: "Disclosure" },
+	{ id: "tabs", label: "Tabs" },
 	{ id: "stacked-bar", label: "StackedBar" },
 	{ id: "column-chart", label: "ColumnChart" },
 	{ id: "threshold-scale", label: "ThresholdScale" },
@@ -558,6 +560,8 @@ export function Gallery() {
 							</Disclosure>
 						</Example>
 					</Piece>
+
+					<TabsPiece />
 
 					<Piece
 						id="stacked-bar"

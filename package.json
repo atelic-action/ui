@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "3.9.2",
+	"version": "3.10.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -101,6 +101,7 @@
 		"gallery:build": "vite build gallery"
 	},
 	"dependencies": {
+		"@radix-ui/react-tabs": "^1.2.1",
 		"jose": "^6.2.12",
 		"qrcode": "^1.5.4"
 	},

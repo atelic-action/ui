@@ -44,6 +44,7 @@ export {
 	StatRow,
 	type StatRowProps,
 } from "./StatRow";
+export { Tabs, type TabsItem, type TabsProps } from "./Tabs";
 export {
 	type ThresholdReading,
 	ThresholdScale,
