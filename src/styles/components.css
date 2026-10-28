@@ -328,6 +328,85 @@
 		}
 	}
 
+	/* ---- Tabs: a row of tabs over the panels, the open one underlined in
+	   the primary. Every panel stays in the page: before the script runs
+	   the inactive ones are hidden here, and once it runs (.is-live) they
+	   carry hidden="until-found", which the browser hides and which find in
+	   page and a fragment can still reveal. ---- */
+	.atelic-ui .tabs {
+		min-width: 0;
+	}
+	.atelic-ui .tabs-list {
+		display: flex;
+		gap: 24px;
+		margin-bottom: 24px;
+		border-bottom: 1px solid var(--neutral-200);
+		overflow-x: auto;
+	}
+	.atelic-ui .tabs-tab {
+		flex: none;
+		margin-bottom: -1px;
+		padding: 10px 0;
+		border: 0;
+		border-bottom: 2px solid transparent;
+		background: transparent;
+		font: 500 16px / 1.2 var(--font-sans);
+		color: var(--ink-soft);
+		white-space: nowrap;
+		cursor: pointer;
+		transition:
+			color 150ms ease,
+			border-color 150ms ease;
+	}
+	.atelic-ui .tabs-tab:hover {
+		color: var(--ink);
+	}
+	.atelic-ui .tabs-tab[data-state="active"] {
+		color: var(--ink);
+		border-bottom-color: var(--ui-primary, var(--primary));
+	}
+	.atelic-ui .tabs-tab:focus-visible {
+		outline: 2px solid var(--ink);
+		outline-offset: 2px;
+		border-radius: 4px;
+	}
+	.atelic-ui .tabs-panel {
+		min-width: 0;
+	}
+	.atelic-ui .tabs-panel:focus-visible {
+		outline: 2px solid var(--ink);
+		outline-offset: 4px;
+		border-radius: 4px;
+	}
+	.atelic-ui .tabs:not(.is-live) > .tabs-panel[data-state="inactive"] {
+		display: none;
+	}
+	.atelic-ui .tabs-print-heading {
+		display: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .tabs-tab {
+			transition: none;
+		}
+	}
+	/* Paper has no tabs: every panel prints, each under its label. */
+	@media print {
+		.atelic-ui .tabs-list {
+			display: none;
+		}
+		.atelic-ui .tabs-panel[data-state],
+		.atelic-ui .tabs:not(.is-live) > .tabs-panel[data-state] {
+			display: block;
+			content-visibility: visible;
+		}
+		.atelic-ui .tabs-panel + .tabs-panel {
+			margin-top: 24px;
+		}
+		.atelic-ui .tabs-print-heading {
+			display: block;
+		}
+	}
+
 	/* ---- Callout: an icon in its tone beside the title, the explainer
 	   under it; boxed, it sits apart on a tinted ground ---- */
 	.atelic-ui .callout {
