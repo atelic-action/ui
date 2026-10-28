@@ -30,10 +30,17 @@ export interface TabsProps {
 const panelId = (id: string) => `${id}-panel`;
 const tabId = (id: string) => `${id}-tab`;
 
-// The list's own panel for a tab, never another list's that shares the id.
+// An attribute selector for an id; quoted, so any id is safe in it.
+const byId = (id: string) => `[id="${id.replace(/["\\]/g, "\\$&")}"]`;
+
+// An element inside this list by its id, never another list's that shares it.
+function elementIn(root: HTMLElement | null, id: string) {
+	return root?.querySelector<HTMLElement>(byId(id)) ?? null;
+}
+
+// The list's own panel for a tab: a direct child of its root.
 function panelIn(root: HTMLElement | null, id: string) {
-	const panel = document.getElementById(panelId(id));
-	return panel && root?.contains(panel) ? panel : null;
+	return root?.querySelector<HTMLElement>(`:scope > ${byId(panelId(id))}`) ?? null;
 }
 
 // The tab whose panel holds the element, if it is one of this list's.
@@ -62,10 +69,16 @@ export function Tabs({
 	headingLevel = 2,
 	className,
 }: TabsProps) {
-	const [held, setHeld] = useState(defaultId ?? tabs[0]?.id ?? "");
-	const current = selectedId ?? held;
+	// An id that names no tab falls back to the first, so a panel always shows.
+	const first = tabs[0]?.id ?? "";
+	const known = (id: string | undefined): id is string =>
+		id !== undefined && tabs.some((tab) => tab.id === id);
+	const [held, setHeld] = useState(known(defaultId) ? defaultId : first);
+	const wanted = selectedId ?? held;
+	const current = known(wanted) ? wanted : first;
 	const [live, setLive] = useState(false);
-	const [pendingScroll, setPendingScroll] = useState<string | null>(null);
+	// The element to land on once its tab is the open one.
+	const [pendingScroll, setPendingScroll] = useState<{ tab: string; target: string } | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const Heading = `h${headingLevel}` as const;
 
@@ -74,8 +87,11 @@ export function Tabs({
 		if (id !== current) onSelect?.(id);
 	};
 
-	// Opens what a hash names: a tab by its id, or the panel holding an element.
+	// Opens what a hash names: a tab by its id, or the panel holding an element,
+	// and lands on the tab row or the element. A new hash drops any landing
+	// still waiting on a tab the caller never opened.
 	const route = (hash: string) => {
+		setPendingScroll(null);
 		let name: string;
 		try {
 			name = decodeURIComponent(hash.replace(/^#/, ""));
@@ -86,13 +102,14 @@ export function Tabs({
 		const named = tabs.find((tab) => [tab.id, tabId(tab.id), panelId(tab.id)].includes(name));
 		if (named) {
 			select(named.id);
+			setPendingScroll({ tab: named.id, target: tabId(named.id) });
 			return;
 		}
-		const el = document.getElementById(name);
+		const el = elementIn(rootRef.current, name);
 		const holder = el && tabHolding(rootRef.current, tabs, el);
 		if (!holder) return;
 		select(holder);
-		setPendingScroll(name);
+		setPendingScroll({ tab: holder, target: name });
 	};
 
 	// The listeners below are bound once, so they read the latest route here.
@@ -142,18 +159,12 @@ export function Tabs({
 		}
 	}, [current, tabs]);
 
-	// Once the panel holding the hash's element shows, scroll to it.
+	// Once the tab the hash named is open, scroll to its row or its element.
 	useEffect(() => {
-		if (!pendingScroll) return;
-		const el = document.getElementById(pendingScroll);
-		if (!el) {
-			setPendingScroll(null);
-			return;
-		}
-		if (tabHolding(rootRef.current, tabs, el) !== current) return;
-		el.scrollIntoView?.();
+		if (!pendingScroll || pendingScroll.tab !== current) return;
+		elementIn(rootRef.current, pendingScroll.target)?.scrollIntoView?.();
 		setPendingScroll(null);
-	}, [current, pendingScroll, tabs]);
+	}, [current, pendingScroll]);
 
 	return (
 		<RadixTabs.Root

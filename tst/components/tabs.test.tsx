@@ -72,10 +72,66 @@ describe("Tabs", () => {
 		expect(selected()).toHaveTextContent("The Plan");
 	});
 
-	it("opens the tab a hash names by its id", () => {
+	it("opens the tab a hash names by its id, and lands on the tab row", () => {
+		const scroll = vi.fn();
+		Element.prototype.scrollIntoView = scroll;
 		window.history.replaceState(null, "", "/#read");
 		render(<Tabs tabs={tabs} ariaLabel="Sections" />);
 		expect(selected()).toHaveTextContent("The Read");
+		expect(scroll).toHaveBeenCalledTimes(1);
+		expect(scroll.mock.contexts[0]).toBe(document.getElementById("read-tab"));
+	});
+
+	it("finds its own panels when a second list on the page shares the ids", () => {
+		window.history.replaceState(null, "", "/#finding-hours");
+		render(
+			<>
+				<Tabs tabs={tabs} ariaLabel="First" />
+				<Tabs tabs={tabs} ariaLabel="Second" />
+			</>,
+		);
+		for (const name of ["First", "Second"]) {
+			const list = screen.getByRole("tablist", { name });
+			const open = list.querySelector('[role="tab"][aria-selected="true"]');
+			expect(open).toHaveTextContent("The Read");
+		}
+	});
+
+	it("falls back to the first tab when the id it is given names none", () => {
+		const { unmount } = render(<Tabs tabs={tabs} ariaLabel="Sections" defaultId="missing" />);
+		expect(selected()).toHaveTextContent("The Plan");
+		expect(document.getElementById("plan-panel")).not.toHaveAttribute("hidden");
+		unmount();
+		render(<Tabs tabs={tabs} ariaLabel="Sections" selectedId="missing" onSelect={() => {}} />);
+		expect(selected()).toHaveTextContent("The Plan");
+		expect(document.getElementById("plan-panel")).not.toHaveAttribute("hidden");
+	});
+
+	it("drops a landing the caller never honored once a new hash arrives", () => {
+		const scroll = vi.fn();
+		Element.prototype.scrollIntoView = scroll;
+		const { rerender } = render(
+			<>
+				<p id="elsewhere">Outside the tabs.</p>
+				<Tabs tabs={tabs} ariaLabel="Sections" selectedId="plan" onSelect={() => {}} />
+			</>,
+		);
+		act(() => {
+			window.history.replaceState(null, "", "/#finding-hours");
+			window.dispatchEvent(new HashChangeEvent("hashchange"));
+		});
+		act(() => {
+			window.history.replaceState(null, "", "/#elsewhere");
+			window.dispatchEvent(new HashChangeEvent("hashchange"));
+		});
+		rerender(
+			<>
+				<p id="elsewhere">Outside the tabs.</p>
+				<Tabs tabs={tabs} ariaLabel="Sections" selectedId="read" onSelect={() => {}} />
+			</>,
+		);
+		expect(selected()).toHaveTextContent("The Read");
+		expect(scroll).not.toHaveBeenCalled();
 	});
 
 	it("opens the panel holding the element a hash names on mount, and scrolls to it", () => {

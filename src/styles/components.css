@@ -336,12 +336,14 @@
 	.atelic-ui .tabs {
 		min-width: 0;
 	}
+	/* No overflow here: it would clip the focus ring and the underline. A
+	   row too long for the screen wraps instead. */
 	.atelic-ui .tabs-list {
 		display: flex;
-		gap: 24px;
+		flex-wrap: wrap;
+		gap: 4px 24px;
 		margin-bottom: 24px;
 		border-bottom: 1px solid var(--neutral-200);
-		overflow-x: auto;
 	}
 	.atelic-ui .tabs-tab {
 		flex: none;
