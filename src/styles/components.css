@@ -354,7 +354,9 @@
 		background: transparent;
 		font: 500 16px / 1.2 var(--font-sans);
 		color: var(--ink-soft);
-		white-space: nowrap;
+		/* Stays on one line until a label is wider than the row, then wraps. */
+		max-width: 100%;
+		text-align: left;
 		cursor: pointer;
 		transition:
 			color 150ms ease,
