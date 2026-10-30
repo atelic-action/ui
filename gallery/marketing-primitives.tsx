@@ -1,7 +1,8 @@
-import { ImageFrame, ProseBlocks, QuoteCard, StarRow, TickList } from "../src/primitives";
+import { Hammer, MapPin, Wheat } from "lucide-react";
+import { Bubble, ImageFrame, ProseBlocks, QuoteCard, StarRow, TickList } from "../src/primitives";
 import { Band, MarketingGroup, Specimen } from "./marketing-parts";
 
-/** The five primitives that came with the marketing sections. */
+/** The primitives that came with the marketing sections, and the bubble set beside a heading. */
 export function MarketingPrimitives() {
 	return (
 		<MarketingGroup
@@ -60,6 +61,43 @@ export function MarketingPrimitives() {
 						<StarRow rating={5} />
 						<StarRow rating={4} size={20} />
 						<StarRow rating={3} size={24} />
+					</div>
+				</Band>
+			</Specimen>
+
+			<Specimen
+				id="bubble"
+				name="Bubble"
+				lead="A round tile holding an icon or a step number, set beside a heading; given both, the icon sits inside and the number rides a badge on the rim. Hidden from assistive tech, so the heading carries the meaning."
+			>
+				<Band>
+					<div className="mg-two">
+						<div className="gallery-row">
+							<Bubble icon={<Hammer size={22} strokeWidth={1.75} />} />
+							<Bubble num="01" />
+							<Bubble num="02" />
+							<Bubble num="03" />
+							<Bubble num="04" />
+						</div>
+						<div className="gallery-row">
+							<Bubble size="sm" icon={<Wheat size={16} strokeWidth={1.75} />} />
+							<Bubble icon={<Wheat size={22} strokeWidth={1.75} />} />
+							<Bubble size="lg" icon={<Wheat size={28} strokeWidth={1.75} />} />
+							<Bubble size="sm" num="01" />
+							<Bubble num="01" />
+							<Bubble size="lg" num="01" />
+						</div>
+						<div className="gallery-row">
+							<Bubble size="sm" icon={<Hammer size={16} strokeWidth={1.75} />} num="01" />
+							<Bubble icon={<Wheat size={22} strokeWidth={1.75} />} num="02" />
+							<Bubble size="lg" icon={<MapPin size={28} strokeWidth={1.75} />} num="03" />
+						</div>
+					</div>
+					<div className="gallery-row gallery-dark" style={{ marginTop: 22 }}>
+						<Bubble onDark icon={<MapPin size={22} strokeWidth={1.75} />} />
+						<Bubble onDark num="01" />
+						<Bubble onDark size="lg" num="02" />
+						<Bubble onDark icon={<Hammer size={22} strokeWidth={1.75} />} num="03" />
 					</div>
 				</Band>
 			</Specimen>

@@ -99,7 +99,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `SocialStrip` | `@atelic-action/ui/sections` | A static grid of the business's social photos linking to the profile, never a live embed | [#social-strip](https://ui.atelic.me/#social-strip) |
 | `SplitSection` | `@atelic-action/ui/sections` | The two column band: copy beside copy, or media beside copy | [#split-section](https://ui.atelic.me/#split-section) |
 | `SiteConfig` and its member types, `formatClock`, `formatHoursRange`, `isClosed`, `isHoneypotFilled`, `trackEvent` | `@atelic-action/ui/sections` | The site contract the sections read, and the hours, honeypot, and lead event helpers | none |
-| `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a framed image, prose blocks (headings at two levels, paragraphs, lists, and figures: small captioned tiles in rows, an image or a silent looping clip played only while on screen, each opening large in a dialog), a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
+| `Bubble`, `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a round tile holding an icon or a step number, a framed image, prose blocks (headings at two levels, paragraphs, lists, and figures: small captioned tiles in rows, an image or a silent looping clip played only while on screen, each opening large in a dialog), a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
 | `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, mounting the base path provider | none |
 | `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
 | `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing/base-path` | The same four pure helpers, built, for what Node runs (a Playwright spec, a script) | none |
@@ -235,6 +235,8 @@ import { Button, SectionHeading } from "@atelic-action/ui/primitives";
 ```
 
 `Button` is an anchor when it has an `href` and a real button otherwise. It puts the base path from `BasePathProvider` on a root path `href` (0.19.0), so a site served under a prefix needs no wrapper; with no provider above it the `href` renders as given. Its arrow is hidden from the name a screen reader hears.
+
+`Bubble` (3.11.0) is the round tile set beside a heading or a numbered step, holding either a lucide icon the caller sizes (`icon`) or a short mono index (`num`, such as "01"); given both, the icon sits inside and the number rides a small badge on the lower right rim, the way an unread count sits on an app icon. It comes in three sizes (`sm`, `md`, `lg`: 36, 48, and 60 pixels across, `md` by default) and lifts its fill for a dark band with `onDark`, the way `Chip` does. It is decoration and wears `aria-hidden`, so the heading beside it carries the meaning, the step's number included.
 
 ## The Access Gate
 
@@ -512,7 +514,7 @@ export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath"
 | `BlogPost` | One article: back link, title, byline and dateline, body |
 | `LegalPage` | A legal document from data, its last revised date first |
 
-The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, and `TickList`. `StarRow` stays beside `StarRating` on purpose: it draws only the filled stars a review shows, in whole steps and the brand color, named "4 out of 5 stars", where `StarRating` draws the whole scale with outlines in half steps and can take a rating.
+The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, and `TickList`, with `Bubble` (see Primitives) shown beside them in the gallery. `StarRow` stays beside `StarRating` on purpose: it draws only the filled stars a review shows, in whole steps and the brand color, named "4 out of 5 stars", where `StarRating` draws the whole scale with outlines in half steps and can take a rating.
 
 The entry also exports the helpers the sections use, for a site's own code: `formatClock`, `formatHoursRange`, and `isClosed` for hours, `isHoneypotFilled`, and `trackEvent`.
 
