@@ -23,6 +23,12 @@ describe("Bubble", () => {
 		expect(container.querySelector(".bubble-badge")).toBeNull();
 	});
 
+	it("counts a false icon as none, so the number sits in the middle", () => {
+		const { container } = render(<Bubble icon={false} num="05" />);
+		expect(screen.getByText("05")).toHaveClass("bubble-num");
+		expect(container.querySelector(".bubble-badge")).toBeNull();
+	});
+
 	it("wears its size class, the dark form, and any extra class", () => {
 		const { container } = render(<Bubble num="03" size="lg" onDark className="step" />);
 		expect(container.querySelector(".bubble")).toHaveClass("bubble-lg", "on-dark", "step");
