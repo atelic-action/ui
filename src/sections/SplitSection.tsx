@@ -4,10 +4,13 @@ export interface SplitSectionProps {
 	left: ReactNode;
 	right: ReactNode;
 	/**
-	 * Column proportions: "even" (1/1), or "narrow-first" (0.9/1.1,
-	 * the media-plus-copy pattern).
+	 * Column proportions from 920px up; below that every ratio stacks.
+	 * "even" (1/1); "narrow-first" (0.9/1.1, a looser media plus copy);
+	 * or "media", a fixed 420px media column and the gap a card row uses,
+	 * so a photo beside copy lines up with a case study entry above it,
+	 * with an `ImageFrame` in it held to the column's left edge.
 	 */
-	ratio?: "even" | "narrow-first";
+	ratio?: "even" | "narrow-first" | "media";
 	align?: "start" | "center";
 	/** Section background band. */
 	surface?: "default" | "alt";
