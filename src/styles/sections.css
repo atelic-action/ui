@@ -2631,16 +2631,19 @@
 			grid-template-columns: 0.9fr 1.1fr;
 			gap: 72px;
 		}
-		/* The media column and the gap a card row uses, so a photo beside copy
-		   lines up with a case study entry above it. */
+	}
+	/* Two columns from 761px, where a card row does, so the photo lines up. */
+	@media (min-width: 761px) {
+		/* The media column and the gap a card row uses. */
 		.atelic-ui .split.ratio-media {
-			grid-template-columns: minmax(0, 420px) 1fr;
+			grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
 			gap: clamp(24px, 4vw, 44px);
 		}
-	}
-	/* The frame hugs the media column's left edge rather than centering. */
-	.atelic-ui .split.ratio-media .imgframe {
-		margin-inline: 0;
+		/* The frame hugs the media column's left edge rather than centering;
+		   stacked, it keeps the primitive's centering. */
+		.atelic-ui .split.ratio-media .imgframe {
+			margin-inline: 0;
+		}
 	}
 	.atelic-ui .split.align-start {
 		align-items: start;
