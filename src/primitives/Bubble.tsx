@@ -27,7 +27,7 @@ export function Bubble({ icon, num, size = "md", onDark = false, className }: Bu
 	const classes = ["bubble", `bubble-${size}`, onDark && "on-dark", className]
 		.filter(Boolean)
 		.join(" ");
-	const hasIcon = icon !== undefined && icon !== null;
+	const hasIcon = icon !== undefined && icon !== null && icon !== false;
 	const hasNum = num !== undefined && num !== "";
 	return (
 		<span className={classes} aria-hidden="true">

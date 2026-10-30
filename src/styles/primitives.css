@@ -148,7 +148,7 @@
 		padding: 0 0.4em;
 		border-radius: var(--radius-pill);
 		background: var(--primary);
-		color: var(--surface);
+		color: #fff;
 		box-shadow: 0 0 0 2px var(--card);
 		font-family: var(--font-mono);
 		font-size: 0.62rem;
