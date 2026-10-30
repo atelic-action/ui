@@ -1,4 +1,4 @@
-import { QuoteCard } from "../src/primitives";
+import { ImageFrame, QuoteCard } from "../src/primitives";
 import {
 	CTABanner,
 	CTASection,
@@ -76,7 +76,7 @@ export function MarketingOpeners() {
 			<Specimen
 				id="split-section"
 				name="SplitSection"
-				lead="The recurring two column band: copy beside copy, or media beside copy."
+				lead="The recurring two column band: copy beside copy, or media beside copy. Shown at the narrow first ratio, then at the media ratio, whose fixed 420px shot column and card row gap line a photo up with a case study entry above it."
 			>
 				<SplitSection
 					ratio="narrow-first"
@@ -95,6 +95,25 @@ export function MarketingOpeners() {
 							quote="We would rather sell out by two than sell yesterday's bread."
 							by="Ines Calder, head baker"
 						/>
+					}
+				/>
+				<SplitSection
+					ratio="media"
+					surface="alt"
+					left={
+						<ImageFrame
+							placeholder="Shot brief: Ines at the bench, shaping the first loaves"
+							aspectRatio="4/3"
+						/>
+					}
+					right={
+						<>
+							<h2>The baker behind the bench.</h2>
+							<p className="lead">
+								Ines opened the shop with one oven and a starter she carried across the country, and
+								she still shapes the first loaves of every morning herself.
+							</p>
+						</>
 					}
 				/>
 			</Specimen>
