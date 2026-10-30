@@ -4,7 +4,7 @@ export interface SplitSectionProps {
 	left: ReactNode;
 	right: ReactNode;
 	/**
-	 * Column proportions from 920px up; below that every ratio stacks.
+	 * Column proportions from 920px up (`media` from 761px, where a card row splits); below that every ratio stacks.
 	 * "even" (1/1); "narrow-first" (0.9/1.1, a looser media plus copy);
 	 * or "media", a fixed 420px media column and the gap a card row uses,
 	 * so a photo beside copy lines up with a case study entry above it,

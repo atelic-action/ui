@@ -481,7 +481,7 @@ export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath"
 | `Hero` | The home page opener: a full bleed image (or the token gradient), a headline with a serif accent, a pair of actions, trust figures, and a scroll cue |
 | `PageHero` | The interior page opener on the alternate band; children sit under the lead |
 | `LogoMarquee` | A dark band of chips scrolling without end: credentials, clients, or press |
-| `SplitSection` | The two column band: copy beside copy, or media beside copy. `ratio` is `even`, `narrow-first`, or `media`, a fixed 420px shot column and the gap a card row uses, so a photo beside copy lines up with a case study entry above it; every ratio stacks below 920px |
+| `SplitSection` | The two column band: copy beside copy, or media beside copy. `ratio` is `even`, `narrow-first`, or `media`, a fixed 420px shot column and the gap a card row uses, so a photo beside copy lines up with a case study entry above it; `even` and `narrow-first` stack below 920px, `media` below 761px |
 | `PricingBand` | A brand colored band with the price in a card beside it, informational by design |
 | `MediaBand` | A plain full bleed image band, cropped from the center |
 | `CTABanner` | A mid page banner behind a directional wash, with the token gradient before any photography |
