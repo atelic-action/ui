@@ -2570,6 +2570,7 @@
 	   quiet idiom, set small on its own line of the attribution. */
 	.atelic-ui .rvc-source {
 		display: inline-flex;
+		align-self: flex-start;
 		align-items: center;
 		gap: 3px;
 		margin-top: 6px;
@@ -2587,6 +2588,7 @@
 		text-decoration-color: currentColor;
 	}
 	.atelic-ui .rvc-arrow:focus-visible,
+	.atelic-ui .rvc-source:focus-visible,
 	.atelic-ui .rvc-dot:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 3px;

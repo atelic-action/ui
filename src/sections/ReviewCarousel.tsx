@@ -105,7 +105,10 @@ export function ReviewCarousel({
 
 	// Left/right step the carousel whenever focus sits on one of its
 	// controls, the keyboard convention for a paged region.
+	// A link inside a slide keeps its own arrow keys: stepping from it would
+	// hide the slide that holds focus.
 	function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+		if ((event.target as HTMLElement).closest?.("a")) return;
 		if (event.key === "ArrowLeft") {
 			event.preventDefault();
 			go(index - 1);
@@ -191,7 +194,6 @@ export function ReviewCarousel({
 											className="rvc-source"
 											href={item.sourceURL}
 											{...newTabProps(item.sourceURL, true)}
-											aria-label={`${sourceLabel}, opens the review at its source in a new tab`}
 										>
 											{sourceLabel}
 											<ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" />

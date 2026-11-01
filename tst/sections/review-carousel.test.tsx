@@ -148,7 +148,7 @@ describe("ReviewCarousel", () => {
 			/>,
 		);
 		const link = screen.getByRole("link", {
-			name: "View on Google, opens the review at its source in a new tab",
+			name: "View on Google",
 		});
 		expect(link).toHaveAttribute("href", "https://example.com/reviews/1");
 		expect(link).toHaveAttribute("target", "_blank");
@@ -165,7 +165,7 @@ describe("ReviewCarousel", () => {
 				items={[{ ...items[0], sourceURL: "https://example.com/review" }]}
 			/>,
 		);
-		expect(screen.getByRole("link", { name: /^View review,/ })).toHaveTextContent("View review");
+		expect(screen.getByRole("link", { name: /^View review$/ })).toHaveTextContent("View review");
 	});
 
 	it("greys out the arrows when there is only one review", () => {
