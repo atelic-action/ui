@@ -217,6 +217,10 @@
 		padding-left: 16px;
 		border-left: 1px solid var(--neutral-200);
 	}
+	.atelic-ui .stat-row.is-quiet .stat-figure {
+		align-items: baseline;
+		gap: 4px;
+	}
 	.atelic-ui .stat-row.is-quiet .stat .num {
 		align-items: baseline;
 		gap: 4px;
