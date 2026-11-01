@@ -52,6 +52,7 @@ describe("StatRow: outOf and change", () => {
 			<StatRow stats={[{ value: "5", change: { direction: "flat", text: "0" }, label: "Rank" }]} />,
 		);
 		expect(container.querySelector(".stat-change")).toHaveClass("is-flat");
+		expect(container.querySelector(".stat-change")).toHaveAttribute("data-tone", "muted");
 		expect(screen.getByRole("img", { name: "Unchanged" })).toBeInTheDocument();
 	});
 });
