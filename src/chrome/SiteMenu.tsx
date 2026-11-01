@@ -104,15 +104,23 @@ export function SiteMenu({
 function ContactBlock({ contact: { phone, email, address } }: { contact: MenuContact }) {
 	return (
 		<div className="mm-contact">
+			{/* The number and the address are the two things a phone can act on, so
+			    each is a real link: a tel link dials, a mailto opens mail. Protocol
+			    links never open a new tab (rule 17). WAMM's menu shipped the number
+			    as plain text, which the 2026-11-01 walk read as friction. */}
 			{phone && (
 				<>
-					CALL / TEXT&nbsp;&nbsp;{phone.display}
+					<a className="mm-contact-link" href={`tel:${phone.e164}`}>
+						CALL / TEXT&nbsp;&nbsp;{phone.display}
+					</a>
 					<br />
 				</>
 			)}
 			{email && (
 				<>
-					{email}
+					<a className="mm-contact-link" href={`mailto:${email}`}>
+						{email}
+					</a>
 					<br />
 				</>
 			)}
