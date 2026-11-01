@@ -94,12 +94,13 @@ export function StatRow({ stats, variant = "loud", className }: StatRowProps) {
 					// biome-ignore lint/suspicious/noArrayIndexKey: stats are static content in a fixed order
 					<div className="stat" key={i} data-tone={stat.tone}>
 						<div className="num">
-							{Trend && stat.trend && (
-								<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
-							)}
-							{/* The figure, its denominator, and its unit are one unbreakable
-							    group; only the change may drop to the next line on a phone. */}
+							{/* The trend arrow, the figure, its denominator, and its unit are one
+							    unbreakable group; only the change may drop to the next line on a
+							    phone. */}
 							<span className="stat-figure">
+								{Trend && stat.trend && (
+									<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
+								)}
 								{stat.value}
 								{stat.outOf != null && <span className="stat-out-of">/{stat.outOf}</span>}
 								{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
