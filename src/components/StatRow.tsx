@@ -109,7 +109,9 @@ export function StatRow({ stats, variant = "loud", className }: StatRowProps) {
 									]
 										.filter(Boolean)
 										.join(" ")}
-									data-tone={stat.change.tone ?? "good"}
+									data-tone={
+										stat.change.tone ?? (stat.change.direction === "up" ? "good" : "muted")
+									}
 								>
 									<Triangle
 										size={10}
