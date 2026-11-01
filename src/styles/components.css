@@ -95,6 +95,7 @@
 	}
 	.atelic-ui .stat .num {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.12em;
 		font-size: clamp(2.2rem, 5vw, 3rem);
@@ -103,6 +104,14 @@
 		color: var(--tone, var(--ui-primary, var(--primary)));
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
+	}
+	/* The figure with its denominator and unit never breaks; the change
+	   beside it is the one piece that may wrap under it on a narrow phone. */
+	.atelic-ui .stat-figure {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.12em;
+		white-space: nowrap;
 	}
 	.atelic-ui .stat-row.is-center .stat .num {
 		justify-content: center;
@@ -160,6 +169,37 @@
 		letter-spacing: 0;
 		color: var(--neutral-500);
 	}
+	/* A share's denominator: small and muted right after the figure, "6/7"
+	   with the 6 big. */
+	.atelic-ui .stat-out-of {
+		align-self: flex-end;
+		margin-bottom: 0.08em;
+		font-size: 0.42em;
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--neutral-500);
+	}
+	/* The change to the right of the figure: a filled triangle for the
+	   direction (pointing down for a fall) and how far it moved, small, in
+	   the tone the news deserves. */
+	.atelic-ui .stat-change {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25em;
+		align-self: flex-end;
+		margin-left: 0.4em;
+		margin-bottom: 0.14em;
+		font-size: 0.34em;
+		font-weight: 700;
+		letter-spacing: 0;
+		color: var(--tone, var(--neutral-500));
+	}
+	.atelic-ui .stat-change.is-down svg {
+		transform: rotate(180deg);
+	}
+	.atelic-ui .stat-change.is-flat svg {
+		transform: rotate(90deg);
+	}
 
 	/* ---- StatRow, quiet: a glance row for a working page. A light figure in
 	   the text color over a small capitalized label, the stats divided by a
@@ -177,6 +217,10 @@
 		padding-left: 16px;
 		border-left: 1px solid var(--neutral-200);
 	}
+	.atelic-ui .stat-row.is-quiet .stat-figure {
+		align-items: baseline;
+		gap: 4px;
+	}
 	.atelic-ui .stat-row.is-quiet .stat .num {
 		align-items: baseline;
 		gap: 4px;
@@ -185,6 +229,14 @@
 		font-variant-numeric: tabular-nums;
 		letter-spacing: -0.02em;
 		color: var(--tone, var(--ink));
+	}
+	/* On the quiet row the denominator and the change sit on the figure's
+	   baseline at a legible size, since the figure itself is small. */
+	.atelic-ui .stat-row.is-quiet .stat-out-of,
+	.atelic-ui .stat-row.is-quiet .stat-change {
+		align-self: baseline;
+		margin-bottom: 0;
+		font-size: 0.55em;
 	}
 	.atelic-ui .stat-row.is-quiet .stat-unit {
 		margin-left: 0;

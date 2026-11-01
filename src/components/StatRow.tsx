@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Triangle } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Tone } from "./tone";
 
@@ -19,11 +19,33 @@ export interface StatDelta {
 	tone?: Tone;
 }
 
+/** The change beside a figure: a small triangle and how far it moved, to the right of the figure. */
+export interface StatChange {
+	direction: StatDirection;
+	/** How far it moved, e.g. "+26", "3.8 s". */
+	text: string;
+	/** Whether the move is good or bad news. Defaults to good for a rise and muted otherwise. */
+	tone?: Tone;
+}
+
 export interface StatItem {
 	/** The big figure, e.g. "$199", "3,948", "23%"; may embed an inline glyph. */
 	value: ReactNode;
 	/** The figure's unit, set small after it on the same baseline, e.g. "mi". */
 	unit?: ReactNode;
+	/**
+	 * The denominator of a figure that is a share, set small and muted after
+	 * it: a `value` of "6" with an `outOf` of "7" reads as a big 6 and a small
+	 * /7, so the number that matters is the one the eye lands on.
+	 */
+	outOf?: ReactNode;
+	/**
+	 * The change, set small to the right of the figure with a triangle for its
+	 * direction: "100 ▲ +26". The figure stays the current reading; the earlier
+	 * one is not shown. For a comparison with its basis spelled out, use
+	 * `deltas`.
+	 */
+	change?: StatChange;
 	/** An arrow before the figure, when the figure is itself a change. */
 	trend?: StatDirection;
 	/** What the figure counts. */
@@ -72,11 +94,39 @@ export function StatRow({ stats, variant = "loud", className }: StatRowProps) {
 					// biome-ignore lint/suspicious/noArrayIndexKey: stats are static content in a fixed order
 					<div className="stat" key={i} data-tone={stat.tone}>
 						<div className="num">
-							{Trend && stat.trend && (
-								<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
+							{/* The trend arrow, the figure, its denominator, and its unit are one
+							    unbreakable group; only the change may drop to the next line on a
+							    phone. */}
+							<span className="stat-figure">
+								{Trend && stat.trend && (
+									<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
+								)}
+								{stat.value}
+								{stat.outOf != null && <span className="stat-out-of">/{stat.outOf}</span>}
+								{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
+							</span>
+							{stat.change && (
+								<span
+									className={[
+										"stat-change",
+										stat.change.direction === "down" && "is-down",
+										stat.change.direction === "flat" && "is-flat",
+									]
+										.filter(Boolean)
+										.join(" ")}
+									data-tone={
+										stat.change.tone ?? (stat.change.direction === "up" ? "good" : "muted")
+									}
+								>
+									<Triangle
+										size={10}
+										fill="currentColor"
+										role="img"
+										aria-label={spoken[stat.change.direction]}
+									/>
+									{stat.change.text}
+								</span>
 							)}
-							{stat.value}
-							{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
 						</div>
 						{stat.deltas?.map((delta) => {
 							const Icon = arrow[delta.direction];

@@ -26,7 +26,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ReportCard` | `@atelic-action/ui/components` | A name, a grade, and a line per row, in labeled groups, each row a link to its section | [#report-card](https://ui.atelic.me/#report-card) |
 | `reportCardLabels`, `ReportCardLabels` | `@atelic-action/ui/components` | The words a screen reader hears around a report card's letters by default, and their type | none |
 | `Rank` | `@atelic-action/ui/components` | A figure with its badge in a tone, for a table cell: a rank, a place in an answer, or a dash | [#rank](https://ui.atelic.me/#rank) |
-| `StatRow` | `@atelic-action/ui/components` | A row of large figures with periods, deltas, and trends | [#stat-row](https://ui.atelic.me/#stat-row) |
+| `StatRow` | `@atelic-action/ui/components` | A row of large figures with periods, deltas, and trends; a share's denominator set small after the figure (`outOf`) and a change set small beside it with a triangle (`change`), 3.14.0 | [#stat-row](https://ui.atelic.me/#stat-row) |
 | `Callout` | `@atelic-action/ui/components` | One finding: an icon in its tone, the title, the explainer | [#callout](https://ui.atelic.me/#callout) |
 | `Disclosure` | `@atelic-action/ui/components` | A section that folds: controlled, an app's card; uncontrolled, a native details fold that prints open | [#disclosure](https://ui.atelic.me/#disclosure) |
 | `Tabs`, `TabsItem` | `@atelic-action/ui/components` | Panels behind a row of tabs, every panel kept in the page: a hash opens the tab or the panel holding what it names, and it prints every panel under its label | [#tabs](https://ui.atelic.me/#tabs) |
@@ -67,7 +67,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `BlogPost` | `@atelic-action/ui/sections` | One article: back link, title, byline and dateline, body | [#blog-post](https://ui.atelic.me/#blog-post) |
 | `CTABanner` | `@atelic-action/ui/sections` | A mid page banner behind a directional wash, with the token gradient before any photography | [#c-t-a-banner](https://ui.atelic.me/#c-t-a-banner) |
 | `CTASection` | `@atelic-action/ui/sections` | The standard closer: the site's own primary action and an optional ghost second | [#c-t-a-section](https://ui.atelic.me/#c-t-a-section) |
-| `ComparisonTable` | `@atelic-action/ui/sections` | A graded before and after that scrolls sideways on a phone rather than reflowing | [#comparison-table](https://ui.atelic.me/#comparison-table) |
+| `ComparisonTable` | `@atelic-action/ui/sections` | A graded before and after that scrolls sideways on a phone rather than reflowing; a row's label can link to what explains it (`stageHref`, 3.14.0) | [#comparison-table](https://ui.atelic.me/#comparison-table) |
 | `ContactForm` | `@atelic-action/ui/sections` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event | [#contact-form](https://ui.atelic.me/#contact-form) |
 | `ContactInfoCard` | `@atelic-action/ui/sections` | A dark card of direct contact rows: call, email, visit, portal | [#contact-info-card](https://ui.atelic.me/#contact-info-card) |
 | `CredentialList` | `@atelic-action/ui/sections` | Credential cards with a mono code before each | [#credential-list](https://ui.atelic.me/#credential-list) |

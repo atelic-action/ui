@@ -256,6 +256,21 @@
 		color: var(--ink);
 		font-weight: 500;
 	}
+	/* A linked row label reads as the label, with a quiet underline for the
+	   link, so the column of names stays a column of names. */
+	.atelic-ui .cmp-stage-link {
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: color-mix(in srgb, var(--ink) 25%, transparent);
+		text-underline-offset: 0.18em;
+	}
+	.atelic-ui .cmp-stage-link:hover {
+		text-decoration-color: var(--ui-primary, var(--primary));
+	}
+	.atelic-ui .cmp-stage-link:focus-visible {
+		outline: 2px solid var(--ui-primary, var(--primary));
+		outline-offset: 2px;
+	}
 	.atelic-ui .cmp-table tbody td {
 		color: var(--ink-soft);
 	}
