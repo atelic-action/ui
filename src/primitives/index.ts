@@ -1,5 +1,6 @@
 export { Bubble, type BubbleProps } from "./Bubble";
 export { Button, type ButtonProps } from "./Button";
+export { type CallToActionProps, PrimaryButton, SecondaryButton } from "./CallToAction";
 export { Chip, type ChipProps } from "./Chip";
 export { Eyebrow, type EyebrowProps } from "./Eyebrow";
 export { ImageFrame, type ImageFrameProps } from "./ImageFrame";
