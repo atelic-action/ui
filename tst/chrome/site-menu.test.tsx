@@ -156,6 +156,7 @@ describe("SiteMenu", () => {
 		expect(tel).not.toHaveAttribute("target");
 		const mail = container.querySelector(".mm-contact a[href^='mailto:']");
 		expect(mail).toHaveAttribute("href", `mailto:${email}`);
+		expect(mail).not.toHaveAttribute("target");
 		unmount();
 
 		const without = render(<SiteMenu open onClose={() => {}} links={links} />);
