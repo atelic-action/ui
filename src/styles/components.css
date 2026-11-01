@@ -95,6 +95,7 @@
 	}
 	.atelic-ui .stat .num {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.12em;
 		font-size: clamp(2.2rem, 5vw, 3rem);
