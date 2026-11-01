@@ -24,7 +24,7 @@ export interface StatChange {
 	direction: StatDirection;
 	/** How far it moved, e.g. "+26", "3.8 s". */
 	text: string;
-	/** Whether the move is good or bad news. Defaults to good. */
+	/** Whether the move is good or bad news. Defaults to good for a rise and muted otherwise. */
 	tone?: Tone;
 }
 

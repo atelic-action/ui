@@ -38,6 +38,7 @@ export {
 export { StackedBar, type StackedBarProps, type StackedBarSegment } from "./StackedBar";
 export { describeStarRating, StarRating, type StarRatingProps } from "./StarRating";
 export {
+	type StatChange,
 	type StatDelta,
 	type StatDirection,
 	type StatItem,
