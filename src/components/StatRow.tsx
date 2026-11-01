@@ -97,9 +97,13 @@ export function StatRow({ stats, variant = "loud", className }: StatRowProps) {
 							{Trend && stat.trend && (
 								<Trend className="stat-trend" role="img" aria-label={spoken[stat.trend]} />
 							)}
-							{stat.value}
-							{stat.outOf != null && <span className="stat-out-of">/{stat.outOf}</span>}
-							{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
+							{/* The figure, its denominator, and its unit are one unbreakable
+							    group; only the change may drop to the next line on a phone. */}
+							<span className="stat-figure">
+								{stat.value}
+								{stat.outOf != null && <span className="stat-out-of">/{stat.outOf}</span>}
+								{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
+							</span>
 							{stat.change && (
 								<span
 									className={[

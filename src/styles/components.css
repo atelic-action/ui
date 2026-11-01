@@ -105,6 +105,14 @@
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
+	/* The figure with its denominator and unit never breaks; the change
+	   beside it is the one piece that may wrap under it on a narrow phone. */
+	.atelic-ui .stat-figure {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.12em;
+		white-space: nowrap;
+	}
 	.atelic-ui .stat-row.is-center .stat .num {
 		justify-content: center;
 	}
