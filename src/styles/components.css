@@ -217,6 +217,14 @@
 		letter-spacing: -0.02em;
 		color: var(--tone, var(--ink));
 	}
+	/* On the quiet row the denominator and the change sit on the figure's
+	   baseline at a legible size, since the figure itself is small. */
+	.atelic-ui .stat-row.is-quiet .stat-out-of,
+	.atelic-ui .stat-row.is-quiet .stat-change {
+		align-self: baseline;
+		margin-bottom: 0;
+		font-size: 0.55em;
+	}
 	.atelic-ui .stat-row.is-quiet .stat-unit {
 		margin-left: 0;
 		font: 500 12px / 1 var(--font-mono);
