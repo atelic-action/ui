@@ -2558,7 +2558,37 @@
 		background: var(--surface-alt);
 		border-color: var(--neutral-300);
 	}
+	/* One review: the arrows stay, greyed, with nothing to do. */
+	.atelic-ui .rvc-arrow:disabled,
+	.atelic-ui .rvc-arrow:disabled:hover {
+		opacity: 0.4;
+		cursor: default;
+		background: var(--card);
+		border-color: var(--neutral-200);
+	}
+	/* The link under a review to where it was written: the caption link's
+	   quiet idiom, set small on its own line of the attribution. */
+	.atelic-ui .rvc-source {
+		display: inline-flex;
+		align-self: flex-start;
+		align-items: center;
+		gap: 3px;
+		margin-top: 6px;
+		font-size: 0.85rem;
+		color: var(--ink-soft);
+		text-decoration: underline;
+		text-decoration-color: var(--neutral-300);
+		text-underline-offset: 3px;
+		transition:
+			color 0.2s ease,
+			text-decoration-color 0.2s ease;
+	}
+	.atelic-ui .rvc-source:hover {
+		color: var(--primary);
+		text-decoration-color: currentColor;
+	}
 	.atelic-ui .rvc-arrow:focus-visible,
+	.atelic-ui .rvc-source:focus-visible,
 	.atelic-ui .rvc-dot:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 3px;
