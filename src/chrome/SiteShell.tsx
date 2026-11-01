@@ -116,7 +116,9 @@ export function SiteShell({
 				<main id="main" className={heroNav ? undefined : "clears-nav"}>
 					{children}
 				</main>
-				{stickyCTA && <StickyCTABar primaryCTA={cta} phone={site.phone} />}
+				{/* An interior page's first screen has no booking button of its own, so
+				    the bar is there from the top; the hero home page keeps the slide in. */}
+				{stickyCTA && <StickyCTABar primaryCTA={cta} phone={site.phone} fromTop={!heroNav} />}
 				{footer ? (
 					<Footer
 						brand={brand}

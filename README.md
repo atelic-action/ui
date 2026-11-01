@@ -14,7 +14,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `SiteMenu` | `@atelic-action/ui/chrome` | The phone's full screen menu, on a native modal dialog | [#site-menu](https://ui.atelic.me/#site-menu) |
 | `Footer` | `@atelic-action/ui/chrome` | The site's foot: brand column, nav, address, hours, copyright, credit band | [#footer](https://ui.atelic.me/#footer) |
 | `CreditBar` | `@atelic-action/ui/chrome` | The developer credit band | [#credit-bar](https://ui.atelic.me/#credit-bar) |
-| `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
+| `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut, there from the top on an interior page (`fromTop`) and sliding in after a scroll on a hero page | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
 | `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
 | `SkipLink` | `@atelic-action/ui/chrome` | The keyboard user's jump past the chrome | [#skip-link](https://ui.atelic.me/#skip-link) |
 | `Brand`, `BrandLogo`, `CallToAction`, `HoursRow`, `MenuContact`, `NavLink`, `Phone`, `PostalAddress`, `SiteLink`, `SocialLink`, `PageStop` | `@atelic-action/ui/chrome` | The shapes the chrome renders from (types) | none |

@@ -33,6 +33,13 @@ describe("StickyCTABar", () => {
 		expect(screen.queryByRole("link", { name: "Call us" })).toBeNull();
 	});
 
+	it("is there from the top when asked, with no scroll", () => {
+		const { container } = render(<StickyCTABar primaryCTA={primaryCTA} fromTop />);
+		const bar = container.querySelector(".sticky-cta");
+		expect(bar).toHaveClass("show");
+		expect(bar).not.toHaveAttribute("inert");
+	});
+
 	it("slides in once the page scrolls past the threshold", () => {
 		const { container } = render(<StickyCTABar primaryCTA={primaryCTA} threshold={300} />);
 		const bar = container.querySelector(".sticky-cta");
