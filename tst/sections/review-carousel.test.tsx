@@ -144,13 +144,13 @@ describe("ReviewCarousel", () => {
 			<ReviewCarousel
 				score="5.0"
 				sourceLabel="View on Google"
-				items={[{ ...items[0], sourceURL: "https://maps.app.goo.gl/example" }, items[1]]}
+				items={[{ ...items[0], sourceURL: "https://example.com/reviews/1" }, items[1]]}
 			/>,
 		);
 		const link = screen.getByRole("link", {
 			name: "View on Google, opens the review at its source in a new tab",
 		});
-		expect(link).toHaveAttribute("href", "https://maps.app.goo.gl/example");
+		expect(link).toHaveAttribute("href", "https://example.com/reviews/1");
 		expect(link).toHaveAttribute("target", "_blank");
 		expect(link).toHaveAttribute("rel", "noopener");
 		expect(link).toHaveClass("rvc-source");
