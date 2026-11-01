@@ -10,25 +10,38 @@ export interface StickyCTABarProps {
 	phone?: Phone;
 	/** Scroll depth in pixels before the bar slides in. Defaults to 520. */
 	threshold?: number;
+	/**
+	 * Show the bar from the first paint, with no scroll. For a page whose
+	 * first screen carries no booking button of its own (every page but the
+	 * hero home page), so a lead action is one tap away before anyone scrolls.
+	 * The home page keeps the slide in, since its hero already holds the button
+	 * and a bar from the top would put two of them on one screen.
+	 */
+	fromTop?: boolean;
 	/** The call shortcut's accessible name. Defaults to "Call us". */
 	callLabel?: string;
 }
 
-/** The phone only bottom bar: the primary CTA and a call shortcut, sliding in once scrolled. */
+/** The phone only bottom bar: the primary CTA and a call shortcut, sliding in once scrolled, or there from the top. */
 export function StickyCTABar({
 	primaryCTA,
 	phone,
 	threshold = 520,
+	fromTop = false,
 	callLabel = "Call us",
 }: StickyCTABarProps) {
-	const [show, setShow] = useState(false);
+	const [show, setShow] = useState(fromTop);
 
 	useEffect(() => {
+		if (fromTop) {
+			setShow(true);
+			return;
+		}
 		const onScroll = () => setShow(window.scrollY > threshold);
 		window.addEventListener("scroll", onScroll, { passive: true });
 		onScroll();
 		return () => window.removeEventListener("scroll", onScroll);
-	}, [threshold]);
+	}, [threshold, fromTop]);
 
 	return (
 		// Inert while offscreen, so its links take no keyboard focus before it slides in.

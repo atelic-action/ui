@@ -82,6 +82,16 @@ describe("SiteShell", () => {
 		const shown = renderShell();
 		expect(shown.container.querySelector(".sticky-cta")).not.toBeNull();
 		shown.unmount();
+	});
+
+	it("shows the bar from the top on an interior page, and waits for a scroll on a hero page", () => {
+		const interior = renderShell();
+		expect(interior.container.querySelector(".sticky-cta")).toHaveClass("show");
+		interior.unmount();
+
+		const hero = renderShell({ heroNav: true });
+		expect(hero.container.querySelector(".sticky-cta")).not.toHaveClass("show");
+		hero.unmount();
 
 		const hidden = renderShell({ stickyCTA: false });
 		expect(hidden.container.querySelector(".sticky-cta")).toBeNull();
