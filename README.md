@@ -37,7 +37,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `GateLogin` | `@atelic-action/ui/components` | The access gate's sign in screen | [#gate-login](https://ui.atelic.me/#gate-login) |
 | `Watermark` | `@atelic-action/ui/components` | The signed in reader's confidential stamp, pill or tiled | [#watermark](https://ui.atelic.me/#watermark) |
 | `readCookie`, `Tone` | `@atelic-action/ui/components` | The cookie reader the watermark uses, and the tone type | none |
-| `Button`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading` | `@atelic-action/ui/primitives` | The small pieces a page is set in | [#primitives](https://ui.atelic.me/#primitives) |
+| `Button`, `PrimaryButton`, `SecondaryButton`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading` | `@atelic-action/ui/primitives` | The small pieces a page is set in; the two named buttons are the only call to action shapes a page uses | [#primitives](https://ui.atelic.me/#primitives) |
 | `GradeChip`, `gradeLabel`, `WriteupGrade` | `@atelic-action/ui/artifact` | A section's grade, A to D, as a chip in its color, the letter alone, and the grade type | [#grade-chip](https://ui.atelic.me/#grade-chip) |
 | `SignOff`, `WriteupPerson` | `@atelic-action/ui/artifact` | The close a document ends on, and the person it names | [#sign-off](https://ui.atelic.me/#sign-off) |
 | `Shot`, `WriteupShot` | `@atelic-action/ui/artifact` | The owner's own screen, opening the full picture, over its caption; a portrait crop is marked `data-portrait` and held to 200px (1.8in in print) | [#shot](https://ui.atelic.me/#shot) |
@@ -233,6 +233,8 @@ import { Button, SectionHeading } from "@atelic-action/ui/primitives";
 	Book a visit
 </Button>;
 ```
+
+`PrimaryButton` and `SecondaryButton` (3.13.0) are the two buttons a marketing page uses, by name: the primary is the large primary button with the arrow, the shape `CTASection` closes every page with, and the secondary is the large ghost beside it, always second. A page reaches for those and never picks a variant and a size by hand, so no two pages drift; the header's compact button is the header's own. `Button` stays underneath for the few other shapes (a form's submit, a dark surface).
 
 `Button` is an anchor when it has an `href` and a real button otherwise. It puts the base path from `BasePathProvider` on a root path `href` (0.19.0), so a site served under a prefix needs no wrapper; with no provider above it the `href` renders as given. Its arrow is hidden from the name a screen reader hears.
 

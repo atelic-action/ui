@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Eyebrow, Lead } from "../primitives";
-import { Button } from "../primitives/Button";
+import { PrimaryButton, SecondaryButton } from "../primitives/CallToAction";
 import type { SiteConfig } from "./siteConfig";
 
 export interface CTASectionProps {
@@ -45,13 +45,13 @@ export function CTASection({
 				<h2>{title}</h2>
 				{lead && <Lead className="cta-lead">{lead}</Lead>}
 				<div className="cta-row center">
-					<Button href={primaryAction.href} newTab={primaryAction.newTab} size="lg" arrow>
+					<PrimaryButton href={primaryAction.href} newTab={primaryAction.newTab}>
 						{primaryAction.label}
-					</Button>
+					</PrimaryButton>
 					{secondary && (
-						<Button href={secondary.href} newTab={secondary.newTab} variant="ghost" size="lg">
+						<SecondaryButton href={secondary.href} newTab={secondary.newTab}>
 							{secondary.label}
-						</Button>
+						</SecondaryButton>
 					)}
 				</div>
 			</div>

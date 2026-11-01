@@ -20,7 +20,15 @@ import {
 	ThresholdScale,
 	type Tone,
 } from "../src/components";
-import { Button, Chip, Eyebrow, Lead, SectionHeading } from "../src/primitives";
+import {
+	Button,
+	Chip,
+	Eyebrow,
+	Lead,
+	PrimaryButton,
+	SecondaryButton,
+	SectionHeading,
+} from "../src/primitives";
 import { ArtifactPieces } from "./artifact";
 import { ChromePieces } from "./chrome";
 import { EmailPiece } from "./email";
@@ -722,6 +730,12 @@ export function Gallery() {
 						title="Primitives"
 						lead="The small pieces every page is set in: the button, the chip, the eyebrow, the lead paragraph, and the section heading that composes the last three. Each recolors from the theme tokens."
 					>
+						<Example caption="PrimaryButton and SecondaryButton: the two call to action shapes a page uses, by name, the same on every page">
+							<div className="gallery-row">
+								<PrimaryButton href="#primitives">Book a visit</PrimaryButton>
+								<SecondaryButton href="#primitives">See the menu</SecondaryButton>
+							</div>
+						</Example>
 						<Example caption="Button: primary, dark, and ghost; large; with the arrow">
 							<div className="gallery-row">
 								<Button href="#primitives">Order ahead</Button>
