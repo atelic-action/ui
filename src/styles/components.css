@@ -243,6 +243,8 @@
 		font-size: 0.55em;
 	}
 	.atelic-ui .stat-row.is-quiet .stat-unit {
+		align-self: baseline;
+		margin-bottom: 0;
 		margin-left: 0;
 		font: 500 12px / 1 var(--font-mono);
 	}
