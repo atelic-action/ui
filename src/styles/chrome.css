@@ -321,6 +321,12 @@
 		letter-spacing: 0.04em;
 		line-height: 1.9;
 	}
+	/* The phone and email lines are links that read as the block's own text:
+	   no colour change, no underline, the tap is the affordance. */
+	.atelic-ui .mobile-menu .mm-contact-link {
+		color: inherit;
+		text-decoration: none;
+	}
 
 	/* ---- Sticky CTA bar (phones only) ---- */
 	.atelic-ui .sticky-cta {

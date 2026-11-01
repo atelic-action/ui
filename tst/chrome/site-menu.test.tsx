@@ -150,6 +150,13 @@ describe("SiteMenu", () => {
 		expect(contact).toContain("(555) 555-0100");
 		expect(contact).toContain(email);
 		expect(contact).toContain("123 MAIN ST · DENVER, CO 80205");
+		// The number dials and the address mails: real links, never new tabs.
+		const tel = container.querySelector(".mm-contact a[href^='tel:']");
+		expect(tel).toHaveAttribute("href", `tel:${phone.e164}`);
+		expect(tel).not.toHaveAttribute("target");
+		const mail = container.querySelector(".mm-contact a[href^='mailto:']");
+		expect(mail).toHaveAttribute("href", `mailto:${email}`);
+		expect(mail).not.toHaveAttribute("target");
 		unmount();
 
 		const without = render(<SiteMenu open onClose={() => {}} links={links} />);
