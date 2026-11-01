@@ -160,6 +160,34 @@
 		letter-spacing: 0;
 		color: var(--neutral-500);
 	}
+	/* A share's denominator: small and muted right after the figure, "6/7"
+	   with the 6 big. */
+	.atelic-ui .stat-out-of {
+		align-self: flex-end;
+		margin-bottom: 0.08em;
+		font-size: 0.42em;
+		font-weight: 600;
+		letter-spacing: 0;
+		color: var(--neutral-500);
+	}
+	/* The change to the right of the figure: a filled triangle for the
+	   direction (pointing down for a fall) and how far it moved, small, in
+	   the tone the news deserves. */
+	.atelic-ui .stat-change {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25em;
+		align-self: flex-end;
+		margin-left: 0.4em;
+		margin-bottom: 0.14em;
+		font-size: 0.34em;
+		font-weight: 700;
+		letter-spacing: 0;
+		color: var(--tone, var(--neutral-500));
+	}
+	.atelic-ui .stat-change.is-down svg {
+		transform: rotate(180deg);
+	}
 
 	/* ---- StatRow, quiet: a glance row for a working page. A light figure in
 	   the text color over a small capitalized label, the stats divided by a

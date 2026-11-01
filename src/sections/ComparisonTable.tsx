@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useWithBase } from "../routing/BasePathProvider";
 
 /**
  * A graded before and after: one row per graded item, each side carrying a grade and
@@ -29,6 +30,8 @@ export interface ComparisonRow {
 	id: string;
 	/** The row label, e.g. the thing being graded. */
 	stage: string;
+	/** Links the label, e.g. to the glossary entry that explains the thing graded. A root path takes the base path. */
+	stageHref?: string;
 	before: ComparisonState;
 	after: ComparisonState;
 }
@@ -70,6 +73,7 @@ function Cell({ state, highlight }: { state: ComparisonState; highlight: boolean
 }
 
 export function ComparisonTable({ rows, columns, footnote, className }: ComparisonTableProps) {
+	const withBase = useWithBase();
 	const heads = {
 		stage: columns?.stage ?? "Area",
 		before: columns?.before ?? "Before",
@@ -95,7 +99,15 @@ export function ComparisonTable({ rows, columns, footnote, className }: Comparis
 					<tbody>
 						{rows.map((row) => (
 							<tr key={row.id}>
-								<th scope="row">{row.stage}</th>
+								<th scope="row">
+									{row.stageHref ? (
+										<a className="cmp-stage-link" href={withBase(row.stageHref)}>
+											{row.stage}
+										</a>
+									) : (
+										row.stage
+									)}
+								</th>
 								<td>
 									<Cell state={row.before} highlight={false} />
 								</td>

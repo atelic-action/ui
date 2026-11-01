@@ -400,6 +400,25 @@ export function Gallery() {
 						title="StatRow"
 						lead="A row of large figures, each over what it counts and its period. Reach for it to open a section with the numbers that matter; deltas set each figure against an earlier one, and a trend arrow marks a figure that is itself a change."
 					>
+						<Example caption="A case study's figures: the current reading, a share's denominator small after it, the change small beside it with a triangle">
+							<StatRow
+								stats={[
+									{ value: "100", change: { direction: "up", text: "+26" }, label: "Lighthouse" },
+									{
+										value: "3",
+										outOf: "4",
+										change: { direction: "up", text: "+3" },
+										label: "Searches on page one",
+									},
+									{
+										value: "0.9",
+										unit: "s",
+										change: { direction: "down", text: "3.8 s", tone: "good" },
+										label: "Main content on screen",
+									},
+								]}
+							/>
+						</Example>
 						<Example caption="With deltas, year over year and quarter over quarter">
 							<StatRow
 								stats={[
