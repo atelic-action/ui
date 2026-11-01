@@ -1,5 +1,6 @@
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { type KeyboardEvent, type ReactNode, useState } from "react";
+import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow } from "../primitives";
 import { StarRow } from "../primitives/StarRow";
 import type { ReviewItem } from "./ReviewWall";
@@ -35,6 +36,12 @@ export interface ReviewCarouselProps {
 	stats?: ReviewStat[];
 	/** The reviews, shown one at a time. */
 	items: ReviewItem[];
+	/**
+	 * The label of the link under a review to where it was written, for a
+	 * review that carries a `sourceURL`, e.g. "View on Google". A review with
+	 * no `sourceURL` gets no link. Defaults to "View review".
+	 */
+	sourceLabel?: string;
 	/** Accessible name for the carousel region. */
 	ariaLabel?: string;
 	id?: string;
@@ -82,6 +89,7 @@ export function ReviewCarousel({
 	lead,
 	stats,
 	items,
+	sourceLabel = "View review",
 	ariaLabel = "Customer reviews",
 	id,
 	className,
@@ -178,6 +186,17 @@ export function ReviewCarousel({
 								<figcaption className="rvc-who">
 									<span className="rvc-name">{item.by}</span>
 									{item.detail && <span className="rvc-detail">{item.detail}</span>}
+									{item.sourceURL && (
+										<a
+											className="rvc-source"
+											href={item.sourceURL}
+											{...newTabProps(item.sourceURL, true)}
+											aria-label={`${sourceLabel}, opens the review at its source in a new tab`}
+										>
+											{sourceLabel}
+											<ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" />
+										</a>
+									)}
 								</figcaption>
 							</figure>
 						))}
@@ -198,10 +217,14 @@ export function ReviewCarousel({
 							))}
 						</div>
 						<div className="rvc-arrows">
+							{/* With one review there is nowhere to step, so the arrows stay
+							    in place, greyed and inert, rather than vanishing and shifting
+							    the dots. */}
 							<button
 								type="button"
 								className="rvc-arrow"
 								aria-label="Previous review"
+								disabled={count <= 1}
 								onClick={() => go(index - 1)}
 							>
 								<ChevronLeft size={18} strokeWidth={2} aria-hidden="true" />
@@ -210,6 +233,7 @@ export function ReviewCarousel({
 								type="button"
 								className="rvc-arrow"
 								aria-label="Next review"
+								disabled={count <= 1}
 								onClick={() => go(index + 1)}
 							>
 								<ChevronRight size={18} strokeWidth={2} aria-hidden="true" />

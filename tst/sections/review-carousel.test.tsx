@@ -138,4 +138,45 @@ describe("ReviewCarousel", () => {
 		);
 		expect(screen.getByText("Google reviews")).toBeInTheDocument();
 	});
+
+	it("links each review to its source when the item carries one", () => {
+		render(
+			<ReviewCarousel
+				score="5.0"
+				sourceLabel="View on Google"
+				items={[{ ...items[0], sourceURL: "https://maps.app.goo.gl/example" }, items[1]]}
+			/>,
+		);
+		const link = screen.getByRole("link", {
+			name: "View on Google, opens the review at its source in a new tab",
+		});
+		expect(link).toHaveAttribute("href", "https://maps.app.goo.gl/example");
+		expect(link).toHaveAttribute("target", "_blank");
+		expect(link).toHaveAttribute("rel", "noopener");
+		expect(link).toHaveClass("rvc-source");
+		expect(slideOf(items[0].quote)).toContainElement(link);
+		expect(slideOf(items[1].quote).querySelector("a.rvc-source")).toBeNull();
+	});
+
+	it("labels the source link 'View review' by default", () => {
+		render(
+			<ReviewCarousel
+				score="5.0"
+				items={[{ ...items[0], sourceURL: "https://example.com/review" }]}
+			/>,
+		);
+		expect(screen.getByRole("link", { name: /^View review,/ })).toHaveTextContent("View review");
+	});
+
+	it("greys out the arrows when there is only one review", () => {
+		render(<ReviewCarousel score="5.0" items={[items[0]]} />);
+		expect(screen.getByRole("button", { name: "Previous review" })).toBeDisabled();
+		expect(screen.getByRole("button", { name: "Next review" })).toBeDisabled();
+	});
+
+	it("keeps the arrows live with two or more reviews", () => {
+		render(<ReviewCarousel score="5.0" items={items} />);
+		expect(screen.getByRole("button", { name: "Previous review" })).toBeEnabled();
+		expect(screen.getByRole("button", { name: "Next review" })).toBeEnabled();
+	});
 });

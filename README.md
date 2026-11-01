@@ -94,7 +94,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ProcessSteps` | `@atelic-action/ui/sections` | A dark band of numbered steps beside a frame | [#process-steps](https://ui.atelic.me/#process-steps) |
 | `ProfileCards` | `@atelic-action/ui/sections` | Equal weight cards of media beside a short bio | [#profile-cards](https://ui.atelic.me/#profile-cards) |
 | `RevealSlider` | `@atelic-action/ui/sections` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography | [#reveal-slider](https://ui.atelic.me/#reveal-slider) |
-| `ReviewCarousel` | `@atelic-action/ui/sections` | The aggregate beside one large review at a time, stepped by dots and arrows | [#review-carousel](https://ui.atelic.me/#review-carousel) |
+| `ReviewCarousel` | `@atelic-action/ui/sections` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source | [#review-carousel](https://ui.atelic.me/#review-carousel) |
 | `ReviewWall` | `@atelic-action/ui/sections` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more | [#review-wall](https://ui.atelic.me/#review-wall) |
 | `SocialStrip` | `@atelic-action/ui/sections` | A static grid of the business's social photos linking to the profile, never a live embed | [#social-strip](https://ui.atelic.me/#social-strip) |
 | `SplitSection` | `@atelic-action/ui/sections` | The two column band: copy beside copy, or media beside copy | [#split-section](https://ui.atelic.me/#split-section) |
@@ -497,7 +497,7 @@ export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath"
 | `ComparisonTable` | A graded before and after that scrolls sideways on a phone rather than reflowing |
 | `RevealSlider` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography |
 | `DeviceShowcase` | A desktop browser frame with a phone overlapping it |
-| `ReviewCarousel` | The aggregate beside one large review at a time, stepped by dots and arrows |
+| `ReviewCarousel` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source |
 | `ReviewWall` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more |
 | `PressQuotes` | Rows of press quotes and awards with source and year, newest first (`sortPress` beside it) |
 | `ProfileCards` | Equal weight cards of media beside a short bio |
