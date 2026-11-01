@@ -102,7 +102,11 @@ export function StatRow({ stats, variant = "loud", className }: StatRowProps) {
 							{stat.unit != null && <span className="stat-unit">{stat.unit}</span>}
 							{stat.change && (
 								<span
-									className={["stat-change", stat.change.direction === "down" && "is-down"]
+									className={[
+										"stat-change",
+										stat.change.direction === "down" && "is-down",
+										stat.change.direction === "flat" && "is-flat",
+									]
 										.filter(Boolean)
 										.join(" ")}
 									data-tone={stat.change.tone ?? "good"}

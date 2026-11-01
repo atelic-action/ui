@@ -265,7 +265,11 @@
 		text-underline-offset: 0.18em;
 	}
 	.atelic-ui .cmp-stage-link:hover {
-		text-decoration-color: var(--primary);
+		text-decoration-color: var(--ui-primary, var(--primary));
+	}
+	.atelic-ui .cmp-stage-link:focus-visible {
+		outline: 2px solid var(--ui-primary, var(--primary));
+		outline-offset: 2px;
 	}
 	.atelic-ui .cmp-table tbody td {
 		color: var(--ink-soft);

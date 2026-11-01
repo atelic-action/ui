@@ -35,7 +35,7 @@ describe("StatRow: outOf and change", () => {
 					{
 						value: "0.9",
 						unit: "s",
-						change: { direction: "down", text: "3.8 s", tone: "good" },
+						change: { direction: "down", text: "3.8 s", tone: "bad" },
 						label: "Main content",
 					},
 				]}
@@ -43,6 +43,15 @@ describe("StatRow: outOf and change", () => {
 		);
 		const change = container.querySelector(".stat-change");
 		expect(change).toHaveClass("is-down");
+		expect(change).toHaveAttribute("data-tone", "bad");
 		expect(screen.getByRole("img", { name: "Down" })).toBeInTheDocument();
+	});
+
+	it("lays the triangle on its side for no change", () => {
+		const { container } = render(
+			<StatRow stats={[{ value: "5", change: { direction: "flat", text: "0" }, label: "Rank" }]} />,
+		);
+		expect(container.querySelector(".stat-change")).toHaveClass("is-flat");
+		expect(screen.getByRole("img", { name: "Unchanged" })).toBeInTheDocument();
 	});
 });

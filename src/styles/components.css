@@ -188,6 +188,9 @@
 	.atelic-ui .stat-change.is-down svg {
 		transform: rotate(180deg);
 	}
+	.atelic-ui .stat-change.is-flat svg {
+		transform: rotate(90deg);
+	}
 
 	/* ---- StatRow, quiet: a glance row for a working page. A light figure in
 	   the text color over a small capitalized label, the stats divided by a
