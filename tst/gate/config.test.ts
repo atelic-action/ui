@@ -7,24 +7,24 @@ describe("isAllowed", () => {
 	});
 
 	it("admits every address on a domain written as @example.com, and nothing on another", () => {
-		expect(isAllowed("anyone@flip.example", "owner@example.com, @flip.example")).toBe(true);
-		expect(isAllowed("Owner@Flip.Example", "@flip.example")).toBe(true);
-		expect(isAllowed("anyone@notflip.example", "@flip.example")).toBe(false);
-		expect(isAllowed("anyone@sub.flip.example", "@flip.example")).toBe(false);
-		expect(isAllowed("flip.example", "@flip.example")).toBe(false);
+		expect(isAllowed("anyone@widget.example", "owner@example.com, @widget.example")).toBe(true);
+		expect(isAllowed("Owner@Widget.Example", "@widget.example")).toBe(true);
+		expect(isAllowed("anyone@notwidget.example", "@widget.example")).toBe(false);
+		expect(isAllowed("anyone@sub.widget.example", "@widget.example")).toBe(false);
+		expect(isAllowed("widget.example", "@widget.example")).toBe(false);
 		expect(isAllowed("anyone@example.com", "@")).toBe(false);
 	});
 
 	it.each([
-		"attacker@evil.example,x@flip.example",
-		"attacker@evil.example;x@flip.example",
-		"a@b@flip.example",
-		"@flip.example",
-		"a b@flip.example",
-		"<a@evil.example>x@flip.example",
-		'"a@evil.example"@flip.example',
+		"attacker@evil.example,x@widget.example",
+		"attacker@evil.example;x@widget.example",
+		"a@b@widget.example",
+		"@widget.example",
+		"a b@widget.example",
+		"<a@evil.example>x@widget.example",
+		'"a@evil.example"@widget.example',
 	])("never lets a crafted address %j ride a domain entry", (email) => {
-		expect(isAllowed(email, "@flip.example")).toBe(false);
+		expect(isAllowed(email, "@widget.example")).toBe(false);
 	});
 
 	it.each([
