@@ -6,6 +6,27 @@ describe("isAllowed", () => {
 		expect(isAllowed(" Sharon@Example.com ", "owner@example.com, sharon@example.COM")).toBe(true);
 	});
 
+	it("admits every address on a domain written as @example.com, and nothing on another", () => {
+		expect(isAllowed("anyone@widget.example", "owner@example.com, @widget.example")).toBe(true);
+		expect(isAllowed("Owner@Widget.Example", "@widget.example")).toBe(true);
+		expect(isAllowed("anyone@notwidget.example", "@widget.example")).toBe(false);
+		expect(isAllowed("anyone@sub.widget.example", "@widget.example")).toBe(false);
+		expect(isAllowed("widget.example", "@widget.example")).toBe(false);
+		expect(isAllowed("anyone@example.com", "@")).toBe(false);
+	});
+
+	it.each([
+		"attacker@evil.example,x@widget.example",
+		"attacker@evil.example;x@widget.example",
+		"a@b@widget.example",
+		"@widget.example",
+		"a b@widget.example",
+		"<a@evil.example>x@widget.example",
+		'"a@evil.example"@widget.example',
+	])("never lets a crafted address %j ride a domain entry", (email) => {
+		expect(isAllowed(email, "@widget.example")).toBe(false);
+	});
+
 	it.each([
 		["a stranger", "stranger@example.com", "sharon@example.com"],
 		["an empty address", "", "sharon@example.com,,"],

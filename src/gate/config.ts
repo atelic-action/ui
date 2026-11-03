@@ -3,14 +3,23 @@
  * sign in functions and the middleware, so each reads a value the same way.
  */
 
-/** Whether an address is on the comma separated allowlist. */
+/**
+ * Whether an address is on the comma separated allowlist. An entry is an
+ * address, or a whole domain written as `@example.com`, which admits every
+ * address on it (the business's own people, whoever the page is forwarded to).
+ */
 export function isAllowed(email: string, allowlist: string | undefined): boolean {
 	const wanted = email.trim().toLowerCase();
-	if (!wanted) return false;
+	// A domain entry only admits one plain address (one `@`, a local part, no
+	// whitespace or list and quoting characters), so a crafted string such as
+	// `a@evil.example,b@widget.example` can never ride a domain match into a send.
+	const plain = /^[^@\s,;<>()"\\]+@[^@\s,;<>()"\\]+$/.test(wanted);
+	if (!plain) return false;
+	const domain = wanted.slice(wanted.indexOf("@"));
 	return (allowlist ?? "")
 		.split(",")
 		.map((entry) => entry.trim().toLowerCase())
-		.includes(wanted);
+		.some((entry) => entry === wanted || (entry.length > 1 && entry === domain));
 }
 
 /**
