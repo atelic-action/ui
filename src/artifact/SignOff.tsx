@@ -15,7 +15,7 @@ export interface WriteupPerson {
 /**
  * The sign off a printed artifact closes on: the script line, then the person
  * lockup, the photo beside the name, the role, and the address
- * (Brand/voice.md, Pitch Surfaces 9). The documents in @atelic-action/artifact
+ * (Brand/VOICE.md, Pitch Surfaces 9). The documents in @atelic-action/artifact
  * (the writeup, the read, the monthly page, the note) all wear it, so its
  * styles live in the base sheet chain
  * (styles/artifact.css); its container sets the type size and the color.
