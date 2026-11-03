@@ -6,6 +6,15 @@ describe("isAllowed", () => {
 		expect(isAllowed(" Sharon@Example.com ", "owner@example.com, sharon@example.COM")).toBe(true);
 	});
 
+	it("admits every address on a domain written as @example.com, and nothing on another", () => {
+		expect(isAllowed("anyone@flip.example", "owner@example.com, @flip.example")).toBe(true);
+		expect(isAllowed("Owner@Flip.Example", "@flip.example")).toBe(true);
+		expect(isAllowed("anyone@notflip.example", "@flip.example")).toBe(false);
+		expect(isAllowed("anyone@sub.flip.example", "@flip.example")).toBe(false);
+		expect(isAllowed("flip.example", "@flip.example")).toBe(false);
+		expect(isAllowed("anyone@example.com", "@")).toBe(false);
+	});
+
 	it.each([
 		["a stranger", "stranger@example.com", "sharon@example.com"],
 		["an empty address", "", "sharon@example.com,,"],
