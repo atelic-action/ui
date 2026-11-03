@@ -16,6 +16,18 @@ describe("isAllowed", () => {
 	});
 
 	it.each([
+		"attacker@evil.example,x@flip.example",
+		"attacker@evil.example;x@flip.example",
+		"a@b@flip.example",
+		"@flip.example",
+		"a b@flip.example",
+		"<a@evil.example>x@flip.example",
+		'"a@evil.example"@flip.example',
+	])("never lets a crafted address %j ride a domain entry", (email) => {
+		expect(isAllowed(email, "@flip.example")).toBe(false);
+	});
+
+	it.each([
 		["a stranger", "stranger@example.com", "sharon@example.com"],
 		["an empty address", "", "sharon@example.com,,"],
 		["an empty list", "sharon@example.com", ""],

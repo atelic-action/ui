@@ -10,14 +10,19 @@
  */
 export function isAllowed(email: string, allowlist: string | undefined): boolean {
 	const wanted = email.trim().toLowerCase();
-	if (!wanted.includes("@")) return false;
-	const domain = wanted.slice(wanted.lastIndexOf("@"));
+	if (wanted.indexOf("@") < 1) return false;
+	// A domain entry only admits one plain address (one `@`, a local part, no
+	// whitespace or list and quoting characters), so a crafted string such as
+	// `a@evil.example,b@flip.example` can never ride a domain match into a send.
+	const plain = /^[^@\s,;<>()"\\]+@[^@\s,;<>()"\\]+$/.test(wanted);
+	const domain = plain ? wanted.slice(wanted.indexOf("@")) : "";
 	return (allowlist ?? "")
 		.split(",")
 		.map((entry) => entry.trim().toLowerCase())
 		.some(
 			(entry) =>
-				entry === wanted || (entry.startsWith("@") && entry.length > 1 && entry === domain),
+				entry === wanted ||
+				(plain && entry.startsWith("@") && entry.length > 1 && entry === domain),
 		);
 }
 
