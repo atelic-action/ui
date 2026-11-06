@@ -274,7 +274,7 @@ export const POST = createRequestLink({ noun: "preview" });
 | Env | Read by | What it does |
 |---|---|---|
 | `GATE_SESSION_SECRET` | all three | The signing secret, and the switch: unset, the gate is off. Use 32 random bytes or more |
-| `GATE_ALLOWLIST` | all three | Comma separated emails that may receive a link, or a whole domain as `@example.com`, which admits every address on it. Taking an entry off, then redeploying, refuses its outstanding links and ends their sessions |
+| `GATE_ALLOWLIST` | all three | Comma separated entries that may receive a link. An address matches itself exactly; the business's domain, written `example.com` or `@example.com`, admits every address on it but none on its subdomains. Case never matters, and an empty entry or a word with no dot matches nothing. Taking an entry off, then redeploying, refuses its outstanding links and ends their sessions |
 | `RESEND_API_KEY` | request link | The sending only key the link goes out on |
 | `GATE_BASE_URL` | request link | The host the link points at; a bare host is read as https, and plain http is refused unless it is local. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
 | `GATE_FROM`, `GATE_SUBJECT`, `GATE_LINK_TTL_MIN` | request link | Sender, subject, and link lifetime in minutes (15, a day at most) |
