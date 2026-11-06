@@ -8,7 +8,8 @@
  *
  * Env (set on the Vercel project):
  * - GATE_SESSION_SECRET   signing secret; also the gate's on and off switch
- * - GATE_ALLOWLIST        comma separated emails allowed to receive a link, or a whole domain as @example.com
+ * - GATE_ALLOWLIST        comma separated entries allowed to receive a link: an address,
+ *                         or the business's domain (example.com or @example.com)
  * - RESEND_API_KEY        sending only Resend key
  * - GATE_FROM             sender display name (optional)
  * - GATE_SUBJECT          email subject (optional)

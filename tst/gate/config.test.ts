@@ -15,6 +15,33 @@ describe("isAllowed", () => {
 		expect(isAllowed("anyone@example.com", "@")).toBe(false);
 	});
 
+	it("admits every address on a bare domain the same way, and nothing on another", () => {
+		expect(isAllowed("anyone@widget.example", "owner@example.com, widget.example")).toBe(true);
+		expect(isAllowed("Owner@Widget.Example", " WIDGET.example ")).toBe(true);
+		expect(isAllowed("anyone@notwidget.example", "widget.example")).toBe(false);
+		expect(isAllowed("anyone@sub.widget.example", "widget.example")).toBe(false);
+		expect(isAllowed("anyone@example.com", "widget.example")).toBe(false);
+	});
+
+	it("still matches a full address entry exactly, beside a domain entry", () => {
+		expect(isAllowed("owner@example.com", "widget.example, owner@example.com")).toBe(true);
+		expect(isAllowed("other@example.com", "widget.example, owner@example.com")).toBe(false);
+	});
+
+	it.each([
+		["a word with no dot", "widget"],
+		["an at and a word with no dot", "@widget"],
+		["a bare at", "@"],
+		["an empty entry", " , ,"],
+		["a lone dot", "."],
+		["a leading dot", ".widget.example"],
+		["a trailing dot", "widget.example."],
+	])("lets %s match nothing", (_name, list) => {
+		expect(isAllowed("anyone@widget", list)).toBe(false);
+		expect(isAllowed("anyone@widget.example", list)).toBe(false);
+		expect(isAllowed("anyone@.", list)).toBe(false);
+	});
+
 	it.each([
 		"attacker@evil.example,x@widget.example",
 		"attacker@evil.example;x@widget.example",
@@ -25,6 +52,7 @@ describe("isAllowed", () => {
 		'"a@evil.example"@widget.example',
 	])("never lets a crafted address %j ride a domain entry", (email) => {
 		expect(isAllowed(email, "@widget.example")).toBe(false);
+		expect(isAllowed(email, "widget.example")).toBe(false);
 	});
 
 	it.each([
