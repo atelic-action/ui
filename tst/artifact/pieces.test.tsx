@@ -45,11 +45,6 @@ describe("the artifact entry", () => {
 			"ErrorFallback",
 			"buildPageHead",
 			"canonicalURL",
-			"mintToken",
-			"openReader",
-			"readerId",
-			"readerLink",
-			"sealReader",
 			"whoIsReading",
 		]) {
 			expect(entry, name).toHaveProperty(name);

@@ -79,7 +79,7 @@ describe("the commands' own lines", () => {
 		mkdirSync(join(site, "src"), { recursive: true });
 		writeFileSync(
 			join(site, "src", "site.config.ts"),
-			`export const site = { url: "https://summit.atelic.me", access: "${access}", analytics: { identify: [] } };\n`,
+			`export const site = { url: "https://summit.atelic.me", access: "${access}" };\n`,
 		);
 	}
 
@@ -96,20 +96,31 @@ describe("the commands' own lines", () => {
 	});
 
 	it("atelic-reader-link reads the config of the directory it is run in, and says so when none is there", () => {
-		const missing = run("atelic-reader-link", ["reader@example.com", "--no-qr"], site);
+		const missing = run("atelic-reader-link", ["reader@example.com"], site);
 		expect(missing.status).toBe(1);
 		expect(missing.stderr.trim()).toBe(
 			`[reader] no src/site.config.ts in ${site}. Run this from the root of an artifact site.`,
 		);
 
-		config("public");
-		const minted = run(
-			"atelic-reader-link",
-			["reader@example.com", "/report", "--token", "abc"],
-			site,
-		);
+		config("private");
+		const minted = run("atelic-reader-link", ["reader@example.com", "/report"], site, {
+			GATE_SESSION_SECRET: "a-test-secret-long-enough-to-sign-with",
+			GATE_ALLOWLIST: "example.com",
+		});
 		expect(minted.status).toBe(0);
-		expect(minted.stdout).toContain("https://summit.atelic.me/report?k=abc");
+		expect(minted.stdout.trim()).toMatch(
+			/^https:\/\/summit\.atelic\.me\/api\/auth\/verify\?token=[\w.-]+$/,
+		);
+	});
+
+	it("atelic-reader-link refuses an address the wall would not admit", () => {
+		config("private");
+		const refused = run("atelic-reader-link", ["stranger@example.org"], site, {
+			GATE_SESSION_SECRET: "a-test-secret-long-enough-to-sign-with",
+			GATE_ALLOWLIST: "example.com",
+		});
+		expect(refused.status).toBe(1);
+		expect(refused.stderr).toContain("is not on GATE_ALLOWLIST");
 	});
 
 	it("atelic-check-access reads the config of the directory it is run in", () => {

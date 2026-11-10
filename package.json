@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "3.17.0",
+	"version": "4.0.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -102,8 +102,7 @@
 	},
 	"dependencies": {
 		"@radix-ui/react-tabs": "^1.2.1",
-		"jose": "^6.2.12",
-		"qrcode": "^1.5.4"
+		"jose": "^6.2.12"
 	},
 	"peerDependencies": {
 		"@radix-ui/react-accordion": "^1.2.12",
@@ -262,7 +261,6 @@
 		"@testing-library/user-event": "^14.6.1",
 		"@types/bun": "^1.4.2",
 		"@types/node": "^24.0.0",
-		"@types/qrcode": "^1.5.6",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
 		"@vitejs/plugin-react": "^6.1.1",

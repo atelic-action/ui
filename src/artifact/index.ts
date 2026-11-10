@@ -9,7 +9,6 @@ export { AppErrorBoundary } from "./AppErrorBoundary";
 export { ArtifactShell, type ArtifactShellProps } from "./ArtifactShell";
 export type {
 	ArtifactConfig,
-	ArtifactReader,
 	ArtifactRecipient,
 	ArtifactSender,
 	GateConfig,
@@ -25,13 +24,6 @@ export {
 	Runs,
 } from "./Paragraph";
 export { buildPageHead, canonicalURL, type PageMeta } from "./pageHead";
-export {
-	mintToken,
-	openReader,
-	readerId,
-	readerLink,
-	sealReader,
-	whoIsReading,
-} from "./readers";
+export { whoIsReading } from "./readers";
 export { Shot, type WriteupShot } from "./Shot";
 export { SignOff, type WriteupPerson } from "./SignOff";
