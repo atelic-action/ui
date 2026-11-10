@@ -45,7 +45,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, credit band, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
 | `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
 | `buildPageHead`, `canonicalURL`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
-| `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document; the second entry is the same six, built, for what Node runs | none |
+| `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document, by the email they signed in with; the second entry is the same function, built, for what Node runs | none |
 | `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page | [#email](https://ui.atelic.me/#email) |
 | `Card`, `Row`, `FoldRow`, `Eyebrow`, `SubEyebrow`, `Fold`, `BigFold` | `@atelic-action/ui/email` | The containers and labels an email's sections sit in | [#email](https://ui.atelic.me/#email) |
 | `Item`, `TitleLine`, `Note`, `EmptyRow`, `Stat`, `StatsRow`, `List`, `ListRow`, `LeadRow`, `MonoTable`, `ReadBlock`, `Badge` | `@atelic-action/ui/email` | The rows inside a card | [#email](https://ui.atelic.me/#email) |
@@ -346,7 +346,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 - **The pieces:** `GradeChip` and `gradeLabel` with the `WriteupGrade` type, `SignOff` with the `WriteupPerson` type, `Shot` with the `WriteupShot` type (a crop taller than it is wide is measured in the browser, marked `data-portrait`, and held to 200px wide on screen and 1.8in in print; a layout that sizes its shots itself sets `--op-shot-portrait-max: none` to opt out, on screen and in print alike), and the plain data text (`Paragraph`, `Runs`, `ArtifactAnchor`, and `isEmpty`, with the `ArtifactLink` and `ArtifactParagraph` types: a paragraph is a string or runs of text and `{ text, href }` links, so a routine can write a document as JSON).
 - **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the credit band, and the watermark around a page.
 - **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalURL` with their `PageMeta` type.
-- **Who opened it:** `mintToken`, `sealReader`, `openReader`, `readerId`, `readerLink`, and `whoIsReading`. The same six are also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec and a script run under Node, which compiles nothing inside `node_modules`.
+- **Who opened it:** `whoIsReading`, the email a reader signed in with at the wall, by the form or by the sign in a send carried, and nobody on the sender's own domain. It is also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec runs under Node, which compiles nothing inside `node_modules`.
 - **The error boundary:** `AppErrorBoundary` and its `ErrorFallback`.
 - **`newTabProps`,** for the links a content module writes.
 
@@ -404,7 +404,7 @@ The package installs the scripts every artifact site used to carry as files, so 
 | `atelic-stamp-health` | Writes `dist/client/health.json` with the status, the commit, and the build time | Last step of `build` |
 | `atelic-check-links` | Asks for every external link in the prerendered pages and exits 1 when one is dead | `check:links`, after a build |
 | `atelic-check-wall <host> [path ...]` | Asks a deployed host for each document and held file with no cookie, and passes only when the wall answers every one and the sign in functions respond | `check:wall`, before any private link goes out |
-| `atelic-reader-link <email> [path] [--token <token>] [--qr \| --no-qr]` | Mints a named reader: prints the sealed line for `analytics.identify` and the link to send, and writes `public/images/qr.png` for a public read's first reader | `reader` |
+| `atelic-reader-link <email> [path] [--days <n>]` | Mints the sign in a send carries: a link that signs the reader in at the wall and lands them on the page (query kept), good on every open for 14 days by default and 30 at most. Signs with `GATE_SESSION_SECRET` and refuses an address `GATE_ALLOWLIST` would not admit, both read from the environment | `reader` |
 | `atelic-serve-static` | Serves `dist/client` on `127.0.0.1` the way Vercel does, on `PORT` or 4173 | The `webServer` command in `playwright.config.ts` |
 | `atelic-print-sheets <url or dist/client> <out.pdf> [sheets] [page] [port]` | Prints a page to PDF with headless Chrome, reports the sheet count, and fails when a count is given and missed | `print` |
 | `atelic-seal-document <config.json> [out.json]` | Seals a document into the payload that `@atelic-action/artifact`'s `Gate` reads, one wrapped key for each reader. The payload names no one: no address, and readers numbered `r1`, `r2` whatever the config calls them | `seal` |

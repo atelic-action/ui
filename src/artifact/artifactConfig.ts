@@ -28,17 +28,6 @@ export interface GateConfig {
 }
 
 /**
- * A named reader, sealed. This config ships in the script every page loads,
- * so it lists neither the reader's email nor their token: `id` is a digest
- * of the token, and `sealed` is the email encrypted under a key derived from
- * it. Only the reader's own link opens it (readers.ts).
- */
-export interface ArtifactReader {
-	id: string;
-	sealed: string;
-}
-
-/**
  * Who the document is from: the practice, on every artifact. The lockup in
  * the header renders from `logo` exactly as the marketing chrome's does, so
  * a client branded artifact host keeps the sender's chrome over the client's
@@ -113,21 +102,12 @@ export interface ArtifactConfig {
 	 * picks the loader host and defaults to "na1"; na2 portals load from
 	 * js-na2.hs-scripts.com.
 	 *
-	 * `identify` says who each link identifies, and every cut says it: a
-	 * reader for every named person a link goes to, or an empty list. When a
-	 * visit arrives with `?k=<token>` (the token on that person's link), the
-	 * visitor is identified to HubSpot by their email, so the open lands on
-	 * their contact timeline. Visits without a token stay anonymous. Mint a
-	 * reader with `bun run reader <email>`.
-	 *
-	 * A private artifact needs nobody listed: its readers sign in at the
-	 * wall and are identified by the email they signed in with. DEPLOY.md,
-	 * Who Opened It, is the procedure.
+	 * Nobody is listed: a reader is identified by the email they signed in
+	 * with at the wall (readers.ts). DEPLOY.md, Who Opened It, is the procedure.
 	 */
 	analytics?: {
 		hubspotPortalId: string;
 		hubspotRegion?: "na1" | "na2" | "eu1";
-		identify: ArtifactReader[];
 	};
 	/** Copy for the access-gate login screen (see GateConfig). */
 	gate?: GateConfig;

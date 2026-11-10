@@ -1,108 +1,115 @@
 /**
- * Mint a named reader and print the two things that come of it: the line
- * that goes in site.config.ts and the link that goes in the email. Every
- * link sent to a named person carries their token, so their open lands on
- * their contact in HubSpot (DEPLOY.md, Who Opened It).
+ * Mint the sign in a send carries: a link that signs its named reader in at
+ * the wall and lands them on the page, so the person a page was written to
+ * never sees the form (FOOTPRINT.md, Privacy). It is the wall's own link
+ * token, the one the form emails, with a window sized for a send instead of
+ * a sitting, and like that token it keeps working on every open inside its
+ * window, because mail clients open links before the reader does.
  *
- * The config line holds the reader sealed: a digest of the token and the
- * email encrypted under it. The token itself appears only in the link, so
- * keep the link; it cannot be printed again.
+ * It signs with the host's own secret and checks the host's own list, read
+ * from the environment as the wall reads them (`GATE_SESSION_SECRET`,
+ * `GATE_ALLOWLIST`), so a link for an address the wall would refuse is never
+ * minted. The practice's artifact command fills both from the vault and the
+ * folder's wall.json; nothing here reads either.
  *
- * A read's reader also gets the printed copy's QR: public/images/qr.png
- * is written to carry the same link, so a scan of the sheet lands on that
- * person's contact as an emailed open does. Mint the reader before printing.
- *
- * The sheet belongs to the first reader named. A later reader never
- * repoints it: with a reader already in analytics.identify the QR is left
- * alone unless --qr asks for it.
- *
- * Usage: atelic-reader-link <email> [path] [--token <existing token>] [--qr | --no-qr],
+ * Usage: atelic-reader-link <email> [path] [--days <n>],
  *   or `bun run reader <email>` in a site, from the site's root.
- *   path defaults to /the-read. --token seals an email under a token that is
- *   already in a sent link, so that link keeps working. --qr writes the QR
- *   for this reader even when another is already named; --no-qr never writes it.
+ *   path defaults to /the-read and keeps its query (`/the-read?tab=plan`).
+ *   --days is the link's window, 14 by default and 30 at most.
  */
-import { resolve } from "node:path";
-import QRCode from "qrcode";
-import { mintToken, readerLink, sealReader } from "../artifact/readers";
+import { isAllowed, positive } from "../gate/config";
+import { safeNext } from "../gate/next";
+import { signToken } from "../gate/tokens";
 import { loadSite } from "./site-config";
 
-export const USAGE =
-	"Usage: bun run reader <email> [path] [--token <existing token>] [--qr | --no-qr]";
+export const USAGE = "Usage: bun run reader <email> [path] [--days <n>]";
+
+/** A send's link holds for two weeks unless the command says otherwise. */
+export const DEFAULT_DAYS = 14;
+
+/** Past a month a sign in link is a standing key, not a send. */
+export const LONGEST_DAYS = 30;
 
 /** What the command line asked for. */
 export interface ReaderArgs {
 	email: string;
-	/** The page the link opens, always with one leading slash and none trailing. */
+	/** The page the link lands on, one leading slash, its query kept. */
 	path: string;
-	/** A token already in a sent link, when --token gave one. */
-	token?: string;
-	/** --qr: write the QR for this reader even when another is already named. */
-	forceQR: boolean;
-	/** --no-qr: never write the QR. */
-	noQR: boolean;
+	/** The link's window in days, held to the ceiling. */
+	days: number;
 }
 
 /** Reads the command line; undefined when it does not name a reader, which is a usage error. */
 export function parseReaderArgs(flags: string[]): ReaderArgs | undefined {
-	const noQR = flags.includes("--no-qr");
-	const forceQR = flags.includes("--qr");
-	const args = flags.filter((flag) => flag !== "--no-qr" && flag !== "--qr");
-	const at = args.indexOf("--token");
-	const given = at === -1 ? undefined : args[at + 1];
-	const rest = at === -1 ? args : args.filter((_, index) => index !== at && index !== at + 1);
+	const at = flags.indexOf("--days");
+	const given = at === -1 ? undefined : flags[at + 1];
+	if (at !== -1 && given === undefined) return undefined;
+	const rest = at === -1 ? flags : flags.filter((_, index) => index !== at && index !== at + 1);
 	const [email, givenPath = "/the-read"] = rest;
-	// "the-read", "/the-read", and "/the-read/" are one page.
-	const path = `/${givenPath.replace(/^\/+|\/+$/g, "")}`;
+	if (!email?.includes("@") || rest.length > 2) return undefined;
 
-	if (!email?.includes("@") || (at !== -1 && !given)) return undefined;
-	return { email, path, token: given, forceQR, noQR };
+	// "the-read", "/the-read", and "/the-read/" are one page; a query rides along.
+	const query = givenPath.indexOf("?");
+	const page = query === -1 ? givenPath : givenPath.slice(0, query);
+	const search = query === -1 ? "" : givenPath.slice(query);
+	const path = `/${page.replace(/^\/+|\/+$/g, "")}${search}`;
+	if (safeNext(path) !== path) return undefined;
+
+	// A window that is no number, or none at all, is a typo, never the default.
+	if (given !== undefined && !(Number(given) > 0)) return undefined;
+	const days = positive(given, DEFAULT_DAYS, LONGEST_DAYS);
+	return { email: email.trim().toLowerCase(), path, days };
 }
 
 /**
- * The command. The config it reads and the QR it writes are the site's,
- * found from the working directory.
+ * The link a send carries for this reader on this host. Throws one line when
+ * the wall is not armed, or when the wall would not admit the address, so a
+ * dead link never reaches a draft.
  */
+export async function sendLink(
+	reader: ReaderArgs,
+	host: { url: string; secret: string | undefined; allowlist: string | undefined },
+	now: number = Date.now(),
+): Promise<string> {
+	if (!host.secret) {
+		throw new Error("no GATE_SESSION_SECRET in the environment, so no link can be signed.");
+	}
+	if (!isAllowed(reader.email, host.allowlist)) {
+		throw new Error(
+			`${reader.email} is not on GATE_ALLOWLIST, so the wall would refuse its link. Put the address or its domain on the wall first.`,
+		);
+	}
+	const token = await signToken(
+		{
+			e: reader.email,
+			x: Math.floor(now / 1000) + Math.round(reader.days * 24 * 60 * 60),
+			p: "link",
+			n: reader.path,
+		},
+		host.secret,
+	);
+	const link = new URL("/api/auth/verify", host.url);
+	link.searchParams.set("token", token);
+	return link.toString();
+}
+
+/** The command. The site's address comes from its config, found from the working directory. */
 export async function main(flags: string[], cwd: string = process.cwd()): Promise<void> {
 	const parsed = parseReaderArgs(flags);
 	if (!parsed) {
 		console.error(USAGE);
 		process.exit(1);
 	}
-	const { email, path, forceQR, noQR } = parsed;
-	let site: Awaited<ReturnType<typeof loadSite>>;
 	try {
-		site = await loadSite(cwd);
+		const site = await loadSite(cwd);
+		const link = await sendLink(parsed, {
+			url: site.url,
+			secret: process.env.GATE_SESSION_SECRET,
+			allowlist: process.env.GATE_ALLOWLIST,
+		});
+		console.log(link);
 	} catch (error) {
 		console.error(`[reader] ${(error as Error).message}`);
 		process.exit(1);
-	}
-
-	const token = parsed.token ?? mintToken();
-	const reader = await sealReader(email, token);
-	console.log("Add to analytics.identify in src/site.config.ts:");
-	console.log(`  { id: "${reader.id}", sealed: "${reader.sealed}" }, // ${email.split("@")[1]}`);
-	console.log("");
-	console.log("Send this link, and only to that person. Keep it: it cannot be printed again.");
-	const link = readerLink(site.url, token, path);
-	console.log(`  ${link}`);
-
-	// The sheet's QR is the reader's link. A private artifact identifies by sign
-	// in and never by a token, so its QR stays on the bare host.
-	const named = site.analytics?.identify.length ?? 0;
-	const sheetIsFree = named === 0 || forceQR;
-	if (path === "/the-read" && !noQR && site.access === "public" && !sheetIsFree) {
-		console.log("");
-		console.log(
-			"Left public/images/qr.png alone: a reader is already named, and the sheet is theirs. Pass --qr to give the sheet to this reader.",
-		);
-	}
-	if (path === "/the-read" && !noQR && site.access === "public" && sheetIsFree) {
-		const qr = resolve(cwd, "public/images/qr.png");
-		await QRCode.toFile(qr, link, { width: 330, margin: 4, errorCorrectionLevel: "M" });
-		console.log("");
-		console.log(
-			"Wrote public/images/qr.png with that link. Print the sheet after this, never before.",
-		);
 	}
 }
