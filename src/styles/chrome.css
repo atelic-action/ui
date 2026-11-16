@@ -1,6 +1,6 @@
 /* =================================================================
    @atelic-action/ui CHROME: the skip link, the brand lockup, the
-   header, the menu, the sticky CTA bar, the footer, and the credit
+   header, the menu, the sticky CTA bar, the footer, and the closing
    band. Tokens are read here and never defined. Everything sits in
    the atelic-ui layer, so any rule a site writes outside a layer wins.
    The chrome's buttons wear the site's own .btn classes.
@@ -432,25 +432,16 @@
 		color: var(--primary-bright);
 		border-color: var(--primary-bright);
 	}
-	.atelic-ui .footer-bottom {
-		margin-top: 48px;
-		padding-top: 24px;
-		border-top: 1px solid rgba(255, 255, 255, 0.1);
-		display: flex;
-		flex-wrap: wrap;
-		gap: 12px 28px;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.82rem;
-		color: var(--neutral-500);
-	}
-	.atelic-ui .footer .footer-bottom a {
-		color: var(--neutral-300);
-	}
 	.atelic-ui .footer-legal {
+		margin-top: 48px;
 		display: flex;
 		gap: 20px;
 		flex-wrap: wrap;
+		justify-content: flex-end;
+		font-size: 0.82rem;
+	}
+	.atelic-ui .footer .footer-legal a {
+		color: var(--neutral-300);
 	}
 	@media (min-width: 760px) {
 		.atelic-ui .footer-grid {
@@ -467,27 +458,42 @@
 		margin-bottom: 18px;
 	}
 
-	/* ---- Credit band ---- */
+	/* ---- Closing bar ---- */
 	/* The developer credit below the footer: its own full width band, centered,
 	   small, and muted. Purely token themed (the hairline and hover lift derive
 	   from --surface through color-mix), so it rebrands with theme.css on any
 	   page it renders under, light or dark. */
-	.atelic-ui .credit-bar {
+	.atelic-ui .closing-bar {
 		background: var(--surface-dark);
 		border-top: 1px solid color-mix(in srgb, var(--surface) 10%, transparent);
 		color: var(--neutral-500);
-		font-size: 0.78rem;
-		text-align: center;
-		text-wrap: balance;
-		padding: 16px 20px;
+		font-size: 0.82rem;
+		padding-block: 18px;
 	}
-	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .credit-bar, so it never meets the footer's link rules */
-	.atelic-ui .credit-bar a {
+	.atelic-ui .closing-bar-line {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 28px;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.atelic-ui .closing-bar-note {
+		margin-left: auto;
+	}
+	.atelic-ui .closing-bar.is-solo .closing-bar-line {
+		justify-content: center;
+		text-align: center;
+	}
+	.atelic-ui .closing-bar.is-solo .closing-bar-note {
+		margin-left: 0;
+	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the footer's link rules */
+	.atelic-ui .closing-bar a {
 		color: var(--neutral-300);
 		font-weight: 500;
 	}
-	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .credit-bar, so it never meets the header's link rules */
-	.atelic-ui .credit-bar a:hover {
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the header's link rules */
+	.atelic-ui .closing-bar a:hover {
 		color: color-mix(in srgb, var(--surface) 96%, white);
 	}
 }

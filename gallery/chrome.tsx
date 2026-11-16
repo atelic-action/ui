@@ -3,7 +3,7 @@ import {
 	type Brand,
 	BrandLockup,
 	type CallToAction,
-	CreditBar,
+	ClosingBar,
 	Footer,
 	type MenuContact,
 	type NavLink,
@@ -147,7 +147,7 @@ export function ChromePieces() {
 			<Piece
 				id="footer"
 				title="Footer"
-				lead="The site's foot: the brand column with its blurb and icon links, the nav again, the address, phone, and email, the hours, the copyright line, and the credit band under it all."
+				lead="The site's foot: the brand column with its blurb and icon links, the nav again, the address, phone, and email, the hours, the legal links, and the closing bar under it all."
 			>
 				<Example caption="Every column filled">
 					<Footer
@@ -176,12 +176,22 @@ export function ChromePieces() {
 			</Piece>
 
 			<Piece
-				id="credit-bar"
-				title="CreditBar"
-				lead="The developer credit: a full width band, centered and muted. The footer renders it at its foot, and a page with no footer, like a sent document, renders it on its own."
+				id="closing-bar"
+				title="ClosingBar"
+				lead="The line that closes every page: the copyright with the business's name on the left, and the made with note on the far right, crediting the practice. The footer renders it at its foot, and a page with no footer, like a sent document, renders it on its own."
 			>
-				<Example>
-					<CreditBar />
+				<Example caption="With the business's name">
+					<ClosingBar name="Kestrel Hollow Bakehouse" />
+				</Example>
+				<Example caption="The practice's own site: its own note, no credit">
+					<ClosingBar
+						name="Atelic"
+						note={"Made with \u{1F49A} in Denver, Colorado"}
+						credit={false}
+					/>
+				</Example>
+				<Example caption="Alone, on a page that names no business">
+					<ClosingBar />
 				</Example>
 			</Piece>
 

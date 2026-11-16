@@ -10,7 +10,7 @@ import { join } from "node:path";
  */
 const SHARED_ON_PURPOSE: Record<string, string> = {
 	// The artifact shell's print rules step the site chrome aside.
-	"credit-bar": "artifact.css",
+	"closing-bar": "artifact.css",
 	nav: "artifact.css",
 	"nav-logo": "artifact.css",
 	"skip-link": "artifact.css",

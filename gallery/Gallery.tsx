@@ -1,7 +1,7 @@
 import { Globe, Link, MapPin, Plug } from "lucide-react";
 import { useState } from "react";
 import { name as packageName, version } from "../package.json";
-import { CreditBar, type PageStop, SiteHeader, SkipLink } from "../src/chrome";
+import { ClosingBar, type PageStop, SiteHeader, SkipLink } from "../src/chrome";
 import {
 	Callout,
 	Checklist,
@@ -56,7 +56,7 @@ const stops: PageStop[] = [
 	{ id: "site-header", label: "SiteHeader" },
 	{ id: "site-menu", label: "SiteMenu" },
 	{ id: "footer", label: "Footer" },
-	{ id: "credit-bar", label: "CreditBar" },
+	{ id: "closing-bar", label: "ClosingBar" },
 	{ id: "sticky-cta-bar", label: "StickyCTABar" },
 	{ id: "brand-lockup", label: "BrandLockup" },
 	{ id: "skip-link", label: "SkipLink" },
@@ -835,7 +835,7 @@ export function Gallery() {
 					<MarketingWriting />
 					<MarketingPrimitives />
 				</main>
-				<CreditBar />
+				<ClosingBar />
 			</div>
 			<InAnApp />
 		</>

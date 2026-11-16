@@ -13,7 +13,7 @@ function renderShell(props: Partial<Parameters<typeof SiteShell>[0]> = {}, site 
 	);
 }
 
-const creditBand = (container: HTMLElement) => container.querySelector(".credit-bar");
+const closingBar = (container: HTMLElement) => container.querySelector(".closing-bar");
 
 /*
  * The chrome's own behavior is tested beside each piece. What is worth locking
@@ -21,7 +21,7 @@ const creditBand = (container: HTMLElement) => container.querySelector(".credit-
  * props, and that SiteConfig reaches them intact.
  */
 describe("SiteShell", () => {
-	it("renders the header, the page, the footer, and the credit band beneath it", () => {
+	it("renders the header, the page, the footer, and the closing bar beneath it", () => {
 		const { container } = renderShell();
 
 		const header = screen.getByRole("banner");
@@ -35,7 +35,7 @@ describe("SiteShell", () => {
 		expect(within(footer).getByRole("heading", { name: "Visit" })).toBeInTheDocument();
 		expect(footer.querySelector("address.nap")?.textContent).toContain("Denver, CO 80205");
 
-		const credit = creditBand(container);
+		const credit = closingBar(container);
 		expect(credit).not.toBeNull();
 		expect(footer.compareDocumentPosition(credit as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 	});
@@ -50,21 +50,23 @@ describe("SiteShell", () => {
 		expect(within(primary).getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
 	});
 
-	it("keeps a standalone credit band when the footer is off", () => {
+	it("keeps a standalone closing bar when the footer is off", () => {
 		const { container } = renderShell({ footer: false });
 		expect(screen.queryByRole("contentinfo")).toBeNull();
-		expect(creditBand(container)).not.toBeNull();
+		expect(closingBar(container)).not.toBeNull();
 	});
 
-	it("drops the credit band when credit is off, with or without the footer", () => {
+	it("drops the practice's credit when credit is off, and keeps the copyright with the footer off too", () => {
 		const withFooter = renderShell({ credit: false });
 		expect(screen.getByRole("contentinfo")).toBeInTheDocument();
-		expect(creditBand(withFooter.container)).toBeNull();
+		expect(closingBar(withFooter.container)?.textContent).toContain("Test Practice");
+		expect(closingBar(withFooter.container)?.textContent).not.toContain("Atelic");
 		withFooter.unmount();
 
 		const bare = renderShell({ footer: false, credit: false });
 		expect(screen.queryByRole("contentinfo")).toBeNull();
-		expect(creditBand(bare.container)).toBeNull();
+		expect(closingBar(bare.container)?.textContent).toContain("Test Practice");
+		expect(closingBar(bare.container)?.textContent).not.toContain("Atelic");
 	});
 
 	it("puts the site CTA in the bar and the menu, and hideNavCTA clears only the bar", () => {
@@ -140,7 +142,7 @@ describe("SiteShell", () => {
 		expect(within(footer).getByRole("heading", { name: "Get in touch" })).toBeInTheDocument();
 		expect(footer.querySelector("address.nap")?.textContent).not.toContain("123 Main St");
 		expect(within(footer).getByRole("link", { name: testSite.email })).toBeInTheDocument();
-		expect(within(footer).getByText("A closing note")).toBeInTheDocument();
+		expect(screen.getByText(/A closing note/)).toHaveClass("closing-bar-note");
 		const hours = footer.querySelector(".footer-hours")?.textContent?.replace(/\s+/g, " ");
 		expect(hours).toContain("Mon 11a to 7p");
 		expect(hours).toContain("Sun Closed");

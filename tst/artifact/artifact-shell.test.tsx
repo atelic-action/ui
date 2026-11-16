@@ -26,10 +26,10 @@ function renderShell(props: Partial<Parameters<typeof ArtifactShell>[0]> = {}) {
  * The chrome's own behavior (the menu dialog, Escape, the scroll spy) is
  * tested with the chrome. What is worth locking here is the composition:
  * the dark header with the sender's lockup and nothing else, the page's stops
- * when it has them, and the credit band alone at the foot, never a footer.
+ * when it has them, and the closing bar alone at the foot, never a footer.
  */
 describe("ArtifactShell", () => {
-	it("renders the dark header with the sender's lockup, the document, and the credit band beneath it", () => {
+	it("renders the dark header with the sender's lockup, the document, and the closing bar beneath it", () => {
 		const { container } = renderShell();
 
 		const header = screen.getByRole("banner");
@@ -43,9 +43,9 @@ describe("ArtifactShell", () => {
 		const main = screen.getByText("Document body").closest("main");
 		expect(main).toHaveAttribute("id", "main");
 
-		const credit = container.querySelector(".credit-bar");
+		const credit = container.querySelector(".closing-bar");
 		expect(credit).not.toBeNull();
-		expect(credit?.textContent).toContain("in Denver by");
+		expect(credit?.textContent).toContain("in Denver, CO by Atelic");
 		expect(main?.compareDocumentPosition(credit as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 	});
 

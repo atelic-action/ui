@@ -7,7 +7,7 @@ import { join, relative } from "node:path";
  * characters: they render inconsistently across platforms and cannot take
  * the brand's color tokens. Typographic glyphs used as copy (the arrows and
  * the middle dot) stay legal, and a pictograph the copy genuinely needs, such
- * as the credit band's heart, ships as an escape sequence.
+ * as the closing bar's heart, ships as an escape sequence.
  */
 const EMOJI = /[\u{2600}-\u{27bf}\u{1f000}-\u{1faff}]|\u{fe0f}|\u{20e3}/u;
 
