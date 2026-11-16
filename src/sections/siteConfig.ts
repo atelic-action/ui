@@ -167,8 +167,8 @@ export interface SiteConfig {
 	attribution?: string;
 	/**
 	 * Footer wording overrides: the heading over the address column (defaults
-	 * to "Visit", which reads wrong for a practice with no storefront) and a
-	 * short closing note beside the copyright line ("Made with love in ...").
+	 * to "Visit", which reads wrong for a practice with no storefront) and the
+	 * closing bar's made with note, which defaults to the practice's own line.
 	 */
 	footer?: {
 		contactHeading?: string;

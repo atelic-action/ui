@@ -10,7 +10,7 @@ import type {
 	SiteLink,
 	SocialLink,
 } from "../types";
-import { CreditBar } from "./CreditBar";
+import { ClosingBar } from "./ClosingBar";
 
 /*
  * lucide-react ships no brand marks (removed upstream by policy), and a code
@@ -106,14 +106,14 @@ export interface FooterProps {
 	hours?: HoursRow[];
 	/** Suffix on the copyright line, e.g. "Dr. Alex Rivers, PT, DPT". */
 	attribution?: string;
-	/** A short closing note beside the copyright line. */
+	/** The closing bar's made with note. Defaults to the practice's own line. */
 	note?: string;
 	legalLinks?: SiteLink[];
-	/** The developer credit band at the foot. Defaults on. */
+	/** Credit the practice in the closing bar. Defaults on. */
 	credit?: boolean;
 }
 
-/** The site footer: brand blurb, explore nav, NAP block, hours, and the credit band. */
+/** The site footer: brand blurb, explore nav, NAP block, hours, legal links, and the closing bar. */
 export function Footer({
 	brand,
 	blurb,
@@ -221,23 +221,16 @@ export function Footer({
 							</div>
 						)}
 					</div>
-					<div className="footer-bottom">
-						<span>
-							© {new Date().getFullYear()} {name}
-							{attribution ? ` · ${attribution}` : ""}
-						</span>
-						{note && <span>{note}</span>}
-						{legalLinks && legalLinks.length > 0 && (
-							<span className="footer-legal">
-								{legalLinks.map((link) => (
-									<FooterLink key={link.href} link={link} />
-								))}
-							</span>
-						)}
-					</div>
+					{legalLinks && legalLinks.length > 0 && (
+						<div className="footer-legal">
+							{legalLinks.map((link) => (
+								<FooterLink key={link.href} link={link} />
+							))}
+						</div>
+					)}
 				</div>
 			</footer>
-			{credit && <CreditBar />}
+			<ClosingBar name={name} attribution={attribution} note={note} credit={credit} />
 		</>
 	);
 }

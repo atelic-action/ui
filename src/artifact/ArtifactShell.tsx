@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CreditBar } from "../chrome/CreditBar";
+import { ClosingBar } from "../chrome/ClosingBar";
 import { SiteHeader } from "../chrome/SiteHeader";
 import { SkipLink } from "../chrome/SkipLink";
 import { Watermark } from "../components/Watermark";
@@ -20,11 +20,11 @@ export interface ArtifactShellProps {
 
 /**
  * The wrapper every artifact page uses: the `.atelic-ui` theming
- * scope, the skip link, the header, the credit band, and the access gate's
+ * scope, the skip link, the header, the closing bar, and the access gate's
  * watermark, composed from the chrome. The header is always the dark
  * variant with the sender's lockup and never a site nav or a CTA, because the
  * document's own close is the ask. There is no footer and no sticky bar by
- * design: a document ends on its own sign off, and the credit band is the
+ * design: a document ends on its own sign off, and the closing bar is the
  * one line allowed after it.
  */
 export function ArtifactShell({ site, currentPath, stops, children }: ArtifactShellProps) {
@@ -43,7 +43,7 @@ export function ArtifactShell({ site, currentPath, stops, children }: ArtifactSh
 				stops={stops}
 			/>
 			<main id="main">{children}</main>
-			<CreditBar />
+			<ClosingBar />
 			<Watermark />
 		</div>
 	);

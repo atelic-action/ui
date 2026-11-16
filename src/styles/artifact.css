@@ -130,11 +130,11 @@
 	}
 
 	/* ---- print: the shell's chrome steps aside on every artifact page ----
-	   ArtifactShell's header, credit band, and skip link belong to the screen;
+	   ArtifactShell's header, closing bar, and skip link belong to the screen;
 	   a printed document is the page alone. */
 	@media print {
 		.atelic-ui .nav,
-		.atelic-ui .credit-bar,
+		.atelic-ui .closing-bar,
 		.atelic-ui .skip-link {
 			display: none;
 		}

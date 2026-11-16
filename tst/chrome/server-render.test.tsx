@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { renderToString } from "react-dom/server";
-import { CreditBar, Footer, SiteHeader, SkipLink, StickyCTABar } from "../../src/chrome";
+import { ClosingBar, Footer, SiteHeader, SkipLink, StickyCTABar } from "../../src/chrome";
 import { address, brand, email, links, phone, primaryCTA } from "../fixtures";
 
 /*
@@ -37,20 +37,20 @@ describe("server rendering", () => {
 		expect(markup).toMatch(/<dialog[^>]*class="mobile-menu"/);
 		expect(markup).not.toMatch(/<dialog[^>]*\sopen/);
 		expect(markup).toContain('class="sticky-cta"');
-		expect(markup).toContain('class="credit-bar"');
+		expect(markup).toContain('class="closing-bar"');
 	});
 
-	it("renders the artifact chrome: the dark bar with stops, and the credit band alone", () => {
+	it("renders the artifact chrome: the dark bar with stops, and the closing bar alone", () => {
 		const markup = renderToString(
 			<div className="atelic-ui">
 				<SiteHeader brand={brand} variant="dark" stops={[{ id: "plan", label: "Plan" }]} />
-				<CreditBar />
+				<ClosingBar />
 			</div>,
 		);
 
 		expect(markup).toContain('class="nav is-solid nav-dark"');
 		expect(markup).toContain('href="#plan"');
 		expect(markup).not.toContain("nav-cta");
-		expect(markup).toContain("Developed with");
+		expect(markup).toContain("Made with");
 	});
 });

@@ -1,6 +1,6 @@
 # @atelic-action/ui
 
-Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and credit band), the not found page and the routing that keeps it alive, the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update @atelic-action/ui --latest`.
+Shared UI for the Atelic templates: the site chrome (header, menu, footer, sticky CTA bar, and closing bar), the not found page and the routing that keeps it alive, the scroll spy hook, and the one base stylesheet. The marketing and artifact templates install it instead of carrying their own copies, so a chrome fix lands once and every site picks it up with `bun update @atelic-action/ui --latest`.
 
 The package ships source, not a build. Its TSX and CSS arrive as written and compile inside each site's own Vite. The one exception is the access gate's server side, which ships compiled (see [The Access Gate](#the-access-gate)).
 
@@ -12,8 +12,8 @@ Every export, grouped by the entry it is imported from. The gallery column links
 |---|---|---|---|
 | `SiteHeader` | `@atelic-action/ui/chrome` | The fixed bar: the lockup, the nav or a page's own stops, the call to action, the burger; transparent, solid, or dark | [#site-header](https://ui.atelic.me/#site-header) |
 | `SiteMenu` | `@atelic-action/ui/chrome` | The phone's full screen menu, on a native modal dialog | [#site-menu](https://ui.atelic.me/#site-menu) |
-| `Footer` | `@atelic-action/ui/chrome` | The site's foot: brand column, nav, address, hours, copyright, credit band | [#footer](https://ui.atelic.me/#footer) |
-| `CreditBar` | `@atelic-action/ui/chrome` | The developer credit band | [#credit-bar](https://ui.atelic.me/#credit-bar) |
+| `Footer` | `@atelic-action/ui/chrome` | The site's foot: brand column, nav, address, hours, legal links, closing bar | [#footer](https://ui.atelic.me/#footer) |
+| `ClosingBar` | `@atelic-action/ui/chrome` | The line that closes every page: the copyright with the business's name, and the made with note crediting the practice | [#closing-bar](https://ui.atelic.me/#closing-bar) |
 | `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut, there from the top on an interior page (`fromTop`) and sliding in after a scroll on a hero page | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
 | `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
 | `SkipLink` | `@atelic-action/ui/chrome` | The keyboard user's jump past the chrome | [#skip-link](https://ui.atelic.me/#skip-link) |
@@ -42,7 +42,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `SignOff`, `WriteupPerson` | `@atelic-action/ui/artifact` | The close a document ends on, and the person it names | [#sign-off](https://ui.atelic.me/#sign-off) |
 | `Shot`, `WriteupShot` | `@atelic-action/ui/artifact` | The owner's own screen, opening the full picture, over its caption; a portrait crop is marked `data-portrait` and held to 200px (1.8in in print) | [#shot](https://ui.atelic.me/#shot) |
 | `Paragraph`, `Runs`, `ArtifactAnchor`, `isEmpty`, `ArtifactLink`, `ArtifactParagraph` | `@atelic-action/ui/artifact` | Plain data text a routine can write as JSON: a paragraph, its runs alone, one link, the empty test, and the two types | [#paragraph](https://ui.atelic.me/#paragraph) |
-| `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, credit band, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
+| `ArtifactShell` | `@atelic-action/ui/artifact` | The chrome around a document page: skip link, dark header, closing bar, watermark | [#site-header](https://ui.atelic.me/#site-header) (its dark bar) |
 | `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
 | `buildPageHead`, `canonicalURL`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
 | `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document, by the email they signed in with; the second entry is the same function, built, for what Node runs | none |
@@ -344,7 +344,7 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 `@atelic-action/ui/artifact` is the pieces an artifact document is built from and the site around it, so a fix to a piece reaches every business's documents with one version bump. The composed documents themselves (`Writeup`, `Read`, `Report`, `Note`, and the sealed `Gate`, with their content types and their stylesheet) live in [`@atelic-action/artifact`](https://github.com/atelic-action/artifact) since 2.0.0, which depends on this package for everything below:
 
 - **The pieces:** `GradeChip` and `gradeLabel` with the `WriteupGrade` type, `SignOff` with the `WriteupPerson` type, `Shot` with the `WriteupShot` type (a crop taller than it is wide is measured in the browser, marked `data-portrait`, and held to 200px wide on screen and 1.8in in print; a layout that sizes its shots itself sets `--op-shot-portrait-max: none` to opt out, on screen and in print alike), and the plain data text (`Paragraph`, `Runs`, `ArtifactAnchor`, and `isEmpty`, with the `ArtifactLink` and `ArtifactParagraph` types: a paragraph is a string or runs of text and `{ text, href }` links, so a routine can write a document as JSON).
-- **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the credit band, and the watermark around a page.
+- **The shell:** `ArtifactShell`, the `.atelic-ui` scope with the skip link, the dark header, the closing bar, and the watermark around a page.
 - **The contract and the head:** the `ArtifactConfig` types, and `buildPageHead` and `canonicalURL` with their `PageMeta` type.
 - **Who opened it:** `whoIsReading`, the email a reader signed in with at the wall, by the form or by the sign in a send carried, and nobody on the sender's own domain. It is also built and exported alone as `@atelic-action/ui/artifact/readers`, because a Playwright spec runs under Node, which compiles nothing inside `node_modules`.
 - **The error boundary:** `AppErrorBoundary` and its `ErrorFallback`.
@@ -464,7 +464,7 @@ The provider stays in the source entry on purpose. A built copy of it would be a
 
 ### SiteShell
 
-`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its credit band, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCTA`, `footer`, `pageNav`, `navOnDark`, `hideNavCTA`, and `credit` as before. A site keeps a wrapper a few lines long:
+`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its closing bar, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCTA`, `footer`, `pageNav`, `navOnDark`, `hideNavCTA`, and `credit` as before. A site keeps a wrapper a few lines long:
 
 ```tsx
 import { SiteShell as Shell, type SiteShellProps } from "@atelic-action/ui/chrome";

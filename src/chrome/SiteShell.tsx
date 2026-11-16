@@ -5,7 +5,7 @@ import { formatHoursRange } from "../lib/hours";
 import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
 import type { NavItem, SiteConfig } from "../sections/siteConfig";
-import { CreditBar } from "./CreditBar";
+import { ClosingBar } from "./ClosingBar";
 import { Footer } from "./Footer";
 import { SiteHeader, type SiteHeaderVariant } from "./SiteHeader";
 import { SkipLink } from "./SkipLink";
@@ -50,9 +50,10 @@ export interface SiteShellProps {
 	/** Hide the header's primary CTA (e.g. a reveal, where the ask is the letter). The menu keeps it. */
 	hideNavCTA?: boolean;
 	/**
-	 * The developer credit band. Defaults on (client sites carry it); the
-	 * practice's own site turns it off, since crediting yourself on your
-	 * own page reads as noise.
+	 * The practice's credit in the closing bar. Defaults on (client sites
+	 * carry it); the practice's own site turns it off, since crediting
+	 * yourself on your own page reads as noise. With the footer off as well,
+	 * the page carries no closing bar at all.
 	 */
 	credit?: boolean;
 	children: ReactNode;
@@ -60,7 +61,7 @@ export interface SiteShellProps {
 
 /**
  * The marketing page wrapper: the `.atelic-ui` scope around the skip link,
- * the header, `<main>`, the sticky CTA bar, the footer with its credit band,
+ * the header, `<main>`, the sticky CTA bar, the footer with its closing bar,
  * and the watermark, all mapped from the site's config. Moved here from
  * template-marketing in 0.19.0 (ATE-643); a site keeps a wrapper a few lines
  * long that reads the path from its router and passes it in.
@@ -140,7 +141,9 @@ export function SiteShell({
 						credit={credit}
 					/>
 				) : (
-					credit && <CreditBar />
+					credit && (
+						<ClosingBar name={brand.name} attribution={site.attribution} note={site.footer?.note} />
+					)
 				)}
 				<Watermark />
 			</div>

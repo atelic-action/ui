@@ -13,7 +13,7 @@ export type {
 	SocialLink,
 } from "../types";
 export { BrandLockup, type BrandLockupProps } from "./BrandLockup";
-export { CreditBar } from "./CreditBar";
+export { ClosingBar, type ClosingBarProps } from "./ClosingBar";
 export { Footer, type FooterProps } from "./Footer";
 export { SiteHeader, type SiteHeaderProps, type SiteHeaderVariant } from "./SiteHeader";
 export { SiteMenu, type SiteMenuProps } from "./SiteMenu";

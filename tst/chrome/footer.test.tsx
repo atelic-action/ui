@@ -37,12 +37,20 @@ describe("Footer", () => {
 		expect(screen.getByRole("link", { name: phone.display })).toBeInTheDocument();
 	});
 
-	it("prints the closing note beside the copyright only when one is set", () => {
-		const { container } = render(<Footer {...props} />);
-		expect(container.textContent).not.toContain("Made with care in Denver");
+	it("hands its name and note to the closing bar, and keeps the legal links above it", () => {
+		const { container } = render(
+			<Footer
+				{...props}
+				note="Made with care in Denver"
+				legalLinks={[{ label: "Privacy", href: "/privacy" }]}
+			/>,
+		);
 
-		render(<Footer {...props} note="Made with care in Denver" />);
-		expect(screen.getByText("Made with care in Denver")).toBeInTheDocument();
+		const bar = container.querySelector("footer.footer + .closing-bar");
+		expect(bar?.textContent).toContain(`© ${new Date().getFullYear()} ${brand.name}`);
+		expect(bar?.textContent).toContain("Made with care in Denver");
+		expect(bar?.textContent).not.toContain("Privacy");
+		expect(container.querySelector("footer.footer .footer-legal")?.textContent).toBe("Privacy");
 	});
 
 	it("prints hours rows exactly as the site formatted them", () => {
@@ -63,12 +71,15 @@ describe("Footer", () => {
 		expect(rows).toEqual(["Mon 11a to 7p", "Sun Closed"]);
 	});
 
-	it("carries the credit band at its foot unless turned off", () => {
+	it("always carries the closing bar at its foot, crediting the practice unless turned off", () => {
 		const { container, unmount } = render(<Footer {...props} />);
-		expect(container.querySelector("footer.footer + .credit-bar")).toBeInTheDocument();
+		const bar = container.querySelector("footer.footer + .closing-bar");
+		expect(bar?.textContent).toContain("Made with \u{1F49A} in Denver, CO by Atelic");
 		unmount();
 
 		const without = render(<Footer {...props} credit={false} />);
-		expect(without.container.querySelector(".credit-bar")).toBeNull();
+		const plain = without.container.querySelector("footer.footer + .closing-bar");
+		expect(plain?.textContent).toContain("Made with \u{1F49A} in Denver, CO");
+		expect(plain?.textContent).not.toContain("Atelic");
 	});
 });
