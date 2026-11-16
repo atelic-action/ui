@@ -4,6 +4,8 @@ import {
 	BrandLockup,
 	type CallToAction,
 	ClosingBar,
+	Copyright,
+	Credit,
 	Footer,
 	type MenuContact,
 	type NavLink,
@@ -178,17 +180,19 @@ export function ChromePieces() {
 			<Piece
 				id="closing-bar"
 				title="ClosingBar"
-				lead="The line that closes every page: the copyright with the business's name on the left, and the made with note on the far right, crediting the practice. The footer renders it at its foot, and a page with no footer, like a sent document, renders it on its own."
+				lead="The line that closes every page, in two sides that each take anything. By default the left is the copyright with the business's name and the right is the practice's credit. The footer renders it at its foot, and a page with no footer, like a sent document, renders it on its own."
 			>
-				<Example caption="With the business's name">
+				<Example caption="The defaults: Copyright on the left, Credit on the right">
 					<ClosingBar name="Kestrel Hollow Bakehouse" />
 				</Example>
-				<Example caption="The practice's own site: its own note, no credit">
-					<ClosingBar
-						name="Atelic"
-						note={"Made with \u{1F49A} in Denver, Colorado"}
-						credit={false}
-					/>
+				<Example caption="The credit off: the right side empty">
+					<ClosingBar name="Kestrel Hollow Bakehouse" right={null} />
+				</Example>
+				<Example caption="A site's own words on the right">
+					<ClosingBar name="Kestrel Hollow Bakehouse" right="Baked this morning." />
+				</Example>
+				<Example caption="Either piece on either side">
+					<ClosingBar left={<Credit />} right={<Copyright name="Kestrel Hollow Bakehouse" />} />
 				</Example>
 				<Example caption="Alone, on a page that names no business">
 					<ClosingBar />

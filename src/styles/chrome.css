@@ -477,14 +477,14 @@
 		align-items: center;
 		justify-content: space-between;
 	}
-	.atelic-ui .closing-bar-note {
+	.atelic-ui .closing-bar-right {
 		margin-left: auto;
 	}
 	.atelic-ui .closing-bar.is-solo .closing-bar-line {
 		justify-content: center;
 		text-align: center;
 	}
-	.atelic-ui .closing-bar.is-solo .closing-bar-note {
+	.atelic-ui .closing-bar.is-solo .closing-bar-right {
 		margin-left: 0;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the footer's link rules */

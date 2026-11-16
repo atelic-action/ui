@@ -168,7 +168,8 @@ export interface SiteConfig {
 	/**
 	 * Footer wording overrides: the heading over the address column (defaults
 	 * to "Visit", which reads wrong for a practice with no storefront) and the
-	 * closing bar's made with note, which defaults to the practice's own line.
+	 * site's own words for the closing bar's right side, in place of the
+	 * practice's credit.
 	 */
 	footer?: {
 		contactHeading?: string;

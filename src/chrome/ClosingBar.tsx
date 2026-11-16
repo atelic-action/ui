@@ -1,58 +1,41 @@
-import { newTabProps } from "../lib/newTabProps";
-
-/**
- * The line that closes every page: the copyright with the business's name on
- * the left and the made with note on the far right, crediting the practice
- * in one link. Footer renders it at its foot, and a page with no footer,
- * like a sent document, renders it on its own; given no name it is the note
- * alone, centered.
- *
- * The heart ships as an escape sequence: the no emoji test bars literal
- * pictographs from `src/`.
- */
-const DEFAULT_NOTE = "Made with \u{1F49A} in Denver, CO";
+import type { ReactNode } from "react";
+import { Copyright } from "./Copyright";
+import { Credit } from "./Credit";
 
 export interface ClosingBarProps {
-	/** The business's name, printed in the copyright. Omit it on a page that names no business. */
+	/** The business's name, for the default copyright on the left. */
 	name?: string;
-	/** Suffix on the copyright, e.g. "Dr. Alex Rivers, PT, DPT". */
-	attribution?: string;
-	/** The made with note at the far right. Defaults to the practice's own line. */
-	note?: string;
 	/**
-	 * Credit the practice after the note. Defaults on (client sites carry it);
-	 * the practice's own site turns it off, since crediting yourself on your
-	 * own page reads as noise.
+	 * The left side. Left out, it is the copyright with `name`, or nothing
+	 * when there is no name; `null` empties it; anything else renders as given.
 	 */
-	credit?: boolean;
+	left?: ReactNode;
+	/**
+	 * The right side. Left out, it is the practice's credit; `null` empties
+	 * it; anything else renders as given.
+	 */
+	right?: ReactNode;
 }
 
-export function ClosingBar({
-	name,
-	attribution,
-	note = DEFAULT_NOTE,
-	credit = true,
-}: ClosingBarProps) {
+/**
+ * The line that closes every page: two sides, each taking anything. By
+ * default the left is the copyright with the business's name and the right is
+ * the practice's credit. Footer renders it at its foot, and a page with no
+ * footer, like a sent document, renders it on its own; with nothing on the
+ * left, the right side sits centered.
+ */
+export function ClosingBar({ name, left, right }: ClosingBarProps) {
+	const leftSide = left === undefined ? name ? <Copyright name={name} /> : null : left;
+	const rightSide = right === undefined ? <Credit /> : right;
+	const hasLeft = leftSide !== null && leftSide !== false;
+	const hasRight = rightSide !== null && rightSide !== false;
+	if (!hasLeft && !hasRight) return null;
+
 	return (
-		<div className={name ? "closing-bar" : "closing-bar is-solo"}>
+		<div className={hasLeft ? "closing-bar" : "closing-bar is-solo"}>
 			<div className="wrap closing-bar-line">
-				{name && (
-					<span>
-						© {new Date().getFullYear()} {name}
-						{attribution ? ` · ${attribution}` : ""}
-					</span>
-				)}
-				<span className="closing-bar-note">
-					{note}
-					{credit && (
-						<>
-							{" by "}
-							<a href="https://atelic.me" {...newTabProps("https://atelic.me", true)}>
-								Atelic
-							</a>
-						</>
-					)}
-				</span>
+				{hasLeft && <div className="closing-bar-left">{leftSide}</div>}
+				{hasRight && <div className="closing-bar-right">{rightSide}</div>}
 			</div>
 		</div>
 	);

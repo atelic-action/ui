@@ -6,6 +6,7 @@ import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
 import type { NavItem, SiteConfig } from "../sections/siteConfig";
 import { ClosingBar } from "./ClosingBar";
+import { Copyright } from "./Copyright";
 import { Footer } from "./Footer";
 import { SiteHeader, type SiteHeaderVariant } from "./SiteHeader";
 import { SkipLink } from "./SkipLink";
@@ -50,9 +51,10 @@ export interface SiteShellProps {
 	/** Hide the header's primary CTA (e.g. a reveal, where the ask is the letter). The menu keeps it. */
 	hideNavCTA?: boolean;
 	/**
-	 * The practice's credit in the closing bar. Defaults on (client sites
-	 * carry it); the practice's own site turns it off, since crediting
-	 * yourself on your own page reads as noise. The copyright prints either way.
+	 * The practice's credit on the closing bar's right side. Defaults on
+	 * (client sites carry it); the practice's own site turns it off, since
+	 * crediting yourself on your own page reads as noise. Off leaves the right
+	 * side empty unless the site gives a note. The copyright prints either way.
 	 */
 	credit?: boolean;
 	children: ReactNode;
@@ -141,10 +143,8 @@ export function SiteShell({
 					/>
 				) : (
 					<ClosingBar
-						name={brand.name}
-						attribution={site.attribution}
-						note={site.footer?.note}
-						credit={credit}
+						left={<Copyright name={brand.name} attribution={site.attribution} />}
+						right={site.footer?.note ?? (credit ? undefined : null)}
 					/>
 				)}
 				<Watermark />
