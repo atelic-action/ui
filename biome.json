@@ -7,7 +7,13 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["**", "!**/node_modules", "!**/tsconfig*.json", "!tst/email/expected/**/*.html"]
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/tsconfig*.json",
+			"!tst/email/expected/**/*.html",
+			"!tst/email/frozen/**/*.html"
+		]
 	},
 	"formatter": {
 		"enabled": true,

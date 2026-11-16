@@ -180,6 +180,17 @@ function failureEmail(): string {
 	});
 }
 
+function structuredFailureEmail(): string {
+	return renderFailureEmail({
+		runnerTitle: "Bakehouse Brief",
+		eyebrowText: "Week 41",
+		step: "Claude model call",
+		reason: "OAuth token revoked, status 401",
+		fix: "Run claude setup-token, then push the new token to the vault.",
+		logTail: "POST /v1/messages\n401 Unauthorized: token revoked\nexit 1",
+	});
+}
+
 /**
  * A rendered email in a frame with no scripts. Same origin is allowed only so
  * the page can read the document's height and size the frame to it.
@@ -212,6 +223,7 @@ function EmailFrame({ html, title }: { html: string; title: string }) {
 export function EmailPiece() {
 	const week = useMemo(weekEmail, []);
 	const failure = useMemo(failureEmail, []);
+	const structuredFailure = useMemo(structuredFailureEmail, []);
 	const text = useMemo(() => recordStackText(records), []);
 	return (
 		<Piece
@@ -224,6 +236,9 @@ export function EmailPiece() {
 			</Example>
 			<Example caption="The failure page renderFailureEmail sends when a run cannot finish">
 				<EmailFrame html={failure} title="A made up failure email, rendered" />
+			</Example>
+			<Example caption="The same page given a step and a fix: what failed, why, and what to do, with the log under its own label">
+				<EmailFrame html={structuredFailure} title="A made up structured failure email, rendered" />
 			</Example>
 			<Example caption="The record stack's plain text twin, from recordStackText">
 				<pre className="gallery-pre">{text}</pre>

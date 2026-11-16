@@ -46,7 +46,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `AppErrorBoundary`, `ErrorFallback` | `@atelic-action/ui/artifact` | The error boundary and the page it falls back to | none |
 | `buildPageHead`, `canonicalURL`, `newTabProps`, the `ArtifactConfig` types | `@atelic-action/ui/artifact` | A page's head, a link's new tab props, and a site's contract | none |
 | `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document, by the email they signed in with; the second entry is the same function, built, for what Node runs | none |
-| `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page | [#email](https://ui.atelic.me/#email) |
+| `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page (plain, or structured by a step and a fix) | [#email](https://ui.atelic.me/#email) |
 | `Card`, `Row`, `FoldRow`, `Eyebrow`, `SubEyebrow`, `Fold`, `BigFold` | `@atelic-action/ui/email` | The containers and labels an email's sections sit in | [#email](https://ui.atelic.me/#email) |
 | `Item`, `TitleLine`, `Note`, `EmptyRow`, `Stat`, `StatsRow`, `List`, `ListRow`, `LeadRow`, `MonoTable`, `ReadBlock`, `Badge` | `@atelic-action/ui/email` | The rows inside a card | [#email](https://ui.atelic.me/#email) |
 | `Scoreboard`, `GroupRow`, `TargetRow`, `Bar`, `WhatMoved`, `DayStrip`, `StatStrip` | `@atelic-action/ui/email` | Targets against what was logged, what moved, and the week by day | [#email](https://ui.atelic.me/#email) |
@@ -650,6 +650,19 @@ const text = recordStackText(records);
 
 `renderEmail` builds the document shell itself and puts only the rows through React, because React emits no doctype, React 19 hoists and reorders head tags, and it would escape the `>` in `details>summary`. `renderFailureEmail` is the same shell around `FailurePage`. Both live at `@atelic-action/ui/email/render`, apart from the components, so a site that mounts a component on a page never pulls React's server renderer into its browser bundle.
 
+The failure page takes two optional strings (4.1.0): `step`, what failed as a short label (`"Claude model call"`), and `fix`, what to do in a sentence or two that may hold a command. Given either, the reason line under the headline becomes a labelled block, one row per fact on a hairline with a faint eyebrow over its value: What Failed (the step), Why (the reason), and What to Do (the fix, its label in the accent and its value in mono), then the log tail under its own Log eyebrow. A row whose value is empty or only whitespace is left out, so an empty reason leaves no bare Why. The preheader leads with the step when there is one (`Claude model call: OAuth token revoked`). Given neither, the page is byte for byte what it was before, held by a frozen copy in `tst/email/frozen/`.
+
+```ts
+renderFailureEmail({
+	runnerTitle: "Brief",
+	eyebrowText: "Week 47",
+	step: "Claude model call",
+	reason: "OAuth token revoked, status 401",
+	fix: "Run claude setup-token, then push the new token to the vault.",
+	logTail,
+});
+```
+
 ### The Mapping
 
 Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_html`, a records cell's `html`, a stat's caption), the React prop is `children` or a `ReactNode`. Where the jq escapes a string argument, the prop is a plain string and React does the escaping.
@@ -688,7 +701,7 @@ Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_ht
 | `title_card` | `TitleCard` | `eyebrowText`, `headlineLines`, `lede`, `stats` (the rows under the lede, in place of the jq's `$stats_html`) |
 | `footer` | `Footer` | `meta` |
 | `page` | `renderEmail` | `title`, `preheader`, `children`, `palette`, `fonts` |
-| `failure_page` | `renderFailureEmail`, or `FailurePage` as body rows | `runnerTitle`, `eyebrowText`, `reason`, `logTail` |
+| `failure_page` | `renderFailureEmail`, or `FailurePage` as body rows | `runnerTitle`, `eyebrowText`, `reason`, `logTail`, and since 4.1.0 the optional `step` and `fix` (no jq counterpart) |
 
 The plain text alternative part ports as plain functions with no React anywhere in them: `spaces`, `rpad`, `lpad`, `wrap`, `textRule`, `textSection`, `textRead`, `textBar`, `textTarget`, `textTableGrid`, `textTable`, `recordStackText`, `textWidth`, plus `asciiUpcase` and `asciiDowncase`. Every width counts Unicode codepoints, the way jq's `length` does.
 

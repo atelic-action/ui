@@ -188,14 +188,50 @@ export type FailurePageProps = {
 	eyebrowText: string;
 	reason: string;
 	logTail: string;
+	/** What failed, as a short label ("Claude model call"). */
+	step?: string;
+	/** What to do about it, a sentence or two that may hold a command. */
+	fix?: string;
 };
+
+/** True for a string with something in it besides whitespace. */
+function filled(value: string | undefined): value is string {
+	return value !== undefined && value.trim() !== "";
+}
+
+/** One long token (a path, a URL) wraps instead of widening the column. */
+const wrapLong = { overflowWrap: "anywhere", wordBreak: "break-word" } as const;
+
+type FailureFact = { label: string; value: string; kind: "step" | "reason" | "fix" };
 
 /**
  * The body rows of the failure page, in the same cream, so a bad week reads
- * like a good one with the reason on top and the log's tail beneath.
+ * like a good one with the reason on top and the log's tail beneath. With a
+ * `step` or a `fix` the reason becomes a labelled block of what failed, why,
+ * and what to do, and the log sits under its own label; without either the
+ * page is exactly the plain one.
  */
-export function FailurePage({ runnerTitle, eyebrowText, reason, logTail }: FailurePageProps) {
+export function FailurePage({
+	runnerTitle,
+	eyebrowText,
+	reason,
+	logTail,
+	step,
+	fix,
+}: FailurePageProps) {
 	const { palette, fonts } = useEmailTheme();
+	if (filled(step) || filled(fix)) {
+		return (
+			<StructuredFailurePage
+				runnerTitle={runnerTitle}
+				eyebrowText={eyebrowText}
+				reason={reason}
+				logTail={logTail}
+				step={step}
+				fix={fix}
+			/>
+		);
+	}
 	return (
 		<>
 			<Masthead title={runnerTitle} />
@@ -248,6 +284,122 @@ export function FailurePage({ runnerTitle, eyebrowText, reason, logTail }: Failu
 						>
 							{logTail}
 						</pre>
+					</td>
+				</tr>
+			</Card>
+		</>
+	);
+}
+
+/**
+ * The structured failure page: the same eyebrow and headline, then one row per
+ * fact that has a value, each a faint eyebrow over its value on a hairline,
+ * and the log's tail last under its own eyebrow. The fix's label wears the
+ * accent, as an accented `Note` does, and its value is set in mono because it
+ * so often holds a command.
+ */
+function StructuredFailurePage({
+	runnerTitle,
+	eyebrowText,
+	reason,
+	logTail,
+	step,
+	fix,
+}: FailurePageProps) {
+	const { palette, fonts } = useEmailTheme();
+	const facts: FailureFact[] = [];
+	if (filled(step)) facts.push({ label: "What Failed", value: step, kind: "step" });
+	if (filled(reason)) facts.push({ label: "Why", value: reason, kind: "reason" });
+	if (filled(fix)) facts.push({ label: "What to Do", value: fix, kind: "fix" });
+	const hasLog = filled(logTail);
+	const cell = { padding: "14px 0", borderTop: `1px solid ${palette.line}` };
+	const valueStyle = (kind: FailureFact["kind"]) => {
+		if (kind === "fix") {
+			return {
+				marginTop: "6px",
+				fontFamily: fonts.mono,
+				fontSize: "13px",
+				lineHeight: "1.6",
+				color: palette.ink,
+				whiteSpace: "pre-wrap" as const,
+				...wrapLong,
+			};
+		}
+		return {
+			marginTop: "6px",
+			fontFamily: fonts.sans,
+			fontSize: "15px",
+			lineHeight: "1.5",
+			color: kind === "step" ? palette.ink : palette.dim,
+			...wrapLong,
+			...(kind === "step" ? { fontWeight: "600" } : {}),
+		};
+	};
+	return (
+		<>
+			<Masthead title={runnerTitle} />
+			<Card>
+				<tr>
+					<td style={{ padding: "26px 26px 6px", ...eyebrowStyle(fonts), color: palette.faint }}>
+						{eyebrowText}
+					</td>
+				</tr>
+				<tr>
+					<td
+						style={{
+							padding: "0 26px",
+							fontFamily: fonts.sans,
+							fontSize: "30px",
+							fontWeight: "600",
+							letterSpacing: "-0.03em",
+							lineHeight: "1.1",
+							color: palette.ink,
+						}}
+					>
+						{`The ${asciiDowncase(runnerTitle)} did not run.`}
+					</td>
+				</tr>
+				<tr>
+					<td style={{ padding: "22px 26px 12px" }}>
+						<table {...tableReset} width="100%">
+							<tbody>
+								{facts.map((fact) => (
+									<tr key={fact.kind}>
+										<td style={cell}>
+											<div
+												style={{
+													...eyebrowStyle(fonts),
+													color: fact.kind === "fix" ? palette.accent : palette.faint,
+												}}
+											>
+												{fact.label}
+											</div>
+											<div style={valueStyle(fact.kind)}>{fact.value}</div>
+										</td>
+									</tr>
+								))}
+								{hasLog ? (
+									<tr>
+										<td style={cell}>
+											<div style={{ ...eyebrowStyle(fonts), color: palette.faint }}>Log</div>
+											<pre
+												style={{
+													fontFamily: fonts.mono,
+													fontSize: "12px",
+													lineHeight: "1.5",
+													whiteSpace: "pre-wrap",
+													...wrapLong,
+													color: palette.dim,
+													margin: "6px 0 0",
+												}}
+											>
+												{logTail}
+											</pre>
+										</td>
+									</tr>
+								) : null}
+							</tbody>
+						</table>
 					</td>
 				</tr>
 			</Card>
