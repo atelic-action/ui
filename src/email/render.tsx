@@ -91,8 +91,9 @@ export type RenderFailureEmailOptions = {
  */
 function failurePreheader(reason: string, step: string | undefined): string {
 	const label = step?.trim() ?? "";
-	if (label === "") return reason;
-	return reason.trim() === "" ? label : `${label}: ${reason}`;
+	if (label === "") return reason.trim();
+	const why = reason.trim();
+	return why === "" ? label : `${label}: ${why}`;
 }
 
 /**

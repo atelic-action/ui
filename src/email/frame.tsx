@@ -199,6 +199,9 @@ function filled(value: string | undefined): value is string {
 	return value !== undefined && value.trim() !== "";
 }
 
+/** One long token (a path, a URL) wraps instead of widening the column. */
+const wrapLong = { overflowWrap: "anywhere", wordBreak: "break-word" } as const;
+
 type FailureFact = { label: string; value: string; kind: "step" | "reason" | "fix" };
 
 /**
@@ -318,7 +321,7 @@ function StructuredFailurePage({
 				fontSize: "13px",
 				lineHeight: "1.6",
 				color: palette.ink,
-				wordBreak: "break-word" as const,
+				...wrapLong,
 			};
 		}
 		return {
@@ -327,6 +330,7 @@ function StructuredFailurePage({
 			fontSize: "15px",
 			lineHeight: "1.5",
 			color: kind === "step" ? palette.ink : palette.dim,
+			...wrapLong,
 			...(kind === "step" ? { fontWeight: "600" } : {}),
 		};
 	};
@@ -383,6 +387,7 @@ function StructuredFailurePage({
 													fontSize: "12px",
 													lineHeight: "1.5",
 													whiteSpace: "pre-wrap",
+													...wrapLong,
 													color: palette.dim,
 													margin: "6px 0 0",
 												}}
