@@ -1,3 +1,5 @@
+import { newTabProps } from "../lib/newTabProps";
+
 /**
  * The line that closes every page: the copyright with the business's name on
  * the left and the made with note on the far right, crediting the practice
@@ -45,7 +47,7 @@ export function ClosingBar({
 					{credit && (
 						<>
 							{" by "}
-							<a href="https://atelic.me" target="_blank" rel="noopener">
+							<a href="https://atelic.me" {...newTabProps("https://atelic.me", true)}>
 								Atelic
 							</a>
 						</>

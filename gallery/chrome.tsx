@@ -184,7 +184,7 @@ export function ChromePieces() {
 					<ClosingBar name="Kestrel Hollow Bakehouse" />
 				</Example>
 				<Example caption="The practice's own site: its own note, no credit">
-					<ClosingBar name="Atelic" note="Made with \u{1F49A} in Denver, Colorado" credit={false} />
+					<ClosingBar name="Atelic" note={"Made with \u{1F49A} in Denver, Colorado"} credit={false} />
 				</Example>
 				<Example caption="Alone, on a page that names no business">
 					<ClosingBar />

@@ -52,8 +52,7 @@ export interface SiteShellProps {
 	/**
 	 * The practice's credit in the closing bar. Defaults on (client sites
 	 * carry it); the practice's own site turns it off, since crediting
-	 * yourself on your own page reads as noise. With the footer off as well,
-	 * the page carries no closing bar at all.
+	 * yourself on your own page reads as noise. The copyright prints either way.
 	 */
 	credit?: boolean;
 	children: ReactNode;
@@ -141,9 +140,12 @@ export function SiteShell({
 						credit={credit}
 					/>
 				) : (
-					credit && (
-						<ClosingBar name={brand.name} attribution={site.attribution} note={site.footer?.note} />
-					)
+					<ClosingBar
+						name={brand.name}
+						attribution={site.attribution}
+						note={site.footer?.note}
+						credit={credit}
+					/>
 				)}
 				<Watermark />
 			</div>
