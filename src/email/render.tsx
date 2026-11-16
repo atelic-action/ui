@@ -77,22 +77,41 @@ export type RenderFailureEmailOptions = {
 	eyebrowText: string;
 	reason: string;
 	logTail: string;
+	/** What failed, as a short label; it also leads the preheader. */
+	step?: string;
+	/** What to do about it, a sentence or two that may hold a command. */
+	fix?: string;
 	palette?: Palette;
 	fonts?: Fonts;
 };
 
-/** The failure page: the reason on top and the log's tail beneath. */
+/**
+ * The inbox preview: the reason alone, or led by the step when there is one
+ * ("Claude model call: OAuth token revoked").
+ */
+function failurePreheader(reason: string, step: string | undefined): string {
+	const label = step?.trim() ?? "";
+	if (label === "") return reason;
+	return reason.trim() === "" ? label : `${label}: ${reason}`;
+}
+
+/**
+ * The failure page: the reason on top and the log's tail beneath, or with a
+ * `step` or a `fix` the labelled block of what failed, why, and what to do.
+ */
 export function renderFailureEmail({
 	runnerTitle,
 	eyebrowText,
 	reason,
 	logTail,
+	step,
+	fix,
 	palette,
 	fonts,
 }: RenderFailureEmailOptions): string {
 	return renderEmail({
 		title: `${runnerTitle}: did not run`,
-		preheader: reason,
+		preheader: failurePreheader(reason, step),
 		palette,
 		fonts,
 		children: (
@@ -101,6 +120,8 @@ export function renderFailureEmail({
 				eyebrowText={eyebrowText}
 				reason={reason}
 				logTail={logTail}
+				step={step}
+				fix={fix}
 			/>
 		),
 	});
