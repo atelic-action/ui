@@ -321,6 +321,7 @@ function StructuredFailurePage({
 				fontSize: "13px",
 				lineHeight: "1.6",
 				color: palette.ink,
+				whiteSpace: "pre-wrap" as const,
 				...wrapLong,
 			};
 		}
