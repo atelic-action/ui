@@ -11,6 +11,7 @@ import type {
 	SocialLink,
 } from "../types";
 import { ClosingBar } from "./ClosingBar";
+import { Copyright } from "./Copyright";
 
 /*
  * lucide-react ships no brand marks (removed upstream by policy), and a code
@@ -106,10 +107,14 @@ export interface FooterProps {
 	hours?: HoursRow[];
 	/** Suffix on the copyright line, e.g. "Dr. Alex Rivers, PT, DPT". */
 	attribution?: string;
-	/** The closing bar's made with note. Defaults to the practice's own line. */
+	/** The site's own words for the closing bar's right side, in place of the practice's credit. */
 	note?: string;
 	legalLinks?: SiteLink[];
-	/** Credit the practice in the closing bar. Defaults on. */
+	/**
+	 * The practice's credit on the closing bar's right side. Defaults on; off
+	 * leaves the right side empty unless the site gives a note. The copyright
+	 * prints either way.
+	 */
 	credit?: boolean;
 }
 
@@ -230,7 +235,10 @@ export function Footer({
 					)}
 				</div>
 			</footer>
-			<ClosingBar name={name} attribution={attribution} note={note} credit={credit} />
+			<ClosingBar
+				left={<Copyright name={name} attribution={attribution} />}
+				right={note ?? (credit ? undefined : null)}
+			/>
 		</>
 	);
 }

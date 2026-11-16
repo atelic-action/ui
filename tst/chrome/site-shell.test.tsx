@@ -60,13 +60,13 @@ describe("SiteShell", () => {
 		const withFooter = renderShell({ credit: false });
 		expect(screen.getByRole("contentinfo")).toBeInTheDocument();
 		expect(closingBar(withFooter.container)?.textContent).toContain("Test Practice");
-		expect(closingBar(withFooter.container)?.textContent).not.toContain("Atelic");
+		expect(closingBar(withFooter.container)?.querySelector(".closing-bar-right")).toBeNull();
 		withFooter.unmount();
 
 		const bare = renderShell({ footer: false, credit: false });
 		expect(screen.queryByRole("contentinfo")).toBeNull();
 		expect(closingBar(bare.container)?.textContent).toContain("Test Practice");
-		expect(closingBar(bare.container)?.textContent).not.toContain("Atelic");
+		expect(closingBar(bare.container)?.querySelector(".closing-bar-right")).toBeNull();
 	});
 
 	it("puts the site CTA in the bar and the menu, and hideNavCTA clears only the bar", () => {
@@ -142,7 +142,7 @@ describe("SiteShell", () => {
 		expect(within(footer).getByRole("heading", { name: "Get in touch" })).toBeInTheDocument();
 		expect(footer.querySelector("address.nap")?.textContent).not.toContain("123 Main St");
 		expect(within(footer).getByRole("link", { name: testSite.email })).toBeInTheDocument();
-		expect(screen.getByText(/A closing note/)).toHaveClass("closing-bar-note");
+		expect(screen.getByText("A closing note")).toHaveClass("closing-bar-right");
 		const hours = footer.querySelector(".footer-hours")?.textContent?.replace(/\s+/g, " ");
 		expect(hours).toContain("Mon 11a to 7p");
 		expect(hours).toContain("Sun Closed");

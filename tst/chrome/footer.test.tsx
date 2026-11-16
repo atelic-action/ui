@@ -71,15 +71,24 @@ describe("Footer", () => {
 		expect(rows).toEqual(["Mon 11a to 7p", "Sun Closed"]);
 	});
 
-	it("always carries the closing bar at its foot, crediting the practice unless turned off", () => {
+	it("always carries the closing bar at its foot, and credit off empties its right side", () => {
 		const { container, unmount } = render(<Footer {...props} />);
 		const bar = container.querySelector("footer.footer + .closing-bar");
-		expect(bar?.textContent).toContain("Made with \u{1F49A} in Denver, CO by Atelic");
+		expect(bar?.querySelector(".closing-bar-left")?.textContent).toContain(brand.name);
+		expect(bar?.querySelector(".closing-bar-right")?.textContent).toBe(
+			"Made with \u{1F49A} in Denver, Colorado by Atelic",
+		);
 		unmount();
 
 		const without = render(<Footer {...props} credit={false} />);
 		const plain = without.container.querySelector("footer.footer + .closing-bar");
-		expect(plain?.textContent).toContain("Made with \u{1F49A} in Denver, CO");
-		expect(plain?.textContent).not.toContain("Atelic");
+		expect(plain?.querySelector(".closing-bar-left")?.textContent).toContain(brand.name);
+		expect(plain?.querySelector(".closing-bar-right")).toBeNull();
+		without.unmount();
+
+		const worded = render(<Footer {...props} credit={false} note="Made with care in Denver" />);
+		expect(worded.container.querySelector(".closing-bar-right")?.textContent).toBe(
+			"Made with care in Denver",
+		);
 	});
 });

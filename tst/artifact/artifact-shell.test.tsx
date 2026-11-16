@@ -45,7 +45,7 @@ describe("ArtifactShell", () => {
 
 		const credit = container.querySelector(".closing-bar");
 		expect(credit).not.toBeNull();
-		expect(credit?.textContent).toContain("in Denver, CO by Atelic");
+		expect(credit?.textContent).toContain("in Denver, Colorado by Atelic");
 		expect(main?.compareDocumentPosition(credit as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 	});
 

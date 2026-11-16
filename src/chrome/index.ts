@@ -14,6 +14,8 @@ export type {
 } from "../types";
 export { BrandLockup, type BrandLockupProps } from "./BrandLockup";
 export { ClosingBar, type ClosingBarProps } from "./ClosingBar";
+export { Copyright, type CopyrightProps } from "./Copyright";
+export { Credit } from "./Credit";
 export { Footer, type FooterProps } from "./Footer";
 export { SiteHeader, type SiteHeaderProps, type SiteHeaderVariant } from "./SiteHeader";
 export { SiteMenu, type SiteMenuProps } from "./SiteMenu";
