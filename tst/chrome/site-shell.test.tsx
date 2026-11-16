@@ -56,7 +56,7 @@ describe("SiteShell", () => {
 		expect(closingBar(container)).not.toBeNull();
 	});
 
-	it("drops the practice's credit when credit is off, and the whole bar when the footer is off too", () => {
+	it("drops the practice's credit when credit is off, and keeps the copyright with the footer off too", () => {
 		const withFooter = renderShell({ credit: false });
 		expect(screen.getByRole("contentinfo")).toBeInTheDocument();
 		expect(closingBar(withFooter.container)?.textContent).toContain("Test Practice");
@@ -65,7 +65,8 @@ describe("SiteShell", () => {
 
 		const bare = renderShell({ footer: false, credit: false });
 		expect(screen.queryByRole("contentinfo")).toBeNull();
-		expect(closingBar(bare.container)).toBeNull();
+		expect(closingBar(bare.container)?.textContent).toContain("Test Practice");
+		expect(closingBar(bare.container)?.textContent).not.toContain("Atelic");
 	});
 
 	it("puts the site CTA in the bar and the menu, and hideNavCTA clears only the bar", () => {
