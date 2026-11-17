@@ -370,83 +370,79 @@
 	.atelic-ui .footer a:hover {
 		color: #fff;
 	}
+	/* One grid: the brand column, then the link columns, however many the
+	   footer was given. A phone stacks the brand column over two across. */
 	.atelic-ui .footer-grid {
 		display: grid;
-		gap: 40px;
-		grid-template-columns: 1fr;
+		gap: 40px 32px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+	.atelic-ui .footer-brand {
+		grid-column: 1 / -1;
 	}
 	.atelic-ui .footer h4 {
 		color: #fff;
 		font-family: var(--font-mono);
-		font-size: 0.74rem;
-		letter-spacing: 0.16em;
+		font-size: 0.84rem;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		font-weight: 500;
-		margin-bottom: 16px;
+		font-weight: 700;
+		margin-bottom: 14px;
 	}
 	.atelic-ui .footer-brand img {
 		height: 38px;
 		margin-bottom: 18px;
 	}
-	.atelic-ui .footer-brand p {
-		color: var(--neutral-300);
-		max-width: 30ch;
+	.atelic-ui .footer-rating {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		color: #fff;
+		font-weight: 500;
+		margin-bottom: 10px;
+	}
+	.atelic-ui .footer-stars {
+		display: inline-flex;
+		gap: 2px;
+		color: #f5b301;
 	}
 	.atelic-ui .footer nav a {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 10px;
 		padding: 6px 0;
 		color: var(--neutral-200);
 		font-weight: 500;
 	}
+	.atelic-ui .footer nav a svg {
+		flex: none;
+	}
 	.atelic-ui .footer .nap {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
 		font-style: normal;
-		line-height: 1.9;
 		color: var(--neutral-200);
 	}
 	.atelic-ui .footer .nap a {
 		color: #fff;
 		font-weight: 600;
 	}
-	.atelic-ui .footer-hours {
-		font-family: var(--font-mono);
-		font-size: 0.82rem;
-		line-height: 1.9;
-		color: var(--neutral-300);
+	.atelic-ui .footer-grid > * {
+		overflow-wrap: anywhere;
 	}
-	.atelic-ui .footer-social {
+	.atelic-ui .footer .nap-address {
 		display: flex;
-		gap: 10px;
-		margin-top: 20px;
-	}
-	.atelic-ui .footer .footer-social-link {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 38px;
-		height: 38px;
-		border: 1px solid rgba(255, 255, 255, 0.16);
-		border-radius: var(--radius-sm);
-		color: var(--neutral-300);
-	}
-	.atelic-ui .footer .footer-social-link:hover {
-		color: var(--primary-bright);
-		border-color: var(--primary-bright);
-	}
-	.atelic-ui .footer-legal {
-		margin-top: 48px;
-		display: flex;
-		gap: 20px;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		font-size: 0.82rem;
-	}
-	.atelic-ui .footer .footer-legal a {
-		color: var(--neutral-300);
+		flex-direction: column;
 	}
 	@media (min-width: 760px) {
 		.atelic-ui .footer-grid {
-			grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
-			gap: 48px;
+			grid-template-columns: minmax(0, 1.4fr) repeat(var(--footer-columns, 4), minmax(0, 1fr));
+			gap: 48px 32px;
+		}
+		.atelic-ui .footer-brand {
+			grid-column: auto;
 		}
 	}
 	/* Text wordmark for a site with no mark image. */

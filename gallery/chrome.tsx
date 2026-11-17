@@ -149,30 +149,59 @@ export function ChromePieces() {
 			<Piece
 				id="footer"
 				title="Footer"
-				lead="The site's foot: the brand column with its blurb and icon links, the nav again, the address, phone, and email, the hours, the legal links, and the closing bar under it all."
+				lead="The default footer: a brand column with the logo, the Google rating as plain text, the one address linked to the Google profile, the phone, and the email; then four link columns, Company, Resources, Social, and Legal; and the closing bar under it all."
 			>
-				<Example caption="Every column filled">
+				<Example caption="The default: the brand column and four link columns">
 					<Footer
 						brand={{
 							name: "Kestrel Hollow Bakehouse",
 							logo: { src: "/images/kestrel-mark-light.svg", alt: "Kestrel Hollow Bakehouse" },
 						}}
-						blurb="Bread, pastry, and cakes, mixed, shaped, and baked in the back of the shop."
-						socialLinks={[{ label: "Email", href: "mailto:hello@example.test", icon: "mail" }]}
-						links={links}
-						extraLinks={[
-							{ label: "Wholesale", href: "https://example.test/wholesale", external: true },
-						]}
+						rating="4.9 on Google"
 						address={contact.address}
+						addressHref="https://example.test/profile"
 						phone={phone}
 						email="hello@example.test"
-						hours={[
-							{ label: "Tue to Fri", range: "07:00 to 15:00" },
-							{ label: "Sat to Sun", range: "08:00 to 14:00" },
-							{ label: "Mon", range: "Closed" },
+						columns={[
+							{ heading: "Company", links },
+							{
+								heading: "Resources",
+								links: [
+									{ label: "Wholesale", href: "https://example.test/wholesale", external: true },
+									{ label: "Allergens", href: "#footer" },
+								],
+							},
+							{
+								heading: "Social",
+								links: [
+									{
+										label: "Instagram",
+										href: "https://example.test/instagram",
+										icon: "instagram",
+										external: true,
+									},
+									{
+										label: "Facebook",
+										href: "https://example.test/facebook",
+										icon: "facebook",
+										external: true,
+									},
+									{
+										label: "Google Reviews",
+										href: "https://example.test/reviews",
+										icon: "star",
+										external: true,
+									},
+								],
+							},
+							{
+								heading: "Legal",
+								links: [
+									{ label: "Privacy", href: "#footer" },
+									{ label: "Terms", href: "#footer" },
+								],
+							},
 						]}
-						note="Baked this morning."
-						legalLinks={[{ label: "Privacy", href: "#footer" }]}
 					/>
 				</Example>
 			</Piece>

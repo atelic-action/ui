@@ -1,22 +1,14 @@
-import { Mail, UserRound } from "lucide-react";
-import type { ComponentProps } from "react";
+import { Mail, Star, UserRound } from "lucide-react";
+import type { ComponentProps, CSSProperties } from "react";
 import { newTabProps } from "../lib/newTabProps";
-import type {
-	Brand,
-	HoursRow,
-	NavLink,
-	Phone,
-	PostalAddress,
-	SiteLink,
-	SocialLink,
-} from "../types";
+import type { Brand, FooterColumn, FooterColumnLink, Phone, PostalAddress } from "../types";
 import { ClosingBar } from "./ClosingBar";
 import { Copyright } from "./Copyright";
 
 /*
  * lucide-react ships no brand marks (removed upstream by policy), and a code
  * glyph standing in for GitHub or a briefcase for LinkedIn misleads the
- * reader. These two are the brands' own simple marks, carried by hand as a
+ * reader. These are the brands' own simple marks, carried by hand as a
  * considered exception to the lucide only rule; like lucide icons they take
  * currentColor and a size prop.
  */
@@ -52,64 +44,113 @@ function LinkedInMark({ size = 18, ...rest }: MarkProps) {
 	);
 }
 
-const SOCIAL_ICONS = {
-	github: GitHubMark,
-	linkedin: LinkedInMark,
-	mail: Mail,
-	user: UserRound,
-} as const;
-
-function SocialIconLink({ link }: { link: SocialLink }) {
-	const Icon = SOCIAL_ICONS[link.icon];
+function FacebookMark({ size = 18, ...rest }: MarkProps) {
 	return (
-		<a
-			className="footer-social-link"
-			href={link.href}
-			aria-label={link.label}
-			title={link.label}
-			{...newTabProps(link.href, true)}
+		<svg
+			aria-hidden="true"
+			viewBox="0 0 24 24"
+			width={size}
+			height={size}
+			fill="none"
+			stroke="currentColor"
+			strokeWidth={1.75}
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			{...rest}
 		>
-			<Icon aria-hidden size={18} />
-		</a>
+			<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+		</svg>
 	);
 }
 
-function FooterLink({ link }: { link: SiteLink }) {
+function InstagramMark({ size = 18, ...rest }: MarkProps) {
+	return (
+		<svg
+			aria-hidden="true"
+			viewBox="0 0 24 24"
+			width={size}
+			height={size}
+			fill="none"
+			stroke="currentColor"
+			strokeWidth={1.75}
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			{...rest}
+		>
+			<path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5z M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z M17.5 6.5h.01" />
+		</svg>
+	);
+}
+
+function YouTubeMark({ size = 18, ...rest }: MarkProps) {
+	return (
+		<svg
+			aria-hidden="true"
+			viewBox="0 0 24 24"
+			width={size}
+			height={size}
+			fill="none"
+			stroke="currentColor"
+			strokeWidth={1.75}
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			{...rest}
+		>
+			<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17 M10 15l5-3-5-3z" />
+		</svg>
+	);
+}
+
+const LINK_ICONS = {
+	facebook: FacebookMark,
+	github: GitHubMark,
+	instagram: InstagramMark,
+	linkedin: LinkedInMark,
+	mail: Mail,
+	star: Star,
+	user: UserRound,
+	youtube: YouTubeMark,
+} as const;
+
+function ColumnLink({ link }: { link: FooterColumnLink }) {
+	const Icon = link.icon ? LINK_ICONS[link.icon] : null;
 	return (
 		<a href={link.href} {...newTabProps(link.href, link.external)}>
+			{Icon && <Icon aria-hidden size={18} />}
 			{link.label}
 		</a>
 	);
 }
 
+const STARS = [1, 2, 3, 4, 5];
+
 export interface FooterProps {
 	/** The identity at the head of the brand column. */
 	brand: Brand;
-	/** Short brand paragraph under the identity. */
-	blurb?: string;
-	/** Icon links (socials, the founder's own site) under the blurb. */
-	socialLinks?: SocialLink[];
-	/** The site's nav, repeated in the explore column. */
-	links?: NavLink[];
-	/** Explore links beyond the nav, e.g. a patient portal. */
-	extraLinks?: SiteLink[];
-	/** Heading over the contact column. Defaults to "Visit". */
-	contactHeading?: string;
 	/**
-	 * The street address, printed under the business name. Omit it for a
-	 * practice with no storefront, and the phone and email stand alone under
-	 * the heading.
+	 * The Google rating as printed, e.g. "4.8 on Google". It sits under the
+	 * logo beside five stars, as plain text and never a link.
+	 */
+	rating?: string;
+	/**
+	 * The one address, the headquarters. Omit it for a business with no
+	 * storefront, and the phone and email stand alone.
 	 */
 	address?: PostalAddress;
+	/** Where the address links: the business's Google profile. */
+	addressHref?: string;
 	phone?: Phone;
 	email?: string;
-	/** Opening hours as display rows, already formatted by the site. */
-	hours?: HoursRow[];
+	/**
+	 * The link columns beside the brand column. The default footer carries
+	 * four: Company, Resources, Social, and Legal. A column with no links is
+	 * left out.
+	 */
+	columns?: FooterColumn[];
 	/** Suffix on the copyright line, e.g. "Dr. Alex Rivers, PT, DPT". */
 	attribution?: string;
 	/** The site's own words for the closing bar's right side, in place of the practice's credit. */
 	note?: string;
-	legalLinks?: SiteLink[];
 	/**
 	 * The practice's credit on the closing bar's right side. Defaults on; off
 	 * leaves the right side empty unless the site gives a note. The copyright
@@ -118,31 +159,46 @@ export interface FooterProps {
 	credit?: boolean;
 }
 
-/** The site footer: brand blurb, explore nav, NAP block, hours, legal links, and the closing bar. */
+/**
+ * The site footer: a brand column (the logo, the Google rating, the address
+ * linked to the Google profile, the phone, and the email), the link columns
+ * beside it, and the closing bar under it all.
+ */
 export function Footer({
 	brand,
-	blurb,
-	socialLinks,
-	links,
-	extraLinks,
-	contactHeading = "Visit",
+	rating,
 	address,
+	addressHref,
 	phone,
 	email,
-	hours,
+	columns,
 	attribution,
 	note,
-	legalLinks,
 	credit = true,
 }: FooterProps) {
 	const { name, logo } = brand;
 	const wordmark = logo?.wordmark ?? name;
+	const shown = (columns ?? []).filter((column) => column.links.length > 0);
+	const addressLines = address && (
+		<>
+			{/* A business that publishes a service area but no storefront leaves
+			    street empty; a blank line reads as a broken block. */}
+			{address.street && <span>{address.street}</span>}
+			<span>
+				{address.locality}, {address.region}
+				{address.postalCode ? ` ${address.postalCode}` : ""}
+			</span>
+		</>
+	);
 
 	return (
 		<>
 			<footer className="footer">
 				<div className="wrap">
-					<div className="footer-grid">
+					<div
+						className="footer-grid"
+						style={{ "--footer-columns": shown.length } as CSSProperties}
+					>
 						<div className="footer-brand">
 							{logo?.tile ? (
 								<p className="footer-wordmark">
@@ -160,79 +216,44 @@ export function Footer({
 									{logo?.run && <span className="wordmark-run" aria-hidden="true" />}
 								</p>
 							)}
-							{blurb && <p>{blurb}</p>}
-							{socialLinks && socialLinks.length > 0 && (
-								<div className="footer-social">
-									{socialLinks.map((link) => (
-										<SocialIconLink key={link.href} link={link} />
-									))}
-								</div>
+							{rating && (
+								<p className="footer-rating">
+									<span className="footer-stars" aria-hidden="true">
+										{STARS.map((star) => (
+											<Star key={star} size={16} fill="currentColor" />
+										))}
+									</span>
+									{rating}
+								</p>
+							)}
+							{(address || phone || email) && (
+								<address className="nap">
+									{address &&
+										(addressHref ? (
+											<a
+												className="nap-address"
+												href={addressHref}
+												{...newTabProps(addressHref, true)}
+											>
+												{addressLines}
+											</a>
+										) : (
+											<span className="nap-address">{addressLines}</span>
+										))}
+									{phone && <a href={`tel:${phone.e164}`}>{phone.display}</a>}
+									{email && <a href={`mailto:${email}`}>{email}</a>}
+								</address>
 							)}
 						</div>
-						<div>
-							<h4>Explore</h4>
-							<nav aria-label="Footer">
-								{links?.map((link) => (
-									<a key={link.href} href={link.href}>
-										{link.label}
-									</a>
-								))}
-								{extraLinks?.map((link) => (
-									<FooterLink key={link.href} link={link} />
+						{shown.map((column) => (
+							<nav key={column.heading} className="footer-column" aria-label={column.heading}>
+								<h4>{column.heading}</h4>
+								{column.links.map((link) => (
+									<ColumnLink key={`${link.label} ${link.href}`} link={link} />
 								))}
 							</nav>
-						</div>
-						<div>
-							<h4>{contactHeading}</h4>
-							<address className="nap">
-								{address && (
-									<>
-										<strong>{name}</strong>
-										<br />
-										{/* A business that publishes a service area but no storefront
-										    leaves street empty; a blank line reads as a broken block. */}
-										{address.street && (
-											<>
-												{address.street}
-												<br />
-											</>
-										)}
-										{address.locality}, {address.region}
-										{address.postalCode ? ` ${address.postalCode}` : ""}
-										<br />
-										<br />
-									</>
-								)}
-								{phone && (
-									<>
-										<a href={`tel:${phone.e164}`}>{phone.display}</a>
-										<br />
-									</>
-								)}
-								{email && <a href={`mailto:${email}`}>{email}</a>}
-							</address>
-						</div>
-						{hours && hours.length > 0 && (
-							<div>
-								<h4>Hours</h4>
-								<div className="footer-hours">
-									{hours.map((row) => (
-										<span key={row.label}>
-											{row.label}&nbsp;&nbsp;{row.range}
-											<br />
-										</span>
-									))}
-								</div>
-							</div>
-						)}
+						))}
 					</div>
-					{legalLinks && legalLinks.length > 0 && (
-						<div className="footer-legal">
-							{legalLinks.map((link) => (
-								<FooterLink key={link.href} link={link} />
-							))}
-						</div>
-					)}
 				</div>
 			</footer>
 			<ClosingBar

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
-import { formatHoursRange } from "../lib/hours";
 import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
 import type { NavItem, SiteConfig } from "../sections/siteConfig";
+import type { FooterColumn } from "../types";
 import { ClosingBar } from "./ClosingBar";
 import { Copyright } from "./Copyright";
 import { Footer } from "./Footer";
@@ -96,6 +96,20 @@ export function SiteShell({
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
 	const based = <T extends { href: string }>(items: T[] | undefined) =>
 		items?.map((item) => ({ ...item, href: withBase(item.href) }));
+	// The default footer's four columns, drawn from what the config already
+	// holds; a site that wants other columns names them in `footer.columns`.
+	const footerColumns: FooterColumn[] = site.footer?.columns?.map((column) => ({
+		...column,
+		links: based(column.links) ?? [],
+	})) ?? [
+		{ heading: "Company", links },
+		{ heading: "Resources", links: based(site.footerLinks) ?? [] },
+		{
+			heading: "Social",
+			links: (based(site.socialLinks) ?? []).map((link) => ({ ...link, external: true })),
+		},
+		{ heading: "Legal", links: based(site.legalLinks) ?? [] },
+	];
 	// The header takes one variant. A hero page wins over a dark one: the bar
 	// sits transparent over the hero either way, and only its scrolled state
 	// differed.
@@ -124,21 +138,14 @@ export function SiteShell({
 				{footer ? (
 					<Footer
 						brand={brand}
-						blurb={site.footerBlurb}
-						socialLinks={based(site.socialLinks)}
-						links={links}
-						extraLinks={based(site.footerLinks)}
-						contactHeading={site.footer?.contactHeading}
+						rating={site.footer?.rating}
 						address={site.footer?.showAddress === false ? undefined : site.address}
+						addressHref={site.mapLinkURL}
 						phone={site.phone}
 						email={site.email}
-						hours={site.hours.map((row) => ({
-							label: row.labelShort,
-							range: formatHoursRange(row, { short: true, clock: site.clock }),
-						}))}
+						columns={footerColumns}
 						attribution={site.attribution}
 						note={site.footer?.note}
-						legalLinks={based(site.legalLinks)}
 						credit={credit}
 					/>
 				) : (

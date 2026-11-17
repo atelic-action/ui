@@ -23,5 +23,4 @@ export const testSite: SiteConfig = {
 	},
 	hours: [],
 	serviceAreas: [],
-	footerBlurb: "Blurb.",
 };

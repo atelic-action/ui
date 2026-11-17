@@ -32,8 +32,9 @@ describe("SiteShell", () => {
 		expect(screen.getByText("Page body").closest("main")).toHaveAttribute("id", "main");
 
 		const footer = screen.getByRole("contentinfo");
-		expect(within(footer).getByRole("heading", { name: "Visit" })).toBeInTheDocument();
 		expect(footer.querySelector("address.nap")?.textContent).toContain("Denver, CO 80205");
+		const company = within(footer).getByRole("navigation", { name: "Company" });
+		expect(within(company).getByRole("link", { name: "About" })).toHaveAttribute("href", "/about");
 
 		const credit = closingBar(container);
 		expect(credit).not.toBeNull();
@@ -127,46 +128,57 @@ describe("SiteShell", () => {
 		expect(dark.container.querySelector("header.nav")).toHaveClass("is-solid", "nav-dark");
 	});
 
-	it("carries the footer overrides and formats the hours compactly", () => {
+	it("draws the default footer from the config: the rating, the linked address, and the four columns", () => {
 		const site: SiteConfig = {
 			...testSite,
-			footer: { contactHeading: "Get in touch", showAddress: false, note: "A closing note" },
-			hours: [
-				{ label: "Monday", labelShort: "Mon", days: ["Monday"], opens: "11:00", closes: "19:00" },
-				{ label: "Sunday", labelShort: "Sun", days: [] },
+			mapLinkURL: "https://maps.example/profile",
+			footerLinks: [{ label: "Financing", href: "/financing" }],
+			socialLinks: [
+				{ label: "Instagram", href: "https://instagram.example/test", icon: "instagram" },
 			],
+			legalLinks: [{ label: "Privacy", href: "/privacy" }],
+			footer: { rating: "4.8 on Google", note: "A closing note" },
 		};
 		renderShell({}, site);
 
 		const footer = screen.getByRole("contentinfo");
-		expect(within(footer).getByRole("heading", { name: "Get in touch" })).toBeInTheDocument();
-		expect(footer.querySelector("address.nap")?.textContent).not.toContain("123 Main St");
-		expect(within(footer).getByRole("link", { name: testSite.email })).toBeInTheDocument();
+		expect(footer.querySelector(".footer-rating")?.textContent).toBe("4.8 on Google");
+		expect(within(footer).getByRole("link", { name: /123 Main St/ })).toHaveAttribute(
+			"href",
+			"https://maps.example/profile",
+		);
+		const headings = Array.from(footer.querySelectorAll(".footer-column h4"), (h) => h.textContent);
+		expect(headings).toEqual(["Company", "Resources", "Social", "Legal"]);
+		const social = within(footer).getByRole("navigation", { name: "Social" });
+		expect(within(social).getByRole("link", { name: "Instagram" })).toHaveAttribute(
+			"target",
+			"_blank",
+		);
 		expect(screen.getByText("A closing note")).toHaveClass("closing-bar-right");
-		const hours = footer.querySelector(".footer-hours")?.textContent?.replace(/\s+/g, " ");
-		expect(hours).toContain("Mon 11a to 7p");
-		expect(hours).toContain("Sun Closed");
 	});
 
-	it("prints the footer hours on the 24 hour clock when the site opts in", () => {
+	it("leaves out the columns the config has nothing for, and the address when told to", () => {
+		const site: SiteConfig = { ...testSite, footer: { showAddress: false } };
+		renderShell({}, site);
+
+		const footer = screen.getByRole("contentinfo");
+		const headings = Array.from(footer.querySelectorAll(".footer-column h4"), (h) => h.textContent);
+		expect(headings).toEqual(["Company"]);
+		expect(footer.querySelector("address.nap")?.textContent).not.toContain("123 Main St");
+		expect(within(footer).getByRole("link", { name: testSite.email })).toBeInTheDocument();
+	});
+
+	it("takes the columns a site names outright in place of the derived four", () => {
 		const site: SiteConfig = {
 			...testSite,
-			clock: "24h",
-			hours: [
-				{
-					label: "Monday to Friday",
-					labelShort: "Mon to Fri",
-					days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-					opens: "09:00",
-					closes: "17:00",
-				},
-			],
+			legalLinks: [{ label: "Privacy", href: "/privacy" }],
+			footer: { columns: [{ heading: "Guides", links: [{ label: "Hail", href: "/hail" }] }] },
 		};
 		renderShell({}, site);
 
 		const footer = screen.getByRole("contentinfo");
-		const hours = footer.querySelector(".footer-hours")?.textContent?.replace(/\s+/g, " ");
-		expect(hours).toContain("Mon to Fri 09:00 to 17:00");
+		const headings = Array.from(footer.querySelectorAll(".footer-column h4"), (h) => h.textContent);
+		expect(headings).toEqual(["Guides"]);
 	});
 
 	it("wears the .atelic-ui scope", () => {

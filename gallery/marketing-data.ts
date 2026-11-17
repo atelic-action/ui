@@ -46,7 +46,6 @@ export const bakery: SiteConfig = {
 		{ label: "Monday", labelShort: "Mon", days: [] },
 	],
 	serviceAreas: ["Fairhaven", "Old Mill", "the Riverside blocks"],
-	footerBlurb: "Bread mixed, shaped, and baked in the back of the shop since 2014.",
 	footerLinks: [{ label: "Wholesale portal", href: "https://portal.example.com", external: true }],
 };
 

@@ -28,7 +28,13 @@ describe("server rendering", () => {
 				/>
 				<main id="main" />
 				<StickyCTABar primaryCTA={primaryCTA} phone={phone} />
-				<Footer brand={brand} links={links} address={address} phone={phone} email={email} />
+				<Footer
+					brand={brand}
+					address={address}
+					phone={phone}
+					email={email}
+					columns={[{ heading: "Company", links }]}
+				/>
 			</div>,
 		);
 
