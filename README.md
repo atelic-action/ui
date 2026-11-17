@@ -17,7 +17,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut, there from the top on an interior page (`fromTop`) and sliding in after a scroll on a hero page | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
 | `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
 | `SkipLink` | `@atelic-action/ui/chrome` | The keyboard user's jump past the chrome | [#skip-link](https://ui.atelic.me/#skip-link) |
-| `Brand`, `BrandLogo`, `CallToAction`, `HoursRow`, `MenuContact`, `NavLink`, `Phone`, `PostalAddress`, `SiteLink`, `SocialLink`, `PageStop` | `@atelic-action/ui/chrome` | The shapes the chrome renders from (types) | none |
+| `Brand`, `BrandLogo`, `CallToAction`, `HoursRow`, `MenuContact`, `NavLink`, `Phone`, `PostalAddress`, `SiteLink`, `SocialLink`, `PageStop`, `FooterColumn`, `FooterColumnLink`, `FooterIcon` | `@atelic-action/ui/chrome` | The shapes the chrome renders from (types) | none |
 | `NotFound` | `@atelic-action/ui/components` | The body of the page an unknown path renders | [#not-found](https://ui.atelic.me/#not-found) |
 | `Checklist` | `@atelic-action/ui/components` | A short list of checks, each passed or failed | [#checklist](https://ui.atelic.me/#checklist) |
 | `IconList` | `@atelic-action/ui/components` | A list whose bullets are icons, one for the list or one per item, each in a tone | [#icon-list](https://ui.atelic.me/#icon-list) |
@@ -547,7 +547,7 @@ The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFra
 
 The entry also exports the helpers the sections use, for a site's own code: `formatClock`, `formatHoursRange`, and `isClosed` for hours, `isHoneypotFilled`, and `trackEvent`.
 
-Hours print on the 12 hour clock unless the site's config sets `clock: "24h"`, which turns "9a to 5p" into "09:00 to 17:00" everywhere hours appear: the footer through `SiteShell`, `LocationSection`, and `HoursTable` (which takes `clock` as a prop when used on its own). `formatClock` and `formatHoursRange` take the same `clock` option for a site's own code.
+Hours print on the 12 hour clock unless the site's config sets `clock: "24h"`, which turns "9a to 5p" into "09:00 to 17:00" everywhere hours appear: `LocationSection` and `HoursTable` (which takes `clock` as a prop when used on its own). `formatClock` and `formatHoursRange` take the same `clock` option for a site's own code.
 
 ### The Marketing Vite Config and Commands
 

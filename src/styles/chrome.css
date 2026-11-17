@@ -429,6 +429,9 @@
 		color: #fff;
 		font-weight: 600;
 	}
+	.atelic-ui .footer-grid > * {
+		overflow-wrap: anywhere;
+	}
 	.atelic-ui .footer .nap-address {
 		display: flex;
 		flex-direction: column;
