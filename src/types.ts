@@ -63,12 +63,34 @@ export interface SiteLink {
 	external?: boolean;
 }
 
-/** An icon link in the footer's brand column. */
+/** The icons a footer link can carry. */
+export type FooterIcon =
+	| "facebook"
+	| "github"
+	| "instagram"
+	| "linkedin"
+	| "mail"
+	| "star"
+	| "user"
+	| "youtube";
+
+/** A social link; the footer's Social column prints it with its icon. */
 export interface SocialLink {
-	/** Accessible name, e.g. "GitHub". */
+	/** The link's words, e.g. "GitHub". */
 	label: string;
 	href: string;
-	icon: "github" | "linkedin" | "mail" | "user";
+	icon: FooterIcon;
+}
+
+/** One link in a footer column, with an icon in front when it names one. */
+export interface FooterColumnLink extends SiteLink {
+	icon?: FooterIcon;
+}
+
+/** One link column of the footer, under its heading. */
+export interface FooterColumn {
+	heading: string;
+	links: FooterColumnLink[];
 }
 
 export interface Phone {

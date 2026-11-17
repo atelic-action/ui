@@ -12,7 +12,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 |---|---|---|---|
 | `SiteHeader` | `@atelic-action/ui/chrome` | The fixed bar: the lockup, the nav or a page's own stops, the call to action, the burger; transparent, solid, or dark | [#site-header](https://ui.atelic.me/#site-header) |
 | `SiteMenu` | `@atelic-action/ui/chrome` | The phone's full screen menu, on a native modal dialog | [#site-menu](https://ui.atelic.me/#site-menu) |
-| `Footer` | `@atelic-action/ui/chrome` | The site's foot: brand column, nav, address, hours, legal links, closing bar | [#footer](https://ui.atelic.me/#footer) |
+| `Footer` | `@atelic-action/ui/chrome` | The default footer: the brand column (logo, Google rating, linked address, phone, email), the link columns, and the closing bar | [#footer](https://ui.atelic.me/#footer) |
 | `ClosingBar`, `Copyright`, `Credit` | `@atelic-action/ui/chrome` | The line that closes every page, in two sides that each take anything: by default `Copyright` with the business's name on the left and `Credit`, the practice's made with line, on the right | [#closing-bar](https://ui.atelic.me/#closing-bar) |
 | `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut, there from the top on an interior page (`fromTop`) and sliding in after a scroll on a hero page | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
 | `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
@@ -475,6 +475,33 @@ export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath"
 	return <Shell {...props} currentPath={currentPath} basePath={import.meta.env.BASE_URL} />;
 }
 ```
+
+### The Default Footer
+
+Every site's footer has one shape, and `Footer` draws it (7.0.0):
+
+- **The brand column:** the logo, then the Google rating as plain text beside five stars (never a link), then the one address, the headquarters, linked to the business's Google profile, then the phone and the email, each a link.
+- **Four link columns:** Company, Resources, Social, and Legal, in that order. A Social link carries its icon in front of its words. A column with no links is left out, and the grid sizes itself to the columns shown.
+- **The closing bar:** `ClosingBar` under it all, `Copyright` with the business's name on the left and `Credit` on the right.
+
+The header carries the services and the service areas, so the footer does not repeat them. It holds no blurb, no hours, no call to action, and no credential badges; a site that needs one of those puts it on a page.
+
+`SiteShell` fills the footer from the `SiteConfig`, so a site names nothing twice:
+
+| The footer shows | From the config |
+|---|---|
+| The rating | `footer.rating`, as printed (`"4.8 on Google"`) |
+| The address and its link | `address` and `mapLinkURL`; `footer.showAddress: false` drops the address |
+| The phone and the email | `phone`, `email` |
+| Company | `nav` |
+| Resources | `footerLinks` |
+| Social | `socialLinks`, each with its `icon` (`facebook`, `github`, `instagram`, `linkedin`, `mail`, `star`, `user`, `youtube`) |
+| Legal | `legalLinks` |
+| The closing bar's right side | the practice's credit, or `footer.note` in its place |
+
+A site whose footer genuinely needs other columns names them outright in `footer.columns`, which replaces the derived four. Rendering `Footer` directly, a site passes `columns` itself.
+
+Moving to 7.0.0: `footerBlurb` and `footer.contactHeading` are gone from the config, and `Footer` no longer takes `blurb`, `socialLinks`, `links`, `extraLinks`, `contactHeading`, `hours`, or `legalLinks`. Delete `footerBlurb` from the site config; the rest carries over through the mapping above. The hours stay in the config for the structured data and the page sections that print them.
 
 ### Every Section
 

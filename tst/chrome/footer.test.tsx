@@ -1,74 +1,110 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { Footer, type FooterProps } from "../../src/chrome";
-import { address, brand, email, links, phone } from "../fixtures";
+import { address, brand, email, phone } from "../fixtures";
 
-const props: FooterProps = { brand, links, address, phone, email, blurb: "Blurb." };
+const columns: FooterProps["columns"] = [
+	{ heading: "Company", links: [{ label: "About", href: "/about" }] },
+	{ heading: "Resources", links: [{ label: "Financing", href: "/financing" }] },
+	{
+		heading: "Social",
+		links: [
+			{
+				label: "Instagram",
+				href: "https://instagram.example/test",
+				icon: "instagram",
+				external: true,
+			},
+		],
+	},
+	{ heading: "Legal", links: [{ label: "Privacy", href: "/privacy" }] },
+];
 
-/*
- * The footer's wording overrides are optional, so the thing worth locking is
- * that leaving them out changes nothing: the "Visit" heading and the address
- * print exactly as every shipped site has them.
- */
+const props: FooterProps = {
+	brand,
+	rating: "4.8 on Google",
+	address,
+	addressHref: "https://maps.example/profile",
+	phone,
+	email,
+	columns,
+};
+
 describe("Footer", () => {
-	it("heads the contact column with Visit and prints the address by default", () => {
+	it("heads the brand column with the logo, then the rating, the address, the phone, and the email", () => {
 		const { container } = render(<Footer {...props} />);
+		const brandColumn = container.querySelector(".footer-brand") as HTMLElement;
 
-		expect(screen.getByRole("heading", { name: "Visit" })).toBeInTheDocument();
-		const nap = container.querySelector("address.nap")?.textContent ?? "";
-		expect(nap).toContain(brand.name);
-		expect(nap).toContain("123 Main St");
-		expect(nap).toContain("Denver, CO 80205");
+		expect(within(brandColumn).getByRole("img", { name: brand.name })).toBeInTheDocument();
+		const order = Array.from(brandColumn.children, (child) => child.className || child.tagName);
+		expect(order).toEqual(["IMG", "footer-rating", "nap"]);
+		const nap = Array.from(brandColumn.querySelectorAll(".nap > *"), (row) => row.textContent);
+		expect(nap).toEqual(["123 Main StDenver, CO 80205", phone.display, email]);
 	});
 
-	it("takes a heading override for a business with nothing to visit", () => {
-		render(<Footer {...props} contactHeading="Get in touch" />);
+	it("prints the rating as plain text beside five stars, never a link", () => {
+		const { container } = render(<Footer {...props} />);
+		const rating = container.querySelector(".footer-rating");
 
-		expect(screen.getByRole("heading", { name: "Get in touch" })).toBeInTheDocument();
-		expect(screen.queryByRole("heading", { name: "Visit" })).not.toBeInTheDocument();
+		expect(rating?.textContent).toBe("4.8 on Google");
+		expect(rating?.querySelectorAll(".footer-stars svg")).toHaveLength(5);
+		expect(rating?.querySelector("a")).toBeNull();
+		expect(rating?.closest("a")).toBeNull();
 	});
 
-	it("drops the name and address and keeps the contact details when no address is given", () => {
-		const { container } = render(<Footer {...props} address={undefined} />);
+	it("links the address to the Google profile, the phone to a call, and the email to mail", () => {
+		render(<Footer {...props} />);
 
-		const nap = container.querySelector("address.nap")?.textContent ?? "";
-		expect(nap).not.toContain("123 Main St");
-		expect(nap).not.toContain("Denver, CO 80205");
-		expect(screen.getByRole("link", { name: email })).toBeInTheDocument();
+		const profile = screen.getByRole("link", { name: /123 Main St/ });
+		expect(profile).toHaveAttribute("href", "https://maps.example/profile");
+		expect(profile).toHaveAttribute("target", "_blank");
+		expect(screen.getByRole("link", { name: phone.display })).toHaveAttribute(
+			"href",
+			`tel:${phone.e164}`,
+		);
+		expect(screen.getByRole("link", { name: email })).toHaveAttribute("href", `mailto:${email}`);
+	});
+
+	it("prints the address as text when it has no profile to link, and drops it when none is given", () => {
+		const { container, unmount } = render(<Footer {...props} addressHref={undefined} />);
+		expect(container.querySelector("span.nap-address")?.textContent).toContain("123 Main St");
+		expect(screen.queryByRole("link", { name: /123 Main St/ })).toBeNull();
+		unmount();
+
+		const bare = render(<Footer {...props} address={undefined} />);
+		expect(bare.container.querySelector(".nap-address")).toBeNull();
 		expect(screen.getByRole("link", { name: phone.display })).toBeInTheDocument();
 	});
 
-	it("hands its name and note to the closing bar, and keeps the legal links above it", () => {
-		const { container } = render(
-			<Footer
-				{...props}
-				note="Made with care in Denver"
-				legalLinks={[{ label: "Privacy", href: "/privacy" }]}
-			/>,
-		);
+	it("lays the link columns out in the order given, each a nav under its heading", () => {
+		const { container } = render(<Footer {...props} />);
 
-		const bar = container.querySelector("footer.footer + .closing-bar");
-		expect(bar?.textContent).toContain(`© ${new Date().getFullYear()} ${brand.name}`);
-		expect(bar?.textContent).toContain("Made with care in Denver");
-		expect(bar?.textContent).not.toContain("Privacy");
-		expect(container.querySelector("footer.footer .footer-legal")?.textContent).toBe("Privacy");
+		const headings = Array.from(
+			container.querySelectorAll(".footer-column h4"),
+			(h) => h.textContent,
+		);
+		expect(headings).toEqual(["Company", "Resources", "Social", "Legal"]);
+		const social = screen.getByRole("navigation", { name: "Social" });
+		const instagram = within(social).getByRole("link", { name: "Instagram" });
+		expect(instagram.querySelector("svg")).not.toBeNull();
+		expect(instagram).toHaveAttribute("target", "_blank");
+		const legal = screen.getByRole("navigation", { name: "Legal" });
+		expect(within(legal).getByRole("link", { name: "Privacy" }).querySelector("svg")).toBeNull();
 	});
 
-	it("prints hours rows exactly as the site formatted them", () => {
+	it("leaves out a column with no links and sizes the grid to the columns shown", () => {
 		const { container } = render(
 			<Footer
 				{...props}
-				hours={[
-					{ label: "Mon", range: "11a to 7p" },
-					{ label: "Sun", range: "Closed" },
-				]}
+				columns={[...(columns ?? []).slice(0, 2), { heading: "Social", links: [] }]}
 			/>,
 		);
 
-		expect(screen.getByRole("heading", { name: "Hours" })).toBeInTheDocument();
-		const rows = Array.from(container.querySelectorAll(".footer-hours > span"), (row) =>
-			row.textContent?.replace(/\s+/g, " "),
-		);
-		expect(rows).toEqual(["Mon 11a to 7p", "Sun Closed"]);
+		expect(screen.queryByRole("navigation", { name: "Social" })).toBeNull();
+		expect(
+			(container.querySelector(".footer-grid") as HTMLElement).style.getPropertyValue(
+				"--footer-columns",
+			),
+		).toBe("2");
 	});
 
 	it("always carries the closing bar at its foot, and credit off empties its right side", () => {

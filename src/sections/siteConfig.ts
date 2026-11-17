@@ -8,7 +8,7 @@
  * render from it, so standing up a new site means writing one of these plus
  * a theme.css, never touching the components themselves.
  */
-import type { SiteLink, SocialLink } from "../types";
+import type { FooterColumn, SiteLink, SocialLink } from "../types";
 
 export type { SiteLink, SocialLink };
 
@@ -156,28 +156,32 @@ export interface SiteConfig {
 	founder?: Founder;
 	/** Names of offered services for structured data. */
 	offers?: string[];
-	/** Short brand paragraph for the footer. */
-	footerBlurb: string;
-	/** Extra footer nav links beyond the main nav (e.g. a patient portal). */
+	/** The footer's Resources column (guides, financing, a patient portal). */
 	footerLinks?: SiteLink[];
-	/** Icon links (socials, the founder's own site) rendered in the footer brand column. */
+	/** The footer's Social column, each link printed with its icon. */
 	socialLinks?: SocialLink[];
+	/** The footer's Legal column. */
 	legalLinks?: SiteLink[];
 	/** Copyright attribution line suffix, e.g. "Dr. Alex Rivers, PT, DPT". */
 	attribution?: string;
 	/**
-	 * Footer wording overrides: the heading over the address column (defaults
-	 * to "Visit", which reads wrong for a practice with no storefront) and the
-	 * site's own words for the closing bar's right side, in place of the
-	 * practice's credit.
+	 * What the footer needs beyond the fields above. The default footer is a
+	 * brand column (the logo, the rating, `address` linked to `mapLinkURL`,
+	 * `phone`, `email`) and four link columns: Company from `nav`, Resources
+	 * from `footerLinks`, Social from `socialLinks`, and Legal from
+	 * `legalLinks`.
 	 */
 	footer?: {
-		contactHeading?: string;
+		/** The Google rating as printed, e.g. "4.8 on Google". Plain text, never a link. */
+		rating?: string;
+		/** The link columns, named outright, in place of the four the config derives. */
+		columns?: FooterColumn[];
+		/** The site's own words for the closing bar's right side, in place of the practice's credit. */
 		note?: string;
 		/**
-		 * Set false to drop the name and address lines from the contact column
-		 * and leave only the phone and email under the heading (a practice with
-		 * no storefront has nothing to visit). Defaults to true.
+		 * Set false to drop the address from the brand column and leave only
+		 * the phone and email (a practice with no storefront has nothing to
+		 * visit). Defaults to true.
 		 */
 		showAddress?: boolean;
 	};
