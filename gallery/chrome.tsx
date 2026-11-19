@@ -209,10 +209,13 @@ export function ChromePieces() {
 			<Piece
 				id="closing-bar"
 				title="ClosingBar"
-				lead="The line that closes every page, in two sides that each take anything. By default the left is the copyright with the business's name and the right is the practice's credit. The footer renders it at its foot, and a page with no footer, like a sent document, renders it on its own."
+				lead="The line that closes every page, in two sides that each take anything. By default the left is the copyright with the business's name and the right is the practice's credit. The footer renders it at its foot, and a page with no footer renders it on its own: a sent document's shell passes the sender's name, so the document closes the way a site does."
 			>
 				<Example caption="The defaults: Copyright on the left, Credit on the right">
 					<ClosingBar name="Kestrel Hollow Bakehouse" />
+				</Example>
+				<Example caption="A sent document's close: ArtifactShell passes the sender's name">
+					<ClosingBar name="Atelic" />
 				</Example>
 				<Example caption="The credit off: the right side empty">
 					<ClosingBar name="Kestrel Hollow Bakehouse" right={null} />

@@ -25,7 +25,8 @@ export interface ArtifactShellProps {
  * variant with the sender's lockup and never a site nav or a CTA, because the
  * document's own close is the ask. There is no footer and no sticky bar by
  * design: a document ends on its own sign off, and the closing bar is the
- * one line allowed after it.
+ * one line allowed after it, closing the way a site does, with the copyright
+ * in the sender's name on the left and the practice's credit on the right.
  */
 export function ArtifactShell({ site, currentPath, stops, children }: ArtifactShellProps) {
 	const { name, href, logo } = site.sender;
@@ -43,7 +44,7 @@ export function ArtifactShell({ site, currentPath, stops, children }: ArtifactSh
 				stops={stops}
 			/>
 			<main id="main">{children}</main>
-			<ClosingBar />
+			<ClosingBar name={name} />
 			<Watermark />
 		</div>
 	);

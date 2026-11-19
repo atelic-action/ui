@@ -26,7 +26,8 @@ function renderShell(props: Partial<Parameters<typeof ArtifactShell>[0]> = {}) {
  * The chrome's own behavior (the menu dialog, Escape, the scroll spy) is
  * tested with the chrome. What is worth locking here is the composition:
  * the dark header with the sender's lockup and nothing else, the page's stops
- * when it has them, and the closing bar alone at the foot, never a footer.
+ * when it has them, and the closing bar alone at the foot, never a footer,
+ * carrying the sender's copyright and the practice's credit.
  */
 describe("ArtifactShell", () => {
 	it("renders the dark header with the sender's lockup, the document, and the closing bar beneath it", () => {
@@ -47,6 +48,17 @@ describe("ArtifactShell", () => {
 		expect(credit).not.toBeNull();
 		expect(credit?.textContent).toContain("in Denver, Colorado by Atelic");
 		expect(main?.compareDocumentPosition(credit as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+	});
+
+	it("closes the way a site does: the copyright in the sender's name on the left, the credit on the right", () => {
+		const { container } = renderShell();
+		const bar = container.querySelector(".closing-bar");
+		expect(bar).not.toHaveClass("is-solo");
+		const left = bar?.querySelector(".closing-bar-left");
+		const right = bar?.querySelector(".closing-bar-right");
+		expect(left?.textContent).toBe(`© ${new Date().getFullYear()} Test Sender`);
+		expect(right?.textContent).toContain("in Denver, Colorado by Atelic");
+		expect(left?.compareDocumentPosition(right as Node)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
 	});
 
 	it("never renders a footer, a sticky CTA bar, a site nav, or a CTA", () => {
