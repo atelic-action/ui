@@ -21,8 +21,9 @@ export interface ClosingBarProps {
  * The line that closes every page: two sides, each taking anything. By
  * default the left is the copyright with the business's name and the right is
  * the practice's credit. Footer renders it at its foot, and a page with no
- * footer, like a sent document, renders it on its own; with nothing on the
- * left, the right side sits centered.
+ * footer renders it on its own (ArtifactShell passes the sender's name, so a
+ * sent document closes the way a site does); with nothing on the left, the
+ * right side sits centered.
  */
 export function ClosingBar({ name, left, right }: ClosingBarProps) {
 	const leftSide = left === undefined ? name ? <Copyright name={name} /> : null : left;

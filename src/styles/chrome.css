@@ -455,8 +455,10 @@
 	}
 
 	/* ---- Closing bar ---- */
-	/* The developer credit below the footer: its own full width band, centered,
-	   small, and muted. Purely token themed (the hairline and hover lift derive
+	/* The line that closes every page, below the footer or after a document's
+	   sign off: its own full width band, small and muted, the copyright on the
+	   left and the credit on the right, or the one side centered when it stands
+	   alone. Purely token themed (the hairline and hover lift derive
 	   from --surface through color-mix), so it rebrands with theme.css on any
 	   page it renders under, light or dark. */
 	.atelic-ui .closing-bar {
