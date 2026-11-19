@@ -39,6 +39,14 @@ const runs: ArtifactParagraph = [
 	" to ask.",
 ];
 
+const queries: ArtifactParagraph = [
+	"A neighbor typing ",
+	{ query: "sourdough near me" },
+	" finds three other bakeries first, and ",
+	{ query: "bakery open sunday", href: "https://example.com/" },
+	" finds none of them.",
+];
+
 const blank: ArtifactParagraph = ["  ", ""];
 
 export function ArtifactPieces() {
@@ -228,9 +236,11 @@ export function ArtifactPieces() {
 				title="Paragraph"
 				lead={
 					<>
-						Plain data text a routine can write as JSON: a paragraph is a string, or runs of text
-						and <code>{"{ text, href }"}</code> links in order. A link opens in a new tab when it
-						leaves the page, and in place when it is an anchor or a mail link (
+						Plain data text a routine can write as JSON: a paragraph is a string, or runs of text,
+						<code>{"{ text, href }"}</code> links, and <code>{"{ query, href? }"}</code> search
+						queries in order. A query is set in curly quotes and italics, the quotes added for the
+						content, and with an href the quoted words are the link. A link opens in a new tab when
+						it leaves the page, and in place when it is an anchor or a mail link (
 						<code>ArtifactAnchor</code>). <code>Runs</code> sets the runs in a container that is not
 						a paragraph, and <code>isEmpty</code> says when there is nothing to read.
 					</>
@@ -241,6 +251,9 @@ export function ArtifactPieces() {
 				</Example>
 				<Example caption="Runs: a link off the page, an anchor, and a mail link">
 					<Paragraph paragraph={runs} />
+				</Example>
+				<Example caption="Runs: a search query, then one that links">
+					<Paragraph paragraph={queries} />
 				</Example>
 				<Example caption="Runs in a list item, and isEmpty on runs that are all blank">
 					<ul className="gallery-rows">

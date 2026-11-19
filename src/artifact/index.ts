@@ -19,7 +19,10 @@ export {
 	ArtifactAnchor,
 	type ArtifactLink,
 	type ArtifactParagraph,
+	type ArtifactQuery,
+	type ArtifactRun,
 	isEmpty,
+	isQuery,
 	Paragraph,
 	Runs,
 } from "./Paragraph";

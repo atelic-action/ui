@@ -6,6 +6,7 @@ import {
 	GradeChip,
 	gradeLabel,
 	isEmpty,
+	isQuery,
 	Paragraph,
 	Runs,
 	Shot,
@@ -38,6 +39,7 @@ describe("the artifact entry", () => {
 			"Paragraph",
 			"Runs",
 			"isEmpty",
+			"isQuery",
 			"ArtifactAnchor",
 			"newTabProps",
 			"ArtifactShell",
@@ -247,5 +249,39 @@ describe("Paragraph and its runs", () => {
 		expect(isEmpty(["", "  "])).toBe(true);
 		expect(isEmpty(["", { text: "", href: "#a" }])).toBe(false);
 		expect(isEmpty("Words")).toBe(false);
+	});
+
+	it("sets a search query in curly quotes and italics, the quotes added for the content", () => {
+		const { container } = render(
+			<Paragraph paragraph={["Try ", { query: "bakery near me" }, " on a phone."]} />,
+		);
+		const em = container.querySelector("em.query");
+		expect(em?.innerHTML).toBe("“bakery near me”");
+		expect(container.querySelector("p")).toHaveTextContent("Try “bakery near me” on a phone.");
+		expect(container.querySelector("a")).toBeNull();
+	});
+
+	it("makes the quoted words the link when a query has an href", () => {
+		const { container } = render(
+			<Paragraph
+				paragraph={[{ query: "bakery near me", href: "https://example.com/search?q=bakery" }]}
+			/>,
+		);
+		const link = screen.getByRole("link", { name: "“bakery near me”" });
+		expect(link.parentElement).toBe(container.querySelector("em.query"));
+		expect(link).toHaveAttribute("target", "_blank");
+		const anchored = render(<Runs paragraph={[{ query: "hours", href: "#hours" }]} />);
+		expect(anchored.getByRole("link", { name: "“hours”" })).not.toHaveAttribute("target");
+	});
+
+	it("counts a query as something to read", () => {
+		expect(isEmpty(["  ", { query: "" }])).toBe(false);
+		expect(isEmpty([{ query: "bakery near me" }])).toBe(false);
+	});
+
+	it("tells a query from a link and from text", () => {
+		expect(isQuery({ query: "bakery near me" })).toBe(true);
+		expect(isQuery({ text: "the site", href: "#a" })).toBe(false);
+		expect(isQuery("words")).toBe(false);
 	});
 });
