@@ -401,6 +401,7 @@ describe("refusalError and reportRefusedResponse", () => {
 			"555\u2011555\u20110146",
 			"555\u00a0555\u00a00147",
 			"+44 20 7946 0958",
+			"+15555550142",
 		];
 		for (const number of numbers) {
 			const error = await refusalError(
