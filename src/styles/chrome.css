@@ -1312,6 +1312,43 @@
 		gap: 2px;
 		color: var(--star-fill, var(--review-gold));
 	}
+	/* A rating linked to the Google profile: the stars and the words one
+	   link, laid out as the plain line is. */
+	.atelic-ui .footer .footer-rating-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		color: var(--on-dark);
+		text-decoration-line: underline;
+		text-decoration-color: color-mix(in srgb, var(--on-dark) 40%, transparent);
+		text-underline-offset: 4px;
+	}
+	.atelic-ui .footer .footer-rating-link:hover {
+		text-decoration-color: currentColor;
+	}
+	/* The hours, a column of their own beside the links: each row's days over
+	   or beside its range, whichever the column's width allows. */
+	.atelic-ui .footer-hours dl {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+	.atelic-ui .footer-hours dl > div {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 8px;
+	}
+	.atelic-ui .footer-hours dt {
+		color: var(--on-dark);
+		font-weight: var(--weight-medium);
+	}
+	.atelic-ui .footer-hours dd {
+		margin: 0;
+		color: var(--neutral-200);
+	}
 	.atelic-ui .footer nav a {
 		display: flex;
 		align-items: center;
@@ -1350,6 +1387,24 @@
 		.atelic-ui .footer-brand {
 			grid-column: auto;
 		}
+		/* With the hours beside the four link columns a tablet has no room for
+		   the brand column too, so it keeps the row above them until 1100px. */
+		.atelic-ui .footer-grid.has-hours {
+			grid-template-columns: repeat(var(--footer-columns, 5), minmax(0, 1fr));
+		}
+		.atelic-ui .footer-grid.has-hours .footer-brand {
+			grid-column: 1 / -1;
+		}
+	}
+	/* One row from 1100px, the brand column a little wider than without the
+	   hours, so the lockup and the rating keep a line each. */
+	@media (min-width: 1100px) {
+		.atelic-ui .footer-grid.has-hours {
+			grid-template-columns: minmax(0, 2fr) repeat(var(--footer-columns, 5), minmax(0, 1fr));
+		}
+		.atelic-ui .footer-grid.has-hours .footer-brand {
+			grid-column: auto;
+		}
 	}
 	/* Text wordmark for a site with no mark image. */
 	.atelic-ui .footer-wordmark {
@@ -1358,6 +1413,20 @@
 		font-weight: var(--weight-semibold);
 		letter-spacing: -0.045em;
 		margin-bottom: 18px;
+	}
+	/* The header's lockup on the band: the mark at the footer's mark height,
+	   the wordmark beside it, and the brand's name never broken in a word. */
+	.atelic-ui .footer-lockup {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		overflow-wrap: normal;
+	}
+	.atelic-ui .footer-brand .footer-lockup .mark {
+		display: block;
+		flex: none;
+		width: auto;
+		margin-bottom: 0;
 	}
 
 	/* ---- Closing bar ---- */

@@ -68,7 +68,7 @@ export type Clock = "12h" | "24h";
 export interface OpeningHours {
 	/** Row label as displayed, e.g. "Monday" or "Friday to Sunday". */
 	label: string;
-	/** Compact label for the footer, e.g. "Mon" or "Fri to Sun". */
+	/** Compact label for the footer's hours column, e.g. "Mon" or "Fri to Sun". */
 	labelShort: string;
 	/** schema.org day names covered by this row (empty for closed spans). */
 	days: string[];
@@ -217,14 +217,25 @@ export interface SiteConfig {
 	attribution?: string;
 	/**
 	 * What the footer needs beyond the fields above. The default footer is a
-	 * brand column (the logo, the rating, `address` linked to `mapLinkURL`,
-	 * `phone`, `email`) and four link columns: Company from `nav`, Resources
-	 * from `footerLinks`, Social from `socialLinks`, and Legal from
+	 * brand column (the logo, the rating linked to the Google profile,
+	 * `address` linked to `mapLinkURL`, `phone`, `email`), the `hours` as a
+	 * column of their own, and four link columns: Company from `nav`,
+	 * Resources from `footerLinks`, Social from `socialLinks`, and Legal from
 	 * `legalLinks`.
 	 */
 	footer?: {
-		/** The Google rating as printed, e.g. "4.8 on Google". Plain text, never a link. */
+		/** The Google rating as printed, e.g. "4.8 on Google". */
 		rating?: string;
+		/**
+		 * Where the rating links, the profile holding the reviews. Defaults to
+		 * `mapLinkURL`, the business's Google profile, whenever a rating is set.
+		 */
+		ratingHref?: string;
+		/**
+		 * The rating link's accessible name when it should say more than the
+		 * rating's words, e.g. "4.8 on Google, opens the Google profile".
+		 */
+		ratingLabel?: string;
 		/** The link columns, named outright, in place of the four the config derives. */
 		columns?: FooterColumn[];
 		/** The site's own words for the closing bar's right side, in place of the practice's credit. */
@@ -235,6 +246,12 @@ export interface SiteConfig {
 		 * visit). Defaults to true.
 		 */
 		showAddress?: boolean;
+		/**
+		 * Set false to keep the hours out of the footer while `hours` still
+		 * feeds the structured data and the sections that print them. Defaults
+		 * to true: a site whose config holds hours shows them in its footer.
+		 */
+		showHours?: boolean;
 	};
 	ogImage?: string;
 	/** Profile URLs for the schema.org sameAs entity graph (socials, listings). */

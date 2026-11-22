@@ -22,7 +22,7 @@
  */
 export interface BrandLogo {
 	src?: string;
-	/** Alt text where the mark stands alone, as in the footer. */
+	/** Alt text where the mark stands alone: the footer's, when `wordmark` is false. */
 	alt?: string;
 	tile?: string;
 	/** The live name beside the mark; `false` leaves it out. Defaults to the brand's name. */

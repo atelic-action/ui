@@ -1,5 +1,5 @@
 import type { Brand, BrandLogo } from "../types";
-import { hasMark, type ResolvedMark, resolveMark, tintClass } from "./brandMark";
+import { hasMark, type MarkSurface, type ResolvedMark, resolveMark, tintClass } from "./brandMark";
 
 export interface BrandLockupProps {
 	brand: Brand;
@@ -31,9 +31,15 @@ function MarkImage({ mark, surface }: { mark: ResolvedMark; surface?: "light" | 
  * The header's mark: a glyph tile, or the image each surface resolves to
  * (`resolveMark`), one per surface, each shown on its own bar by chrome.css.
  * When both surfaces draw the same image the same way, it is drawn once.
+ * Given a `surface`, it draws that surface's image alone, for a place that
+ * only ever wears one ground (the footer's dark band).
  */
-function Mark({ logo }: { logo?: BrandLogo }) {
+function Mark({ logo, surface }: { logo?: BrandLogo; surface?: MarkSurface }) {
 	if (logo?.tile) return <LogoTile glyph={logo.tile} />;
+	if (surface) {
+		const mark = resolveMark(logo, surface);
+		return mark ? <MarkImage mark={mark} /> : null;
+	}
 	const light = resolveMark(logo, "light");
 	const dark = resolveMark(logo, "dark");
 	if (!light || !dark) return null;
@@ -55,6 +61,32 @@ function Mark({ logo }: { logo?: BrandLogo }) {
 export function lockupWords(name: string, logo: BrandLogo | undefined): string | null {
 	if (logo?.wordmark === false) return hasMark(logo) ? null : name;
 	return logo?.wordmark ?? name;
+}
+
+/**
+ * The lockup's parts, in the order the header draws them: the mark, the
+ * live words beside it (`lockupWords`), and the trailing run. The header
+ * wraps them in its home link; the footer sets them on its dark band, passing
+ * `surface` so only that ground's image is drawn. The mark's image carries
+ * empty alt text, since the words beside it name the lockup.
+ */
+export function LockupParts({
+	name,
+	logo,
+	surface,
+}: {
+	name: string;
+	logo?: BrandLogo;
+	surface?: MarkSurface;
+}) {
+	const wordmark = lockupWords(name, logo);
+	return (
+		<>
+			<Mark logo={logo} surface={surface} />
+			{wordmark !== null && <span className="wordmark">{wordmark}</span>}
+			{logo?.run && <span className="wordmark-run" aria-hidden="true" />}
+		</>
+	);
 }
 
 /**
@@ -81,9 +113,7 @@ export function BrandLockup({ brand, ariaLabel }: BrandLockupProps) {
 	const label = ariaLabel ?? (recipient ? `${words} × ${recipient.alt} home` : `${words} home`);
 	return (
 		<a className="nav-logo" href={href} aria-label={label}>
-			<Mark logo={logo} />
-			{wordmark !== null && <span className="wordmark">{wordmark}</span>}
-			{logo?.run && <span className="wordmark-run" aria-hidden="true" />}
+			<LockupParts name={name} logo={logo} />
 			{recipient && (
 				<>
 					<span className="nav-x" aria-hidden="true">

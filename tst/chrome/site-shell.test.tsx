@@ -143,6 +143,10 @@ describe("SiteShell", () => {
 
 		const footer = screen.getByRole("contentinfo");
 		expect(footer.querySelector(".footer-rating")?.textContent).toBe("4.8 on Google");
+		expect(within(footer).getByRole("link", { name: "4.8 on Google" })).toHaveAttribute(
+			"href",
+			"https://maps.example/profile",
+		);
 		expect(within(footer).getByRole("link", { name: /123 Main St/ })).toHaveAttribute(
 			"href",
 			"https://maps.example/profile",
@@ -158,6 +162,76 @@ describe("SiteShell", () => {
 			"_blank",
 		);
 		expect(screen.getByText("A closing note")).toHaveClass("closing-bar-right");
+	});
+
+	it("links the rating to the Google profile, the site's own link first", () => {
+		const site: SiteConfig = {
+			...testSite,
+			mapLinkURL: "https://maps.example/profile",
+			footer: { rating: "4.8 on Google" },
+		};
+		const { unmount } = renderShell({}, site);
+		expect(screen.getByRole("link", { name: "4.8 on Google" })).toHaveAttribute(
+			"href",
+			"https://maps.example/profile",
+		);
+		unmount();
+
+		renderShell(
+			{},
+			{
+				...site,
+				footer: {
+					rating: "4.8 on Google",
+					ratingHref: "https://reviews.example/test",
+					ratingLabel: "4.8 on Google, opens the reviews",
+				},
+			},
+		);
+		expect(screen.getByRole("link", { name: "4.8 on Google, opens the reviews" })).toHaveAttribute(
+			"href",
+			"https://reviews.example/test",
+		);
+	});
+
+	it("leaves the rating plain when there is no profile to link", () => {
+		renderShell({}, { ...testSite, mapLinkURL: undefined, footer: { rating: "4.8 on Google" } });
+		const footer = screen.getByRole("contentinfo");
+		expect(footer.querySelector(".footer-rating")?.textContent).toBe("4.8 on Google");
+		expect(within(footer).queryByRole("link", { name: "4.8 on Google" })).toBeNull();
+	});
+
+	it("puts the config's hours in the footer by default, on its clock, and keeps them out when told", () => {
+		const site: SiteConfig = {
+			...testSite,
+			clock: "24h",
+			hours: [
+				{
+					label: "Monday to Friday",
+					labelShort: "Mon to Fri",
+					days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+					opens: "09:00",
+					closes: "17:00",
+				},
+				{ label: "Saturday", labelShort: "Sat", days: [] },
+			],
+		};
+		const { unmount } = renderShell({}, site);
+		const column = screen.getByRole("heading", { name: "Hours" }).parentElement as HTMLElement;
+		expect(
+			within(column)
+				.getAllByRole("term")
+				.map((term) => term.textContent),
+		).toEqual(["Mon to Fri", "Sat"]);
+		expect(
+			within(column)
+				.getAllByRole("definition")
+				.map((d) => d.textContent),
+		).toEqual(["09:00 to 17:00", "Closed"]);
+		unmount();
+
+		renderShell({}, { ...site, footer: { showHours: false } });
+		expect(screen.queryByRole("heading", { name: "Hours" })).toBeNull();
 	});
 
 	it("leaves out the columns the config has nothing for, and the address when told to", () => {

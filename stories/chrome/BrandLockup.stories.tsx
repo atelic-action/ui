@@ -324,7 +324,10 @@ export const MarkTableOverAHero: Story = {
 	play: async ({ canvas }) => expectBarTable(canvas, "dark"),
 };
 
-/** The footer band resolves by the dark bar's own order, so the two always agree. */
+/**
+ * The footer band resolves by the dark bar's own order, so the two always
+ * agree, and draws the mark beside the words, as the bar does.
+ */
 export const MarkTableFooter: Story = {
 	render: () => (
 		<div>
@@ -344,7 +347,11 @@ export const MarkTableFooter: Story = {
 				await expect(region.getByText(row.label)).toBeVisible();
 				continue;
 			}
-			const img = region.getByRole("img", { name: row.label }) as HTMLImageElement;
+			// The footer draws the header's lockup: the mark, silent, beside the
+			// words that name it, so the picture is reached from the words.
+			const words = region.getByText(row.label);
+			const img = words.closest(".footer-lockup")?.querySelector("img") as HTMLImageElement;
+			await expect(img, row.label).toHaveAttribute("alt", "");
 			await expect(new URL(img.src).pathname, row.label).toBe(row.dark.file);
 			await expect(getComputedStyle(img).filter, row.label).toBe(row.dark.filter);
 		}

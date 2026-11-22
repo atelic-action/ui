@@ -1,8 +1,15 @@
 import { Mail, Star, UserRound } from "lucide-react";
 import type { ComponentProps, CSSProperties, Ref } from "react";
 import { newTabProps } from "../lib/newTabProps";
-import type { Brand, FooterColumn, FooterColumnLink, Phone, PostalAddress } from "../types";
-import { LogoTile } from "./BrandLockup";
+import type {
+	Brand,
+	FooterColumn,
+	FooterColumnLink,
+	HoursRow,
+	Phone,
+	PostalAddress,
+} from "../types";
+import { LockupParts, LogoTile, lockupWords } from "./BrandLockup";
 import { resolveMark, tintClass } from "./brandMark";
 import { ClosingBar } from "./ClosingBar";
 import { Copyright } from "./Copyright";
@@ -131,9 +138,22 @@ export interface FooterProps {
 	brand: Brand;
 	/**
 	 * The Google rating as printed, e.g. "4.8 on Google". It sits under the
-	 * logo beside five stars, as plain text and never a link.
+	 * logo beside five stars, which are hidden from assistive technology, so
+	 * the line is named by these words. Plain text unless `ratingHref` is given.
 	 */
 	rating?: string;
+	/**
+	 * Where the rating links: the business's Google profile, where the
+	 * reviews are. Given, the whole line (the stars and the words) is one
+	 * link, opening in a new tab as the address does.
+	 */
+	ratingHref?: string;
+	/**
+	 * The rating link's accessible name, when it should say more than the
+	 * words shown, e.g. "4.8 on Google, opens the Google profile". Defaults
+	 * to `rating`.
+	 */
+	ratingLabel?: string;
 	/**
 	 * The one address, the headquarters. Omit it for a business with no
 	 * storefront, and the phone and email stand alone.
@@ -143,6 +163,14 @@ export interface FooterProps {
 	addressHref?: string;
 	phone?: Phone;
 	email?: string;
+	/**
+	 * The opening hours, already formatted by the site (`SiteShell` formats
+	 * the config's `hours`), drawn as their own column beside the link
+	 * columns: each row's days and its range. Left out when empty.
+	 */
+	hours?: HoursRow[];
+	/** The hours column's heading. Defaults to "Hours". */
+	hoursHeading?: string;
 	/**
 	 * The link columns beside the brand column. The default footer carries
 	 * four: Company, Resources, Social, and Legal. A column with no links is
@@ -173,16 +201,22 @@ export interface FooterProps {
 
 /**
  * The site footer: a brand column (the logo, the Google rating, the address
- * linked to the Google profile, the phone, and the email), the link columns
- * beside it, and the closing bar under it all.
+ * linked to the Google profile, the phone, and the email), the hours when the
+ * site gives them, the link columns beside it, and the closing bar under it
+ * all. The logo is the header's lockup: the mark with the wordmark beside it,
+ * or the mark alone when `logo.wordmark` is false.
  */
 export function Footer({
 	brand,
 	rating,
+	ratingHref,
+	ratingLabel,
 	address,
 	addressHref,
 	phone,
 	email,
+	hours,
+	hoursHeading = "Hours",
 	columns,
 	attribution,
 	note,
@@ -191,11 +225,19 @@ export function Footer({
 	ref,
 }: FooterProps) {
 	const { name, logo } = brand;
-	// The footer always names the business when it draws no image.
+	// The footer always names the business beside a glyph tile.
 	const wordmark = logo?.wordmark === false ? name : (logo?.wordmark ?? name);
 	// The band is a dark surface, resolved by the order the header uses.
 	const mark = resolveMark(logo, "dark");
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
+	const hoursShown = hours && hours.length > 0 ? hours : null;
+	const stars = (
+		<span className="footer-stars" aria-hidden="true">
+			{STARS.map((star) => (
+				<Star key={star} size={16} fill="currentColor" />
+			))}
+		</span>
+	);
 	const addressLines = address && (
 		<>
 			{/* A business that publishes a service area but no storefront leaves
@@ -213,8 +255,8 @@ export function Footer({
 			<footer ref={ref} className="footer">
 				<div className="wrap">
 					<div
-						className="footer-grid"
-						style={{ "--footer-columns": shown.length } as CSSProperties}
+						className={hoursShown ? "footer-grid has-hours" : "footer-grid"}
+						style={{ "--footer-columns": shown.length + (hoursShown ? 1 : 0) } as CSSProperties}
 					>
 						<div className="footer-brand">
 							{logo?.tile ? (
@@ -223,24 +265,35 @@ export function Footer({
 									{wordmark}
 									{logo.run && <span className="wordmark-run" aria-hidden="true" />}
 								</p>
-							) : mark ? (
+							) : mark && lockupWords(name, logo) === null ? (
+								// Artwork that already spells the name stands alone, named by its alt.
 								<img className={tintClass(mark)} src={mark.src} alt={logo?.alt ?? name} />
 							) : (
-								<p className="footer-wordmark">
-									{wordmark}
-									{logo?.run && <span className="wordmark-run" aria-hidden="true" />}
+								// The header's lockup on the dark band: the mark with the wordmark
+								// beside it, or the words alone when there is no image.
+								<p className={mark ? "footer-wordmark footer-lockup" : "footer-wordmark"}>
+									<LockupParts name={name} logo={logo} surface="dark" />
 								</p>
 							)}
-							{rating && (
-								<p className="footer-rating">
-									<span className="footer-stars" aria-hidden="true">
-										{STARS.map((star) => (
-											<Star key={star} size={16} fill="currentColor" />
-										))}
-									</span>
-									{rating}
-								</p>
-							)}
+							{rating &&
+								(ratingHref ? (
+									<p className="footer-rating">
+										<a
+											className="footer-rating-link"
+											href={ratingHref}
+											aria-label={ratingLabel}
+											{...newTabProps(ratingHref, true)}
+										>
+											{stars}
+											{rating}
+										</a>
+									</p>
+								) : (
+									<p className="footer-rating">
+										{stars}
+										{rating}
+									</p>
+								))}
 							{(address || phone || email) && (
 								<address className="nap">
 									{address &&
@@ -260,6 +313,23 @@ export function Footer({
 								</address>
 							)}
 						</div>
+						{hoursShown && (
+							<div className="footer-column footer-hours">
+								{/* biome-ignore lint/a11y/useSemanticElements: a heading by role, as the link columns' are (see below) */}
+								<div className="footer-heading" role="heading" aria-level={headingLevel}>
+									{hoursHeading}
+								</div>
+								<dl>
+									{hoursShown.map((row, at) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: two rows may share a label (a split day), so the place keeps the key unique; rows never reorder
+										<div key={`${at} ${row.label}`}>
+											<dt>{row.label}</dt>
+											<dd>{row.range}</dd>
+										</div>
+									))}
+								</dl>
+							</div>
+						)}
 						{shown.map((column) => (
 							<nav key={column.heading} className="footer-column" aria-label={column.heading}>
 								{/* A heading by role rather than by element: a site's own bare

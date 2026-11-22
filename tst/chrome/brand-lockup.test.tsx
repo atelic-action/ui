@@ -140,7 +140,8 @@ describe("BrandLockup marks", () => {
 		);
 		const img = container.querySelector(".footer-brand img");
 		expect(img).toHaveAttribute("src", "/mark-white.svg");
-		expect(img?.className).toBe("");
+		expect(img).not.toHaveClass("is-tinted");
+		expect(img).not.toHaveClass("is-tinted-light");
 	});
 
 	it("resolves the footer by the header's order: the single mark before an ink only cut", () => {

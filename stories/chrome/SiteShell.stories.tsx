@@ -18,6 +18,7 @@ function HomeBody() {
 				image={{ src: "/images/bakery-band.svg", alt: "Loaves cooling on a rack" }}
 				primaryCTA={{ label: "Order ahead", href: "/order" }}
 				secondaryCTA={{ label: "See the menu", href: "/menu" }}
+				scrollTarget="#bread"
 			/>
 			<ProofStrip
 				ariaLabel="Why the line is long"
@@ -112,7 +113,20 @@ export const FullPage: Story = {
 	},
 };
 
+/**
+ * The phone's page, with the footer held shorter than the screen (its hours
+ * off) so the dock can be seen clearing it; a footer taller than the screen
+ * leaves the launcher at the top edge instead (`FullPagePhoneTallFooter`).
+ */
 export const FullPagePhone: Story = {
+	args: {
+		site: {
+			...site,
+			nav: groupedNav,
+			header: { phones },
+			footer: { ...site.footer, showHours: false },
+		},
+	},
 	globals: pin("phone"),
 	play: async ({ canvas, step }) => {
 		const launcher = canvas.getByRole("button", { name: "Talk to us" });
@@ -145,6 +159,30 @@ export const FullPagePhone: Story = {
 			);
 			await expect(credit.contains(hit)).toBe(true);
 		});
+	},
+};
+
+/**
+ * With the hours in it, the phone's footer and its closing bar run taller
+ * than the screen, so at the bottom of the page the launcher stops at the
+ * screen's top edge, still in reach and still clear of the sticky bar.
+ */
+export const FullPagePhoneTallFooter: Story = {
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const launcher = canvas.getByRole("button", { name: "Talk to us" });
+		const call = canvas.getByRole("link", { name: "Call us" });
+		toBottom();
+		// The sticky bar slides in and the closing bar pads its foot by it.
+		await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight));
+		const footer = canvas.getByRole("contentinfo");
+		// The footer's top has scrolled past the screen's.
+		await waitFor(() => {
+			toBottom();
+			return expect(box(footer).top).toBeLessThan(0);
+		});
+		await waitFor(() => expect(Math.round(box(launcher).top)).toBe(16));
+		await expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top);
 	},
 };
 
@@ -229,5 +267,103 @@ export const Comfortable: Story = {
 	args: { density: "comfortable" },
 	play: async ({ canvas }) => {
 		await expect(sectionPadding(canvas)).toBeCloseTo(1280 * 0.09, 0);
+	},
+};
+
+/**
+ * The hero's scroll cue and the contact dock both live at the foot of a
+ * desktop's first screen; on a page that wears the dock the cue moves to the
+ * middle, so the launcher never covers it.
+ */
+export const HeroCueBesideTheDock: Story = {
+	play: async ({ canvas }) => {
+		const cue = canvas.getByRole("link", { name: "Scroll down" });
+		const launcher = canvas.getByRole("button", { name: "Talk to us" });
+		await waitFor(() => expect(Math.round(window.innerHeight - box(launcher).bottom)).toBe(24));
+		const [a, b] = [box(cue), box(launcher)];
+		const apart = a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+		await expect(apart).toBe(true);
+		// What a click at the cue's middle lands on is the cue.
+		const hit = document.elementFromPoint(a.left + a.width / 2, a.top + a.height / 2);
+		await expect(cue.contains(hit)).toBe(true);
+	},
+};
+
+/** An interior page whose short body puts the footer on the first screen. */
+const visitPage = {
+	heroNav: false,
+	currentPath: "/visit",
+	children: (
+		<section className="section">
+			<div className="wrap">
+				<h1>Visit the shop</h1>
+				<p>418 Alder Street, by the old mill. Street parking out front.</p>
+			</div>
+		</section>
+	),
+};
+
+/**
+ * The footer the config fills by default: the hours the config already holds
+ * for its structured data, as their own column, and the rating linked to the
+ * Google profile (`mapLinkURL`) the address links to.
+ */
+export const FooterFromTheConfig: Story = {
+	args: visitPage,
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		await expect(footer.getByRole("heading", { name: "Hours" })).toBeVisible();
+		await expect(footer.getByText("Tue to Fri")).toBeVisible();
+		await expect(footer.getByText("7a to 3p")).toBeVisible();
+		const rating = footer.getByRole("link", { name: "4.9 on Google" });
+		await expect(rating).toHaveAttribute("href", site.mapLinkURL);
+		await expect(rating).toHaveAttribute("target", "_blank");
+	},
+};
+
+/** The same on a phone. */
+export const FooterFromTheConfigPhone: Story = {
+	...FooterFromTheConfig,
+	globals: pin("phone"),
+};
+
+/**
+ * `footer.showHours: false` keeps the hours out of the footer; the config's
+ * hours still feed the structured data and the sections that print them.
+ */
+export const FooterHoursOff: Story = {
+	args: { ...visitPage, site: { ...site, footer: { ...site.footer, showHours: false } } },
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		await expect(footer.queryByRole("heading", { name: "Hours" })).toBeNull();
+		await expect(footer.queryByText("Tue to Fri")).toBeNull();
+		await expect(footer.getAllByRole("navigation").length).toBeGreaterThan(0);
+	},
+};
+
+/** Hours off on a phone. */
+export const FooterHoursOffPhone: Story = {
+	...FooterHoursOff,
+	globals: pin("phone"),
+};
+
+/** A rating with its own link and accessible name, set in the config. */
+export const FooterRatingOwnLink: Story = {
+	args: {
+		...visitPage,
+		site: {
+			...site,
+			footer: {
+				...site.footer,
+				ratingHref: "https://reviews.example.com/kestrel-hollow",
+				ratingLabel: "4.9 on Google, opens the reviews",
+			},
+		},
+	},
+	play: async ({ canvas }) => {
+		const rating = within(canvas.getByRole("contentinfo")).getByRole("link", {
+			name: "4.9 on Google, opens the reviews",
+		});
+		await expect(rating).toHaveAttribute("href", "https://reviews.example.com/kestrel-hollow");
 	},
 };

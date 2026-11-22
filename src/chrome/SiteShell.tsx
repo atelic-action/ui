@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useRef } from "react";
 import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
+import { formatHoursRange } from "../lib/hours";
 import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
 import type { Density, NavItem, SiteConfig } from "../sections/siteConfig";
@@ -202,6 +203,19 @@ export function SiteShell({
 		},
 		{ heading: "Legal", links: based(site.legalLinks) ?? [] },
 	];
+	// The footer's hours, formatted as the footer prints them, unless the site
+	// keeps them out; the config's hours still feed its structured data.
+	const footerHours =
+		site.footer?.showHours === false
+			? undefined
+			: site.hours?.map((row) => ({
+					label: row.labelShort,
+					range: formatHoursRange(row, { short: true, clock: site.clock }),
+				}));
+	// The rating links to the Google profile: the site's own link for it, else
+	// the profile the address already links to.
+	const rating = site.footer?.rating;
+	const ratingHref = rating ? (site.footer?.ratingHref ?? site.mapLinkURL) : undefined;
 	// The header takes one variant. A hero page wins over a dark one: the bar
 	// sits transparent over the hero either way, and only its scrolled state
 	// differed.
@@ -242,11 +256,14 @@ export function SiteShell({
 				{footer ? (
 					<Footer
 						brand={brand}
-						rating={site.footer?.rating}
+						rating={rating}
+						ratingHref={ratingHref}
+						ratingLabel={site.footer?.ratingLabel}
 						address={site.footer?.showAddress === false ? undefined : site.address}
 						addressHref={site.mapLinkURL}
 						phone={site.phone}
 						email={site.email}
+						hours={footerHours}
 						columns={footerColumns}
 						attribution={site.attribution}
 						note={site.footer?.note}
