@@ -45,8 +45,9 @@ const names = (canvas: Canvas) =>
 				reviews.concat(longestReview).find((review) => within(card).queryByText(review.by))?.by,
 		);
 
-/** Newest first, each card's date linking out to the review at its source. */
+/** Newest first, each card's date linking out to the review at its source. The data arrives oldest first, so the sort has work to do. */
 export const Default: Story = {
+	args: { items: [...reviews].reverse() },
 	play: async ({ canvas, step }) => {
 		await step("the newest first", async () => {
 			await expect(names(canvas)).toEqual([
@@ -158,11 +159,11 @@ export const NoClamp: Story = {
 
 /** The controls turned off, though the data could drive them. */
 export const NoControls: Story = {
-	args: { filterable: false, sortable: false },
+	args: { filterable: false, sortable: false, items: [...reviews].reverse() },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole("combobox")).toBeNull();
-		// Unsorted, the wall keeps the data's order.
-		await expect(names(canvas)[0]).toBe("Priya N.");
+		// Unsorted, the wall keeps the data's order: here the oldest first.
+		await expect(names(canvas)[0]).toBe("Owen at Lantern Coffee");
 	},
 };
 

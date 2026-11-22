@@ -49,7 +49,11 @@ export function reduceMotion(): () => void {
 	window.matchMedia = ((query: string) => {
 		const list = original.call(window, query);
 		if (!query.includes("prefers-reduced-motion")) return list;
-		return { ...list, matches: /reduce/.test(query), media: query } as MediaQueryList;
+		// Shadow `matches` on the real list, so its listeners and methods keep working.
+		Object.defineProperty(list, "matches", {
+			value: /prefers-reduced-motion:\s*reduce/.test(query),
+		});
+		return list;
 	}) as typeof window.matchMedia;
 
 	return () => {
