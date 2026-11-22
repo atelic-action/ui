@@ -82,7 +82,7 @@ describe("ContactDock", () => {
 	it("closes from the close button in its head, handing focus back to the launcher", () => {
 		const { container } = render(<ContactDock label="Talk to us" items={items} defaultOpen />);
 		const panel = container.querySelector(".cd-panel") as HTMLElement;
-		fireEvent.click(within(panel).getByRole("button", { name: "Close" }));
+		fireEvent.click(within(panel).getByRole("button", { name: "Close panel" }));
 		expect(launcher()).toHaveAttribute("aria-expanded", "false");
 		expect(launcher()).toHaveFocus();
 	});

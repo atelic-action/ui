@@ -14,7 +14,7 @@ import { newTabProps } from "../lib/newTabProps";
 import type { Brand, CallToAction, HeaderPhone, MenuContact, NavLink } from "../types";
 import { BrandLockup } from "./BrandLockup";
 import { NavMegaPanel } from "./NavMegaPanel";
-import { groupHrefs } from "./navSections";
+import { groupHrefs, isGroup } from "./navSections";
 import { SiteMenu } from "./SiteMenu";
 
 /**
@@ -152,7 +152,7 @@ export function SiteHeader({
 	const barCTA = hideCTA ? undefined : menuCTA;
 	const hasMenu = menuLinks.length > 0 || menuCTA !== undefined;
 	const barPhones = stops ? [] : (phones ?? []).slice(0, 2);
-	const hasGroups = !stops && (links ?? []).some((link) => (link.columns?.length ?? 0) > 0);
+	const hasGroups = !stops && (links ?? []).some(isGroup);
 	// A bar holding groups or numbers needs more width before the burger steps aside.
 	const wide = hasGroups || barPhones.length > 0;
 
@@ -231,7 +231,7 @@ export function SiteHeader({
 									onBlur={onNavBlur}
 								>
 									{links.map((link, index) =>
-										link.columns && link.columns.length > 0 ? (
+										isGroup(link) ? (
 											<div className="nav-item" key={link.href}>
 												<button
 													type="button"

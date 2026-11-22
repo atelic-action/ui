@@ -147,7 +147,10 @@ describe("SiteShell", () => {
 			"href",
 			"https://maps.example/profile",
 		);
-		const headings = Array.from(footer.querySelectorAll(".footer-column h4"), (h) => h.textContent);
+		const headings = Array.from(
+			footer.querySelectorAll(".footer-column .footer-heading"),
+			(h) => h.textContent,
+		);
 		expect(headings).toEqual(["Company", "Resources", "Social", "Legal"]);
 		const social = within(footer).getByRole("navigation", { name: "Social" });
 		expect(within(social).getByRole("link", { name: "Instagram" })).toHaveAttribute(
@@ -162,7 +165,10 @@ describe("SiteShell", () => {
 		renderShell({}, site);
 
 		const footer = screen.getByRole("contentinfo");
-		const headings = Array.from(footer.querySelectorAll(".footer-column h4"), (h) => h.textContent);
+		const headings = Array.from(
+			footer.querySelectorAll(".footer-column .footer-heading"),
+			(h) => h.textContent,
+		);
 		expect(headings).toEqual(["Company"]);
 		expect(footer.querySelector("address.nap")?.textContent).not.toContain("123 Main St");
 		expect(within(footer).getByRole("link", { name: testSite.email })).toBeInTheDocument();
@@ -177,7 +183,10 @@ describe("SiteShell", () => {
 		renderShell({}, site);
 
 		const footer = screen.getByRole("contentinfo");
-		const headings = Array.from(footer.querySelectorAll(".footer-column h4"), (h) => h.textContent);
+		const headings = Array.from(
+			footer.querySelectorAll(".footer-column .footer-heading"),
+			(h) => h.textContent,
+		);
 		expect(headings).toEqual(["Guides"]);
 	});
 

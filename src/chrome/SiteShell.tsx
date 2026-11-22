@@ -1,4 +1,4 @@
-import { type ReactNode, useRef } from "react";
+import { type CSSProperties, type ReactNode, useRef, useState } from "react";
 import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
 import { BasePathProvider } from "../routing/BasePathProvider";
@@ -9,7 +9,7 @@ import { ClosingBar } from "./ClosingBar";
 import { ContactDock } from "./ContactDock";
 import { Copyright } from "./Copyright";
 import { Footer } from "./Footer";
-import { isLinkColumn } from "./navSections";
+import { isKnownSection, isLinkColumn } from "./navSections";
 import { SiteHeader, type SiteHeaderVariant } from "./SiteHeader";
 import { SkipLink } from "./SkipLink";
 import { StickyCTABar } from "./StickyCTABar";
@@ -97,37 +97,46 @@ export function SiteShell({
 	children,
 }: SiteShellProps) {
 	const base = normalizeBasePath(basePath ?? site.basePath);
-	const withBase = (path: string) => joinBase(base, path);
 	// Every href and src handed to the chrome carries the base path (a no op at
-	// the root). The current path is compared against those hrefs, so it is
-	// put in the same form whether or not the router reports it with the base.
+	// the root), through these helpers alone: a path, a path that may be
+	// absent, and a list or a picture whose own path takes it. The current path
+	// is compared against those hrefs, so it is put in the same form whether
+	// or not the router reports it with the base.
+	const withBase = (path: string) => joinBase(base, path);
+	const maybeBase = <T extends string | undefined>(path: T): T =>
+		(path === undefined ? path : withBase(path)) as T;
+	const based = <T extends { href: string }>(items: T[] | undefined) =>
+		items?.map((item) => ({ ...item, href: withBase(item.href) }));
+	function image<T extends { src: string }>(picture: T): T;
+	function image<T extends { src: string }>(picture: T | undefined): T | undefined;
+	function image<T extends { src: string }>(picture: T | undefined) {
+		return picture && { ...picture, src: withBase(picture.src) };
+	}
 	const pathname = withBase(stripBase(base, currentPath));
-	const ownBase = (src: string | undefined) => (src === undefined ? undefined : withBase(src));
 	const brand = {
 		name: site.name,
 		href: withBase("/"),
 		logo: {
 			...site.logo,
-			src: ownBase(site.logo.src),
-			onLight: ownBase(site.logo.onLight),
-			onDark: ownBase(site.logo.onDark),
+			src: maybeBase(site.logo.src),
+			onLight: maybeBase(site.logo.onLight),
+			onDark: maybeBase(site.logo.onDark),
 		},
 	};
 	// The contact dock rides above the shell's own footer, or the closing bar
 	// standing in for it, held by ref rather than found by a selector.
 	const footerRef = useRef<HTMLElement>(null);
 	const closingRef = useRef<HTMLDivElement>(null);
+	// The room the phone's sticky bar takes while it shows, which the closing
+	// bar pads its foot by (chrome.css), so the bar never covers the copyright.
+	const [barSpace, setBarSpace] = useState(0);
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
-	const based = <T extends { href: string }>(items: T[] | undefined) =>
-		items?.map((item) => ({ ...item, href: withBase(item.href) }));
-	const image = <T extends { src: string }>(picture: T | undefined) =>
-		picture && { ...picture, src: withBase(picture.src) };
 	// Every link and picture a panel section holds, based.
 	const section = (part: NavPanelSection): NavPanelSection => {
 		if (isLinkColumn(part)) {
 			return {
 				...part,
-				href: part.href === undefined ? undefined : withBase(part.href),
+				href: maybeBase(part.href),
 				links: part.links.map((link) => ({
 					...link,
 					href: withBase(link.href),
@@ -139,7 +148,7 @@ export function SiteShell({
 			return {
 				...part,
 				href: withBase(part.href),
-				image: { ...part.image, src: withBase(part.image.src) },
+				image: image(part.image),
 			};
 		}
 		if (part.kind === "rows") return { ...part, rows: based(part.rows) ?? [] };
@@ -157,14 +166,13 @@ export function SiteShell({
 		label: item.label,
 		href: withBase(item.to),
 		allLabel: item.allLabel,
-		columns: item.columns?.map(section),
+		// A section of a kind this version does not know is dropped here, before
+		// the mapping below would read fields it does not have.
+		columns: item.columns?.filter(isKnownSection).map(section),
 		feature: item.feature && {
 			...item.feature,
 			cta: { ...item.feature.cta, href: withBase(item.feature.cta.href) },
-			image: item.feature.image && {
-				...item.feature.image,
-				src: withBase(item.feature.image.src),
-			},
+			image: image(item.feature.image),
 		},
 	}));
 	// The footer's Company column lists the entries themselves, never a group's links.
@@ -195,6 +203,11 @@ export function SiteShell({
 			<div
 				className="atelic-ui"
 				data-density={setting && setting !== "default" ? setting : undefined}
+				style={
+					stickyCTA && barSpace > 0
+						? ({ "--sticky-cta-space": `${barSpace}px` } as CSSProperties)
+						: undefined
+				}
 			>
 				<SkipLink />
 				<SiteHeader
@@ -213,7 +226,14 @@ export function SiteShell({
 				</main>
 				{/* An interior page's first screen has no booking button of its own, so
 				    the bar is there from the top; the hero home page keeps the slide in. */}
-				{stickyCTA && <StickyCTABar primaryCTA={cta} phone={site.phone} fromTop={!heroNav} />}
+				{stickyCTA && (
+					<StickyCTABar
+						primaryCTA={cta}
+						phone={site.phone}
+						fromTop={!heroNav}
+						onSpaceChange={setBarSpace}
+					/>
+				)}
 				{footer ? (
 					<Footer
 						brand={brand}

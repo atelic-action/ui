@@ -1,24 +1,4 @@
-import {
-	Calculator,
-	CalendarDays,
-	ChevronRight,
-	CircleHelp,
-	CirclePlay,
-	CreditCard,
-	FileText,
-	House,
-	type LucideIcon,
-	Mail,
-	Map as MapIcon,
-	MapPin,
-	MessageCircle,
-	Phone,
-	Shield,
-	Star,
-	Truck,
-	Users,
-	Wrench,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { newTabProps } from "../lib/newTabProps";
 import { Button } from "../primitives/Button";
 import { TickList } from "../primitives/TickList";
@@ -26,13 +6,14 @@ import type {
 	NavCardsSection,
 	NavGroupChildLink,
 	NavGroupColumn,
-	NavIcon,
 	NavIconRowsSection,
 	NavLink,
 	NavPanelSection,
 	NavPictureSection,
 } from "../types";
-import { isLinkColumn } from "./navSections";
+import { navIcons } from "./icons";
+import { NavBadge } from "./NavBadge";
+import { isLinkColumn, panelSections } from "./navSections";
 
 export interface NavMegaPanelProps {
 	id: string;
@@ -44,36 +25,21 @@ export interface NavMegaPanelProps {
 	onNavigate?: () => void;
 }
 
-/** The lucide icon each name in `NavIcon` draws. */
-export const navIcons: Record<NavIcon, LucideIcon> = {
-	calculator: Calculator,
-	calendar: CalendarDays,
-	card: CreditCard,
-	chat: MessageCircle,
-	document: FileText,
-	help: CircleHelp,
-	home: House,
-	mail: Mail,
-	map: MapIcon,
-	phone: Phone,
-	pin: MapPin,
-	play: CirclePlay,
-	shield: Shield,
-	star: Star,
-	tool: Wrench,
-	truck: Truck,
-	users: Users,
-};
-
-/** The key a section is listed under: its heading, or its kind and place. */
+/**
+ * The key a section is listed under: its place and its kind. Two sections
+ * may share a heading or an href, so the place keeps every key unique.
+ */
 function sectionKey(section: NavPanelSection, index: number): string {
-	if (isLinkColumn(section)) return `links ${section.heading}`;
-	if (section.kind === "picture") return `picture ${section.href}`;
-	return `${section.kind} ${section.heading ?? index}`;
+	return `${index} ${isLinkColumn(section) ? "links" : section.kind}`;
 }
 
 function Badge({ text }: { text?: string }) {
-	return text ? <span className="nav-mega-badge">{text}</span> : null;
+	return <NavBadge text={text} className="nav-mega-badge" />;
+}
+
+/** `aria-current` for a link to the page being read. */
+function current(href: string, currentPath?: string): "page" | undefined {
+	return currentPath === href ? "page" : undefined;
 }
 
 interface SectionProps {
@@ -86,13 +52,15 @@ function LinkColumn({
 	currentPath,
 	onNavigate,
 }: { column: NavGroupColumn } & SectionProps) {
-	const child = (link: NavGroupChildLink) => (
-		<li key={link.href}>
+	// A child may share its parent's href, and two links may share one, so
+	// every key carries its place.
+	const child = (link: NavGroupChildLink, index: number) => (
+		<li key={`${index} ${link.href}`}>
 			<a
 				className="nav-mega-sub"
 				href={link.href}
 				onClick={onNavigate}
-				aria-current={currentPath === link.href ? "page" : undefined}
+				aria-current={current(link.href, currentPath)}
 				{...newTabProps(link.href, link.external)}
 			>
 				{link.label}
@@ -103,20 +71,26 @@ function LinkColumn({
 	return (
 		<div className="nav-mega-sec is-links">
 			{column.href ? (
-				<a className="nav-mega-head" href={column.href} onClick={onNavigate}>
+				<a
+					className="nav-mega-head"
+					href={column.href}
+					onClick={onNavigate}
+					aria-current={current(column.href, currentPath)}
+				>
 					{column.heading}
 				</a>
 			) : (
 				<p className="nav-mega-head">{column.heading}</p>
 			)}
 			<ul>
-				{column.links.map((link) => (
-					<li key={link.href}>
+				{column.links.map((link, index) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
+					<li key={`${index} ${link.href}`}>
 						<a
 							className="nav-mega-link"
 							href={link.href}
 							onClick={onNavigate}
-							aria-current={currentPath === link.href ? "page" : undefined}
+							aria-current={current(link.href, currentPath)}
 							{...newTabProps(link.href, link.external)}
 						>
 							<span className="nav-mega-label">
@@ -135,12 +109,17 @@ function LinkColumn({
 	);
 }
 
-function PictureSection({ section, onNavigate }: { section: NavPictureSection } & SectionProps) {
+function PictureSection({
+	section,
+	currentPath,
+	onNavigate,
+}: { section: NavPictureSection } & SectionProps) {
 	return (
 		<a
 			className="nav-mega-sec is-picture"
 			href={section.href}
 			onClick={onNavigate}
+			aria-current={current(section.href, currentPath)}
 			{...newTabProps(section.href, section.external)}
 		>
 			<img
@@ -164,17 +143,18 @@ function RowsSection({
 		<div className="nav-mega-sec is-rows">
 			{section.heading && <p className="nav-mega-head">{section.heading}</p>}
 			<ul className="nav-mega-rows">
-				{section.rows.map((row) => {
+				{section.rows.map((row, index) => {
 					const Icon = navIcons[row.icon];
 					return (
-						<li key={row.href}>
+						// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
+						<li key={`${index} ${row.href}`}>
 							<a
 								className={["nav-mega-row", row.highlight && "is-highlight"]
 									.filter(Boolean)
 									.join(" ")}
 								href={row.href}
 								onClick={onNavigate}
-								aria-current={currentPath === row.href ? "page" : undefined}
+								aria-current={current(row.href, currentPath)}
 								{...newTabProps(row.href, row.external)}
 							>
 								<span className="nav-mega-row-icon">
@@ -194,17 +174,23 @@ function RowsSection({
 	);
 }
 
-function CardsSection({ section, onNavigate }: { section: NavCardsSection } & SectionProps) {
+function CardsSection({
+	section,
+	currentPath,
+	onNavigate,
+}: { section: NavCardsSection } & SectionProps) {
 	return (
 		<div className="nav-mega-sec is-cards">
 			{section.heading && <p className="nav-mega-head">{section.heading}</p>}
 			<ul className="nav-mega-cards">
-				{section.cards.map((card) => (
-					<li key={card.href}>
+				{section.cards.map((card, index) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
+					<li key={`${index} ${card.href}`}>
 						<a
 							className="nav-mega-card-link"
 							href={card.href}
 							onClick={onNavigate}
+							aria-current={current(card.href, currentPath)}
 							{...newTabProps(card.href, card.external)}
 						>
 							{card.image ? (
@@ -240,7 +226,9 @@ function CardsSection({ section, onNavigate }: { section: NavCardsSection } & Se
  * it opens. The header owns the open state; this draws it.
  */
 export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMegaPanelProps) {
-	const { columns = [], feature, allLabel, href } = group;
+	const { feature, allLabel, href } = group;
+	// A section of a kind this version does not know is left out, never drawn as another kind.
+	const columns = panelSections(group);
 	return (
 		<div
 			id={id}
@@ -250,7 +238,12 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 			<div className="nav-mega-card">
 				<div className="nav-mega-body">
 					{allLabel && (
-						<a className="nav-mega-all" href={href} onClick={onNavigate}>
+						<a
+							className="nav-mega-all"
+							href={href}
+							onClick={onNavigate}
+							aria-current={current(href, currentPath)}
+						>
 							{allLabel}
 						</a>
 					)}
@@ -268,7 +261,14 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 								);
 							}
 							if (section.kind === "picture") {
-								return <PictureSection key={key} section={section} onNavigate={onNavigate} />;
+								return (
+									<PictureSection
+										key={key}
+										section={section}
+										currentPath={currentPath}
+										onNavigate={onNavigate}
+									/>
+								);
 							}
 							if (section.kind === "rows") {
 								return (
@@ -280,7 +280,17 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 									/>
 								);
 							}
-							return <CardsSection key={key} section={section} onNavigate={onNavigate} />;
+							if (section.kind === "cards") {
+								return (
+									<CardsSection
+										key={key}
+										section={section}
+										currentPath={currentPath}
+										onNavigate={onNavigate}
+									/>
+								);
+							}
+							return null;
 						})}
 					</div>
 				</div>

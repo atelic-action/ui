@@ -36,9 +36,10 @@ export function ArtifactShell({ site, currentPath, stops, children }: ArtifactSh
 
 	// Pinned to the roomier spacing every page had before 8.0.0, so a
 	// document's shell (its 404 included) reads as close as the one token allows to how it did when the
-	// marketing default tightened.
+	// marketing default tightened. `data-shell` scopes the document header's
+	// mark height (artifact.css).
 	return (
-		<div className="atelic-ui" data-density="comfortable">
+		<div className="atelic-ui" data-density="comfortable" data-shell="artifact">
 			<SkipLink />
 			<SiteHeader
 				brand={{ name, href, logo, recipient }}

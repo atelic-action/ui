@@ -2,6 +2,8 @@ import { Mail, Star, UserRound } from "lucide-react";
 import type { ComponentProps, CSSProperties, Ref } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import type { Brand, FooterColumn, FooterColumnLink, Phone, PostalAddress } from "../types";
+import { LogoTile } from "./BrandLockup";
+import { resolveMark, tintClass } from "./brandMark";
 import { ClosingBar } from "./ClosingBar";
 import { Copyright } from "./Copyright";
 
@@ -157,6 +159,14 @@ export interface FooterProps {
 	 * prints either way.
 	 */
 	credit?: boolean;
+	/**
+	 * The level of the link columns' headings. Defaults to 2: the footer is a
+	 * landmark beside the page's main content, so its sections sit one level
+	 * under the page's `h1` whatever the page's own outline ends on, and a
+	 * page never skips a level into its footer. A site whose footer sits
+	 * inside a deeper outline passes its own.
+	 */
+	headingLevel?: 2 | 3 | 4 | 5 | 6;
 	/** The footer element, for a caller that measures it (`SiteShell` hands it to the contact dock). */
 	ref?: Ref<HTMLElement>;
 }
@@ -177,13 +187,15 @@ export function Footer({
 	attribution,
 	note,
 	credit = true,
+	headingLevel = 2,
 	ref,
 }: FooterProps) {
 	const { name, logo } = brand;
 	// The footer always names the business when it draws no image.
 	const wordmark = logo?.wordmark === false ? name : (logo?.wordmark ?? name);
-	// The band is dark, so the mark cut for a dark surface leads.
-	const mark = logo?.onDark ?? logo?.src ?? logo?.onLight;
+	// The band is a dark surface, resolved by the order the header uses.
+	const mark = resolveMark(logo, "dark");
+	const Heading = `h${headingLevel}` as const;
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
 	const addressLines = address && (
 		<>
@@ -208,14 +220,12 @@ export function Footer({
 						<div className="footer-brand">
 							{logo?.tile ? (
 								<p className="footer-wordmark">
-									<span className="logo-tile" aria-hidden="true">
-										{logo.tile}
-									</span>
+									<LogoTile glyph={logo.tile} />
 									{wordmark}
 									{logo.run && <span className="wordmark-run" aria-hidden="true" />}
 								</p>
 							) : mark ? (
-								<img src={mark} alt={logo?.alt ?? name} />
+								<img className={tintClass(mark)} src={mark.src} alt={logo?.alt ?? name} />
 							) : (
 								<p className="footer-wordmark">
 									{wordmark}
@@ -253,7 +263,7 @@ export function Footer({
 						</div>
 						{shown.map((column) => (
 							<nav key={column.heading} className="footer-column" aria-label={column.heading}>
-								<h4>{column.heading}</h4>
+								<Heading className="footer-heading">{column.heading}</Heading>
 								{column.links.map((link) => (
 									<ColumnLink key={`${link.label} ${link.href}`} link={link} />
 								))}

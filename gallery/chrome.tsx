@@ -301,7 +301,7 @@ export function ChromePieces() {
 							links={links}
 							primaryCTA={cta}
 							variant="transparent"
-							currentPath="/menu"
+							currentPath="#menu"
 							contact={contact}
 						/>
 						<FramePage hero />
@@ -314,7 +314,7 @@ export function ChromePieces() {
 							links={links}
 							primaryCTA={cta}
 							variant="solid"
-							currentPath="/menu"
+							currentPath="#menu"
 							contact={contact}
 						/>
 						<FramePage />

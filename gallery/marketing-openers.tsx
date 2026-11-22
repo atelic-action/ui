@@ -52,7 +52,11 @@ export function MarketingOpeners() {
 				<Hero
 					layout="split"
 					eyebrow="Alder Street, since 2014"
-					title="Bread worth the early line."
+					title={
+						<>
+							Bread worth the <em className="serif">early line.</em>
+						</>
+					}
 					subtitle="Sourdough, morning buns, and cakes to order, baked in the back of the shop every day but Monday."
 					image={{ src: "/images/bakery-band.svg", alt: "Loaves cooling on a rack" }}
 					primaryCTA={{ label: "Order ahead", href: "#hero-split" }}
