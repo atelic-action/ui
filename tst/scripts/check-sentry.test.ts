@@ -31,4 +31,21 @@ describe("checkSentry", () => {
 		});
 		expect(checkSentry({ env: {}, args: [] }).message).toContain("this local build");
 	});
+
+	it("fails any build whose DSN is set but malformed, waiver or not", () => {
+		for (const VERCEL_ENV of ["production", "preview", undefined]) {
+			for (const VITE_SENTRY_DSN of [
+				"not a dsn",
+				"https://o1.ingest.example.com/42",
+				"https://k@o1.example.com/abc",
+			]) {
+				const result = checkSentry({
+					env: { VERCEL_ENV, VITE_SENTRY_DSN },
+					args: ["--allow-missing"],
+				});
+				expect(result.code, `${VERCEL_ENV} ${VITE_SENTRY_DSN}`).toBe(1);
+				expect(result.message).toContain("is not a DSN");
+			}
+		}
+	});
 });

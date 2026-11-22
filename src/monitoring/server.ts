@@ -212,6 +212,9 @@ export async function reportServerError(
 				body,
 				signal: controller.signal,
 			});
+			// The answer's body is never read, so it is let go at once rather
+			// than held open until the runtime collects it.
+			await response.body?.cancel().catch(() => {});
 			return response.ok;
 		} finally {
 			clearTimeout(timer);

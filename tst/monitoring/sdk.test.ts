@@ -1,4 +1,4 @@
-import { getClient } from "@sentry/browser";
+import { addEventProcessor, type Event, getClient } from "@sentry/browser";
 import { DENY_URLS, IGNORE_ERRORS, initSentry, scrubRequest } from "../../src/monitoring/sdk";
 
 describe("the browser SDK, set up for errors alone", () => {
@@ -70,5 +70,24 @@ describe("the browser SDK, set up for errors alone", () => {
 			"https://example.com/menu",
 		);
 		expect(getClient()?.getOptions().beforeSend).toBe(scrubRequest);
+	});
+});
+
+describe("what a capture carries", () => {
+	it("tags an error by what raised it, marks a replayed one early, and counts what the catcher dropped", async () => {
+		const capture = initSentry({ dsn: "https://key@o1.ingest.example.com/42" });
+		const seen: Event[] = [];
+		// Held here, so nothing is sent.
+		addEventProcessor((event) => {
+			seen.push(event);
+			return null;
+		});
+		capture(new Error("thrown before the app ran"), "error", true, 3);
+		capture(new Error("render crash"), "boundary");
+		await vi.waitFor(() => expect(seen).toHaveLength(2));
+		expect(seen[0]?.tags).toMatchObject({ source: "error", early: "true" });
+		expect(seen[0]?.extra).toEqual({ earlyDropped: 3 });
+		expect(seen[1]?.tags).toEqual({ source: "boundary" });
+		expect(seen[1]?.extra).toBeUndefined();
 	});
 });

@@ -11,6 +11,7 @@ export {
 } from "./artifact-config.js";
 export {
 	buildRelease,
+	environmentPlugin,
 	type MarketingConfigOptions,
 	type MarketingPage,
 	marketingBasePath,

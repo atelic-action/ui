@@ -15,6 +15,7 @@ vi.mock("@vitejs/plugin-react", () => ({
 
 import {
 	buildRelease,
+	environmentPlugin,
 	marketingBasePath,
 	marketingConfig,
 	NOT_FOUND_PAGE,
@@ -38,7 +39,11 @@ function start(config: UserConfig): StartOptions {
 describe("marketingConfig", () => {
 	it("brings TanStack Start and React, in that order", () => {
 		const plugins = (marketingConfig({ site: SITE, env: {} }).plugins ?? []) as Plugin[];
-		expect(plugins.map((plugin) => plugin.name)).toEqual(["start-stand-in", "react-stand-in"]);
+		expect(plugins.map((plugin) => plugin.name)).toEqual([
+			"start-stand-in",
+			"react-stand-in",
+			"atelic-build-environment",
+		]);
 	});
 
 	it("prerenders with the crawler, the 404 first, and a sitemap on the site's own host", () => {
@@ -143,7 +148,7 @@ describe("marketingConfig's error reporting", () => {
 		for (const missing of Object.keys(SENTRY)) {
 			const env = { ...SENTRY, [missing]: "" };
 			const config = marketingConfig({ site: SITE, env });
-			expect((config.plugins ?? []).length, missing).toBe(2);
+			expect((config.plugins ?? []).length, missing).toBe(3);
 			expect(config.build?.sourcemap, missing).toBeUndefined();
 			expect(sentryUpload(env), missing).toBeUndefined();
 		}
@@ -152,20 +157,37 @@ describe("marketingConfig's error reporting", () => {
 	it("with all three and a commit, adds the Sentry plugin and hidden source maps", async () => {
 		const config = marketingConfig({ site: SITE, env: SENTRY });
 		expect(config.build?.sourcemap).toBe("hidden");
-		expect(config.plugins).toHaveLength(3);
+		expect(config.plugins).toHaveLength(4);
 		expect(sentryUpload(SENTRY)).toEqual({
 			org: "an-org",
 			project: "a-site",
 			authToken: "token",
 			release: "0123456789abcdef",
 		});
-		const plugin = await (config.plugins?.[2] as Promise<Array<{ name: string }>>);
+		const plugin = await (config.plugins?.[3] as Promise<Array<{ name: string }>>);
 		expect(
 			[plugin]
 				.flat()
 				.map((part) => part.name)
 				.join(" "),
 		).toMatch(/sentry/i);
+	});
+
+	it("names the environment by Vercel's, falling back to the build's mode", () => {
+		const define = (env: Record<string, string>, mode: string) => {
+			const plugin = environmentPlugin(env);
+			const hook = plugin.config as (
+				config: unknown,
+				context: { mode: string; command: string },
+			) => UserConfig;
+			return hook({}, { mode, command: "build" }).define;
+		};
+		expect(define({ VERCEL_ENV: "preview" }, "production")).toEqual({
+			"import.meta.env.VITE_ENVIRONMENT": JSON.stringify("preview"),
+		});
+		expect(define({}, "production")).toEqual({
+			"import.meta.env.VITE_ENVIRONMENT": JSON.stringify("production"),
+		});
 	});
 
 	it("names the release by the commit, the browser and the upload alike", () => {

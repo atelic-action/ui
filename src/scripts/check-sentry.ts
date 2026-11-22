@@ -8,11 +8,13 @@
  * warning.
  *
  * The DSN is read the way Vite will read it for the build: the environment,
- * then the site's `.env` files for production mode.
+ * then the site's `.env` files for production mode. A DSN that is set but
+ * malformed fails every build, since it would send nothing.
  *
  * Usage: atelic-check-sentry [--allow-missing]   (from the site's root)
  */
 import { loadEnv } from "vite";
+import { parseDSN } from "../monitoring/server";
 
 export interface SentryCheckInput {
 	/** The build's environment, where `VERCEL_ENV` and the DSN are read. */
@@ -32,6 +34,15 @@ export interface SentryCheckResult {
 export function checkSentry({ env, args }: SentryCheckInput): SentryCheckResult {
 	const production = env.VERCEL_ENV === "production";
 	const dsn = (env.VITE_SENTRY_DSN ?? "").trim();
+	// A DSN that is set but cannot be read sends nothing, whatever the build:
+	// it fails here, on any environment, waiver or not.
+	if (dsn && !parseDSN(dsn)) {
+		return {
+			code: 1,
+			message:
+				"[sentry] VITE_SENTRY_DSN is set but is not a DSN (https://<key>@<host>/<project>). Copy it again from the Sentry project's Client Keys.",
+		};
+	}
 	if (dsn) return { code: 0, message: "[sentry] VITE_SENTRY_DSN is set; errors will be reported." };
 	if (!production) {
 		return {

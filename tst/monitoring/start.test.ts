@@ -6,7 +6,11 @@ const { capture, initSentry } = vi.hoisted(() => {
 });
 vi.mock("../../src/monitoring/sdk", () => ({ initSentry }));
 
-import { afterFirstPaint, startErrorReporting } from "../../src/monitoring/start";
+import {
+	afterFirstPaint,
+	LAUNCH_CHECK_MESSAGE,
+	startErrorReporting,
+} from "../../src/monitoring/start";
 
 function clear() {
 	const catcher = readCatcher(window);
@@ -67,8 +71,8 @@ describe("startErrorReporting", () => {
 			environment: undefined,
 		});
 		expect(capture.mock.calls).toEqual([
-			[early, "error", true],
-			["rejected before the app ran", "unhandledrejection", true],
+			[early, "error", true, 0],
+			["rejected before the app ran", "unhandledrejection", true, 0],
 		]);
 		const catcher = readCatcher(window);
 		expect(catcher?.q).toHaveLength(0);
@@ -93,7 +97,7 @@ describe("startErrorReporting", () => {
 		expect(catcher).toBeDefined();
 		rejectOnWindow("before the SDK");
 		await settle();
-		expect(capture).toHaveBeenCalledWith("before the SDK", "unhandledrejection", true);
+		expect(capture).toHaveBeenCalledWith("before the SDK", "unhandledrejection", true, 0);
 	});
 });
 
@@ -174,5 +178,64 @@ describe("afterFirstPaint", () => {
 		callback?.({ getEntriesByName: (name) => (name === "first-contentful-paint" ? [{}] : []) });
 		vi.advanceTimersByTime(0);
 		expect(task).toHaveBeenCalledOnce();
+	});
+});
+
+describe("startErrorReporting's count of what the catcher let go", () => {
+	beforeEach(() => {
+		clear();
+		capture.mockClear();
+		initSentry.mockClear();
+	});
+	afterEach(clear);
+
+	it("hands the SDK how many errors the catcher dropped past its cap, with each it replays", async () => {
+		runInline();
+		for (let i = 0; i < 23; i++) rejectOnWindow(`burst ${i}`);
+		startErrorReporting({ dsn: "https://key@o1.ingest.example.com/42" });
+		await settle();
+		expect(capture).toHaveBeenCalledTimes(20);
+		for (const call of capture.mock.calls) expect(call[3]).toBe(3);
+	});
+});
+
+describe("startErrorReporting's environment and launch check", () => {
+	beforeEach(() => {
+		clear();
+		capture.mockClear();
+		initSentry.mockClear();
+	});
+	afterEach(() => {
+		clear();
+		vi.unstubAllEnvs();
+		vi.useRealTimers();
+	});
+
+	it("files errors under the build's VITE_ENVIRONMENT when the caller names none", async () => {
+		vi.stubEnv("VITE_ENVIRONMENT", "preview");
+		startErrorReporting({ dsn: "https://key@o1.ingest.example.com/42" });
+		await settle();
+		expect(initSentry).toHaveBeenCalledWith(expect.objectContaining({ environment: "preview" }));
+	});
+
+	it("takes the caller's environment over the build's", async () => {
+		vi.stubEnv("VITE_ENVIRONMENT", "preview");
+		startErrorReporting({ dsn: "https://key@o1.ingest.example.com/42", environment: "staging" });
+		await settle();
+		expect(initSentry).toHaveBeenCalledWith(expect.objectContaining({ environment: "staging" }));
+	});
+
+	it("puts the launch check on the catcher, which throws its named error on the next turn", () => {
+		vi.useFakeTimers();
+		startErrorReporting({ dsn: "https://key@o1.ingest.example.com/42" });
+		const test = readCatcher(window)?.test;
+		expect(test).toBeTypeOf("function");
+		test?.();
+		expect(() => vi.runOnlyPendingTimers()).toThrow(LAUNCH_CHECK_MESSAGE);
+	});
+
+	it("puts no launch check on a page where reporting never started", () => {
+		startErrorReporting({});
+		expect(readCatcher(window)?.test).toBeUndefined();
 	});
 });

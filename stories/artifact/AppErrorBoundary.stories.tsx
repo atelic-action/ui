@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, spyOn } from "storybook/test";
 import { AppErrorBoundary } from "../../src/artifact";
-import { readCatcher } from "../../src/monitoring";
+import { installCatcher, readCatcher } from "../../src/monitoring";
 
 /** Whether the child below throws on its next render; a story flips it. */
 const fault = { on: true };
@@ -81,14 +81,16 @@ function clearCatcher() {
 
 /**
  * A render crash never reaches the window's error handlers, so the boundary
- * hands it to error reporting itself: before the Sentry SDK has loaded it
- * waits in the early catcher's buffer, marked as a boundary's, for the SDK
- * to replay.
+ * hands it to error reporting itself: on a page where reporting has
+ * started, before the Sentry SDK has loaded, it waits in the early
+ * catcher's buffer, marked as a boundary's, for the SDK to replay.
  */
 export const ReportsTheCrash: Story = {
 	beforeEach: () => {
 		fault.on = true;
 		clearCatcher();
+		// Reporting started on the page, as a site's router starts it.
+		installCatcher(window);
 		return clearCatcher;
 	},
 	play: async ({ canvas }) => {

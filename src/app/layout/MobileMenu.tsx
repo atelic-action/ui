@@ -150,7 +150,10 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 					<button
 						type="button"
 						onClick={onLogout}
-						className={cn(ROW, "w-full text-destructive-ink active:text-destructive-hover")}
+						className={cn(
+							ROW,
+							"w-full text-destructive-ink active:text-destructive-hover dark:active:text-destructive-ink",
+						)}
 					>
 						<LogOut className="h-5 w-5 flex-shrink-0" />
 						<span>Log out</span>

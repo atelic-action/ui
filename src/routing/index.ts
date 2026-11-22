@@ -37,3 +37,4 @@ export {
 	useWithBase,
 } from "./BasePathProvider";
 export { hasBase, joinBase, normalizeBasePath, stripBase } from "./basePath";
+export { CATCH_ALL_ROUTE_ID, isMiss, type MissMatch } from "./miss";

@@ -15,7 +15,7 @@
 import { resolve } from "node:path";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
-import { mergeConfig, type PluginOption, type UserConfig } from "vite";
+import { mergeConfig, type Plugin, type PluginOption, type UserConfig } from "vite";
 import { normalizeBasePath } from "../routing/basePath.js";
 
 /** One entry of the prerender list, as TanStack Start takes it. */
@@ -101,6 +101,24 @@ function sentryPlugin(upload: SentryUpload): PluginOption {
 	);
 }
 
+/**
+ * The environment the browser files its errors under, as
+ * `import.meta.env.VITE_ENVIRONMENT`: Vercel's (production, preview,
+ * development) when the build runs there, else the build's mode. A Vite
+ * production build's mode is production on every deploy, a preview's
+ * included, so the mode alone filed every error as production.
+ */
+export function environmentPlugin(env: Record<string, string | undefined> = process.env): Plugin {
+	return {
+		name: "atelic-build-environment",
+		config: (_config, { mode }) => ({
+			define: {
+				"import.meta.env.VITE_ENVIRONMENT": JSON.stringify(env.VERCEL_ENV || mode),
+			},
+		}),
+	};
+}
+
 /** The 404 page, prerendered and copied to 404.html by the build, never in the sitemap. */
 export const NOT_FOUND_PAGE: MarketingPage = {
 	path: "/404",
@@ -164,6 +182,7 @@ export function marketingConfig({
 				},
 			}),
 			react(),
+			environmentPlugin(env),
 			...(upload ? [sentryPlugin(upload)] : []),
 		],
 		// The commit, for the browser to report under (`startErrorReporting`'s

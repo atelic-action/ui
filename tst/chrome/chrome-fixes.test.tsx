@@ -202,10 +202,12 @@ describe("the current page in the mega panel", () => {
 		expect(chrome).toMatch(
 			/\.nav-mega-sec:is\(\.is-links, \.is-rows, \.is-cards\) \{[^}]*min-width: auto;/,
 		);
-		expect(chrome).toMatch(/\.nav-mega-cards \{[^}]*min-width: 208px;/);
+		// Each floor yields to a panel narrower than itself.
+		expect(chrome).toMatch(/\.nav-mega-cards \{[^}]*min-width: min\(208px, 100%\);/);
 		expect(chrome).toMatch(
-			/\.nav-mega-rows \{[^}]*minmax\(min-content, 1fr\)[^}]*min-width: 320px;/,
+			/\.nav-mega-rows \{[^}]*minmax\(min-content, 1fr\)[^}]*min-width: min\(320px, 100%\);/,
 		);
+		expect(chrome).toMatch(/\.nav-mega-sec\.is-links > ul \{[^}]*min-width: min\(120px, 100%\);/);
 	});
 });
 

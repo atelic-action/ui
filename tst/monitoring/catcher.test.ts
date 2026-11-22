@@ -100,12 +100,16 @@ describe("reportError", () => {
 	beforeEach(clear);
 	afterEach(clear);
 
-	it("holds an error in the buffer before the SDK is up, installing the catcher if need be", () => {
+	it("holds an error in the buffer before the SDK is up, when a catcher is listening", () => {
+		const catcher = installCatcher(window);
 		const crash = new Error("render crash");
 		reportError(crash);
-		expect(readCatcher(window)?.q.map(({ error, kind }) => [error, kind])).toEqual([
-			[crash, "boundary"],
-		]);
+		expect(catcher.q.map(({ error, kind }) => [error, kind])).toEqual([[crash, "boundary"]]);
+	});
+
+	it("lets an error go quietly where reporting never started, installing nothing", () => {
+		reportError(new Error("render crash"));
+		expect(readCatcher(window)).toBeUndefined();
 	});
 
 	it("hands an error straight to the SDK once it is up", () => {

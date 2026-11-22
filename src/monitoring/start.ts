@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { installCatcher } from "./catcher";
 
 export interface ErrorReportingOptions {
@@ -5,8 +6,33 @@ export interface ErrorReportingOptions {
 	dsn?: string;
 	/** The release the errors are filed under: the build's commit (`import.meta.env.VITE_RELEASE`). */
 	release?: string;
-	/** The environment, e.g. `import.meta.env.MODE` or the Vercel environment. */
+	/**
+	 * The environment the errors are filed under. Defaults to the build's
+	 * `import.meta.env.VITE_ENVIRONMENT`, which `marketingConfig` sets from
+	 * `VERCEL_ENV` (production, preview, development), falling back to the
+	 * build's mode.
+	 */
 	environment?: string;
+}
+
+/** The message the launch check's error carries, so it is plain in Sentry what it is. */
+export const LAUNCH_CHECK_MESSAGE =
+	"Atelic error reporting launch check: thrown on purpose from @atelic-action/ui";
+
+/** The environment the site's build names, when it names one. */
+function buildEnvironment(): string | undefined {
+	try {
+		return import.meta.env?.VITE_ENVIRONMENT || undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+/** Throws the launch check's error on the next turn, uncaught, from this module. */
+export function throwLaunchCheck(): void {
+	setTimeout(() => {
+		throw new Error(LAUNCH_CHECK_MESSAGE);
+	}, 0);
 }
 
 /** The longest the SDK waits for first paint before it loads anyway. */
@@ -65,10 +91,15 @@ export function afterFirstPaint(task: () => void, win: Window = window): void {
  * With no `dsn` it does nothing and loads nothing. Call it once, in the
  * browser (a site's router module, guarded by `typeof window`).
  */
-export function startErrorReporting({ dsn, release, environment }: ErrorReportingOptions): void {
+export function startErrorReporting({
+	dsn,
+	release,
+	environment = buildEnvironment(),
+}: ErrorReportingOptions): void {
 	if (!dsn || typeof window === "undefined") return;
 	const win = window;
 	const catcher = installCatcher(win);
+	catcher.test = throwLaunchCheck;
 	afterFirstPaint(() => {
 		import("./sdk")
 			.then(({ initSentry }) => {
@@ -77,7 +108,7 @@ export function startErrorReporting({ dsn, release, environment }: ErrorReportin
 				win.removeEventListener("unhandledrejection", catcher.onRejection);
 				catcher.report = (error, kind) => capture(error, kind);
 				const held = catcher.q.splice(0, catcher.q.length);
-				for (const item of held) capture(item.error, item.kind, true);
+				for (const item of held) capture(item.error, item.kind, true, catcher.dropped);
 			})
 			.catch(() => {
 				// The SDK failed to load (offline, blocked by a content blocker):

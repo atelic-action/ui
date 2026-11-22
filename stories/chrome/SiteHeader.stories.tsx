@@ -949,3 +949,36 @@ export const MenuLabelPhone: Story = {
 		await expect(canvas.getByRole("dialog", { name: "Menu" })).toBeVisible();
 	},
 };
+
+/**
+ * The solid bar on a deep green theme, where the current entry's hue sits
+ * within 2 to 1 of its siblings': it is marked by an underline too, so a
+ * reader who cannot tell the hues apart still sees which page this is.
+ */
+export const CurrentOnSolidBarDarkPrimary: Story = {
+	args: { variant: "solid", currentPath: "/menu" },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--primary": "#1e4d2b",
+						"--primary-fill": "#1e4d2b",
+						"--primary-ink": "#1e4d2b",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const nav = within(primaryNav(canvas));
+		const current = nav.getByRole("link", { name: "Menu" });
+		const sibling = nav.getByRole("link", { name: "Cakes" });
+		await expect(current).toHaveAttribute("aria-current", "page");
+		await expect(getComputedStyle(current).color).toBe("rgb(30, 77, 43)");
+		await expect(getComputedStyle(current).textDecorationLine).toBe("underline");
+		await expect(getComputedStyle(sibling).textDecorationLine).toBe("none");
+	},
+};

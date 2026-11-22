@@ -235,15 +235,16 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		color: var(--primary-ink, var(--primary));
-		display: inline-flex;
-		align-items: center;
-		gap: 0.6em;
+		/* Inline, so the rule follows the last line of a kicker that wraps
+		   (a phone's narrow hero) rather than standing apart beside the whole
+		   block, as a flex row set it. */
+		display: inline-block;
 	}
 	.atelic-ui .eyebrow.on-dark {
 		color: var(--primary-bright);
 	}
 	.atelic-ui .eyebrow.center {
-		justify-content: center;
+		text-align: center;
 	}
 	/* On the primary field the primary colored kicker would vanish, and so
 	   would a serif accent in a heading. Words on the fill take --on-primary
@@ -265,6 +266,8 @@
 		width: 40px;
 		height: 2px;
 		display: inline-block;
+		vertical-align: middle;
+		margin-left: 0.6em;
 		/* Themes with a dedicated ruling accent (a brand color reserved for
 		   rules, never text) set --rule-accent; default stays the text color. */
 		background: linear-gradient(90deg, var(--rule-accent, currentColor), transparent);

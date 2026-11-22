@@ -16,4 +16,10 @@ export {
 	reportError,
 } from "./catcher";
 export { ErrorCatcherScript } from "./ErrorCatcherScript";
-export { afterFirstPaint, type ErrorReportingOptions, startErrorReporting } from "./start";
+export {
+	afterFirstPaint,
+	type ErrorReportingOptions,
+	LAUNCH_CHECK_MESSAGE,
+	startErrorReporting,
+	throwLaunchCheck,
+} from "./start";

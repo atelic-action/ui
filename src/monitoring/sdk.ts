@@ -101,7 +101,12 @@ export function initSentry({ dsn, release, environment }: SDKOptions) {
 	});
 	setCurrentClient(client);
 	client.init();
-	return (error: unknown, kind: CaughtKind, early = false) => {
-		captureException(error, { tags: { source: kind, ...(early ? { early: "true" } : {}) } });
+	return (error: unknown, kind: CaughtKind, early = false, dropped = 0) => {
+		captureException(error, {
+			tags: { source: kind, ...(early ? { early: "true" } : {}) },
+			// How many errors the early catcher let go past its cap, on each
+			// replayed one, so a burst before the SDK arrived is still visible.
+			...(dropped > 0 ? { extra: { earlyDropped: dropped } } : {}),
+		});
 	};
 }

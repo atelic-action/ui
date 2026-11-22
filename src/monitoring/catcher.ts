@@ -39,6 +39,13 @@ export interface Catcher {
 	onRejection: (event: PromiseRejectionEvent) => void;
 	/** Set once the SDK is up: every error from then on goes straight to it. */
 	report?: (error: unknown, kind: CaughtKind) => void;
+	/**
+	 * The launch check, set once reporting starts: throws a clearly named
+	 * error from the package's own code on the next turn, uncaught, so a
+	 * site can confirm in Sentry that it arrives with a readable, source
+	 * mapped stack. Run `window.__atelicErrors.test()` in the console.
+	 */
+	test?: () => void;
 }
 
 type CatcherWindow = Window & { [CATCHER_GLOBAL]?: Catcher };
@@ -50,14 +57,14 @@ type CatcherWindow = Window & { [CATCHER_GLOBAL]?: Catcher };
  * renders it; a site that builds its head another way inlines the string.
  */
 export const errorCatcherScript =
-	"(function(w){if(!w||w.__atelicErrors)return;" +
-	"var q=[],c={q:q,max:20,dropped:0};" +
+	`(function(w){if(!w||w.${CATCHER_GLOBAL})return;` +
+	`var q=[],c={q:q,max:${CATCHER_CAP},dropped:0};` +
 	"c.push=function(e,k){if(q.length<c.max)q.push({error:e,kind:k,at:+new Date()});else c.dropped++};" +
 	'c.onError=function(v){c.push(v&&v.error!=null?v.error:v&&v.message,"error")};' +
 	'c.onRejection=function(v){c.push(v?v.reason:v,"unhandledrejection")};' +
 	'w.addEventListener("error",c.onError);' +
 	'w.addEventListener("unhandledrejection",c.onRejection);' +
-	"w.__atelicErrors=c})(window);";
+	`w.${CATCHER_GLOBAL}=c})(window);`;
 
 /** The catcher on this window, when one is installed. */
 export function readCatcher(win: Window): Catcher | undefined {
@@ -96,13 +103,16 @@ export function installCatcher(win: Window): Catcher {
 
 /**
  * Hands an error to whatever is listening: the SDK once it has loaded, the
- * buffer before that (installing it when the page has none). For an error
- * the window never sees, such as a render crash an error boundary catches.
- * A no op where there is no window (a prerender).
+ * buffer before that. For an error the window never sees, such as a render
+ * crash an error boundary catches. A page where reporting was never started
+ * and no inline catcher runs has nothing listening, so the error is let go
+ * quietly rather than held by a catcher nobody will read. A no op where
+ * there is no window (a prerender).
  */
 export function reportError(error: unknown, kind: CaughtKind = "boundary"): void {
 	if (typeof window === "undefined") return;
-	const catcher = installCatcher(window);
+	const catcher = readCatcher(window);
+	if (!catcher) return;
 	if (catcher.report) catcher.report(error, kind);
 	else catcher.push(error, kind);
 }

@@ -189,6 +189,18 @@ describe("reportServerError", () => {
 		expect(lines(init.body as string)).toHaveLength(3);
 	});
 
+	it("lets the answer's body go unread rather than holding it open", async () => {
+		const cancel = vi.fn(async () => {});
+		const answer = new Response("{}", { status: 200 });
+		Object.defineProperty(answer, "body", { value: { cancel } });
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => answer),
+		);
+		await expect(reportServerError(new Error("x"), { dsn: DSN })).resolves.toBe(true);
+		expect(cancel).toHaveBeenCalledOnce();
+	});
+
 	it("never throws: a failed send, a refusal, and a send that hangs past the timeout all resolve false", async () => {
 		vi.stubGlobal(
 			"fetch",

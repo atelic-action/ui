@@ -114,9 +114,9 @@ export const FullPage: Story = {
 };
 
 /**
- * The phone's page, with the footer held shorter than the screen (its hours
- * off) so the dock can be seen clearing it; a footer taller than the screen
- * leaves the launcher at the top edge instead (`FullPagePhoneTallFooter`).
+ * The phone's page, with the footer's hours off, so the dock can be seen
+ * riding above the footer; it never rises into the header, where a footer
+ * longer than the room left holds it (`FullPagePhoneTallFooter`).
  */
 export const FullPagePhone: Story = {
 	args: {
@@ -140,12 +140,18 @@ export const FullPagePhone: Story = {
 			await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight));
 			await waitFor(() => expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top));
 		});
-		await step("scrolled to the bottom, it clears the footer and the bar both", async () => {
-			toBottom();
+		await step("as the footer comes up the screen, the dock rides above it", async () => {
 			const footer = canvas.getByRole("contentinfo");
+			const footerTop = footer.getBoundingClientRect().top + window.scrollY;
+			window.scrollTo({ top: footerTop - window.innerHeight / 2, behavior: "instant" });
 			await waitFor(() => expect(box(launcher).bottom).toBeLessThanOrEqual(box(footer).top));
 			await expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top);
-			await expect(box(launcher).top).toBeGreaterThanOrEqual(0);
+		});
+		await step("at the bottom it holds under the header, clear of the bar", async () => {
+			toBottom();
+			const header = canvas.getByRole("banner");
+			await waitFor(() => expect(box(launcher).top).toBeGreaterThanOrEqual(box(header).bottom));
+			await expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top);
 		});
 		await step("the closing bar scrolls clear of the sticky bar, its words in reach", async () => {
 			const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
@@ -163,26 +169,42 @@ export const FullPagePhone: Story = {
 };
 
 /**
- * With the hours in it, the phone's footer and its closing bar run taller
- * than the screen, so at the bottom of the page the launcher stops at the
- * screen's top edge, still in reach and still clear of the sticky bar.
+ * With the hours in it, the phone's footer runs taller than the screen. At
+ * every scroll position sampled, from the footer's top coming up the screen
+ * to the foot of the page, the launcher never rises into the header: it
+ * rides above the footer until it reaches the header, then holds just under
+ * it, clear of the burger and of the sticky bar.
  */
 export const FullPagePhoneTallFooter: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		const launcher = canvas.getByRole("button", { name: "Talk to us" });
-		const call = canvas.getByRole("link", { name: "Call us" });
-		toBottom();
-		// The sticky bar slides in and the closing bar pads its foot by it.
-		await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight));
+		const burger = canvas.getByRole("button", { name: "Open menu" });
+		const header = canvas.getByRole("banner");
 		const footer = canvas.getByRole("contentinfo");
-		// The footer's top has scrolled past the screen's.
-		await waitFor(() => {
-			toBottom();
-			return expect(box(footer).top).toBeLessThan(0);
-		});
-		await waitFor(() => expect(Math.round(box(launcher).top)).toBe(16));
-		await expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top);
+		const apart = (a: DOMRect, b: DOMRect) =>
+			a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+		const footerTop = footer.getBoundingClientRect().top + window.scrollY;
+		const end = document.documentElement.scrollHeight - window.innerHeight;
+		const stops = [0.9, 0.6, 0.3, 0.1, 0].map((share) =>
+			Math.min(end, Math.max(0, Math.round(footerTop - window.innerHeight * share))),
+		);
+		for (const top of [...stops, end, end]) {
+			window.scrollTo({ top, behavior: "instant" });
+			// Two frames: the scroll's measure, then any change it made to the bar.
+			await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+			await waitFor(() => {
+				const own = box(launcher);
+				expect(apart(own, box(burger))).toBe(true);
+				expect(own.top).toBeGreaterThanOrEqual(box(header).bottom);
+			});
+		}
+		// At the foot of the page the footer runs past the header, and the
+		// launcher holds 16px under the header.
+		await expect(box(footer).top).toBeLessThan(box(header).bottom);
+		await waitFor(() =>
+			expect(Math.round(box(launcher).top)).toBe(Math.round(box(header).bottom) + 16),
+		);
 	},
 };
 

@@ -23,6 +23,13 @@ export interface ContactDockProps extends ContactDockConfig {
 	 */
 	lift?: string | null;
 	/**
+	 * A selector for the fixed header the launcher never rises into: as the
+	 * dock lifts over a tall footer it stops just under the header's bottom
+	 * edge. Defaults to the package's own header (`header.nav`); `null`
+	 * reads the screen's top edge alone.
+	 */
+	header?: string | null;
+	/**
 	 * Whether the dock tracks the page: it lifts over the phone's sticky bar
 	 * once that bar shows, and rises above the footer. Off holds it at its
 	 * corner inset (a preview frame). Defaults on.
@@ -39,6 +46,9 @@ export interface ContactDockProps extends ContactDockConfig {
 	/** Start with the panel open (a preview of the open state). */
 	defaultOpen?: boolean;
 }
+
+/** The default header: the package's own fixed bar. */
+const DEFAULT_HEADER = "header.nav";
 
 /** The default lift: the package's own bar, or a site's bar of the old class. */
 const DEFAULT_LIFT = "[data-dock-lift], .sticky-cta";
@@ -65,14 +75,17 @@ const LAUNCHER_HEIGHT = 52;
  * The corner the dock sits in: the same inset from the right and the bottom
  * edge (16 on a phone, 24 above), lifted over the phone's sticky bar once
  * that bar is showing, and never over the footer: as the footer's top edge
- * comes up the viewport, the dock rides up to stay just above it. Exported
- * for the tests; a site never calls it.
+ * comes up the viewport, the dock rides up to stay just above it, until it
+ * reaches the fixed header: it never rises into the header, and a footer
+ * taller than the room left holds it there rather than chasing the footer.
+ * Exported for the tests; a site never calls it.
  */
 export function dockPlacement({
 	viewportWidth,
 	viewportHeight,
 	barHeight,
 	avoidTop,
+	headerBottom = 0,
 }: {
 	viewportWidth: number;
 	viewportHeight: number;
@@ -80,15 +93,19 @@ export function dockPlacement({
 	barHeight: number;
 	/** The avoided element's top edge in the viewport, or null when there is none. */
 	avoidTop: number | null;
+	/** The fixed header's bottom edge in the viewport, or 0 with no header. */
+	headerBottom?: number;
 }): { inset: number; bottom: number } {
 	const phone = viewportWidth <= PHONE_MAX;
 	const inset = phone ? 16 : 24;
 	const overBar = phone && barHeight > 0 ? barHeight + inset : inset;
 	const covered = avoidTop === null ? 0 : Math.max(0, viewportHeight - avoidTop);
 	const overFooter = covered > 0 ? covered + inset : 0;
-	// Never past the top of the screen: a footer taller than the viewport
-	// leaves the launcher at the top edge, still reachable.
-	const ceiling = Math.max(inset, viewportHeight - LAUNCHER_HEIGHT - inset);
+	// Never into the header, nor past the top of the screen: a footer taller
+	// than the room left holds the launcher just under the header (the
+	// burger's row on a phone), still reachable and covering nothing of it.
+	const top = Math.max(0, headerBottom);
+	const ceiling = Math.max(inset, viewportHeight - top - LAUNCHER_HEIGHT - inset);
 	return { inset, bottom: Math.round(Math.min(ceiling, Math.max(overBar, overFooter))) };
 }
 
@@ -109,6 +126,7 @@ export function ContactDock({
 	footnote,
 	avoid = "footer",
 	lift = DEFAULT_LIFT,
+	header = DEFAULT_HEADER,
 	track = true,
 	closeLabel = "Close",
 	panelCloseLabel = "Close panel",
@@ -136,6 +154,7 @@ export function ContactDock({
 		// the page's elements change, never on a scroll frame.
 		let bar: HTMLElement | null = null;
 		let footer: Element | null = null;
+		let head: Element | null = null;
 		const measure = () => {
 			const showing = barShowing(bar);
 			const next = dockPlacement({
@@ -143,6 +162,7 @@ export function ContactDock({
 				viewportHeight: window.innerHeight,
 				barHeight: showing && bar ? bar.getBoundingClientRect().height : 0,
 				avoidTop: footer ? footer.getBoundingClientRect().top : null,
+				headerBottom: head ? head.getBoundingClientRect().bottom : 0,
 			});
 			setPlace((current) =>
 				current && current.inset === next.inset && current.bottom === next.bottom ? current : next,
@@ -159,6 +179,7 @@ export function ContactDock({
 		const shows =
 			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(schedule);
 		const findBar = () => (lift ? document.querySelector<HTMLElement>(lift) : null);
+		const findHeader = () => (header ? document.querySelector(header) : null);
 		const findFooter = () =>
 			avoid === null
 				? null
@@ -168,6 +189,7 @@ export function ContactDock({
 		const bind = () => {
 			bar = findBar();
 			footer = findFooter();
+			head = findHeader();
 			sizes?.disconnect();
 			shows?.disconnect();
 			// The page's own height moves the footer (a late image, an opened
@@ -187,7 +209,7 @@ export function ContactDock({
 		// two selectors again: the dock rebinds, observing and measuring anew,
 		// only when the bar or the footer it finds is not the one it holds.
 		const check = () => {
-			if (findBar() !== bar || findFooter() !== footer) bind();
+			if (findBar() !== bar || findFooter() !== footer || findHeader() !== head) bind();
 		};
 		// The dock's own changes (its icon swapping as it opens) never move the bar
 		// or the footer, so they are not looked at.
@@ -212,7 +234,7 @@ export function ContactDock({
 			shows?.disconnect();
 			added?.disconnect();
 		};
-	}, [avoid, lift, track]);
+	}, [avoid, lift, header, track]);
 
 	useDismiss(open, rootRef, (reason) => {
 		setOpen(false);

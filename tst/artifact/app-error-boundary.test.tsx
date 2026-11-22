@@ -26,6 +26,7 @@ describe("AppErrorBoundary's error reporting", () => {
 	});
 
 	it("holds a crash it catches in the early buffer before the SDK has loaded", () => {
+		installCatcher(window);
 		render(
 			<AppErrorBoundary>
 				<Broken />
@@ -48,5 +49,15 @@ describe("AppErrorBoundary's error reporting", () => {
 		expect(report).toHaveBeenCalledOnce();
 		expect((report.mock.calls[0]?.[0] as Error | undefined)?.message).toBe("render crash");
 		expect(report.mock.calls[0]?.[1]).toBe("boundary");
+	});
+
+	it("installs nothing on a page where reporting never started", () => {
+		render(
+			<AppErrorBoundary>
+				<Broken />
+			</AppErrorBoundary>,
+		);
+		expect(screen.getByRole("heading", { name: "Something went wrong" })).toBeInTheDocument();
+		expect(readCatcher(window)).toBeUndefined();
 	});
 });
