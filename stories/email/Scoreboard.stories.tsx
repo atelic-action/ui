@@ -7,13 +7,11 @@ import { fitsTheColumn, inColumn } from "./column";
 /**
  * The card row a scoreboard's groups and targets sit in: a four column
  * table of label, count, bar, and note. Its group names and a short count
- * wear the accent, which fails contrast as words, so every story is marked.
+ * wear the accent's ink.
  */
 const meta = {
 	title: "Email/Scoreboard",
 	component: Scoreboard,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

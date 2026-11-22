@@ -5,15 +5,12 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A model written read at the top of a section card, under an accent "The
- * Read" eyebrow. The accent at 11px fails contrast on the paper, so every
- * story is marked.
+ * A model written read at the top of a section card, under a "The Read"
+ * eyebrow in the accent's ink.
  */
 const meta = {
 	title: "Email/ReadBlock",
 	component: ReadBlock,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

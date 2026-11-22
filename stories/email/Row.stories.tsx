@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Card, Row } from "../../src/email";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
@@ -51,20 +50,16 @@ export const WithAHairline: Story = {
 };
 
 /**
- * A long unbroken address in a row on a phone should wrap inside the card.
- * A row sets no `overflow-wrap`, so the address holds its cell open and the
- * email runs wider than the phone.
+ * A long unbroken address in a row on a phone wraps inside the card, so the
+ * email stays the phone's width.
  */
 export const LongWordPhone: Story = {
-	tags: ["known-issue"],
 	args: {
 		children:
 			"The ledger export lives at https://example.test/bakehouse/ledgers/2026-W47/wholesale-accounts-export.csv",
 	},
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
-		await knownBug("email-long-word-widens", async () => {
-			await fitsTheColumn(canvasElement);
-		});
+		await fitsTheColumn(canvasElement);
 	},
 };

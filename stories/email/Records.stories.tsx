@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, within } from "storybook/test";
 import { Card, Records, type RecordsColumn, Row } from "../../src/email";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
@@ -33,18 +32,25 @@ const rows = [
 	],
 ];
 
-/** The header cells' words, in order. */
-function headers(canvasElement: HTMLElement) {
-	const table = canvasElement.querySelector("[data-story-column] td td table") as HTMLElement;
-	return Array.from(table.querySelector("tr")?.children ?? []).map((cell) => cell.textContent);
+/** The column headers' words, in order, read the way a screen reader reads them. */
+function headers(canvas: Canvas) {
+	return canvas.getAllByRole("columnheader").map((cell: HTMLElement) => cell.textContent);
 }
+
+/** A header cell's share of its table's width. */
+function share(canvas: Canvas, label: string) {
+	const table = canvas.getByRole("table").getBoundingClientRect();
+	return (
+		canvas.getByRole("columnheader", { name: label }).getBoundingClientRect().width / table.width
+	);
+}
+
+const fixedWidths = [200, 60, 60, 120];
 
 /**
  * A table of numbers with a header row; a column every row leaves empty is
- * dropped unless it says keep. A hot cell wears the accent, which fails
- * contrast as words, so the stories with one are marked. Its header row is
- * plain cells, not `th`, so a screen reader cannot tie a number to its
- * column.
+ * dropped unless it says keep. A data table: its header cells name the
+ * column a reader is in, and a hot cell wears the accent's ink.
  */
 const meta = {
 	title: "Email/Records",
@@ -66,13 +72,12 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+type Canvas = ReturnType<typeof within>;
 
 /** Four columns, the numbers right aligned. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
-		await expect(headers(canvasElement)).toEqual(["Cafe", "Trays", "Drop", "Change"]);
+		await expect(headers(canvas)).toEqual(["Cafe", "Trays", "Drop", "Change"]);
 		const trays = canvas.getByText("Trays").getBoundingClientRect();
 		const four = canvas.getByText("4").getBoundingClientRect();
 		await expect(Math.abs(four.right - trays.right)).toBeLessThan(2);
@@ -83,8 +88,8 @@ export const Default: Story = {
 /** A column every row leaves empty drops away. */
 export const DropsAnEmptyColumn: Story = {
 	args: { rows: rows.map((row) => [row[0], row[1], row[2], { value: "" }]) },
-	play: async ({ canvasElement }) => {
-		await expect(headers(canvasElement)).toEqual(["Cafe", "Trays", "Drop"]);
+	play: async ({ canvas }) => {
+		await expect(headers(canvas)).toEqual(["Cafe", "Trays", "Drop"]);
 	},
 };
 
@@ -96,21 +101,37 @@ export const KeepsAnEmptyColumn: Story = {
 		),
 		rows: rows.map((row) => [row[0], row[1], row[2], { value: "" }]),
 	},
-	play: async ({ canvasElement }) => {
-		await expect(headers(canvasElement)).toEqual(["Cafe", "Trays", "Drop", "Change"]);
+	play: async ({ canvas }) => {
+		await expect(headers(canvas)).toEqual(["Cafe", "Trays", "Drop", "Change"]);
 	},
 };
 
-/** Fixed widths, so sibling tables share a grid. */
+/**
+ * Fixed widths, so sibling tables share a grid: each column takes the share
+ * of the table its pixels ask for, whatever the table's width.
+ */
 export const FixedWidths: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
-	args: { columns: columns.map((column, i) => ({ ...column, width: [200, 60, 60, 120][i] })) },
+	args: { columns: columns.map((column, i) => ({ ...column, width: fixedWidths[i] })) },
 	play: async ({ canvas }) => {
-		// The fixed layout shares spare room out in proportion to the widths given.
-		const cafe = canvas.getByText("Cafe").getBoundingClientRect().width;
-		const trays = canvas.getByText("Trays").getBoundingClientRect().width;
-		await expect(Math.round((cafe / trays) * 10) / 10).toBeCloseTo(200 / 60, 0);
+		const total = fixedWidths.reduce((sum, width) => sum + width, 0);
+		for (const [i, label] of ["Cafe", "Trays", "Drop", "Change"].entries()) {
+			await expect(Math.abs(share(canvas, label) - fixedWidths[i] / total)).toBeLessThan(0.01);
+		}
+	},
+};
+
+/**
+ * One fixed column beside free ones keeps its share of the 630 pixel desktop
+ * table, and the free columns share the rest.
+ */
+export const OneFixedColumn: Story = {
+	args: {
+		columns: columns.map((column) =>
+			column.label === "Trays" ? { ...column, width: 63 } : column,
+		),
+	},
+	play: async ({ canvas }) => {
+		await expect(Math.abs(share(canvas, "Trays") - 63 / 630)).toBeLessThan(0.01);
 	},
 };
 
@@ -133,8 +154,6 @@ export const MarkupCell: Story = {
 
 /** On a phone, four columns of short values fit the card. */
 export const DefaultPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
 		await fitsTheColumn(canvasElement);
@@ -142,29 +161,34 @@ export const DefaultPhone: Story = {
 };
 
 /**
- * On a phone, fixed widths that add up wider than the card hold it open:
- * the email runs off a phone's screen. Any caller that fixes widths for a
- * desktop column breaks the phone.
+ * On a phone, the widths a desktop column asked for narrow with the card in
+ * the same proportions, so the email stays on the screen.
  */
 export const FixedWidthsPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
-	args: { columns: columns.map((column, i) => ({ ...column, width: [200, 60, 60, 120][i] })) },
+	args: { columns: columns.map((column, i) => ({ ...column, width: fixedWidths[i] })) },
 	globals: pin("phone"),
-	play: async ({ canvasElement }) => {
-		await knownBug("records-fixed-widths-overflow", async () => {
-			await fitsTheColumn(canvasElement);
-		});
+	play: async ({ canvas, canvasElement }) => {
+		await fitsTheColumn(canvasElement);
+		const total = fixedWidths.reduce((sum, width) => sum + width, 0);
+		await expect(Math.abs(share(canvas, "Cafe") - fixedWidths[0] / total)).toBeLessThan(0.01);
 	},
 };
 
-/** The header should name each column for a screen reader; it is plain cells. */
-export const HeaderCellsAreHeaders: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
+/**
+ * A reader moving through the table hears which column a number is in: the
+ * header cells are column headers, and each value sits in its column's cell.
+ */
+export const ReadByColumn: Story = {
 	play: async ({ canvas }) => {
-		await knownBug("records-header-not-th", async () => {
-			await expect(canvas.getByRole("columnheader", { name: "Trays" })).toBeInTheDocument();
-		});
+		const table = canvas.getByRole("table");
+		await expect(within(table).getAllByRole("columnheader")).toHaveLength(4);
+		const trays = canvas.getByRole("columnheader", { name: "Trays" });
+		await expect(trays).toHaveAttribute("scope", "col");
+		const larkspur = within(table).getByRole("row", { name: /Larkspur/ });
+		const cells = within(larkspur).getAllByRole("cell");
+		const column = within(trays.closest("tr") as HTMLElement)
+			.getAllByRole("columnheader")
+			.indexOf(trays);
+		await expect(cells[column]).toHaveTextContent("4");
 	},
 };

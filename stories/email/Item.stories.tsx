@@ -6,15 +6,13 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * The workhorse row: a title line (the name, and the one value that matters
- * in the accent), a subline of facts joined by middots, a sentence or two,
- * an optional fold, and an optional link. The accent value at 12px fails
- * contrast on the paper, so every story is marked.
+ * in the accent's ink), a subline of facts joined by middots, a sentence or
+ * two, an optional fold, and an optional link. A long token breaks inside
+ * the card.
  */
 const meta = {
 	title: "Email/Item",
 	component: Item,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

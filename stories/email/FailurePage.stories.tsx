@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { FailurePage } from "../../src/email";
 import { longLogTail } from "../fixtures/email-app";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
@@ -10,8 +9,8 @@ import { fitsTheColumn, inColumn } from "./column";
  * The email a runner sends when it did not run: the masthead, then a card
  * with the reason on top and the log's tail beneath. With a `step` or a
  * `fix` the reason becomes a labelled block of what failed, why, and what
- * to do. The fix's label wears the accent, which fails contrast as words, so
- * the stories with a fix are marked.
+ * to do. The fix's label wears the accent's ink. Both pages' logs break a
+ * long path inside the card.
  */
 const meta = {
 	title: "Email/FailurePage",
@@ -44,8 +43,6 @@ export const Plain: Story = {
 
 /** With a step and a fix: labelled blocks for what failed, why, and what to do, then the log. */
 export const Structured: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: {
 		step: "Reading the wholesale ledger",
 		fix: "Export the ledger again: bakehouse ledger export --week 2026-W47",
@@ -62,8 +59,6 @@ export const Structured: Story = {
 
 /** A fix alone, with no step, still makes it structured; an empty reason drops its block. */
 export const FixOnly: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { fix: "Run it again after 06:00.", reason: " " },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByText("What to Do")).toBeVisible();
@@ -82,8 +77,6 @@ export const NoLog: Story = {
 
 /** Structured on a phone, a long path in the log and the fix wraps inside the card. */
 export const StructuredLongPathPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: {
 		step: "Reading the wholesale ledger",
 		fix: "Restore /srv/bakehouse/runners/weekly_ops/cache/ledger_2026W47_wholesale_accounts_export.json from last night's copy.",
@@ -96,17 +89,13 @@ export const StructuredLongPathPhone: Story = {
 };
 
 /**
- * The plain page on a phone with the same long path in its log. The log's
- * `pre` wraps on spaces only, unlike the structured page's, so the path runs
- * past the card and widens the email.
+ * The plain page on a phone with the same long path in its log, which breaks
+ * inside the card as the structured page's does.
  */
 export const PlainLongPathPhone: Story = {
-	tags: ["known-issue"],
 	args: { logTail: longLogTail },
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
-		await knownBug("plain-failure-log-overflows", async () => {
-			await fitsTheColumn(canvasElement);
-		});
+		await fitsTheColumn(canvasElement);
 	},
 };

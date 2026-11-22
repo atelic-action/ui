@@ -6,8 +6,7 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * A card level disclosure: a bold summary with an optional faint count
- * beside it, opening on the rows it holds. The stories that open it show an
- * item's accent value, which fails contrast, and are marked.
+ * beside it, opening on the rows it holds.
  */
 const meta = {
 	title: "Email/BigFold",
@@ -47,8 +46,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The summary and its count on one line; a press opens the rows. */
 export const WithCount: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
 		const summary = canvas.getByText(/Quiet accounts/);
 		await expect(summary).toHaveTextContent("+ Quiet accounts 3");
@@ -77,8 +74,6 @@ export const ZeroCount: Story = {
 
 /** Opened on a phone, the rows fit the card. */
 export const OpenPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	globals: pin("phone"),
 	play: async ({ canvas, canvasElement }) => {
 		await userEvent.click(canvas.getByText(/Quiet accounts/));

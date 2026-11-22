@@ -6,9 +6,8 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * A short note inside a card under a small eyebrow. Plain, the eyebrow is
- * faint and the words dim; accented, the eyebrow wears the accent and the
- * words the ink. The accent fails contrast as words, so an accented note is
- * marked.
+ * faint and the words dim; accented, the eyebrow wears the accent's ink and
+ * the words the ink.
  */
 const meta = {
 	title: "Email/Note",
@@ -47,15 +46,11 @@ export const Plain: Story = {
 
 /** Accented: the one note that matters. */
 export const Accented: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { accented: true, eyebrowText: "Act on it" },
 };
 
 /** Two notes: the first leaves room, the last closes the card. */
 export const TwoNotes: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	render: (args) => (
 		<>
 			<Note

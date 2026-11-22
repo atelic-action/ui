@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Card, type Day, DayStrip, SubEyebrow } from "../../src/email";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
@@ -64,11 +63,10 @@ export const Empty: Story = {
 
 /**
  * On a phone the seven days share about 45px each, so a word wider than that
- * ("sourdough" at 12px is about 55px) cannot wrap inside its day and holds
- * the strip open: the email runs wider than the phone.
+ * ("sourdough" at 12px is about 55px) breaks inside its day rather than
+ * holding the strip open.
  */
 export const LongNamesPhone: Story = {
-	tags: ["known-issue"],
 	args: {
 		days: week.map((day) => ({
 			...day,
@@ -77,9 +75,7 @@ export const LongNamesPhone: Story = {
 	},
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
-		await knownBug("day-strip-word-widens", async () => {
-			await fitsTheColumn(canvasElement);
-		});
+		await fitsTheColumn(canvasElement);
 	},
 };
 
