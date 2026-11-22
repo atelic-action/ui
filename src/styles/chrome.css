@@ -222,7 +222,7 @@
 	   light mark, logo.src, as before, or a dark only cut), and to white on a
 	   dark one (a light only cut). A cut drawn on its own surface is never
 	   touched. The tint follows the bar's own state, so a lockup drawn outside
-	   a header (a gallery row, a page's own band) shows its artwork as given. */
+	   a header (a story's row, a page's own band) shows its artwork as given. */
 	.atelic-ui .nav.is-solid:not(.nav-dark) .nav-logo .mark.is-tinted {
 		filter: brightness(0) saturate(1);
 	}

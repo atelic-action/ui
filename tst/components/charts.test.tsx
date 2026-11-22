@@ -176,7 +176,7 @@ describe("ThresholdScale", () => {
 					{ label: "Menu", value: 1.2, display: "1.2 s", tone: "good" },
 					{ label: "On the line", value: 2.5, display: "2.5 s", tone: "good" },
 					{ label: "Home", value: 3.1, display: "3.1 s", tone: "warn" },
-					{ label: "Gallery", value: 11.2, display: "11.2 s", tone: "bad" },
+					{ label: "Photos", value: 11.2, display: "11.2 s", tone: "bad" },
 				]}
 			/>,
 		);
@@ -184,7 +184,7 @@ describe("ThresholdScale", () => {
 			"Menu: 1.2 s, Good",
 			"On the line: 2.5 s, Good",
 			"Home: 3.1 s, Slow",
-			"Gallery: 11.2 s, Poor",
+			"Photos: 11.2 s, Poor",
 		]);
 	});
 });

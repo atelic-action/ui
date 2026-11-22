@@ -8,7 +8,7 @@ import { testSite } from "./site-fixture";
 
 /*
  * The sections' review fixes: a new tab only through newTabProps (Component
- * Rules 12), and a gallery's keys defined and unique whatever its tiles
+ * Rules 12), and a `Gallery`'s keys defined and unique whatever its tiles
  * share. Every name and figure here is made up.
  */
 

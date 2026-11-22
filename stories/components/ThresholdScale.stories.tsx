@@ -58,9 +58,9 @@ export const ZoneIsSpoken: Story = {
  * the name puts it in the last zone.
  */
 export const PastTheEnd: Story = {
-	args: { readings: [{ label: "Gallery", value: 11.2, display: "11.2 s", tone: "bad" }] },
+	args: { readings: [{ label: "Photos", value: 11.2, display: "11.2 s", tone: "bad" }] },
 	play: async ({ canvas }) => {
-		const track = canvas.getByRole("img", { name: "Gallery: 11.2 s, Poor" });
+		const track = canvas.getByRole("img", { name: "Photos: 11.2 s, Poor" });
 		const pin = (track.lastElementChild as HTMLElement).getBoundingClientRect();
 		const center = pin.left + pin.width / 2;
 		await expect(Math.abs(center - track.getBoundingClientRect().right)).toBeLessThan(1);

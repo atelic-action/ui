@@ -31,7 +31,8 @@ describe("icons over emojis", () => {
 		expect(await offendersIn(`${SRC}/**/*.{ts,tsx,css}`)).toEqual([]);
 	});
 
-	it("holds the gallery to the same rule", async () => {
-		expect(await offendersIn(`${join(ROOT, "gallery")}/*.{ts,tsx,css,html}`)).toEqual([]);
+	it("holds the stories and the Storybook setup to the same rule", async () => {
+		expect(await offendersIn(`${join(ROOT, "stories")}/**/*.{ts,tsx,css}`)).toEqual([]);
+		expect(await offendersIn(`${join(ROOT, ".storybook")}/*.{ts,tsx,css,html}`)).toEqual([]);
 	});
 });

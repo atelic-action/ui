@@ -102,7 +102,7 @@ Every export that draws has its stories as of ATE-772. A new component brings it
 
 - Every story is set in the one fictional business, Kestrel Hollow Bakehouse (`fixtures/bakery.ts`), and the app stories in its ops app (`fixtures/app.ts`). Build on those rather than inventing a second business: a group's own data goes in its fixture file above, and data only one story uses can sit in its story file.
 - Fictional only: a name, a number, or an address on the page is made up. Phone numbers are `555-01xx`; email addresses and hosts are on `example.com` or `example.test`; towns are invented (Fairhaven). The repo is public, so no real business, person, email, phone, or host, ever.
-- Pictures and the clip come from the static folders, served at the root as a site serves its public folder: the gallery's (`/images/...`, `/video/...`, `/fonts/...`) and the stories' own (`stories/public/`, the marks cut per surface in `/images/`, a group's own pictures in `/images/<group>/`).
+- Pictures, the clip, and the fonts come from `stories/public/`, served at the root as a site serves its public folder: the shared pictures and the marks cut per surface in `/images/`, a group's own pictures in `/images/<group>/`, the clip in `/video/`, the fonts in `/fonts/`, and `robots.txt`, which keeps the served Storybook out of search.
 
 ## Templates
 

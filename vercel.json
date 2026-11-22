@@ -1,7 +1,11 @@
 {
 	"installCommand": "bun install",
-	"buildCommand": "bun run gallery:build",
-	"outputDirectory": "gallery/dist",
+	"buildCommand": "bun run storybook:build",
+	"outputDirectory": "storybook-static",
 	"framework": null,
-	"cleanUrls": true
+	"cleanUrls": false,
+	"redirects": [
+		{ "source": "/app", "destination": "/?path=/docs/app-applayout--docs", "permanent": false },
+		{ "source": "/app.html", "destination": "/?path=/docs/app-applayout--docs", "permanent": false }
+	]
 }

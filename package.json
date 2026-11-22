@@ -95,11 +95,9 @@
 		"prepack": "bun run build",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
-		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p gallery && tsc --noEmit -p stories",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p stories",
 		"test:run": "vitest run --project=unit",
 		"test:stories": "vitest run --project=storybook",
-		"gallery:dev": "vite gallery",
-		"gallery:build": "vite build gallery",
 		"storybook": "storybook dev --port 6006",
 		"storybook:build": "storybook build --output-dir storybook-static"
 	},
