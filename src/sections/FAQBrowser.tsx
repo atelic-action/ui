@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Link2, Search, X } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { useOpenHeight } from "../lib/useOpenHeight";
 import { useWithBase } from "../routing/BasePathProvider";
@@ -157,6 +157,14 @@ export function FAQBrowser({
 		});
 	}, [categories]);
 
+	// Clearing the search removes the clear button, and the focus it held
+	// would fall to the page; it goes back to the field it cleared instead.
+	const searchRef = useRef<HTMLInputElement>(null);
+	function clearSearch() {
+		setQuery("");
+		searchRef.current?.focus();
+	}
+
 	function toggle(id: string) {
 		setOpenIds((prev) => {
 			const next = new Set(prev);
@@ -195,6 +203,7 @@ export function FAQBrowser({
 					<div className="faq-search">
 						<Search size={18} strokeWidth={1.6} aria-hidden="true" />
 						<input
+							ref={searchRef}
 							type="search"
 							value={query}
 							onChange={(event) => setQuery(event.target.value)}
@@ -206,7 +215,7 @@ export function FAQBrowser({
 								type="button"
 								className="faq-search-clear"
 								aria-label="Clear search"
-								onClick={() => setQuery("")}
+								onClick={clearSearch}
 							>
 								<X size={16} strokeWidth={2} aria-hidden="true" />
 							</button>

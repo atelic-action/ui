@@ -333,7 +333,11 @@
 	.atelic-ui .field.invalid textarea {
 		border-color: var(--primary-deep);
 	}
+	.atelic-ui .form-status {
+		display: block;
+	}
 	.atelic-ui .form-success {
+		display: block;
 		background: var(--secondary-tint);
 		border: 1.5px solid var(--secondary-soft);
 		color: var(--secondary);
@@ -1515,6 +1519,7 @@
 	/* ---- LogoMarquee (logo-marquee.css) ---- */
 	/* Dark credentials band with infinite marquee. */
 	.atelic-ui .creds {
+		position: relative;
 		background: var(--surface-dark);
 		padding-block: 22px;
 	}
@@ -1528,23 +1533,72 @@
 		-webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 	}
+	/* The row and its copy, each closing on the gap, so the -50% translate
+	   lands the copy exactly where the row began. */
 	.atelic-ui .marquee-track {
 		display: flex;
-		gap: 14px;
 		width: max-content;
 		animation: scroll-x 32s linear infinite;
+	}
+	.atelic-ui .marquee-group {
+		display: flex;
+		flex: none;
+		gap: 14px;
+		padding-right: 14px;
+	}
+	.atelic-ui .marquee[data-paused] .marquee-track {
+		animation-play-state: paused;
 	}
 	@keyframes scroll-x {
 		to {
 			transform: translateX(-50%);
 		}
 	}
+	/* The pause control: a small round button at the band's right edge, as
+	   quiet as the chips, over the row's faded end, with a collar of the
+	   band's own color so a chip slides under it whole. */
+	.atelic-ui .marquee-pause {
+		position: absolute;
+		top: 50%;
+		right: 10px;
+		transform: translateY(-50%);
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		color: var(--on-dark-chip);
+		/* Opaque, so the chips pass cleanly under it rather than through it. */
+		background: var(--surface-dark);
+		box-shadow:
+			inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 24%, transparent),
+			0 0 0 6px var(--surface-dark);
+	}
+	.atelic-ui .marquee-pause:hover {
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 50%, transparent);
+	}
+	.atelic-ui .marquee-pause:focus-visible {
+		outline: 2px solid var(--primary-bright);
+		outline-offset: 2px;
+	}
+	/* Under reduced motion nothing moves: the row stands still and wraps to
+	   a centered block, its copy is not drawn, and there is nothing to pause. */
 	@media (prefers-reduced-motion: reduce) {
 		.atelic-ui .marquee-track {
 			animation: none;
-			flex-wrap: wrap;
 			width: auto;
+		}
+		.atelic-ui .marquee-group {
+			flex: 1 1 auto;
+			flex-wrap: wrap;
 			justify-content: center;
+			padding-right: 0;
+		}
+		.atelic-ui .marquee-group[aria-hidden] {
+			display: none;
+		}
+		.atelic-ui .marquee-pause {
+			display: none;
 		}
 	}
 
@@ -2474,7 +2528,8 @@
 		visibility: visible;
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .rvc-slide {
+		.atelic-ui .rvc-slide,
+		.atelic-ui .rvc-dot {
 			transition: none;
 		}
 	}
