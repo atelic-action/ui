@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, waitFor, within } from "storybook/test";
 import { ContactDock } from "../../src/chrome";
 import { dock } from "../fixtures/bakery";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -160,6 +161,6 @@ export const LongestContent: Story = {
 		})),
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

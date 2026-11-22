@@ -12,7 +12,7 @@ import {
 	sectionedLinks,
 } from "../fixtures/bakery";
 import { CrashBoundary } from "../support/boundary";
-import { textLeft } from "../support/geometry";
+import { expectNoSidewaysScroll, textLeft } from "../support/geometry";
 import { PageBehind, type PageBehindProps } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -552,6 +552,6 @@ export const CrowdedPanelNarrowDesktop: Story = {
 		// The cards wrapped below the picture.
 		const card = canvas.getByRole("link", { name: /Morning baker/ }).getBoundingClientRect();
 		await expect(card.top).toBeGreaterThanOrEqual(picture.bottom);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
