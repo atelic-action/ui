@@ -1090,7 +1090,13 @@
 	/* The hero's eyebrow line, at the eyebrow primitive's own look (its
 	   private properties, primitives.css) unless a theme sets the hero's
 	   kicker tokens. */
+	/* --hero-kicker-display: block and --hero-kicker-leading lay the kicker
+	   out as a block whose height is its own line height. Unset it stays the
+	   inline block it was, in the copy's line box, which stands it taller
+	   than its own type (both read in place, inherited by default). */
 	.atelic-ui .hero .eyebrow {
+		display: var(--hero-kicker-display, inline-block);
+		line-height: var(--hero-kicker-leading, inherit);
 		font-size: var(--hero-kicker-size, var(--_eyebrow-size));
 		font-weight: var(--hero-kicker-weight, var(--_eyebrow-weight));
 		letter-spacing: var(--hero-kicker-tracking, var(--_eyebrow-tracking));
@@ -1222,6 +1228,7 @@
 		color: var(--on-primary);
 	}
 	.atelic-ui .hero .cta-row {
+		gap: var(--hero-actions-gap);
 		margin-top: var(--hero-gap-actions, var(--hero-stack-gap, 32px));
 	}
 	.atelic-ui .hero.is-split .cta-row {

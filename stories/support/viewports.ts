@@ -15,6 +15,21 @@ export const viewports = {
 		type: "mobile",
 	},
 	tablet: { name: "Tablet 820", styles: { width: "820px", height: "1180px" }, type: "tablet" },
+	// The narrowest tablet a site still meets, the first width the footer
+	// lays its columns in one flowing row (760, chrome.css) with any room.
+	smallTablet: {
+		name: "Small tablet 768",
+		styles: { width: "768px", height: "1024px" },
+		type: "tablet",
+	},
+	// A laptop's narrow window, and the width just under the footer's 1100
+	// step, where a row with the most columns has the least room.
+	laptop: { name: "Laptop 1024", styles: { width: "1024px", height: "768px" }, type: "desktop" },
+	wideTablet: {
+		name: "Wide tablet 1099",
+		styles: { width: "1099px", height: "800px" },
+		type: "desktop",
+	},
 	desktop: { name: "Desktop 1280", styles: { width: "1280px", height: "800px" }, type: "desktop" },
 	// The narrowest desktop a bar holding groups shows them at (1180, chrome.css),
 	// where the mega panel has the least room.

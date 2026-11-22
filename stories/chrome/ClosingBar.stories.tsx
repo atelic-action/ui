@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, type within } from "storybook/test";
 import { ClosingBar, Copyright } from "../../src/chrome";
 import { expectNoSidewaysScroll, lines, textLeft } from "../support/geometry";
@@ -170,5 +171,50 @@ export const CopyrightAlonePhone: Story = {
 		const line = canvasElement.querySelector(".closing-bar") as HTMLElement;
 		await expect(textLeft(copyright)).toBeLessThan(line.getBoundingClientRect().width / 4);
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** The rule above the bar, which has no role; reached from the bar's own words. */
+function rule(canvasElement: HTMLElement) {
+	const bar = canvasElement.querySelector(".closing-bar") as HTMLElement;
+	return { bar, before: getComputedStyle(bar, "::before") };
+}
+
+/** The rule runs the bar's full width by default, as before. */
+export const RuleFullWidth: Story = {
+	globals: pin("desktop"),
+	play: async ({ canvasElement }) => {
+		const { bar, before } = rule(canvasElement);
+		await expect(before.left).toBe("0px");
+		await expect(Number.parseFloat(before.width)).toBeCloseTo(bar.getBoundingClientRect().width, 0);
+		await expect(before.height).toBe("1px");
+	},
+};
+
+/**
+ * `--closing-rule-inset` sets the rule in from each side; at the wrap's edge
+ * it starts where the copyright's words do.
+ */
+export const RuleInsideTheContent: Story = {
+	globals: pin("desktop"),
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--closing-rule-inset":
+							"max(var(--gutter), calc((100% - var(--max-width)) / 2 + var(--gutter)))",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, canvasElement }) => {
+		const { bar, before } = rule(canvasElement);
+		const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
+		const ruleLeft = bar.getBoundingClientRect().left + Number.parseFloat(before.left);
+		await expect(Math.abs(ruleLeft - textLeft(copyright))).toBeLessThan(1);
 	},
 };

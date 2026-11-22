@@ -479,3 +479,84 @@ export const SubheadingTrackingNormal: Story = {
 		await expect(["normal", "0px"]).toContain(tracking("Four rolls"));
 	},
 };
+
+/** A split hero with a kicker and two actions, for the kicker and actions tokens. */
+function KickerHero({ tokens }: { tokens?: Record<string, string> }) {
+	return (
+		<div style={tokens as CSSProperties}>
+			<Hero
+				layout="split"
+				eyebrow="Alder Street, since 2014"
+				title="Bread worth the early line."
+				subtitle="Country loaves and morning buns, out of the oven by seven."
+				primaryCTA={{ label: "Order ahead", href: "/order" }}
+				secondaryCTA={{ label: "See the menu", href: "/menu" }}
+				image={{ src: image("ovens"), alt: "The ovens at dawn" }}
+			/>
+		</div>
+	);
+}
+
+/** The kicker, the headline, and the two actions, found as a reader finds them. */
+function kickerParts(canvas: ReturnType<typeof within>) {
+	return {
+		kicker: canvas.getByText("Alder Street, since 2014"),
+		title: canvas.getByRole("heading", { name: "Bread worth the early line." }),
+		first: canvas.getByRole("link", { name: /Order ahead/ }),
+		second: canvas.getByRole("link", { name: "See the menu" }),
+	};
+}
+
+/** The gap between two actions, side by side or stacked. */
+function actionsGap(first: Element, second: Element) {
+	const a = first.getBoundingClientRect();
+	const b = second.getBoundingClientRect();
+	return Math.round(b.top >= a.bottom ? b.top - a.bottom : b.left - a.right);
+}
+
+/**
+ * The kicker as a block whose height is its own line height
+ * (`--hero-kicker-display: block`, `--hero-kicker-leading: 16px`): its box is
+ * 16px tall and the headline starts the kicker gap below it, with no line box
+ * of the copy's leading around it. `--hero-actions-gap` sets the actions'
+ * gap.
+ */
+export const HeroKickerBlockAndActionsGap: Story = {
+	args: {},
+	render: () => (
+		<KickerHero
+			tokens={{
+				"--hero-kicker-display": "block",
+				"--hero-kicker-leading": "16px",
+				"--hero-gap-kicker": "12px",
+				"--hero-actions-gap": "8px",
+			}}
+		/>
+	),
+	play: async ({ canvas }) => {
+		const { kicker, title, first, second } = kickerParts(canvas);
+		const box = (element: Element) => element.getBoundingClientRect();
+		await expect(Math.round(box(kicker).height)).toBe(16);
+		await expect(getComputedStyle(kicker).lineHeight).toBe("16px");
+		await expect(Math.round(box(title).top - box(kicker).bottom)).toBe(12);
+		await expect(actionsGap(first, second)).toBe(8);
+	},
+};
+
+/**
+ * Unset, the kicker stays the inline block it was, inside a line box of the
+ * copy's leading that stands taller than the kicker's own type, and the
+ * actions sit 14px apart, as before.
+ */
+export const HeroKickerAndActionsDefaults: Story = {
+	args: {},
+	render: () => <KickerHero />,
+	play: async ({ canvas }) => {
+		const { kicker, title, first, second } = kickerParts(canvas);
+		const box = (element: Element) => element.getBoundingClientRect();
+		await expect(getComputedStyle(kicker).display).toBe("inline-block");
+		// The line box around it adds room above the headline's own margin.
+		await expect(box(title).top - box(kicker).bottom).toBeGreaterThan(12);
+		await expect(actionsGap(first, second)).toBe(14);
+	},
+};

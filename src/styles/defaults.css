@@ -160,6 +160,11 @@
 		/* The footer's column links' size: 1em is the footer's own, as they
 		   always inherited it. */
 		--footer-link-size: 1em;
+		/* How far in from each side the rule above the closing bar starts:
+		   0px runs it the bar's full width, as always. */
+		--closing-rule-inset: 0px;
+		/* The gap between the hero's actions, side by side or stacked. */
+		--hero-actions-gap: 14px;
 	}
 
 	/* ---- Long words ----

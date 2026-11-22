@@ -754,3 +754,94 @@ export const LinkSizeAndBrandShareDefaults: Story = {
 		);
 	},
 };
+
+/**
+ * Checks the brand placement's rows: the brand column shares the row with
+ * every link column or stands on a row of its own, never beside some; the
+ * link columns sit four across or two by two, never three and one; no label
+ * breaks inside a word; and the rating and the email each hold one line.
+ */
+async function expectBrandRows(
+	canvas: ReturnType<typeof within>,
+	layout?: "one row" | "brand above four" | "brand above two by two",
+) {
+	const footer = within(canvas.getByRole("contentinfo"));
+	const top = (element: Element) => Math.round(element.getBoundingClientRect().top);
+	const brand = (canvas.getByRole("contentinfo").querySelector("address") as HTMLElement)
+		.parentElement as HTMLElement;
+	const columns = footer.getAllByRole("navigation");
+	const rows = new Set(columns.map(top));
+	const besideBrand = columns.filter((column) => top(column) === top(brand)).length;
+	await expect([0, columns.length]).toContain(besideBrand);
+	await expect([1, 2]).toContain(rows.size);
+	if (layout === "one row") await expect(besideBrand).toBe(columns.length);
+	if (layout === "brand above four") {
+		await expect(besideBrand).toBe(0);
+		await expect(rows.size).toBe(1);
+	}
+	if (layout === "brand above two by two") await expect(rows.size).toBe(2);
+	if (rows.size === 2) {
+		const counts = [...rows].map((row) => columns.filter((column) => top(column) === row).length);
+		await expect(counts).toEqual([2, 2]);
+	}
+	// One line: no taller than one line of its own text (the rating's stars
+	// sit beside its words, so its rects' tops differ by a few pixels).
+	const oneLine = (element: HTMLElement) =>
+		element.getBoundingClientRect().height <
+		1.5 * Number.parseFloat(getComputedStyle(element).lineHeight);
+	await expect(oneLine(footer.getByText("4.9 on Google"))).toBe(true);
+	await expect(oneLine(footer.getByRole("link", { name: email }))).toBe(true);
+	await expectWholeWords(canvas);
+}
+
+/** Hours in the brand column just under 1100: the brand column takes its own row when the floors outrun the row. */
+export const HoursInBrandAt1099: Story = {
+	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+	globals: pin("wideTablet"),
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand above four");
+	},
+};
+
+/** The same at 1024. */
+export const HoursInBrandAt1024: Story = {
+	...HoursInBrandAt1099,
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand above four");
+	},
+	globals: pin("laptop"),
+};
+
+/** The same at 820. */
+export const HoursInBrandAt820: Story = {
+	...HoursInBrandAt1099,
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand above two by two");
+	},
+	globals: pin("tablet"),
+};
+
+/** The same at 768. */
+export const HoursInBrandAt768: Story = {
+	...HoursInBrandAt1099,
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand above two by two");
+	},
+	globals: pin("smallTablet"),
+};
+
+/** On a wide wrap (1200, a template's) at 1440 the brand column and the four link columns share one row. */
+export const HoursInBrandOneRowWide: Story = {
+	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+	decorators: [
+		(Story) => (
+			<div className="atelic-ui" style={{ "--max-width": "1200px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	globals: pin("desktop"),
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "one row");
+	},
+};
