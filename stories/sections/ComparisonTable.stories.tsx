@@ -110,6 +110,56 @@ export const Phone: Story = {
 	},
 };
 
+/**
+ * On a phone the box scrolls, so it is a named region a keyboard reaches by
+ * Tab and scrolls by its arrows, even when no row holds a link to land on
+ * (axe's `scrollable-region-focusable`). On a desktop, where nothing
+ * scrolls, it takes no tab stop at all.
+ */
+export const PhoneKeyboard: Story = {
+	globals: pin("phone"),
+	args: {
+		rows: comparisonRows.map(({ stageHref: _, ...row }) => row),
+		ariaLabel: "The bakery's site, before and after",
+	},
+	play: async ({ canvas, userEvent, step }) => {
+		const table = canvas.getByRole("table");
+		await step("the box scrolls, and it is a region named for what it compares", async () => {
+			const box = table.parentElement as HTMLElement;
+			await expect(box.scrollWidth).toBeGreaterThan(box.clientWidth);
+			await expect(
+				canvas.getByRole("region", { name: "The bakery's site, before and after" }),
+			).toBe(box);
+		});
+		await step("Tab reaches it, though no row holds a link", async () => {
+			await expect(canvas.queryAllByRole("link")).toHaveLength(0);
+			// A synthetic arrow key never scrolls a region (stories/README.md),
+			// so focus is the proof.
+			await userEvent.tab();
+			await expect(table.parentElement).toHaveFocus();
+		});
+	},
+};
+
+/** Where the table fits, the box is plain: no region, no tab stop. */
+export const DesktopTakesNoStop: Story = {
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByRole("region")).toBeNull();
+		await expect(canvas.getByRole("table").parentElement).not.toHaveAttribute("tabindex");
+	},
+};
+
+/** The region's default name, on a phone, when a page names none. */
+export const PhoneDefaultName: Story = {
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("region", { name: "Comparison" })).toHaveAttribute(
+			"tabindex",
+			"0",
+		);
+	},
+};
+
 /** Many rows, the longest realistic points, and an unbroken word, on a phone. */
 export const LongestContent: Story = {
 	globals: pin("phone"),

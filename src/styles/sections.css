@@ -149,6 +149,10 @@
 	.atelic-ui .cmp-scroll {
 		overflow-x: auto;
 	}
+	.atelic-ui .cmp-scroll:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
 	.atelic-ui .cmp-table {
 		width: 100%;
 		min-width: 680px;
