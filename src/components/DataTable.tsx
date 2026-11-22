@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { type ReactNode, useId, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Hint } from "./Hint";
 
 export type SortDirection = "asc" | "desc";
@@ -54,6 +54,12 @@ export interface DataTableProps {
 	sortLabel?: string;
 	/** Every other row on a tinted ground, so a wide table reads across. On by default. */
 	striped?: boolean;
+	/**
+	 * What a screen reader calls the table's box while the table is wider
+	 * than the page and scrolls inside it; defaults to "Table". Name what the
+	 * table holds ("Searches by month").
+	 */
+	ariaLabel?: string;
 	className?: string;
 }
 
@@ -82,6 +88,28 @@ function compare(a: number | string, b: number | string): number {
 }
 
 /**
+ * Whether a box is narrower than what it holds, kept current as either
+ * resizes. False on the server and until the first measure, so the box only
+ * takes a tab stop and a name once it actually scrolls.
+ */
+function useScrollsSideways() {
+	const ref = useRef<HTMLDivElement>(null);
+	const [active, setActive] = useState(false);
+	useEffect(() => {
+		const box = ref.current;
+		if (!box) return;
+		const measure = () => setActive(box.scrollWidth > box.clientWidth + 1);
+		measure();
+		if (typeof ResizeObserver === "undefined") return;
+		const observer = new ResizeObserver(measure);
+		observer.observe(box);
+		if (box.firstElementChild) observer.observe(box.firstElementChild);
+		return () => observer.disconnect();
+	}, []);
+	return { ref, active };
+}
+
+/**
  * A table whose first column names each row. A reader sorts it by any
  * sortable column: a click on the heading on a wide screen, a dropdown on a
  * phone, where each row stacks and every fact wears its column's label so
@@ -94,9 +122,11 @@ export function DataTable({
 	defaultSort,
 	sortLabel = "Sort by",
 	striped = true,
+	ariaLabel = "Table",
 	className,
 }: DataTableProps) {
 	const [sort, setSort] = useState(defaultSort ?? null);
+	const scrolls = useScrollsSideways();
 	const selectId = useId();
 	const anySortable = columns.some((column) => column.sortable);
 
@@ -155,96 +185,106 @@ export function DataTable({
 					</select>
 				</div>
 			)}
-			<table>
-				<thead>
-					<tr>
-						{columns.map((column, index) => {
-							const active = sort?.column === index;
-							const Icon = !active ? ArrowUpDown : sort?.direction === "asc" ? ArrowUp : ArrowDown;
-							// The explainer's icon sits after the label, or before it when the
-							// column is right aligned, so the icon stays on the inside edge.
-							const before = column.align === "right";
-							const hint = column.hint ? (
-								<Hint
-									label={column.hintLabel ?? `About ${column.label}`}
-									side={before ? "before" : "after"}
-								>
-									{column.hint}
-								</Hint>
-							) : null;
-							const head = {
-								"data-align": column.align ?? "left",
-								"data-fit": column.fit || undefined,
-								// The hint button sits in the heading; the heading is still named by its label.
-								"aria-label": column.hint && column.label ? column.label : undefined,
-								"aria-sort": column.sortable
-									? active
-										? sort?.direction === "asc"
-											? ("ascending" as const)
-											: ("descending" as const)
-										: ("none" as const)
-									: undefined,
-							};
-							return (
-								// biome-ignore lint/suspicious/noArrayIndexKey: columns sit in order, and two may share a blank label
-								<th scope="col" key={index} {...head}>
-									{before && hint}
-									{column.sortable ? (
-										<button
-											type="button"
-											onClick={() => sortBy(index)}
-											data-active={active || undefined}
-										>
-											{column.label}
-											<Icon size={12} aria-hidden="true" />
-										</button>
-									) : (
-										column.label
-									)}
-									{!before && hint}
-								</th>
-							);
-						})}
-					</tr>
-				</thead>
-				<tbody>
-					{sorted.map(({ row, index }) => (
-						<tr key={index} data-tone={row.tone}>
-							{/* One cell per column at least, so a cell left out draws as empty. */}
-							{Array.from({ length: Math.max(columns.length, row.cells.length) }, (_, c) => {
-								const cell = row.cells[c];
-								const body = isEmpty(cell, c) ? (
-									<>
-										<span className="data-table-empty" aria-hidden="true" />
-										<span className="data-table-empty-label">
-											{columns[c]?.emptyLabel ?? "None"}
-										</span>
-									</>
-								) : isValueCell(cell) ? (
-									cell.display
-								) : (
-									cell
-								);
-								const shape = {
-									"data-align": columns[c]?.align ?? "left",
-									"data-fit": columns[c]?.fit || undefined,
+			<div
+				ref={scrolls.ref}
+				className="data-table-scroll"
+				{...(scrolls.active ? { tabIndex: 0, role: "region", "aria-label": ariaLabel } : {})}
+			>
+				<table>
+					<thead>
+						<tr>
+							{columns.map((column, index) => {
+								const active = sort?.column === index;
+								const Icon = !active
+									? ArrowUpDown
+									: sort?.direction === "asc"
+										? ArrowUp
+										: ArrowDown;
+								// The explainer's icon sits after the label, or before it when the
+								// column is right aligned, so the icon stays on the inside edge.
+								const before = column.align === "right";
+								const hint = column.hint ? (
+									<Hint
+										label={column.hintLabel ?? `About ${column.label}`}
+										side={before ? "before" : "after"}
+									>
+										{column.hint}
+									</Hint>
+								) : null;
+								const head = {
+									"data-align": column.align ?? "left",
+									"data-fit": column.fit || undefined,
+									// The hint button sits in the heading; the heading is still named by its label.
+									"aria-label": column.hint && column.label ? column.label : undefined,
+									"aria-sort": column.sortable
+										? active
+											? sort?.direction === "asc"
+												? ("ascending" as const)
+												: ("descending" as const)
+											: ("none" as const)
+										: undefined,
 								};
-								return c === 0 ? (
-									// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
-									<th scope="row" key={c} {...shape}>
-										{body}
+								return (
+									// biome-ignore lint/suspicious/noArrayIndexKey: columns sit in order, and two may share a blank label
+									<th scope="col" key={index} {...head}>
+										{before && hint}
+										{column.sortable ? (
+											<button
+												type="button"
+												onClick={() => sortBy(index)}
+												data-active={active || undefined}
+											>
+												{column.label}
+												<Icon size={12} aria-hidden="true" />
+											</button>
+										) : (
+											column.label
+										)}
+										{!before && hint}
 									</th>
-								) : (
-									// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
-									<td key={c} {...shape} data-label={columns[c]?.label}>
-										{body}
-									</td>
 								);
 							})}
 						</tr>
-					))}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{sorted.map(({ row, index }) => (
+							<tr key={index} data-tone={row.tone}>
+								{/* One cell per column at least, so a cell left out draws as empty. */}
+								{Array.from({ length: Math.max(columns.length, row.cells.length) }, (_, c) => {
+									const cell = row.cells[c];
+									const body = isEmpty(cell, c) ? (
+										<>
+											<span className="data-table-empty" aria-hidden="true" />
+											<span className="data-table-empty-label">
+												{columns[c]?.emptyLabel ?? "None"}
+											</span>
+										</>
+									) : isValueCell(cell) ? (
+										cell.display
+									) : (
+										cell
+									);
+									const shape = {
+										"data-align": columns[c]?.align ?? "left",
+										"data-fit": columns[c]?.fit || undefined,
+									};
+									return c === 0 ? (
+										// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
+										<th scope="row" key={c} {...shape}>
+											{body}
+										</th>
+									) : (
+										// biome-ignore lint/suspicious/noArrayIndexKey: cells sit in column order
+										<td key={c} {...shape} data-label={columns[c]?.label}>
+											{body}
+										</td>
+									);
+								})}
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	);
 }

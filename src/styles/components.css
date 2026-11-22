@@ -1138,6 +1138,31 @@
 		display: block;
 		width: 100%;
 	}
+	/* Stacked, a row is a flex line: its cells shrink to the screen and a
+	   long word in one breaks (base.css, Long words), table or not. */
+	.atelic-ui .data-table {
+		min-width: 0;
+	}
+	.atelic-ui .data-table table {
+		overflow-wrap: anywhere;
+	}
+	.atelic-ui .data-table tbody th,
+	.atelic-ui .data-table td {
+		min-width: 0;
+	}
+	/* The table's own box. Wide, a table with more columns than the page
+	   has room for scrolls inside it and the page never does (Component
+	   Rules 5 and 6); the component makes it focusable and names it only
+	   while it scrolls, so a keyboard can scroll it. */
+	.atelic-ui .data-table-scroll {
+		min-width: 0;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+	.atelic-ui .data-table-scroll:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
 	.atelic-ui .data-table thead {
 		position: absolute;
 		width: 1px;
@@ -1229,6 +1254,9 @@
 		.atelic-ui .data-table table {
 			display: table;
 			border-collapse: collapse;
+			/* A cell keeps its longest word, so a table wider than the page
+			   scrolls in its box rather than breaking words to fit. */
+			overflow-wrap: break-word;
 		}
 		.atelic-ui .data-table tbody {
 			display: table-row-group;
