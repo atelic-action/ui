@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { eyebrowStyle, tableReset, useEmailTheme } from "./theme";
+import { accentInk, eyebrowStyle, tableReset, useEmailTheme, wrapLong } from "./theme";
 
 /*
  * The atoms of the runner email, ported one to one from the atoms section of
@@ -154,7 +154,7 @@ export function BigFold({ summary, count, children }: BigFoldProps) {
 
 export type TitleLineProps = { name: string; right: string };
 
-/** A name on the left and the one value that matters on the right, in the accent. */
+/** A name on the left and the one value that matters on the right, in the accent's ink. */
 export function TitleLine({ name, right }: TitleLineProps) {
 	const { palette, fonts } = useEmailTheme();
 	return (
@@ -177,7 +177,7 @@ export function TitleLine({ name, right }: TitleLineProps) {
 						style={{
 							fontFamily: fonts.mono,
 							fontSize: "12px",
-							color: palette.accent,
+							color: accentInk(palette),
 							whiteSpace: "nowrap",
 							paddingLeft: "12px",
 						}}
@@ -227,6 +227,7 @@ export function Item({
 				style={{
 					padding: `22px 24px ${last ? "22px" : "20px"}`,
 					fontFamily: fonts.sans,
+					...wrapLong,
 					...(last ? {} : { borderBottom: `1px solid ${palette.line}` }),
 				}}
 			>
@@ -273,7 +274,7 @@ export function Item({
 
 export type NoteProps = { eyebrowText: string; text: string; accented: boolean; last: boolean };
 
-/** A short note inside a card under a small eyebrow; accented puts the eyebrow in orange. */
+/** A short note inside a card under a small eyebrow; accented puts the eyebrow in the accent's ink. */
 export function Note({ eyebrowText, text, accented, last }: NoteProps) {
 	const { palette, fonts } = useEmailTheme();
 	return (
@@ -282,12 +283,15 @@ export function Note({ eyebrowText, text, accented, last }: NoteProps) {
 				style={{
 					padding: `18px 24px ${last ? "20px" : "4px"}`,
 					fontFamily: fonts.sans,
+					...wrapLong,
 					fontSize: "14px",
 					lineHeight: "1.55",
 					color: accented ? palette.ink : palette.dim,
 				}}
 			>
-				<span style={{ ...eyebrowStyle(fonts), color: accented ? palette.accent : palette.faint }}>
+				<span
+					style={{ ...eyebrowStyle(fonts), color: accented ? accentInk(palette) : palette.faint }}
+				>
 					{eyebrowText}
 				</span>
 				<br />
@@ -391,7 +395,9 @@ export function ListRow({ children }: ListRowProps) {
 	const { palette } = useEmailTheme();
 	return (
 		<tr>
-			<td style={{ padding: "6px 0", borderTop: `1px solid ${palette.hair}` }}>{children}</td>
+			<td style={{ padding: "6px 0", borderTop: `1px solid ${palette.hair}`, ...wrapLong }}>
+				{children}
+			</td>
 		</tr>
 	);
 }
@@ -419,6 +425,7 @@ export function Row({ last, children }: RowProps) {
 				style={{
 					padding: `18px 24px ${last ? "22px" : "18px"}`,
 					fontFamily: fonts.sans,
+					...wrapLong,
 					...(last ? {} : { borderBottom: `1px solid ${palette.line}` }),
 				}}
 			>

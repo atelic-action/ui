@@ -6,27 +6,39 @@ import {
 	type RecordStackItem,
 	type RecordTimeline,
 	recordBadges,
+	recordTimelineSummary,
 } from "./text";
-import { eyebrowStyle, tableReset, useEmailTheme } from "./theme";
+import { accentInk, eyebrowStyle, tableReset, useEmailTheme, wrapLong } from "./theme";
 
 /*
  * The scoreboard pieces, ported one to one from the scoreboard section of
  * homebase `runners/lib/email.jq`. The accent marks a shortfall and nothing
- * else a row says.
+ * else a row says; where the mark is words it is set in the accent's ink
+ * (`accentInk`), since the bright accent fails as small words.
  */
 
-export type BarProps = { logged: number; target: number };
+export type BarProps = {
+	logged: number;
+	target: number;
+	/**
+	 * What a screen reader hears for the bar, which has no words of its own.
+	 * Defaults to "<logged> of <target>". `false` draws it as decoration,
+	 * for a bar beside a count that already says it (as in `TargetRow`).
+	 */
+	label?: string | false;
+};
 
 /**
  * A segmented bar, one segment per unit of the target, filled up to what was
  * logged. Wider segments for small targets so three reads as three.
  */
-export function Bar({ logged, target }: BarProps) {
+export function Bar({ logged, target, label }: BarProps) {
 	const { palette } = useEmailTheme();
 	const w = target <= 3 ? "18" : "10";
 	const filled = Math.min(logged, target);
+	const name = label === false ? null : (label ?? `${logged} of ${target}`);
 	return (
-		<table {...tableReset}>
+		<table {...tableReset} {...(name === null ? {} : { role: "img", "aria-label": name })}>
 			<tbody>
 				<tr>
 					{Array.from({ length: target }, (_, i) => (
@@ -68,7 +80,7 @@ export function GroupRow({ text, first }: GroupRowProps) {
 				style={{
 					padding: `${first ? "0" : "18px"} 0 6px`,
 					...eyebrowStyle(fonts),
-					color: palette.accent,
+					color: accentInk(palette),
 					borderBottom: `1px solid ${palette.line}`,
 				}}
 			>
@@ -103,7 +115,7 @@ export function TargetRow({ text, logged, target, note, last }: TargetRowProps) 
 					...rule,
 					fontFamily: fonts.mono,
 					fontSize: "13px",
-					color: short ? palette.accent : palette.ink,
+					color: short ? accentInk(palette) : palette.ink,
 					whiteSpace: "nowrap",
 				}}
 			>
@@ -111,7 +123,9 @@ export function TargetRow({ text, logged, target, note, last }: TargetRowProps) 
 				{target === null ? null : ` / ${target}`}
 			</td>
 			<td width="84" style={{ padding: "10px 0 10px 16px", ...rule }}>
-				{target === null || target === 0 ? null : <Bar logged={logged} target={target} />}
+				{target === null || target === 0 ? null : (
+					<Bar logged={logged} target={target} label={false} />
+				)}
 			</td>
 			<td
 				align="right"
@@ -154,10 +168,11 @@ export function ReadBlock({ text, divider }: ReadBlockProps) {
 				style={{
 					padding: "22px 24px 20px",
 					fontFamily: fonts.sans,
+					...wrapLong,
 					...(divider ? { borderBottom: `1px solid ${palette.line}` } : {}),
 				}}
 			>
-				<span style={{ ...eyebrowStyle(fonts), color: palette.accent }}>The Read</span>
+				<span style={{ ...eyebrowStyle(fonts), color: accentInk(palette) }}>The Read</span>
 				<div
 					style={{
 						fontSize: "15px",
@@ -187,13 +202,26 @@ export function SubEyebrow({ text }: SubEyebrowProps) {
 	);
 }
 
-export type BadgeProps = { letter: string };
+export type BadgeProps = {
+	letter: string;
+	/**
+	 * What the letter stands for ("Social"), read by a screen reader in the
+	 * letter's place and shown as a tooltip. Without it a reader hears the
+	 * letter alone.
+	 */
+	label?: string;
+};
 
-/** A single letter in a hairline box after the word it tags (S for social). */
-export function Badge({ letter }: BadgeProps) {
+/**
+ * A single letter in a hairline box after the word it tags (S for social),
+ * letter and box in the accent's ink: the bright accent fails as words.
+ */
+export function Badge({ letter, label }: BadgeProps) {
 	const { palette, fonts } = useEmailTheme();
+	const ink = accentInk(palette);
 	return (
 		<span
+			{...(label ? { role: "img", "aria-label": label, title: label } : {})}
 			style={{
 				display: "inline-block",
 				fontFamily: fonts.mono,
@@ -201,9 +229,9 @@ export function Badge({ letter }: BadgeProps) {
 				lineHeight: "12px",
 				width: "12px",
 				textAlign: "center",
-				border: `1px solid ${palette.accent}`,
+				border: `1px solid ${ink}`,
 				borderRadius: "3px",
-				color: palette.accent,
+				color: ink,
 				verticalAlign: "1px",
 				marginLeft: "3px",
 			}}
@@ -213,7 +241,13 @@ export function Badge({ letter }: BadgeProps) {
 	);
 }
 
-export type DayEntry = { name: string; strong?: boolean; badge?: string };
+export type DayEntry = {
+	name: string;
+	strong?: boolean;
+	badge?: string;
+	/** What the badge's letter stands for; see `Badge`'s `label`. */
+	badgeLabel?: string;
+};
 export type Day = { label: string; entries: DayEntry[] };
 export type DayStripProps = { days: Day[]; last: boolean };
 
@@ -258,6 +292,7 @@ export function DayStrip({ days, last }: DayStripProps) {
 										padding: "8px 2px",
 										borderTop: `2px solid ${palette.ink}`,
 										verticalAlign: "top",
+										...wrapLong,
 									}}
 								>
 									{day.entries.map((entry, e) => (
@@ -267,12 +302,16 @@ export function DayStrip({ days, last }: DayStripProps) {
 											{entry.strong ? (
 												<b style={{ color: palette.ink, fontWeight: "600" }}>
 													{entry.name}
-													{entry.badge ? <Badge letter={entry.badge} /> : null}
+													{entry.badge ? (
+														<Badge letter={entry.badge} label={entry.badgeLabel} />
+													) : null}
 												</b>
 											) : (
 												<>
 													{entry.name}
-													{entry.badge ? <Badge letter={entry.badge} /> : null}
+													{entry.badge ? (
+														<Badge letter={entry.badge} label={entry.badgeLabel} />
+													) : null}
 												</>
 											)}
 										</Fragment>
@@ -293,11 +332,11 @@ type RecordBadgeProps = { text: string; tone?: RecordBadgeTone };
  * The pill on a record's title line. Faint is the stage word as it always
  * was, dim text in a hairline box; ink and accent are the Company Cards
  * pills (2026-09-29), bold, drawn in their own color on a heavier border:
- * the next touch in ink, New in the accent.
+ * the next touch in ink, New in the accent's ink.
  */
 function RecordBadge({ text, tone = "faint" }: RecordBadgeProps) {
 	const { palette, fonts } = useEmailTheme();
-	const color = tone === "ink" ? palette.ink : tone === "accent" ? palette.accent : palette.dim;
+	const color = tone === "ink" ? palette.ink : tone === "accent" ? accentInk(palette) : palette.dim;
 	return (
 		<span
 			style={{
@@ -322,16 +361,24 @@ function RecordBadge({ text, tone = "faint" }: RecordBadgeProps) {
 export type { RecordStackItem };
 
 /** The default for a palette written before `warm` existed: the cooling tone between `up` and the accent. */
-const WARM = "#B7791F";
+const WARM = "#966319";
 
 function asideColor(tone: RecordAsideTone | undefined, palette: Palette): string {
 	if (tone === "up") return palette.up ?? atelicPalette.up ?? palette.ink;
 	if (tone === "warm") return palette.warm ?? WARM;
-	if (tone === "accent") return palette.accent;
+	if (tone === "accent") return accentInk(palette);
 	return palette.faint;
 }
 
-export type RecordTimelineStripProps = { timeline: RecordTimeline };
+export type RecordTimelineStripProps = {
+	timeline: RecordTimeline;
+	/**
+	 * What a screen reader hears for the drawn strip. Defaults to
+	 * `recordTimelineSummary` of the timeline ("Last 30 days: 2 sends, the
+	 * latest 3 days ago; 1 open, today").
+	 */
+	label?: string;
+};
 
 /**
  * A record's recent days on one line, today at the right edge: an ink square
@@ -343,7 +390,7 @@ export type RecordTimelineStripProps = { timeline: RecordTimeline };
  * dozens of records. Nothing is positioned, so it survives every mail client
  * (Company Cards IA, 2026-09-29).
  */
-export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
+export function RecordTimelineStrip({ timeline, label }: RecordTimelineStripProps) {
 	const { palette, fonts } = useEmailTheme();
 	const days = Math.max(1, Math.round(timeline.days));
 	const touch = new Set(timeline.touches.map((d) => Math.round(d)));
@@ -369,6 +416,8 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 	return (
 		<table
 			{...tableReset}
+			role="img"
+			aria-label={label ?? recordTimelineSummary(timeline)}
 			width="100%"
 			style={{
 				marginTop: "8px",
@@ -565,7 +614,7 @@ export function RecordStack({ records }: RecordStackProps) {
 											color: palette.ink,
 										}}
 									>
-										<span style={{ ...eyebrowStyle(fonts), color: palette.accent }}>
+										<span style={{ ...eyebrowStyle(fonts), color: accentInk(palette) }}>
 											{record.callout.eyebrow}
 										</span>
 										<br />
@@ -585,7 +634,12 @@ export type RecordsColumn = {
 	label: string;
 	/** Aligns the column right and keeps its cells on one line. */
 	right?: boolean;
-	/** Pixels. A width on any column fixes the table's layout so sibling tables share a grid. */
+	/**
+	 * Pixels at the desktop column's width. A width on any column fixes the
+	 * table's layout so sibling tables share a grid; each is drawn as its
+	 * share of the table (see `RECORDS_WIDTH`), so the same grid narrows on
+	 * a phone instead of holding the table open past it.
+	 */
 	width?: number;
 	/** Keeps the column even when every row leaves it empty. */
 	keep?: boolean;
@@ -601,6 +655,20 @@ export type RecordsCell = {
 };
 
 const hasMarkup = (html: ReactNode): boolean => html !== undefined && html !== null && html !== "";
+
+/**
+ * The width, in pixels, a records table has inside a card's row on a
+ * desktop: the 680 column less the card's two border pixels and the row's
+ * 24 pixels a side. A column's pixel width is drawn as its share of this, or
+ * of the columns' sum when they ask for more, so at the desktop width every
+ * column is the pixels it asked for.
+ */
+export const RECORDS_WIDTH = 630;
+
+/** A column's pixel width as a percentage of the table, two decimals at most. */
+function columnShare(width: number, total: number): string {
+	return `${Math.round((width / Math.max(total, RECORDS_WIDTH)) * 10000) / 100}%`;
+}
 
 export type RecordsProps = { columns: RecordsColumn[]; rows: RecordsCell[][] };
 
@@ -618,9 +686,13 @@ export function Records({ columns, rows }: RecordsProps) {
 				rows.some((row) => (row[i]?.value ?? "") !== "" || hasMarkup(row[i]?.html)),
 		);
 	const fixed = columns.some((c) => c.width !== undefined);
+	const total = keep.reduce((sum, i) => sum + (columns[i].width ?? 0), 0);
+	// A data table, not a layout one: no presentation role, so the header
+	// cells name the column a reader is in.
+	const { role: _layout, ...reset } = tableReset;
 	return (
 		<table
-			{...tableReset}
+			{...reset}
 			width="100%"
 			style={{
 				...(fixed ? { tableLayout: "fixed" } : {}),
@@ -634,14 +706,17 @@ export function Records({ columns, rows }: RecordsProps) {
 				<tr>
 					{keep.map((i) => {
 						const c = columns[i];
+						const share = c.width !== undefined ? columnShare(c.width, total) : undefined;
 						return (
-							<td
+							<th
 								key={i}
+								scope="col"
 								align={c.right ? "right" : "left"}
-								{...(c.width !== undefined ? { width: String(c.width) } : {})}
+								{...(share ? { width: share } : {})}
 								style={{
-									...(c.width !== undefined ? { width: `${c.width}px` } : {}),
+									...(share ? { width: share } : {}),
 									padding: "0 8px 6px 0",
+									fontWeight: "normal",
 									fontFamily: fonts.mono,
 									fontSize: "10px",
 									letterSpacing: "0.1em",
@@ -652,7 +727,7 @@ export function Records({ columns, rows }: RecordsProps) {
 								}}
 							>
 								{c.label}
-							</td>
+							</th>
 						);
 					})}
 				</tr>
@@ -672,13 +747,13 @@ export function Records({ columns, rows }: RecordsProps) {
 										borderBottom: `1px solid ${r === rows.length - 1 ? palette.line : palette.hair}`,
 										...(cell.mono ? { fontFamily: fonts.mono, fontSize: "12px" } : {}),
 										color: cell.hot
-											? palette.accent
+											? accentInk(palette)
 											: cell.muted
 												? palette.faint
 												: cell.mono
 													? palette.dim
 													: palette.ink,
-										...(c.right ? { whiteSpace: "nowrap" } : {}),
+										...(c.right ? { whiteSpace: "nowrap" } : wrapLong),
 									}}
 								>
 									{hasHTML ? cell.html : (cell.value ?? "")}

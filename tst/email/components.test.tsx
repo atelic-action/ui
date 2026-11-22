@@ -373,7 +373,7 @@ describe("the scoreboard", () => {
 		}
 	});
 
-	it("RecordStack sets a callout under the note with an orange eyebrow and border", () => {
+	it("RecordStack sets a callout under the note, its eyebrow in the accent's ink on an accent border", () => {
 		const markup = renderInline(
 			<RecordStack
 				records={[
@@ -392,7 +392,7 @@ describe("the scoreboard", () => {
 		expect(callout).toBeGreaterThan(note);
 		expect(markup).toMatch(
 			new RegExp(
-				`<span style="[^"]*color:${atelicPalette.accent}">Next</span><br/>Walk the findings Thursday.</div>`,
+				`<span style="[^"]*color:${atelicPalette.accentInk}">Next</span><br/>Walk the findings Thursday.</div>`,
 			),
 		);
 		expect(markup).toMatch(/border-left:2px solid [^"]*font-size:13px/);
@@ -416,7 +416,9 @@ describe("the scoreboard", () => {
 				]}
 			/>,
 		);
-		expect(markup).toContain(`border:1.5px solid ${atelicPalette.accent}`);
+		expect(markup).toContain(
+			`border:1.5px solid ${atelicPalette.accentInk};border-radius:3px;color:${atelicPalette.accentInk}">New<`,
+		);
 		expect(markup).toContain(`border:1.5px solid ${atelicPalette.ink}`);
 		expect(markup).toContain(`border:1px solid ${atelicPalette.line}`);
 		expect(markup).toMatch(/font-weight:bold[^"]*">New</);
@@ -541,7 +543,7 @@ describe("the scoreboard", () => {
 				rows={[[{ value: "Mon" }, { html: <Badge letter="S" /> }]]}
 			/>,
 		);
-		expect(markup).toContain(">Type</td>");
+		expect(markup).toContain(">Type</th>");
 	});
 
 	it("fadeStop fades a hex accent and never writes NaN for anything else", () => {

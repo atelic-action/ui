@@ -81,6 +81,7 @@ export {
 	type RecordTimeline,
 	recordBadges,
 	recordStackText,
+	recordTimelineSummary,
 	recordTimelineText,
 	rpad,
 	spaces,
@@ -96,9 +97,12 @@ export {
 	wrap,
 } from "./text";
 export {
+	accentInk,
+	contrastRatio,
 	type EmailTheme,
 	EmailThemeProvider,
 	type EmailThemeProviderProps,
 	eyebrowStyle,
 	useEmailTheme,
+	wrapLong,
 } from "./theme";
