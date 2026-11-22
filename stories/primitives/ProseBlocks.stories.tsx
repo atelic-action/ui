@@ -31,8 +31,19 @@ function openDialog() {
 
 /** The lightbox, waited for: the tile opens it in an effect after the click. */
 async function opened() {
-	await waitFor(() => expect(openDialog()).not.toBeNull());
+	await waitFor(() => expect(openDialog()).not.toBeNull(), { timeout: 4000 });
 	return openDialog() as HTMLDialogElement;
+}
+
+/**
+ * Closed, and settled: the dialog drops `open` at once but fires its close
+ * event a task later, and the component's handler for it closes whatever is
+ * open then. Reopening inside that task (only a test is that fast) would be
+ * closed again, so the story waits it out.
+ */
+async function closed() {
+	await waitFor(() => expect(openDialog()).toBeNull(), { timeout: 4000 });
+	await new Promise((resolve) => setTimeout(resolve, 50));
 }
 
 /** Whether a computed color paints anything. */
@@ -128,14 +139,14 @@ export const LightboxOpensAndCloses: Story = {
 				(b) => b.getAttribute("aria-label") === "Close",
 			) as HTMLButtonElement;
 			await userEvent.click(close);
-			await waitFor(() => expect(openDialog()).toBeNull());
+			await closed();
 			await expect(tile).toHaveFocus();
 		});
 		await step("Escape closes it and focus returns to the tile", async () => {
 			await userEvent.click(tile);
 			const dialog = await opened();
 			dialog.requestClose();
-			await waitFor(() => expect(openDialog()).toBeNull());
+			await closed();
 			await expect(tile).toHaveFocus();
 		});
 		await step("a click on the backdrop closes it", async () => {
@@ -143,7 +154,7 @@ export const LightboxOpensAndCloses: Story = {
 			const dialog = await opened();
 			const box = dialog.getBoundingClientRect();
 			fireEvent.click(dialog, { clientX: box.left - 10, clientY: box.top - 10 });
-			await waitFor(() => expect(openDialog()).toBeNull());
+			await closed();
 			await expect(tile).toHaveFocus();
 		});
 		await step("a click on the panel's own padding does not", async () => {
@@ -153,7 +164,7 @@ export const LightboxOpensAndCloses: Story = {
 			fireEvent.click(dialog, { clientX: box.left + 4, clientY: box.bottom - 4 });
 			await expect(openDialog()).toBe(dialog);
 			dialog.requestClose();
-			await waitFor(() => expect(openDialog()).toBeNull());
+			await closed();
 		});
 	},
 };
@@ -216,7 +227,7 @@ export const LightboxClip: Story = {
 			await expect(large).toHaveAttribute("controls");
 			await expect(large).toHaveAccessibleName("A baker scoring loaves on the bench");
 			dialog.requestClose();
-			await waitFor(() => expect(openDialog()).toBeNull());
+			await closed();
 			await waitFor(() => expect(dialog.querySelector("video")).toBeNull());
 		});
 	},
