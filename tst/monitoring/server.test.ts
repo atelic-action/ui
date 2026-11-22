@@ -413,10 +413,64 @@ describe("refusalError and reportRefusedResponse", () => {
 		}
 	});
 
+	it("scrubs a country code written without a plus sign", async () => {
+		for (const number of [
+			"1-555-555-0142",
+			"1 555 555 0142",
+			"1.555.555.0142",
+			"1 (555) 555-0142",
+		]) {
+			const error = await refusalError(
+				refused({ name: "refused", message: `Call ${number} to confirm` }),
+			);
+			expect(error.message, number).toBe(
+				"The upstream service answered 422: refused: Call [number] to confirm",
+			);
+		}
+	});
+
+	it("scrubs a trailing extension with the number, leaving nothing of it behind", async () => {
+		for (const number of [
+			"555-555-0142x12",
+			"555-555-0142 x12",
+			"555-555-0142 ext. 12",
+			"555-555-0142 Ext 12",
+			"(555) 555-0142 extension 12",
+			"+1 555 555 0142 ext. 12",
+			"+15555550142x7",
+		]) {
+			const error = await refusalError(
+				refused({ name: "refused", message: `Call ${number} to confirm` }),
+			);
+			expect(error.message, number).toBe(
+				"The upstream service answered 422: refused: Call [number] to confirm",
+			);
+		}
+	});
+
+	it("leaves a dotted IPv4 address alone, whole", async () => {
+		for (const ip of ["192.168.10.200", "10.120.130.140", "203.0.113.255", "255.255.255.0"]) {
+			const message = `Refused from ${ip} after 3 tries`;
+			const kept = await refusalError(refused({ name: "forbidden", message }));
+			expect(kept.message, ip).toBe(`The upstream service answered 422: forbidden: ${message}`);
+			const port = `Refused from ${ip}:8443.`;
+			const withPort = await refusalError(refused({ name: "forbidden", message: port }));
+			expect(withPort.message, ip).toBe(`The upstream service answered 422: forbidden: ${port}`);
+		}
+	});
+
 	it("leaves a date, a bare id, a count beside a year, and a status alone", async () => {
-		const message = "On 2026-11-23 send 12345678 failed: 429 after 120 2026 sends";
-		const kept = await refusalError(refused({ name: "rate_limit", message }));
-		expect(kept.message).toBe(`The upstream service answered 422: rate_limit: ${message}`);
+		for (const message of [
+			"On 2026-11-23 send 12345678 failed: 429 after 120 2026 sends",
+			"Retry after 2026-11-23T10:00:00Z, status 503, request 4815162342",
+			"1 of 3 failed at 2026-11-23, 12 2026 sends extra",
+			"Code 422 on 2026/11/23 for id 90210",
+		]) {
+			const kept = await refusalError(refused({ name: "rate_limit", message }));
+			expect(kept.message, message).toBe(
+				`The upstream service answered 422: rate_limit: ${message}`,
+			);
+		}
 	});
 
 	it("catches an internationalized domain and an underscore in a label", async () => {

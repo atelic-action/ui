@@ -301,17 +301,24 @@ const ADDRESS = /[^\s@<>()[\]"',;:]+@[\p{L}\p{N}_-]+(?:\.[\p{L}\p{N}_-]+)+/gu;
 /** A separator inside a phone number: a space, a dot, a slash, or any hyphen or dash. */
 const SEP = "[\\s./\\u2010-\\u2015\\u2212-]";
 
+/** One part of a dotted IPv4 address, 0 to 255. */
+const OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";
+
 /**
- * A run shaped like a phone number: an optional country code, then an area
- * code in parentheses and the number after it, or at least three groups of
- * digits joined by separators, the last of three or four digits, or a plus
- * sign and seven to fifteen digits run together (E.164). A date
- * (2026-11-23), a bare id (12345678), and a count beside a year (120 2026)
- * are none of these, and stay.
+ * A run shaped like a phone number: an optional country code (a plus sign
+ * and one to three digits, or one to three digits and a separator, as in
+ * 1-555-555-0142), then an area code in parentheses and the number after
+ * it, or at least three groups of digits joined by separators, the last of
+ * three or four digits, or a plus sign and seven to fifteen digits run
+ * together (E.164); any of them may close on an extension (x12, ext. 12). A
+ * date (2026-11-23), a bare id (12345678), a count beside a year (120
+ * 2026), a status (429), and a dotted IPv4 address (192.168.10.200) are none
+ * of these, and stay. A run starts at a word's edge and never just after a
+ * digit's dot, so no tail of a longer dotted run is taken for one.
  */
 const PHONE = new RegExp(
-	`(?<![\\w+-])\\+\\d{7,15}(?![\\w-])|(?<![\\w+-])(?:\\+\\d{1,3}${SEP}?)?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})(?![\\w-])`,
-	"gu",
+	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4}))(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
+	"giu",
 );
 
 /** A refusal's field with every address and phone number in it replaced. */
