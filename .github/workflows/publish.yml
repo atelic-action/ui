@@ -21,6 +21,8 @@ jobs:
         with:
           bun-version: latest
 
+      # Its check steps match ci.yml's step for step, apart from the tag check
+      # and the publish itself; change them together.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -73,9 +75,6 @@ jobs:
 
       - name: Build the gate, then load it the way a Vercel function does
         run: bun run build && bun run build:smoke
-
-      - name: Build the gallery
-        run: bun run gallery:build
 
       - name: Build Storybook
         run: bun run storybook:build
