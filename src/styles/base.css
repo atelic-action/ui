@@ -8,6 +8,16 @@
    them. Everything sits in the atelic-ui layer, so any rule a site
    writes outside a layer wins without a specificity fight.
    ================================================================= */
+/* The h4's tracking, two thirds of --subheading-tracking, computed on the
+   h4 itself. Registered as a length so a value that is not one (a theme's
+   --subheading-tracking: normal, which no arithmetic takes) falls to 0px,
+   flat as normal is, where an unregistered property left the h4 to inherit
+   whatever tracking its parent had. A registration sits outside any layer. */
+@property --_h4-tracking {
+	syntax: "<length>";
+	inherits: false;
+	initial-value: 0px;
+}
 @layer atelic-ui {
 	/* ---- Resets ---- */
 	*,
@@ -142,7 +152,8 @@
 		letter-spacing: var(--subheading-tracking);
 	}
 	.atelic-ui h4 {
-		letter-spacing: calc(var(--subheading-tracking) * 2 / 3);
+		--_h4-tracking: calc(var(--subheading-tracking) * 2 / 3);
+		letter-spacing: var(--_h4-tracking);
 	}
 	.atelic-ui h1 {
 		font-size: clamp(2.6rem, 8vw, 5rem);

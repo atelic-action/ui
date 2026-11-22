@@ -25,7 +25,11 @@ export interface StickyCTABarProps {
 	 * measured height while it shows, and 0 while it is hidden (scrolled
 	 * above its threshold, or on a desktop, where the stylesheet hides it).
 	 * `SiteShell` pads the page's closing bar by it, so the copyright and the
-	 * credit are never under the bar.
+	 * credit are never under the bar. A listener swapped in is told the
+	 * current height at once and the one it replaced gets 0; no listener
+	 * hears one value twice. A listener made anew each render that sets state
+	 * should store a plain number (or be memoized): each new function hears
+	 * the height once, and a state equal to it stops the renders.
 	 */
 	onSpaceChange?: (pixels: number) => void;
 }
@@ -42,13 +46,20 @@ export function StickyCTABar({
 	const [show, setShow] = useState(fromTop);
 	const barRef = useRef<HTMLDivElement>(null);
 	// The latest listener, so a caller passing a new function each render
-	// never restarts the measuring below. Whether there is one at all does:
-	// a listener supplied after mount starts the measuring then.
+	// never restarts the measuring below. Whether there is one at all does: a
+	// listener supplied after mount starts the measuring then.
 	const spaceRef = useRef(onSpaceChange);
 	spaceRef.current = onSpaceChange;
 	const listening = onSpaceChange !== undefined;
-	// The measuring effect's report, so a swap of listeners is told at once.
-	const reportRef = useRef<(() => void) | null>(null);
+	// The height last measured (-1 before any, and after the bar goes), and
+	// what each listener was last told: no listener hears one value twice.
+	const heightRef = useRef(-1);
+	const toldRef = useRef(new WeakMap<(pixels: number) => void, number>());
+	const tell = (listener: ((pixels: number) => void) | undefined, pixels: number) => {
+		if (!listener || toldRef.current.get(listener) === pixels) return;
+		toldRef.current.set(listener, pixels);
+		listener(pixels);
+	};
 
 	useEffect(() => {
 		if (fromTop) {
@@ -64,46 +75,51 @@ export function StickyCTABar({
 	// The bar's real height while it shows, measured again whenever it changes
 	// size (a phone turned, a font loading, a label wrapping), never assumed.
 	// Hidden by the stylesheet its height reads 0, so a desktop reserves nothing.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: tell reads only refs
 	useEffect(() => {
 		const bar = barRef.current;
 		if (!bar || !listening) return;
-		let last = -1;
-		// The listener last told a height: the one holding the space, which
-		// the cleanup hands back. Never the caller's latest, which after a
-		// swap is a listener that was never told anything.
-		let heard: ((pixels: number) => void) | undefined;
 		const report = () => {
-			const next = show ? bar.offsetHeight : 0;
-			const listener = spaceRef.current;
-			if (next === last && listener === heard) return;
-			// A caller swapped listeners since the last report: the old one
-			// gives its space back before the new one is told the height.
-			if (heard && heard !== listener) heard(0);
-			last = next;
-			heard = listener;
-			heard?.(next);
+			heightRef.current = show ? bar.offsetHeight : 0;
+			arrivalsRef.current = 0;
+			tell(spaceRef.current, heightRef.current);
 		};
 		report();
-		reportRef.current = report;
 		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(report);
 		sizes?.observe(bar);
 		window.addEventListener("resize", report);
 		return () => {
-			reportRef.current = null;
 			sizes?.disconnect();
 			window.removeEventListener("resize", report);
-			// A final 0 on unmount, on hiding, and when the listener goes, to the
-			// listener that holds the space, so no foot padding outlives the bar.
-			heard?.(0);
+			// A final 0 on unmount, on hiding, and when the listener goes, so no
+			// foot padding outlives the bar.
+			heightRef.current = -1;
+			tell(spaceRef.current, 0);
 		};
 	}, [show, listening]);
 
-	// A caller that swaps listeners is heard at once: the old one gives its
-	// space back and the new one is told the height, with no resize to wait
-	// for. A first render's report has already run, so this one says nothing.
-	// biome-ignore lint/correctness/useExhaustiveDependencies: the listener is the trigger; the report reads it through spaceRef
+	// A listener swapped in is told the current height, and the one it
+	// replaced gets 0, unless either already heard that value. A function made
+	// anew each render (an inline listener) hears the height once a function
+	// until the caller's state settles; a stable listener hears nothing here.
+	const previousRef = useRef(onSpaceChange);
+	// Arrivals told since the bar last measured. A listener that sets object
+	// state is a new function on every render its own call causes, which no
+	// test of identity tells from a real swap; past three arrivals in a row
+	// with nothing measured between, the rest wait for the next measure, so
+	// such a listener cannot loop. Three real swaps in a row are all told.
+	const arrivalsRef = useRef(0);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: the listener is the trigger; tell reads only refs
 	useEffect(() => {
-		reportRef.current?.();
+		const previous = previousRef.current;
+		previousRef.current = onSpaceChange;
+		if (previous === onSpaceChange) return;
+		if (onSpaceChange && arrivalsRef.current >= 3) return;
+		arrivalsRef.current += 1;
+		// The outgoing one gives its space back, the bar measured or not (a
+		// listener taken away leaves the measuring off by now).
+		tell(previous, 0);
+		if (heightRef.current >= 0) tell(onSpaceChange, heightRef.current);
 	}, [onSpaceChange]);
 
 	return (

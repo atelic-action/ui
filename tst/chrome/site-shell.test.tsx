@@ -234,6 +234,41 @@ describe("SiteShell", () => {
 		expect(screen.queryByRole("heading", { name: "Hours" })).toBeNull();
 	});
 
+	it("prints the footer's hours as the config says: short on the 12 hour letter clock by default, whole with words when asked, and inside the brand column", () => {
+		const hours = [
+			{
+				label: "Monday to Friday",
+				labelShort: "Mon to Fri",
+				days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+				opens: "08:00",
+				closes: "17:00",
+			},
+		];
+		const ranges = () =>
+			within(screen.getByRole("heading", { name: "Hours" }).parentElement as HTMLElement)
+				.getAllByRole("definition")
+				.map((d) => d.textContent);
+		const { unmount } = renderShell({}, { ...testSite, hours });
+		expect(ranges()).toEqual(["8a to 5p"]);
+		unmount();
+
+		const words = renderShell(
+			{},
+			{
+				...testSite,
+				hours,
+				meridiem: "word",
+				footer: { hoursShort: false, hoursPlacement: "brand" },
+			},
+		);
+		expect(ranges()).toEqual(["8:00\u00a0am to 5:00\u00a0pm"]);
+		const footer = screen.getByRole("contentinfo");
+		// Inside the brand column: the address's block holds the hours' heading.
+		const nap = footer.querySelector("address") as HTMLElement;
+		expect(nap.parentElement).toContainElement(screen.getByRole("heading", { name: "Hours" }));
+		words.unmount();
+	});
+
 	it("leaves out the columns the config has nothing for, and the address when told to", () => {
 		const site: SiteConfig = { ...testSite, footer: { showAddress: false } };
 		renderShell({}, site);

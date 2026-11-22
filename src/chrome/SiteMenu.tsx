@@ -113,6 +113,9 @@ export function SiteMenu({
 	brand,
 }: SiteMenuProps) {
 	const light = surface === "light";
+	// The header's numbers, when there are any; an empty list is none, so the
+	// contact block's one phone stands in on either sheet.
+	const headerPhones = phones && phones.length > 0 ? phones : undefined;
 	const [openGroup, setOpenGroup] = useState<number | null>(null);
 	const groupId = useId();
 	const dialogRef = useRef<HTMLDialogElement>(null);
@@ -237,7 +240,7 @@ export function SiteMenu({
 
 	if (light) {
 		// A card per number the header shows, else the contact block's one phone.
-		const cards: MenuPhone[] = phones ?? (contact?.phone ? [contact.phone] : []);
+		const cards: MenuPhone[] = headerPhones ?? (contact?.phone ? [contact.phone] : []);
 		return (
 			<dialog
 				ref={dialogRef}
@@ -309,7 +312,7 @@ export function SiteMenu({
 					{menuCTA.label}
 				</Button>
 			)}
-			{(contact || phones) && <ContactBlock contact={contact ?? {}} phones={phones} />}
+			{(contact || headerPhones) && <ContactBlock contact={contact ?? {}} phones={headerPhones} />}
 		</dialog>
 	);
 }

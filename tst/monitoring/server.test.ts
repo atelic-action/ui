@@ -379,6 +379,58 @@ describe("refusalError and reportRefusedResponse", () => {
 		}
 	});
 
+	it("keeps a sentence's closing period outside the address it scrubs", async () => {
+		const error = await refusalError(
+			refused({ name: "validation_error", message: "Cannot send to owner@example.com." }),
+		);
+		expect(error.message).toBe(
+			"The upstream service answered 422: validation_error: Cannot send to [address].",
+		);
+	});
+
+	it("scrubs a phone however it is grouped and separated", async () => {
+		const numbers = [
+			"(555) 555-0142",
+			"(555)555-0142",
+			"+1 555 555 0143",
+			"+1-555-555-0143",
+			"555.555.0144",
+			"555/555-0144",
+			"555\u2013555\u20130145",
+			"555\u2014555\u20140145",
+			"555\u2011555\u20110146",
+			"555\u00a0555\u00a00147",
+			"+44 20 7946 0958",
+			"+15555550142",
+		];
+		for (const number of numbers) {
+			const error = await refusalError(
+				refused({ name: "refused", message: `Call ${number} to confirm` }),
+			);
+			expect(error.message, number).toBe(
+				"The upstream service answered 422: refused: Call [number] to confirm",
+			);
+		}
+	});
+
+	it("leaves a date, a bare id, a count beside a year, and a status alone", async () => {
+		const message = "On 2026-11-23 send 12345678 failed: 429 after 120 2026 sends";
+		const kept = await refusalError(refused({ name: "rate_limit", message }));
+		expect(kept.message).toBe(`The upstream service answered 422: rate_limit: ${message}`);
+	});
+
+	it("catches an internationalized domain and an underscore in a label", async () => {
+		const error = await refusalError(
+			refused({
+				name: "refused",
+				message: "To owner@b\u00e4ckerei.example and ops@mail_relay.example.com.",
+			}),
+		);
+		expect(error.message).toBe(
+			"The upstream service answered 422: refused: To [address] and [address].",
+		);
+	});
+
 	it("cuts each field to 300 characters", async () => {
 		const error = await refusalError(refused({ name: "n", message: "m".repeat(1000) }));
 		expect(error.message.length).toBeLessThan(360);

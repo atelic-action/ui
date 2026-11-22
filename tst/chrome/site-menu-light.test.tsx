@@ -113,6 +113,27 @@ describe("the light sheet", () => {
 		);
 	});
 
+	it("takes an empty list of numbers as none, on either sheet: the contact phone stands in", () => {
+		for (const surface of ["light", "dark"] as const) {
+			const { unmount } = render(
+				<SiteMenu
+					open
+					onClose={() => {}}
+					links={links}
+					phones={[]}
+					contact={{ phone }}
+					surface={surface}
+					brand={brand}
+				/>,
+			);
+			expect(screen.getByRole("link", { name: /^Call\s+\(555\) 555-0100$/i })).toHaveAttribute(
+				"href",
+				`tel:${phone.e164}`,
+			);
+			unmount();
+		}
+	});
+
 	it("marks the page being read with aria-current, as the dark sheet does", () => {
 		render(
 			<SiteMenu

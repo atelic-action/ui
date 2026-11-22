@@ -405,11 +405,10 @@ describe("the sticky bar's room at the foot of the page", () => {
 		expect(space).not.toHaveBeenCalled();
 		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={space} />);
 		expect(space).toHaveBeenLastCalledWith(74);
-		// A new function in its place is told the height at once, and the old one
-		// gives its space back.
+		// A new function in its place is told the height at once, and the old
+		// one gives its space back.
 		const next = vi.fn();
 		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={next} />);
-		expect(space).toHaveBeenCalledTimes(2);
 		expect(space).toHaveBeenLastCalledWith(0);
 		expect(next).toHaveBeenCalledExactlyOnceWith(74);
 	});

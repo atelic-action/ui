@@ -7,7 +7,10 @@ export interface StaticNotFoundOptions {
 	 * The router's own `useMatches` (`import { useMatches } from
 	 * "@tanstack/react-router"`). With it, the pending view draws the not
 	 * found page on a miss alone and nothing on any other route's pending
-	 * state, so a slow client navigation never flashes a bare 404 body.
+	 * state, so a slow client navigation never flashes a bare 404 body. A
+	 * miss is the catch all route's match, a route whose
+	 * `staticData.missing(params)` says its params name no page, or a match
+	 * the router already reports as not found.
 	 */
 	useMatches: (options: { select: (matches: ReadonlyArray<MissMatch>) => boolean }) => boolean;
 	/** The catch all route's id, when it is not `/$`. */
@@ -38,6 +41,15 @@ export interface StaticNotFoundOptions {
  * state on a slow client navigation shows no bare 404 body. Without it the
  * pending view is the page itself, as before.
  *
+ * What a route must set: a route with params that can claim a path with no
+ * page behind it (a blog slug nobody wrote) sets `staticData.missing(params)`.
+ * The static host serves such a path the 404 prerender, and it hydrates
+ * through the pending state before the route's loader has run, so its
+ * `notFound()` arrives too late for that first render: without `missing`,
+ * the pending view draws nothing where the server drew the page, and the
+ * page hydrates blank. A loader's `notFound()` is still honored once the
+ * router reports it (a client navigation to the slug).
+ *
  * Static sites only. On a live app the pending state is a real loading
  * moment; an app sets defaultNotFoundComponent alone.
  *
@@ -55,6 +67,7 @@ export function staticNotFoundRouting<Page extends ComponentType>(
 export function staticNotFoundRouting<Page>(page: Page, options?: StaticNotFoundOptions) {
 	if (!options) return { defaultNotFoundComponent: page, defaultPendingComponent: page };
 	const { useMatches, catchAllId = CATCH_ALL_ROUTE_ID } = options;
+	// The one miss predicate the root's 404 head asks too, so the two agree.
 	const select = (matches: ReadonlyArray<MissMatch>) => isMiss(matches, catchAllId);
 	function NotFoundPending(): ReactElement | null {
 		const miss = useMatches({ select });

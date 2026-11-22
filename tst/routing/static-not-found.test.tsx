@@ -8,7 +8,7 @@ import {
 	useMatches,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { type MissMatch, staticNotFoundRouting } from "../../src/routing";
+import { isMiss, type MissMatch, staticNotFoundRouting } from "../../src/routing";
 
 function NotFoundPage() {
 	return <h1>Nothing at this address</h1>;
@@ -115,5 +115,53 @@ describe("staticNotFoundRouting", () => {
 		expect(
 			await screen.findByRole("heading", { name: "Nothing at this address" }),
 		).toBeInTheDocument();
+	});
+});
+
+describe("the pending view on a parameter route", () => {
+	it("draws the page once the router reports the match not found, or a not found nothing below handled", () => {
+		for (const match of [
+			{ routeId: "/blog/$slug", params: { slug: "unwritten" }, status: "notFound" },
+			{ routeId: "/blog/$slug", params: { slug: "unwritten" }, globalNotFound: true },
+		]) {
+			const Pending = staticNotFoundRouting(NotFoundPage, {
+				useMatches: matchesOf([{ routeId: "__root__", params: {} }, match]),
+			}).defaultPendingComponent;
+			const { unmount } = render(<Pending />);
+			expect(screen.getByRole("heading", { name: "Nothing at this address" })).toBeInTheDocument();
+			unmount();
+		}
+	});
+
+	it("draws nothing for a route still loading with no missing of its own, which is why such a route sets one", () => {
+		const Pending = staticNotFoundRouting(NotFoundPage, {
+			useMatches: matchesOf([
+				{ routeId: "/blog/$slug", params: { slug: "unwritten" }, status: "pending" },
+			]),
+		}).defaultPendingComponent;
+		const { container } = render(<Pending />);
+		expect(container).toBeEmptyDOMElement();
+	});
+});
+
+describe("the root's 404 head and the pending view", () => {
+	it("agree on every kind of match, both asking isMiss", () => {
+		const cases: MissMatch[][] = [
+			[{ routeId: "/$", params: {} }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, staticData: { missing: () => true } }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "notFound" }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, globalNotFound: true }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "pending" }],
+			[{ routeId: "/menu", params: {}, status: "success" }],
+		];
+		for (const matches of cases) {
+			const Pending = staticNotFoundRouting(NotFoundPage, {
+				useMatches: matchesOf(matches),
+			}).defaultPendingComponent;
+			const { container, unmount } = render(<Pending />);
+			const drawn = container.textContent === "Nothing at this address";
+			expect(drawn, JSON.stringify(matches)).toBe(isMiss(matches));
+			unmount();
+		}
 	});
 });

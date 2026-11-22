@@ -214,4 +214,19 @@ describe("Footer", () => {
 			"Made with care in Denver",
 		);
 	});
+
+	it("takes a placement it does not know as a column, never hiding the hours", () => {
+		render(
+			<Footer
+				{...props}
+				hours={[{ label: "Daily", range: "7a to 3p" }]}
+				hoursPlacement={"sidebar" as unknown as "column"}
+			/>,
+		);
+		const heading = screen.getByRole("heading", { name: "Hours" });
+		expect(within(heading.parentElement as HTMLElement).getByText("7a to 3p")).toBeInTheDocument();
+		expect(
+			screen.getByRole("contentinfo").querySelector("address")?.parentElement,
+		).not.toContainElement(heading);
+	});
 });

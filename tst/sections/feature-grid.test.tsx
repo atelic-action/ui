@@ -54,4 +54,27 @@ describe("FeatureGrid", () => {
 		expect(links).toHaveLength(1);
 		expect(links[0].getAttribute("href")).toBe("/glossary#crm");
 	});
+
+	it("opens an external card in a new tab and says so in its name, and keeps the rest in the tab", () => {
+		const { getByRole } = render(
+			<FeatureGrid
+				title="Wholesale"
+				items={[
+					{
+						title: "Price sheet",
+						description: "This season's list",
+						href: "https://portal.example.com",
+						external: true,
+					},
+					{ title: "Standing orders", description: "Delivered early", href: "/wholesale" },
+				]}
+			/>,
+		);
+		const external = getByRole("link", { name: /Price sheet.*opens in a new tab/ });
+		expect(external).toHaveAttribute("target", "_blank");
+		expect(external).toHaveAttribute("rel", "noopener");
+		const own = getByRole("link", { name: /Standing orders/ });
+		expect(own).not.toHaveAttribute("target");
+		expect(own.textContent).not.toMatch(/new tab/);
+	});
 });

@@ -396,3 +396,167 @@ export const HeroMeasureAndGapSet: Story = {
 		await expect(getComputedStyle(actions).marginTop).toBe("16px");
 	},
 };
+
+/**
+ * Each of the split hero's gaps set on its own, as a design spaces them
+ * (12px kicker to headline, 14px headline to lead, 24px lead to actions),
+ * winning over `--hero-stack-gap`; the lead's leading and the copy column's
+ * top and bottom padding set too. Every gap lands at its value, measured
+ * between the boxes.
+ */
+export const HeroGapsEachSet: Story = {
+	...HeroMeasureAndGap,
+	parameters: {
+		tokens: {
+			"--hero-stack-gap": "40px",
+			"--hero-gap-kicker": "12px",
+			"--hero-gap-lead": "14px",
+			"--hero-gap-actions": "24px",
+			"--hero-lead-leading": "1.4",
+			"--hero-split-pad-block": "48px",
+		},
+	},
+	play: async ({ canvas }) => {
+		const kicker = canvas.getByText("Alder Street, since 2014");
+		const title = canvas.getByRole("heading", { name: "Bread worth the early line." });
+		const lead = canvas.getByText(/out of the oven by seven/);
+		const actions = canvas.getByRole("link", { name: /Order ahead/ }).parentElement as HTMLElement;
+		const box = (element: Element) => element.getBoundingClientRect();
+		// The kicker is inline in its line box, so its gap is read as the headline's margin.
+		await expect(getComputedStyle(title).marginTop).toBe("12px");
+		await expect(box(title).top).toBeGreaterThan(box(kicker).bottom);
+		await expect(Math.round(box(lead).top - box(title).bottom)).toBe(14);
+		await expect(Math.round(box(actions).top - box(lead).bottom)).toBe(24);
+		await expect(
+			Number.parseFloat(getComputedStyle(lead).lineHeight) /
+				Number.parseFloat(getComputedStyle(lead).fontSize),
+		).toBeCloseTo(1.4, 2);
+		// The copy column holds the stack; its padding is the column's own.
+		const column = title.parentElement as HTMLElement;
+		await expect(getComputedStyle(column).paddingTop).toBe("48px");
+		await expect(getComputedStyle(column).paddingBottom).toBe("48px");
+	},
+};
+
+/** Unset, the lead's leading is 1.55 and the column's padding the section's space, as before. */
+export const HeroLeadingAndPaddingDefaults: Story = {
+	...HeroMeasureAndGap,
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { name: "Bread worth the early line." });
+		const lead = canvas.getByText(/out of the oven by seven/);
+		await expect(
+			Number.parseFloat(getComputedStyle(lead).lineHeight) /
+				Number.parseFloat(getComputedStyle(lead).fontSize),
+		).toBeCloseTo(1.55, 2);
+		const column = title.parentElement as HTMLElement;
+		const probe = document.createElement("div");
+		probe.style.paddingTop = "var(--section-space)";
+		column.append(probe);
+		await expect(getComputedStyle(column).paddingTop).toBe(getComputedStyle(probe).paddingTop);
+		probe.remove();
+	},
+};
+
+/**
+ * A theme that sets `--subheading-tracking: normal` (flat, as a keyword)
+ * inside a band with tracking of its own: the h3 reads normal and the h4,
+ * whose two thirds no arithmetic can take of a keyword, falls flat to 0
+ * rather than taking the band's tracking.
+ */
+export const SubheadingTrackingNormal: Story = {
+	args: {},
+	render: () => (
+		<div style={{ "--subheading-tracking": "normal", letterSpacing: "0.3em" } as CSSProperties}>
+			<h2>Out of the oven</h2>
+			<h3>Three loaves</h3>
+			<h4>Four rolls</h4>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const tracking = (name: string) =>
+			getComputedStyle(canvas.getByRole("heading", { name })).letterSpacing;
+		await expect(tracking("Three loaves")).toBe("normal");
+		await expect(["normal", "0px"]).toContain(tracking("Four rolls"));
+	},
+};
+
+/** A split hero with a kicker and two actions, for the kicker and actions tokens. */
+function KickerHero({ tokens }: { tokens?: Record<string, string> }) {
+	return (
+		<div style={tokens as CSSProperties}>
+			<Hero
+				layout="split"
+				eyebrow="Alder Street, since 2014"
+				title="Bread worth the early line."
+				subtitle="Country loaves and morning buns, out of the oven by seven."
+				primaryCTA={{ label: "Order ahead", href: "/order" }}
+				secondaryCTA={{ label: "See the menu", href: "/menu" }}
+				image={{ src: image("ovens"), alt: "The ovens at dawn" }}
+			/>
+		</div>
+	);
+}
+
+/** The kicker, the headline, and the two actions, found as a reader finds them. */
+function kickerParts(canvas: ReturnType<typeof within>) {
+	return {
+		kicker: canvas.getByText("Alder Street, since 2014"),
+		title: canvas.getByRole("heading", { name: "Bread worth the early line." }),
+		first: canvas.getByRole("link", { name: /Order ahead/ }),
+		second: canvas.getByRole("link", { name: "See the menu" }),
+	};
+}
+
+/** The gap between two actions, side by side or stacked. */
+function actionsGap(first: Element, second: Element) {
+	const a = first.getBoundingClientRect();
+	const b = second.getBoundingClientRect();
+	return Math.round(b.top >= a.bottom ? b.top - a.bottom : b.left - a.right);
+}
+
+/**
+ * The kicker as a block whose height is its own line height
+ * (`--hero-kicker-display: block`, `--hero-kicker-leading: 16px`): its box is
+ * 16px tall and the headline starts the kicker gap below it, with no line box
+ * of the copy's leading around it. `--hero-actions-gap` sets the actions'
+ * gap.
+ */
+export const HeroKickerBlockAndActionsGap: Story = {
+	args: {},
+	render: () => (
+		<KickerHero
+			tokens={{
+				"--hero-kicker-display": "block",
+				"--hero-kicker-leading": "16px",
+				"--hero-gap-kicker": "12px",
+				"--hero-actions-gap": "8px",
+			}}
+		/>
+	),
+	play: async ({ canvas }) => {
+		const { kicker, title, first, second } = kickerParts(canvas);
+		const box = (element: Element) => element.getBoundingClientRect();
+		await expect(Math.round(box(kicker).height)).toBe(16);
+		await expect(getComputedStyle(kicker).lineHeight).toBe("16px");
+		await expect(Math.round(box(title).top - box(kicker).bottom)).toBe(12);
+		await expect(actionsGap(first, second)).toBe(8);
+	},
+};
+
+/**
+ * Unset, the kicker stays the inline block it was, inside a line box of the
+ * copy's leading that stands taller than the kicker's own type, and the
+ * actions sit 14px apart, as before.
+ */
+export const HeroKickerAndActionsDefaults: Story = {
+	args: {},
+	render: () => <KickerHero />,
+	play: async ({ canvas }) => {
+		const { kicker, title, first, second } = kickerParts(canvas);
+		const box = (element: Element) => element.getBoundingClientRect();
+		await expect(getComputedStyle(kicker).display).toBe("inline-block");
+		// The line box around it adds room above the headline's own margin.
+		await expect(box(title).top - box(kicker).bottom).toBeGreaterThan(12);
+		await expect(actionsGap(first, second)).toBe(14);
+	},
+};

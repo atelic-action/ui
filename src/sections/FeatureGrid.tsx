@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { newTabProps } from "../lib/newTabProps";
 import { SectionHeading } from "../primitives";
 import { useWithBase } from "../routing/BasePathProvider";
 import type { Surface } from "./siteConfig";
@@ -22,8 +23,19 @@ interface FeatureCardBase {
  * rather than a constraint.
  */
 export type FeatureCard =
-	| (FeatureCardBase & { description: ReactNode; href?: never; linkLabel?: never })
-	| (FeatureCardBase & { description: string; href: string; linkLabel?: string });
+	| (FeatureCardBase & {
+			description: ReactNode;
+			href?: never;
+			linkLabel?: never;
+			external?: never;
+	  })
+	| (FeatureCardBase & {
+			description: string;
+			href: string;
+			linkLabel?: string;
+			/** Opens in a new tab, except on mailto, tel, and sms links, and says so to a screen reader. */
+			external?: boolean;
+	  });
 
 export interface FeatureGridProps {
 	eyebrow?: string;
@@ -37,6 +49,11 @@ export interface FeatureGridProps {
 	columns?: 2 | 3 | 4;
 	surface?: Surface;
 	id?: string;
+	/**
+	 * The words a screen reader hears after a card that opens in a new tab.
+	 * Defaults to "opens in a new tab".
+	 */
+	newTabLabel?: string;
 }
 
 /** Numbered feature/service card grid with hover lift. */
@@ -48,6 +65,7 @@ export function FeatureGrid({
 	columns = 4,
 	surface = "alt",
 	id,
+	newTabLabel = "opens in a new tab",
 }: FeatureGridProps) {
 	const withBase = useWithBase();
 	const sectionClasses = ["section", surface === "alt" && "surface-alt"].filter(Boolean).join(" ");
@@ -70,11 +88,17 @@ export function FeatureGrid({
 								)}
 							</>
 						);
-						return item.href ? (
-							<a key={item.title} className="feature-card" href={withBase(item.href)}>
-								{inner}
-							</a>
-						) : (
+						if (item.href) {
+							const tab = newTabProps(item.href, item.external);
+							return (
+								<a key={item.title} className="feature-card" href={withBase(item.href)} {...tab}>
+									{inner}
+									{/* Said to a screen reader only, as the card's last words. */}
+									{tab.target && <span className="visually-hidden">, {newTabLabel}</span>}
+								</a>
+							);
+						}
+						return (
 							<div key={item.title} className="feature-card">
 								{inner}
 							</div>

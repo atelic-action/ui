@@ -1355,7 +1355,9 @@
 	.atelic-ui:has(dialog.mobile-menu[open]) .contact-dock {
 		visibility: hidden;
 	}
-	/* Positioned, so it paints over the phone's sheet, which is fixed. */
+	/* Positioned, so on a phone it paints over the dock's own panel, a fixed
+	   sheet across the bottom that leaves room for it as its close button.
+	   It never shows over the phone menu's sheet, which hides it (above). */
 	.atelic-ui .cd-launch {
 		position: relative;
 		display: inline-flex;
@@ -1637,19 +1639,58 @@
 		flex-wrap: wrap;
 		column-gap: 8px;
 	}
-	.atelic-ui .footer-hours dt {
+	.atelic-ui :is(.footer-hours, .footer-brand-hours) dt {
 		color: var(--on-dark);
 		font-weight: var(--weight-medium);
 	}
-	.atelic-ui .footer-hours dd {
+	.atelic-ui :is(.footer-hours, .footer-brand-hours) dd {
 		margin: 0;
 		color: var(--neutral-200);
+	}
+	/* Two across (a phone), the cells under the brand column pair up with none
+	   left alone. Beside an even count of link columns the hours take the
+	   row's whole width, their rows laid two across, and the link columns pair
+	   under them; beside an odd count the hours stay a column of their own,
+	   rows stacked, paired with the first link column, so the count of cells
+	   is even either way. Footer.tsx marks the even count from the columns it
+	   draws. */
+	@media (max-width: 759px) {
+		.atelic-ui .footer-grid.has-even-columns > .footer-hours {
+			grid-column: 1 / -1;
+		}
+		.atelic-ui .footer-grid.has-even-columns .footer-hours dl {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 8px 32px;
+		}
+	}
+	/* The hours inside the brand column (hoursPlacement "brand"): a small
+	   label over a compact list, the days in one column and the ranges in
+	   the next, under the address, the phone, and the email. */
+	.atelic-ui .footer-brand-hours {
+		margin-top: 20px;
+	}
+	.atelic-ui .footer .footer-brand-hours .footer-heading {
+		font-size: 0.72rem;
+		margin-bottom: 8px;
+	}
+	.atelic-ui .footer-brand-hours dl {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 4px 16px;
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+	.atelic-ui .footer-brand-hours dl > div {
+		display: contents;
 	}
 	.atelic-ui .footer nav a {
 		display: flex;
 		align-items: center;
 		gap: 10px;
 		padding: 6px 0;
+		font-size: var(--footer-link-size);
 		color: var(--footer-link, var(--neutral-200));
 		font-weight: var(--weight-medium);
 	}
@@ -1701,20 +1742,60 @@
 		.atelic-ui .footer-grid > * {
 			flex: 1 1 0;
 		}
+		/* The brand column's share of the row, a link column's being 1:
+		   --footer-brand-width, else 1.4 (2 beside the hours from 1100px). */
 		.atelic-ui .footer-grid > .footer-brand {
-			flex-grow: 1.4;
+			flex-grow: var(--footer-brand-width, 1.4);
 		}
 		/* With the hours beside the four link columns a tablet has no room for
 		   the brand column too, so it keeps the row above them until 1100px. */
 		.atelic-ui .footer-grid.has-hours > .footer-brand {
 			flex-basis: 100%;
 		}
+		/* With the hours in the brand column the row is the brand column and
+		   four link columns, each link column a floor of 10em (about twenty
+		   characters) and never narrower than its longest label, the brand
+		   column a floor of 17em (an ordinary email address on one line), the
+		   columns 24px apart. While the row holds every floor they share
+		   it; when it cannot, the brand column takes a row of its own and the
+		   link columns sit under it, four across while their floors fit and two
+		   by two below that. One measure drives both steps, the floors against
+		   the row's own width (a basis of the floor, or of the whole row once
+		   the floors outrun it), so no breakpoint can disagree with it. A font
+		   a few percent wider than a site was drawn in still sets an ordinary
+		   three word label on one line. */
+		.atelic-ui .footer-grid.has-brand-hours {
+			--_link-floor: 10em;
+			--_brand-floor: 17em;
+			--_links-need: calc(
+				var(--_link-count, 4) *
+				var(--_link-floor) +
+				(var(--_link-count, 4) - 1) *
+				24px
+			);
+			--_row-need: calc(var(--_brand-floor) + 24px + var(--_links-need));
+			column-gap: 24px;
+		}
+		.atelic-ui .footer-grid.has-brand-hours > .footer-brand {
+			flex: var(--footer-brand-width, 1.4) 1
+				max(var(--_brand-floor), calc((var(--_row-need) - 100%) * 999));
+		}
+		/* min-width: max-content departs from Component Rules 5 (zero the
+		   min-width chain around wide content) on purpose: these labels are
+		   short words a design sets whole, and the floor is what keeps a label
+		   whole on a machine whose font runs a few percent wider; the row wraps
+		   a column instead, so nothing scrolls sideways. */
+		.atelic-ui .footer-grid.has-brand-hours > .footer-column {
+			flex: 1 1
+				min(calc(50% - 16px), max(var(--_link-floor), calc((var(--_links-need) - 100%) * 999)));
+			min-width: max-content;
+		}
 	}
 	/* One row from 1100px, the brand column a little wider than without the
 	   hours, so the lockup and the rating keep a line each. */
 	@media (min-width: 1100px) {
 		.atelic-ui .footer-grid.has-hours > .footer-brand {
-			flex: 2 1 0;
+			flex: var(--footer-brand-width, 2) 1 0;
 		}
 	}
 	/* Text wordmark for a site with no mark image. */
@@ -1747,9 +1828,13 @@
 	   alone. Token themed: the hairline and hover lift derive from --surface
 	   through color-mix and the words read --on-dark-faint, so it rebrands
 	   with theme.css on any page it renders under, light or dark. */
+	/* The rule above the closing bar is drawn in its top border's place, so
+	   it can sit inside the content's width (--closing-rule-inset, from each
+	   side) while the bar keeps its full width and its height. */
 	.atelic-ui .closing-bar {
+		position: relative;
 		background: var(--surface-dark);
-		border-top: 1px solid color-mix(in srgb, var(--surface) 10%, transparent);
+		border-top: 1px solid transparent;
 		color: var(--on-dark-faint);
 		font-size: 0.82rem;
 		padding-block: 18px;
@@ -1758,6 +1843,21 @@
 		   below everything, so nothing on screen moves when it appears. */
 		padding-bottom: calc(18px + var(--sticky-cta-space, 0px));
 	}
+	.atelic-ui .closing-bar::before {
+		content: "";
+		position: absolute;
+		top: -1px;
+		left: var(--closing-rule-inset);
+		right: var(--closing-rule-inset);
+		height: 1px;
+		background: color-mix(in srgb, var(--surface) 10%, transparent);
+	}
+	/* The two sides share one line, the copyright at the start and the credit
+	   at the end, while they fit; when they do not, the credit wraps under
+	   the copyright and both start at the same edge. That is space-between
+	   alone: a line holding one side sets it at the start, so no width
+	   decides it and a long attribution on a tablet stacks the same way. A
+	   side longer than the line wraps inside itself (min-width 0). */
 	.atelic-ui .closing-bar-line {
 		display: flex;
 		flex-wrap: wrap;
@@ -1765,15 +1865,13 @@
 		align-items: center;
 		justify-content: space-between;
 	}
+	.atelic-ui .closing-bar-left,
 	.atelic-ui .closing-bar-right {
-		margin-left: auto;
+		min-width: 0;
 	}
 	.atelic-ui .closing-bar.is-solo .closing-bar-line {
 		justify-content: center;
 		text-align: center;
-	}
-	.atelic-ui .closing-bar.is-solo .closing-bar-right {
-		margin-left: 0;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the footer's link rules */
 	.atelic-ui .closing-bar a {

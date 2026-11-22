@@ -290,8 +290,34 @@ export function reportServerErrorLater(
 	}
 }
 
-/** Anything shaped like an email address, which a refusal may quote (the recipient, the sender). */
-const ADDRESS = /[^\s@<>()[\]"',;:]+@[^\s@<>()[\]"',;:]+\.[^\s@<>()[\]"',;:]+/g;
+/**
+ * Anything shaped like an email address, which a refusal may quote (the
+ * recipient, the sender). The domain is labels of letters in any script,
+ * digits, hyphens, and underscores joined by dots, so an internationalized
+ * domain is caught and a sentence's closing period stays outside it.
+ */
+const ADDRESS = /[^\s@<>()[\]"',;:]+@[\p{L}\p{N}_-]+(?:\.[\p{L}\p{N}_-]+)+/gu;
+
+/** A separator inside a phone number: a space, a dot, a slash, or any hyphen or dash. */
+const SEP = "[\\s./\\u2010-\\u2015\\u2212-]";
+
+/**
+ * A run shaped like a phone number: an optional country code, then an area
+ * code in parentheses and the number after it, or at least three groups of
+ * digits joined by separators, the last of three or four digits, or a plus
+ * sign and seven to fifteen digits run together (E.164). A date
+ * (2026-11-23), a bare id (12345678), and a count beside a year (120 2026)
+ * are none of these, and stay.
+ */
+const PHONE = new RegExp(
+	`(?<![\\w+-])\\+\\d{7,15}(?![\\w-])|(?<![\\w+-])(?:\\+\\d{1,3}${SEP}?)?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})(?![\\w-])`,
+	"gu",
+);
+
+/** A refusal's field with every address and phone number in it replaced. */
+function scrub(text: string): string {
+	return text.replace(ADDRESS, "[address]").replace(PHONE, "[number]");
+}
 
 /** The longest a refusal's field is kept, so a report never carries a page of text. */
 const REFUSAL_FIELD_MAX = 300;
@@ -300,8 +326,15 @@ const REFUSAL_FIELD_MAX = 300;
  * A refused upstream answer as an error a report may carry: the service's
  * name, the status, and the error body's `name` and `message` fields alone,
  * each with anything shaped like an email address replaced by `[address]`
- * and cut to 300 characters. Nothing else of the body is read, and a body
- * that is not JSON leaves the status alone. Never throws.
+ * and anything shaped like a phone number (grouped as one is written) by
+ * `[number]`, then cut to 300
+ * characters. Nothing else of the body is read, and a body that is not JSON
+ * leaves the status alone. Never throws.
+ *
+ * The scrub takes out the shapes it knows and nothing more: the fields are
+ * still the upstream's free text, and a name, a street, or a message quoted
+ * in it in words passes through. Report a refusal from a service whose
+ * errors are about the request, never one that echoes what a person wrote.
  *
  *   await refusalError(response, "Resend")  // Error("Resend answered 422: validation_error: ...")
  */
@@ -318,7 +351,7 @@ export async function refusalError(
 	}
 	const parts = [body.name, body.message]
 		.filter((part): part is string => typeof part === "string" && part.trim() !== "")
-		.map((part) => part.replace(ADDRESS, "[address]").slice(0, REFUSAL_FIELD_MAX));
+		.map((part) => scrub(part).slice(0, REFUSAL_FIELD_MAX));
 	return new Error(
 		`${service} answered ${response.status}${parts.length ? `: ${parts.join(": ")}` : ""}`,
 	);

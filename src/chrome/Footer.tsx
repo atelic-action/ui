@@ -1,11 +1,12 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import type { ComponentProps, Ref } from "react";
+import type { ComponentProps, CSSProperties, Ref } from "react";
 import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
 import type {
 	Brand,
 	FooterColumn,
 	FooterColumnLink,
+	FooterHoursPlacement,
 	HoursRow,
 	Phone,
 	PostalAddress,
@@ -173,6 +174,13 @@ export interface FooterProps {
 	/** The hours column's heading. Defaults to "Hours". */
 	hoursHeading?: string;
 	/**
+	 * Where the hours sit: `column` (the default) is a column of their own
+	 * beside the link columns; `brand` sets them inside the brand column,
+	 * under the address, the phone, and the email, as a compact list of two
+	 * columns under a small label, so the link columns keep the row's room.
+	 */
+	hoursPlacement?: FooterHoursPlacement;
+	/**
 	 * The link columns beside the brand column. The default footer carries
 	 * four: Company, Resources, Social, and Legal. A column with no links is
 	 * left out.
@@ -218,6 +226,7 @@ export function Footer({
 	email,
 	hours,
 	hoursHeading = "Hours",
+	hoursPlacement = "column",
 	columns,
 	attribution,
 	note,
@@ -231,7 +240,23 @@ export function Footer({
 	// The band is a dark surface, resolved by the order the header uses.
 	const mark = resolveMark(logo, "dark");
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
-	const hoursShown = hours && hours.length > 0 ? hours : null;
+	const hoursGiven = hours && hours.length > 0 ? hours : null;
+	// The hours as a column of their own, or inside the brand column.
+	// Any value but "brand" (a typo, a value from a later version) is a column.
+	const inBrand = hoursPlacement === "brand";
+	const hoursShown = inBrand ? null : hoursGiven;
+	const hoursInBrand = inBrand ? hoursGiven : null;
+	const hoursList = (rows: HoursRow[]) => (
+		<dl>
+			{rows.map((row, at) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: two rows may share a label (a split day), so the place keeps the key unique; rows never reorder
+				<div key={`${at} ${row.label}`}>
+					<dt>{row.label}</dt>
+					<dd>{row.range}</dd>
+				</div>
+			))}
+		</dl>
+	);
 	const stars = (
 		<span className="footer-stars" aria-hidden="true">
 			{STARS.map((star) => (
@@ -255,7 +280,22 @@ export function Footer({
 		<>
 			<footer ref={ref} className="footer">
 				<div className="wrap">
-					<div className={hoursShown ? "footer-grid has-hours" : "footer-grid"}>
+					<div
+						className={[
+							"footer-grid",
+							hoursShown && "has-hours",
+							// Two across, the hours span the row only beside an even count of
+							// link columns, so no cell is left alone (chrome.css, the footer).
+							hoursShown && shown.length % 2 === 0 && "has-even-columns",
+							hoursInBrand && "has-brand-hours",
+						]
+							.filter(Boolean)
+							.join(" ")}
+						// The link columns drawn, which the brand placement's floors are
+						// measured for (chrome.css), so two or three columns keep the
+						// brand column beside them as long as theirs fit.
+						style={hoursInBrand ? ({ "--_link-count": shown.length } as CSSProperties) : undefined}
+					>
 						<div className="footer-brand">
 							{logo?.tile ? (
 								<p className="footer-wordmark">
@@ -310,6 +350,15 @@ export function Footer({
 									{email && <a href={`mailto:${email}`}>{breakableEmail(email)}</a>}
 								</address>
 							)}
+							{hoursInBrand && (
+								<div className="footer-brand-hours">
+									{/* biome-ignore lint/a11y/useSemanticElements: a heading by role, as the link columns' are (see below) */}
+									<div className="footer-heading" role="heading" aria-level={headingLevel}>
+										{hoursHeading}
+									</div>
+									{hoursList(hoursInBrand)}
+								</div>
+							)}
 						</div>
 						{hoursShown && (
 							<div className="footer-column footer-hours">
@@ -317,15 +366,7 @@ export function Footer({
 								<div className="footer-heading" role="heading" aria-level={headingLevel}>
 									{hoursHeading}
 								</div>
-								<dl>
-									{hoursShown.map((row, at) => (
-										// biome-ignore lint/suspicious/noArrayIndexKey: two rows may share a label (a split day), so the place keeps the key unique; rows never reorder
-										<div key={`${at} ${row.label}`}>
-											<dt>{row.label}</dt>
-											<dd>{row.range}</dd>
-										</div>
-									))}
-								</dl>
+								{hoursList(hoursShown)}
 							</div>
 						)}
 						{shown.map((column) => (

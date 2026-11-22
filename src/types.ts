@@ -303,6 +303,12 @@ export interface PostalAddress {
 }
 
 /** One row of opening hours, already formatted by the site. */
+/**
+ * Where the footer sets the hours: `column`, a column of their own beside
+ * the link columns, or `brand`, a compact list inside the brand column.
+ */
+export type FooterHoursPlacement = "column" | "brand";
+
 export interface HoursRow {
 	/** The day label as printed, e.g. "Mon" or "Fri to Sun". */
 	label: string;

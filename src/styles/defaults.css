@@ -125,9 +125,12 @@
 		   --proof-star-fill (--primary); --footer-link (--neutral-200),
 		   --footer-link-hover (--on-dark), --closing-link (--neutral-300),
 		   and --closing-link-hover (--surface mixed with --on-dark);
-		   --menu-rule (--hairline), on the light sheet. --hero-stack-gap has
-		   no default of its own: unset, each gap in the hero keeps the value
-		   it always had, in place. */
+		   --menu-rule (--hairline), on the light sheet; --hero-split-pad-block
+		   (--section-space). --hero-stack-gap and the three gaps under it
+		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
+		   default of their own: unset, each gap in the hero keeps the value
+		   it always had, in place; so has --footer-brand-width, the brand
+		   column's share of the footer's row (1.4, or 2 beside the hours). */
 		/* The open group's pill's words on the bar. */
 		--nav-open-ink: currentColor;
 		/* The header phone pill's padding and its number's size. */
@@ -142,6 +145,7 @@
 		/* The hero's lead paragraph: its size and its measure. */
 		--hero-lead-size: clamp(1.05rem, 2.2vw, 1.35rem);
 		--hero-lead-measure: 52ch;
+		--hero-lead-leading: 1.55;
 		/* A FeatureGrid card's title. */
 		--card-title-color: currentColor;
 		/* A CalloutPanel title's case, and its subtitle's case and tracking. */
@@ -153,6 +157,14 @@
 		/* The footer lockup's mark, and the line its links take on hover. */
 		--footer-mark-height: 38px;
 		--footer-link-hover-decoration: none;
+		/* The footer's column links' size: 1em is the footer's own, as they
+		   always inherited it. */
+		--footer-link-size: 1em;
+		/* How far in from each side the rule above the closing bar starts:
+		   0px runs it the bar's full width, as always. */
+		--closing-rule-inset: 0px;
+		/* The gap between the hero's actions, side by side or stacked. */
+		--hero-actions-gap: 14px;
 	}
 
 	/* ---- Long words ----
@@ -184,6 +196,25 @@
 	   .tel-number, which every such link the package draws does. */
 	:where(.atelic-ui a[href^="tel:"]:not(:has(:not(svg, svg *))), .atelic-ui .tel-number) {
 		white-space: nowrap;
+	}
+
+	/* Words a screen reader hears and the eye does not: the one visually
+	   hidden rule every component uses (a new tab's note, a control's own
+	   label, a grade's spoken words), here because every sheet needs it as
+	   it needs the defaults. It carries no token. The elements that had a
+	   copy of their own keep its name beside this one (.rc-sr,
+	   .data-table-empty-label, .rw-select-label), so a site rule written
+	   against one still reaches it; the old names go in the next major. */
+	.atelic-ui .visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border: 0;
 	}
 
 	/* A ::backdrop inherits no custom property before Safari 17.4 and Chrome

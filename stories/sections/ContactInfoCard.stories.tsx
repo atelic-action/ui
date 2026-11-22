@@ -61,7 +61,7 @@ export const SeveralPhones: Story = {
 			"href",
 			"tel:+15555550143",
 		);
-		await expect(canvas.queryByText("Call / Text")).toBeNull();
+		await expect(canvas.queryByText("Call")).toBeNull();
 	},
 };
 
@@ -88,5 +88,14 @@ export const LongestContent: Story = {
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("link", { name: longEmail })).toBeVisible();
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** The single phone row says "Call" unless the site gives its own words, here for a line that answers texts. */
+export const PhoneLabel: Story = {
+	args: { phoneLabel: "Call or text" },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByText("Call or text")).toBeVisible();
+		await expect(canvas.queryByText("Call")).toBeNull();
 	},
 };

@@ -234,7 +234,7 @@ export function DataTable({
 									const body = isEmpty(cell, c) ? (
 										<>
 											<span className="data-table-empty" aria-hidden="true" />
-											<span className="data-table-empty-label">
+											<span className="data-table-empty-label visually-hidden">
 												{columns[c]?.emptyLabel ?? "None"}
 											</span>
 										</>

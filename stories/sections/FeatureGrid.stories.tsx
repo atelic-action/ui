@@ -155,3 +155,39 @@ export const UnbrokenWord: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/**
+ * A card whose link leaves the site (`external`) opens in a new tab and says
+ * so to a screen reader, after its own words; a card on the site keeps the
+ * tab and says nothing more.
+ */
+export const ExternalCard: Story = {
+	args: {
+		items: [
+			{
+				num: "01",
+				title: "Price sheet",
+				description: "This season's list, on the wholesale portal",
+				href: "https://portal.example.com/prices",
+				linkLabel: "Open the portal",
+				external: true,
+			},
+			{
+				num: "02",
+				title: "Standing orders",
+				description: "Delivered before you open",
+				href: "/wholesale/standing",
+				linkLabel: "Start one",
+			},
+		],
+		columns: 2,
+	},
+	play: async ({ canvas }) => {
+		const external = canvas.getByRole("link", { name: /Price sheet.*opens in a new tab$/ });
+		await expect(external).toHaveAttribute("target", "_blank");
+		await expect(external).toHaveAttribute("rel", "noopener");
+		const own = canvas.getByRole("link", { name: /Standing orders/ });
+		await expect(own).not.toHaveAttribute("target");
+		await expect(own).not.toHaveAccessibleName(/new tab/);
+	},
+};
