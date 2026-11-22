@@ -76,7 +76,8 @@ export const NoToaster: Story = {
 	args: { toaster: false },
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
-		await new Promise((resolve) => setTimeout(resolve, 300));
+		// The toaster's region mounts with the toaster, before any toast, so its absence needs no wait.
+		await expect(screen.queryByRole("region", { name: /notifications/i })).toBeNull();
 		await expect(screen.queryByText("Order saved")).toBeNull();
 	},
 };
