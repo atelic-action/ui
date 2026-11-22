@@ -20,7 +20,10 @@ const answering = (respond: () => Promise<Response>) => () => {
 const accepted = () => Promise.resolve(new Response("{}", { status: 200 }));
 
 /** What the form sent, as the relay received it. */
-const sent = (call = 0) => JSON.parse(String((relay.mock.calls[call]?.[1] as RequestInit).body));
+const sent = (call = 0) => {
+	const init = relay.mock.calls[call]?.[1] as RequestInit | undefined;
+	return JSON.parse(String(init?.body));
+};
 
 const onLead = fn();
 
