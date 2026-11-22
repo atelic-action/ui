@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { LegalPage } from "../../src/sections";
 import { legalDoc, longEmail } from "../fixtures/sections";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -48,12 +47,7 @@ export const NoDate: Story = {
 	},
 };
 
-/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
-export const AltSurface: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
-	args: { surface: "alt" },
-};
+export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** No blocks: only the date. */
 export const Empty: Story = {

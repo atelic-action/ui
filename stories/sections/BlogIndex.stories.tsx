@@ -3,7 +3,7 @@ import { expect, within } from "storybook/test";
 import { BasePathProvider } from "../../src/routing";
 import { BlogIndex } from "../../src/sections";
 import { blogItems, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -69,12 +69,7 @@ export const UnderBasePath: Story = {
 	},
 };
 
-/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
-export const AltSurface: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
-	args: { surface: "alt" },
-};
+export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** No posts yet: an empty list. */
 export const Empty: Story = {

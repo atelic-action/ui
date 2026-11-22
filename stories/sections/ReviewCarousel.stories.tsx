@@ -242,12 +242,7 @@ export const Plain: Story = {
 	},
 };
 
-/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
-export const AltSurface: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("review-score-out-contrast", "muted-text-contrast") },
-	args: { surface: "alt" },
-};
+export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** The tablet sits below the side by side step: the review stacks under the aggregate. */
 export const Tablet: Story = {

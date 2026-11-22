@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { BlogPost } from "../../src/sections";
 import { blogPost, longEmail, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -120,12 +120,7 @@ export const OtherBasePath: Story = {
 	},
 };
 
-/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
-export const AltSurface: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
-	args: { surface: "alt" },
-};
+export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** The body as plain paragraphs only, on a phone, with a long address inside the page. */
 export const Phone: Story = {

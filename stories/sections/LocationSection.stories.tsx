@@ -107,12 +107,7 @@ export const Minimal: Story = {
 	},
 };
 
-/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
-export const AltSurface: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("location-hours-heading-order", "muted-text-contrast") },
-	args: { surface: "alt" },
-};
+export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** On a phone the map stacks under the copy, inside the page. */
 export const Phone: Story = {

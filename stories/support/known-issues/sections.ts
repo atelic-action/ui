@@ -7,17 +7,6 @@ import type { Issue } from "./types";
  */
 export const issues = {
 	/**
-	 * The quiet gray, `--neutral-500` (`#736c5f`), as small text on
-	 * `--surface-alt`: 4.26:1 at 12.8 to 15.2px. It clears 4.5:1 on `--surface`
-	 * (4.62) and `--card` (5.03). A closed day's hours, the journal's dates and
-	 * reading times, a post's way back and byline, a legal page's dateline, and
-	 * the review carousel's stat labels, wherever their band is the alternate one.
-	 */
-	"muted-text-contrast": {
-		rule: "color-contrast",
-		elements: ".hours-row.closed, .bi-meta, .bp-back, .bp-meta, .legal-updated, .rvc-stat-label",
-	},
-	/**
 	 * Soft words on the inset well: the map facade's hint and a gallery tile's
 	 * shot brief, `--neutral-600` (`#6b6559`) on `--surface-inset`, 4.4:1 at 12.8 and 13px.
 	 */
