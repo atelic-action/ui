@@ -4,6 +4,16 @@
    They sit in the package's layer like every sheet here, so any rule a site
    writes outside a layer still wins over them whatever its specificity. */
 @layer atelic-ui {
+	/* Long words break rather than scroll a phone sideways; a table keeps
+	   break-word. The reasons are base.css's (Long words), repeated here
+	   for a consumer that loads this sheet alone. */
+	.atelic-ui {
+		overflow-wrap: anywhere;
+	}
+	.atelic-ui table {
+		overflow-wrap: break-word;
+	}
+
 	/* CTA buttons: primary (brand), dark (ink), ghost (outline). */
 	.atelic-ui .btn {
 		display: inline-flex;
@@ -104,7 +114,12 @@
 		background: var(--card);
 		color: var(--ink-soft);
 		box-shadow: inset 0 0 0 1px var(--neutral-200);
-		white-space: nowrap;
+		/* A chip stays one line wherever it fits, since a chip row and an
+		   inline chip both move a chip whole to the next line first. Only a
+		   label longer than its column wraps, inside the pill, so every word
+		   stays on the page; it was nowrap and ran a phone sideways. */
+		max-width: 100%;
+		min-width: 0;
 	}
 	.atelic-ui .chip .dot {
 		width: 6px;
@@ -520,10 +535,12 @@
 	}
 
 	/* Ported prose carries long unbroken strings (URLs, citations, defined terms
-	   in caps) that would otherwise push the column past the viewport on a phone. */
+	   in caps) that would otherwise push the column past the viewport on a phone.
+	   anywhere, as on the root (base.css, Long words), so a prose block set in a
+	   flex or grid track breaks them too. */
 	.atelic-ui .pb-body,
 	.atelic-ui .pb-list li {
-		overflow-wrap: break-word;
+		overflow-wrap: anywhere;
 	}
 
 	/* ---- QuoteCard (quote-card.css) ---- */

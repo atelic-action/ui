@@ -26,7 +26,10 @@
 		font-size: 24px;
 		color: var(--primary-ink, var(--ui-primary, var(--primary)));
 	}
+	/* The label beside the name keeps its word whole, so a long name
+	   wraps at its spaces rather than squeezing the label mid word. */
 	.atelic-ui .gate-brand-sub {
+		overflow-wrap: normal;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.22em;

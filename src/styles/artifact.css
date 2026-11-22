@@ -35,11 +35,20 @@
 		object-fit: cover;
 		flex-shrink: 0;
 	}
+	/* The words beside the photograph shrink to the page, and the address
+	   moves whole to its own line, breaking only when it is longer than the
+	   column (base.css, Long words); nowrap ran a phone sideways. */
+	.atelic-ui .op-who > div {
+		min-width: 0;
+	}
 	.atelic-ui .op-who a {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3em;
-		white-space: nowrap;
+		max-width: 100%;
+	}
+	.atelic-ui .op-who a svg {
+		flex: none;
 	}
 	.atelic-ui .op-who b {
 		font-weight: var(--weight-medium);
