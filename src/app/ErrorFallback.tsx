@@ -20,13 +20,17 @@ export function ErrorFallback({ error, resetError, showDetails = false }: ErrorF
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background p-4">
-			<div className="max-w-md text-center">
+			<div className="w-full min-w-0 max-w-md text-center">
 				<h1 className="text-2xl font-semibold text-foreground">Something went wrong</h1>
 				<p className="mt-2 text-sm text-muted-foreground">
 					An unexpected error occurred. Please try again.
 				</p>
 				{showDetails && (
-					<pre className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-left text-xs text-muted-foreground">
+					<pre
+						// biome-ignore lint/a11y/noNoninteractiveTabindex: a box that scrolls takes focus, so a keyboard can scroll it
+						tabIndex={0}
+						className="mt-4 max-h-40 overflow-auto rounded bg-muted p-3 text-left text-xs text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+					>
 						{errorMessage}
 					</pre>
 				)}

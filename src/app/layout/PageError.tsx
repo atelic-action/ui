@@ -13,13 +13,16 @@ interface PageErrorProps {
 
 /**
  * Standardized error state for pages.
- * Provides consistent error display across the application.
+ * Provides consistent error display across the application. It is an alert,
+ * so a screen reader announces it once as it appears: the reader who started
+ * the load hears that it failed. Render it only when the error happens, not
+ * ahead of time with its words swapped in.
  */
 export function PageError({ message, title = "Error", className }: PageErrorProps) {
 	return (
-		<Card className={cn("border-destructive/50", className)}>
+		<Card role="alert" className={cn("border-destructive/50", className)}>
 			<CardContent className="flex items-center gap-3 py-6">
-				<AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive" />
+				<AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
 				<div>
 					<p className="font-medium text-destructive">{title}</p>
 					<p className="text-sm text-muted-foreground">{message}</p>

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, userEvent, within } from "storybook/test";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -13,6 +13,7 @@ import {
 	Button,
 } from "../../../src/app/ui";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft, until } from "../layers";
 
 /** The confirm handler, fresh for each story. */
 const confirm = { spy: fn() };
@@ -56,9 +57,11 @@ type Story = StoryObj<typeof meta>;
 async function open() {
 	const trigger = screen.getByRole("button", { name: "Cancel the standing order" });
 	await userEvent.click(trigger);
-	const dialog = await screen.findByRole("alertdialog", {
-		name: "Cancel Larkspur's standing order?",
-	});
+	const dialog = await layerOpened(() =>
+		screen.getByRole("alertdialog", {
+			name: "Cancel Larkspur's standing order?",
+		}),
+	);
 	return { trigger, dialog };
 }
 
@@ -83,7 +86,7 @@ export const OpenAndEscape: Story = {
 		});
 		await step("Escape closes it and focus returns to the trigger", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+			await noneLeft(() => screen.queryByRole("alertdialog"));
 			await expect(trigger).toHaveFocus();
 			await expect(confirm.spy).not.toHaveBeenCalled();
 		});
@@ -101,7 +104,7 @@ export const OutsidePressStays: Story = {
 		await expect(screen.getByRole("alertdialog")).toBe(dialog);
 		await expect(dialog).toBeVisible();
 		await userEvent.click(within(dialog).getByRole("button", { name: "Keep it" }));
-		await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("alertdialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };
@@ -112,7 +115,7 @@ export const Confirm: Story = {
 		const { dialog, trigger } = await open();
 		await userEvent.click(within(dialog).getByRole("button", { name: "Cancel the order" }));
 		await expect(confirm.spy).toHaveBeenCalledOnce();
-		await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("alertdialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };
@@ -124,7 +127,7 @@ export const OpenPhone: Story = {
 		const { dialog } = await open();
 		const keep = within(dialog).getByRole("button", { name: "Keep it" });
 		const act = within(dialog).getByRole("button", { name: "Cancel the order" });
-		await waitFor(() =>
+		await until(() =>
 			expect(act.getBoundingClientRect().bottom).toBeLessThanOrEqual(
 				keep.getBoundingClientRect().top,
 			),

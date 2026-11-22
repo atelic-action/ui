@@ -5,9 +5,8 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * A single letter in a hairline box after the word it tags (S for social),
- * in the accent at 9px: 3.31:1 on the paper, which axe does not report
- * (stories/findings/email-app.md, Checker Limits). Its
- * letter is all a reader gets: nothing says what S stands for.
+ * letter and box in the accent's ink. Given a `label`, a reader hears what
+ * the letter stands for in its place; without one, the letter alone.
  */
 const meta = {
 	title: "Email/Badge",
@@ -41,3 +40,28 @@ export const AfterAWord: Story = {
 
 /** Another letter. */
 export const Wholesale: Story = { args: { letter: "W" } };
+
+/** Labelled, the badge is an image a reader hears as the word it stands for. */
+export const Labelled: Story = {
+	args: { label: "Social" },
+	play: async ({ canvas }) => {
+		const badge = canvas.getByRole("img", { name: "Social" });
+		await expect(badge).toHaveTextContent("S");
+		await expect(badge).toHaveAttribute("title", "Social");
+	},
+};
+
+/** Without a label the letter is plain text, read as itself. */
+export const Unlabelled: Story = {
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByRole("img")).toBeNull();
+		await expect(canvas.getByText("S")).toBeVisible();
+	},
+};
+
+/** The letter is the accent's ink, 5.86 to 1 on the paper, where the accent read 3.31. */
+export const InkLetter: Story = {
+	play: async ({ canvas }) => {
+		await expect(getComputedStyle(canvas.getByText("S")).color).toBe("rgb(184, 48, 11)");
+	},
+};

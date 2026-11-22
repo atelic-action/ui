@@ -4,9 +4,9 @@ import { Card, RecordTimelineStrip, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** The strip's day cells: the first row of its own table. */
-function cells(canvasElement: HTMLElement) {
-	const strip = canvasElement.querySelector("[data-story-column] td td table") as HTMLElement;
+/** The strip's day cells, found as a reader finds the strip (an image named by its summary): its first row. */
+function cells(canvas: { getByRole: (role: "img") => HTMLElement }) {
+	const strip = canvas.getByRole("img");
 	return Array.from(strip.querySelector("tr")?.children ?? []) as HTMLElement[];
 }
 
@@ -14,7 +14,8 @@ function cells(canvasElement: HTMLElement) {
  * A record's recent days on one line, today at the right edge: an ink
  * square for each send, an accent dot for each known open, stacked when they
  * share a day, on a hairline with a tick for today. Runs of empty days merge
- * into one cell. The marks are drawn, so a reader gets only the axis words.
+ * into one cell. The marks are drawn, so the strip is an image named in
+ * words: `recordTimelineSummary` of the timeline, or its own `label`.
  */
 const meta = {
 	title: "Email/RecordTimelineStrip",
@@ -42,7 +43,7 @@ type Story = StoryObj<typeof meta>;
 export const ThirtyDays: Story = {
 	play: async ({ canvas, canvasElement }) => {
 		// Marked days 27, 13, 12, and 2, and the four runs of empty days around them.
-		await expect(cells(canvasElement)).toHaveLength(8);
+		await expect(cells(canvas)).toHaveLength(8);
 		await expect(canvas.getByText("30d")).toBeVisible();
 		await expect(canvas.getByText("today")).toBeVisible();
 		await fitsTheColumn(canvasElement);
@@ -52,8 +53,8 @@ export const ThirtyDays: Story = {
 /** Nothing sent and nothing opened: one empty run and the axis. */
 export const Quiet: Story = {
 	args: { timeline: { days: 14, touches: [], opens: [] } },
-	play: async ({ canvas, canvasElement }) => {
-		await expect(cells(canvasElement)).toHaveLength(1);
+	play: async ({ canvas }) => {
+		await expect(cells(canvas)).toHaveLength(1);
 		await expect(canvas.getByText("14d")).toBeVisible();
 	},
 };
@@ -61,8 +62,8 @@ export const Quiet: Story = {
 /** A send and an open today: both marks in the last cell. */
 export const Today: Story = {
 	args: { timeline: { days: 7, touches: [0], opens: [0] } },
-	play: async ({ canvasElement }) => {
-		const all = cells(canvasElement);
+	play: async ({ canvas }) => {
+		const all = cells(canvas);
 		await expect(all[all.length - 1].children).toHaveLength(2);
 	},
 };
@@ -83,5 +84,26 @@ export const BusyPhone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
 		await fitsTheColumn(canvasElement);
+	},
+};
+
+/** A reader hears the sends and the opens in words, the latest of each first. */
+export const ReadInWords: Story = {
+	play: async ({ canvas }) => {
+		await expect(
+			canvas.getByRole("img", {
+				name: "Last 30 days: 3 sends, the latest 2 days ago; 2 opens, the latest 2 days ago",
+			}),
+		).toBeInTheDocument();
+	},
+};
+
+/** A runner may name the strip in its own words. */
+export const OwnLabel: Story = {
+	args: { label: "Quiet since the trial began" },
+	play: async ({ canvas }) => {
+		await expect(
+			canvas.getByRole("img", { name: "Quiet since the trial began" }),
+		).toBeInTheDocument();
 	},
 };

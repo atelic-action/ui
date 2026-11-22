@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Croissant, Truck } from "lucide-react";
 import { useState } from "react";
-import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, userEvent, within } from "storybook/test";
 import {
 	Button,
 	Command,
@@ -14,8 +14,8 @@ import {
 	CommandSeparator,
 	CommandShortcut,
 } from "../../../src/app/ui";
-import { knownBug, knownIssues } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft, until } from "../layers";
 
 /** What a pick reports, fresh for each story. */
 const picked = { spy: fn() };
@@ -87,7 +87,7 @@ export const FilterAndPick: Story = {
 		});
 		await step("typing filters to what matches", async () => {
 			await userEvent.type(input, "lark");
-			await waitFor(() => expect(list.getAllByRole("option")).toHaveLength(1));
+			await until(() => expect(list.getAllByRole("option")).toHaveLength(1));
 			await expect(list.getByRole("option", { name: "Larkspur Coffee Bar" })).toBeVisible();
 		});
 		await step("Enter picks the active item", async () => {
@@ -99,9 +99,6 @@ export const FilterAndPick: Story = {
 
 /** The arrows walk the items and skip a disabled one; the input keeps focus throughout. */
 export const Arrows: Story = {
-	// The palette holds a separator, which a listbox may not (stories/findings/email-app.md).
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("command-separator-in-listbox") },
 	play: async ({ canvas }) => {
 		const input = canvas.getByRole("combobox");
 		input.focus();
@@ -117,25 +114,30 @@ export const Arrows: Story = {
 	},
 };
 
-/** Nothing matches: the empty line, and a listbox with no options in it. */
+/**
+ * Nothing matches: the empty line is the list's one option, disabled, so a
+ * reader hears it as the list's only entry. The separator hides while a
+ * search is typed.
+ */
 export const Empty: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("command-separator-in-listbox", "command-empty-listbox") },
 	play: async ({ canvas }) => {
 		await userEvent.type(canvas.getByRole("combobox"), "croquembouche");
-		await waitFor(() => expect(canvas.getByText("Nothing matches.")).toBeVisible());
-		await expect(canvas.queryAllByRole("option")).toHaveLength(0);
+		await until(() => expect(canvas.getByText("Nothing matches.")).toBeVisible());
+		const list = within(canvas.getByRole("listbox"));
+		const only = list.getByRole("option", { name: "Nothing matches." });
+		await expect(list.getAllByRole("option")).toEqual([only]);
+		await expect(only).toHaveAttribute("aria-disabled", "true");
 	},
 };
 
-function PaletteDialog() {
+function PaletteDialog({ title, showTitle }: { title?: string; showTitle?: boolean }) {
 	const [open, setOpen] = useState(false);
 	return (
 		<>
 			<Button variant="outline" onClick={() => setOpen(true)}>
 				Find anything
 			</Button>
-			<CommandDialog open={open} onOpenChange={setOpen}>
+			<CommandDialog open={open} onOpenChange={setOpen} title={title} showTitle={showTitle}>
 				<Palette />
 			</CommandDialog>
 		</>
@@ -143,19 +145,16 @@ function PaletteDialog() {
 }
 
 /**
- * As a palette in a dialog: it opens on the search box, and Escape closes it.
- * The dialog has no title and no way to pass one, so it has no name; and it
- * has no trigger of its own, so closing it drops focus to the page instead
- * of the button that opened it.
+ * As a palette in a dialog: it opens on the search box, named "Commands" by
+ * default, and Escape closes it. It has no trigger of its own (it is opened
+ * by state), and still hands focus back to the button that opened it.
  */
 export const InADialog: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("command-dialog-unnamed", "command-separator-in-listbox") },
 	render: () => <PaletteDialog />,
 	play: async ({ canvas, step }) => {
 		const button = canvas.getByRole("button", { name: "Find anything" });
 		await userEvent.click(button);
-		const dialog = await screen.findByRole("dialog");
+		const dialog = await layerOpened(() => screen.getByRole("dialog", { name: "Commands" }));
 		await step("it opens with focus in the search box", async () => {
 			await expect(within(dialog).getByRole("combobox")).toHaveFocus();
 		});
@@ -163,31 +162,39 @@ export const InADialog: Story = {
 			await userEvent.keyboard("recipes{Enter}");
 			await expect(picked.spy).toHaveBeenCalledWith("recipes");
 		});
-		await step("Escape closes it, and focus should return to the button", async () => {
+		await step("Escape closes it, and focus returns to the button", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-			await knownBug("command-dialog-drops-focus", async () => {
-				await expect(button).toHaveFocus();
-			});
+			await noneLeft(() => screen.queryByRole("dialog"));
+			await expect(button).toHaveFocus();
 		});
 	},
 };
 
-/** Left open, so the check reads the open palette: its first item highlighted, shortcut and all. */
+/**
+ * Left open, so the check reads the open palette: its first item
+ * highlighted, the shortcut's muted words on the grey (4.81 to 1), the
+ * dialog named, and the separator no part of the listbox.
+ */
 export const InADialogOpen: Story = {
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues(
-			"command-dialog-unnamed",
-			"command-separator-in-listbox",
-			"app-muted-on-grey-contrast",
-		),
-	},
 	render: () => <PaletteDialog />,
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Find anything" }));
-		const dialog = await screen.findByRole("dialog");
-		await waitFor(() => expect(dialog).toBeVisible());
-		await expect(dialog).not.toHaveAccessibleName();
+		const dialog = await layerOpened(() => screen.getByRole("dialog", { name: "Commands" }));
+		await until(() => expect(dialog).toBeVisible());
+		const first = within(dialog).getByRole("option", { name: /Today's orders/ });
+		await until(() => expect(first).toHaveAttribute("aria-selected", "true"));
+		await expect(within(dialog).queryByRole("separator")).toBeNull();
+	},
+};
+
+/** A palette titled for what it does, the title shown above the search. */
+export const TitledDialog: Story = {
+	render: () => <PaletteDialog title="Jump to a page" showTitle />,
+	play: async ({ canvas }) => {
+		await userEvent.click(canvas.getByRole("button", { name: "Find anything" }));
+		const dialog = await layerOpened(() => screen.getByRole("dialog", { name: "Jump to a page" }));
+		await until(() => expect(within(dialog).getByText("Jump to a page")).toBeVisible());
+		await userEvent.keyboard("{Escape}");
+		await noneLeft(() => screen.queryByRole("dialog"));
 	},
 };

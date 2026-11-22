@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { Card } from "./atoms";
 import { asciiDowncase } from "./text";
-import { eyebrowStyle, fadeStop, tableReset, useEmailTheme } from "./theme";
+import { accentInk, eyebrowStyle, fadeStop, tableReset, useEmailTheme, wrapLong } from "./theme";
 
 /*
  * The frame, ported one to one from the frame section of homebase
@@ -199,9 +199,6 @@ function filled(value: string | undefined): value is string {
 	return value !== undefined && value.trim() !== "";
 }
 
-/** One long token (a path, a URL) wraps instead of widening the column. */
-const wrapLong = { overflowWrap: "anywhere", wordBreak: "break-word" } as const;
-
 type FailureFact = { label: string; value: string; kind: "step" | "reason" | "fix" };
 
 /**
@@ -276,6 +273,7 @@ export function FailurePage({
 								fontFamily: fonts.mono,
 								fontSize: "12px",
 								whiteSpace: "pre-wrap",
+								...wrapLong,
 								color: palette.dim,
 								borderTop: `1px solid ${palette.line}`,
 								paddingTop: "14px",
@@ -295,7 +293,7 @@ export function FailurePage({
  * The structured failure page: the same eyebrow and headline, then one row per
  * fact that has a value, each a faint eyebrow over its value on a hairline,
  * and the log's tail last under its own eyebrow. The fix's label wears the
- * accent, as an accented `Note` does, and its value is set in mono because it
+ * accent's ink, as an accented `Note` does, and its value is set in mono because it
  * so often holds a command.
  */
 function StructuredFailurePage({
@@ -369,7 +367,7 @@ function StructuredFailurePage({
 											<div
 												style={{
 													...eyebrowStyle(fonts),
-													color: fact.kind === "fix" ? palette.accent : palette.faint,
+													color: fact.kind === "fix" ? accentInk(palette) : palette.faint,
 												}}
 											>
 												{fact.label}

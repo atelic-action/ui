@@ -1,19 +1,20 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { expect } from "storybook/test";
 import { PageError } from "../../src/app";
-import { knownIssues } from "../support/known-issues";
+import { Button } from "../../src/app/ui";
 import { pin } from "../support/viewports";
+import { layerOpened } from "./layers";
 
 /**
- * A page's error state: a card with an alert icon, a title, and the message.
- * The title is the kit's destructive red on the card, which fails contrast
- * (stories/findings/email-app.md), so every story carries the marker.
+ * A page's error state: a card with an alert icon, a title in the kit's
+ * destructive red, and the message. It is an alert, so a screen reader
+ * announces it once as it appears; a page renders it when the error happens.
  */
 const meta = {
 	title: "App/PageError",
 	component: PageError,
-	tags: ["known-issue"],
-	parameters: { layout: "padded", ...knownIssues("app-destructive-contrast") },
+	parameters: { layout: "padded" },
 	args: { message: "The wholesale orders did not load. Check the connection and reload." },
 	globals: pin("desktop"),
 } satisfies Meta<typeof PageError>;
@@ -37,14 +38,35 @@ export const OwnTitle: Story = {
 	},
 };
 
-/**
- * Nothing announces it: the card is not an alert or a status, so a reader
- * who triggered the load hears nothing when it fails.
- */
-export const NotAnnounced: Story = {
+/** The card is an alert holding its title and message. */
+export const IsAnAlert: Story = {
 	play: async ({ canvas }) => {
+		const alert = canvas.getByRole("alert");
+		await expect(alert).toHaveTextContent("Error");
+		await expect(alert).toHaveTextContent(/did not load/);
+	},
+};
+
+/** A page that loads, and fails: nothing is announced while it loads, then the error once. */
+function LoadingPage() {
+	const [failed, setFailed] = useState(false);
+	return (
+		<div>
+			<Button onClick={() => setFailed(true)}>Load the orders</Button>
+			{failed ? <PageError title="Orders unavailable" message="The api answered 503." /> : null}
+		</div>
+	);
+}
+
+/** The alert appears with the error, the way a reader who started the load hears that it failed. */
+export const AnnouncedWhenItAppears: Story = {
+	render: () => <LoadingPage />,
+	play: async ({ canvas, userEvent }) => {
 		await expect(canvas.queryByRole("alert")).toBeNull();
-		await expect(canvas.queryByRole("status")).toBeNull();
+		await userEvent.click(canvas.getByRole("button", { name: "Load the orders" }));
+		const alert = await layerOpened(() => canvas.getByRole("alert"));
+		await expect(alert).toHaveTextContent("Orders unavailable");
+		await expect(canvas.getAllByRole("alert")).toHaveLength(1);
 	},
 };
 

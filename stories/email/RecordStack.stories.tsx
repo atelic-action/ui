@@ -9,8 +9,8 @@ import { fitsTheColumn, inColumn } from "./column";
  * One record per row, stacked: the title with its pills, an optional
  * timeline, a mono meta line with an aside at its right, a note, and a
  * callout. No fixed columns, so a name of any length wraps on a phone. The
- * accent pill and callout eyebrow, and the warm aside, fail contrast as
- * words, so the stories that show them are marked.
+ * New pill, the callout's eyebrow, and a cold aside wear the accent's ink;
+ * the callout's edge keeps the accent, a mark with no words.
  */
 const meta = {
 	title: "Email/RecordStack",
@@ -35,8 +35,6 @@ type Story = StoryObj<typeof meta>;
 
 /** Three records with every part between them: pills, timelines, asides, a note, a callout. */
 export const Accounts: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByRole("link", { name: "Larkspur Coffee Bar" })).toHaveAttribute(
 			"href",
@@ -70,8 +68,6 @@ export const Empty: Story = { args: { records: [] } };
 
 /** On a phone the longest name wraps beside its pills and nothing widens the card. */
 export const AccountsPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
 		await fitsTheColumn(canvasElement);

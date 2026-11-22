@@ -50,3 +50,12 @@
 	color: hsl(var(--muted-foreground));
 	margin-bottom: 12px;
 }
+/* The error boundary's fallback fills a screen; the States page frames it,
+   sized by the page and never by what is inside it, the way a viewport is. */
+.kit-fallback {
+	contain: inline-size;
+	height: 28rem;
+	overflow: auto;
+	border: 1px solid hsl(var(--border));
+	border-radius: var(--radius);
+}

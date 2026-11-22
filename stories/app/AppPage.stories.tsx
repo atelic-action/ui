@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Croissant } from "lucide-react";
-import { expect, waitFor, within } from "storybook/test";
+import { expect, within } from "storybook/test";
 import { AppPage, AppPageToolbar, Breadcrumbs } from "../../src/app";
 import { Badge } from "../../src/app/ui";
+import { cleanStorage } from "../fixtures/email-app";
 import { pin } from "../support/viewports";
+import { until } from "./layers";
 
 function Orders() {
 	return (
@@ -35,6 +37,8 @@ const meta = {
 	title: "App/AppPage",
 	component: AppPage,
 	args: { title: "Orders", children: <Orders /> },
+	// The rail's collapse is saved; no story starts from another's or leaves its own.
+	beforeEach: cleanStorage,
 	globals: pin("desktop"),
 } satisfies Meta<typeof AppPage>;
 
@@ -118,13 +122,13 @@ export const WithRail: Story = {
 			await userEvent.click(toggle);
 			await expect(toggle).toHaveAccessibleName("Expand rail");
 			await expect(toggle).toHaveAttribute("aria-expanded", "false");
-			await waitFor(() => expect(rail).not.toBeVisible());
+			await until(() => expect(rail).not.toBeVisible());
 		});
 		await step("and expands it again, by the keyboard", async () => {
 			toggle.focus();
 			await userEvent.keyboard("{Enter}");
 			await expect(toggle).toHaveAccessibleName("Collapse rail");
-			await waitFor(() =>
+			await until(() =>
 				expect(within(rail).getByText("13 orders out, 2 still proofing.")).toBeVisible(),
 			);
 		});

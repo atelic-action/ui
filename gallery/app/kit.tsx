@@ -1,6 +1,7 @@
 import { Croissant, Info, LayoutGrid, Plus, Printer, Wheat } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { ActionButton, AppPage, Breadcrumbs, FormActionButtons } from "../../src/app";
 import {
 	Accordion,
@@ -29,11 +30,14 @@ import {
 	CardContent,
 	Checkbox,
 	Command,
+	CommandDialog,
 	CommandEmpty,
 	CommandGroup,
 	CommandInput,
 	CommandItem,
 	CommandList,
+	CommandSeparator,
+	CommandShortcut,
 	CountryDropdown,
 	Dialog,
 	DialogContent,
@@ -118,6 +122,7 @@ export function KitPage() {
 	const [loaf, setLoaf] = useState("country");
 	const [page, setPage] = useState(3);
 	const [country, setCountry] = useState("Italy");
+	const [palette, setPalette] = useState(false);
 
 	return (
 		<AppPage
@@ -337,6 +342,57 @@ export function KitPage() {
 							</Command>
 						</PopoverContent>
 					</Popover>
+				</Specimen>
+
+				<Specimen label="CommandDialog, opened by state">
+					<Button variant="outline" onClick={() => setPalette(true)}>
+						Open the palette
+					</Button>
+					<CommandDialog open={palette} onOpenChange={setPalette} title="Jump to">
+						<CommandInput placeholder="Jump to a page" />
+						<CommandList>
+							<CommandEmpty>No page by that name.</CommandEmpty>
+							<CommandGroup heading="Pages">
+								<CommandItem onSelect={() => setPalette(false)}>
+									Orders
+									<CommandShortcut>G O</CommandShortcut>
+								</CommandItem>
+								<CommandItem onSelect={() => setPalette(false)}>
+									Bakes
+									<CommandShortcut>G B</CommandShortcut>
+								</CommandItem>
+							</CommandGroup>
+							<CommandSeparator />
+							<CommandGroup heading="Account">
+								<CommandItem onSelect={() => setPalette(false)}>Profile</CommandItem>
+							</CommandGroup>
+						</CommandList>
+					</CommandDialog>
+				</Specimen>
+
+				<Specimen label="Toasts, from the provider's toaster">
+					<div className="flex flex-wrap gap-2">
+						<Button
+							variant="outline"
+							onClick={() => toast.success("Order saved", { description: "Six trays for Friday." })}
+						>
+							Success
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() =>
+								toast.error("Order not saved", { description: "The oven schedule is full." })
+							}
+						>
+							Error
+						</Button>
+						<Button variant="outline" onClick={() => toast.info("Flour arrives Thursday")}>
+							Info
+						</Button>
+						<Button variant="outline" onClick={() => toast.warning("Two trays short")}>
+							Warning
+						</Button>
+					</div>
 				</Specimen>
 
 				<Specimen label="Avatar, Separator, Pagination">

@@ -58,11 +58,22 @@ export function mockAPI(user: AppUser = storyUser) {
 	return spy;
 }
 
-/** Forget what an earlier story left in the app's storage: the rails' saved collapse. */
-function forgetSaved() {
-	for (const name of ["sidebarCollapsed", "railCollapsed"]) {
-		localStorage.removeItem(`${storyAppConfig.storagePrefix}-${name}`);
+/**
+ * Forget everything the app keeps under its storage prefix: the rails' saved
+ * collapse, the signed in session, the units. Run before a story, so an
+ * earlier one cannot leak in, and after it, so it leaves nothing behind.
+ */
+export function forgetStored() {
+	const prefix = `${storyAppConfig.storagePrefix}-`;
+	for (const key of Object.keys(localStorage)) {
+		if (key.startsWith(prefix)) localStorage.removeItem(key);
 	}
+}
+
+/** A story's `beforeEach` for a page that keeps a choice (the rail's collapse): nothing stored before, nothing left after. */
+export function cleanStorage() {
+	forgetStored();
+	return forgetStored;
 }
 
 /**
@@ -72,12 +83,13 @@ function forgetSaved() {
 export function signIn(user: AppUser = storyUser) {
 	return () => {
 		const spy = mockAPI(user);
-		forgetSaved();
+		forgetStored();
 		configureApp(storyAppConfig);
 		useAuthStore.getState().login("story-token", "story-refresh", A_YEAR_IN_SECONDS, user);
 		return () => {
 			useAuthStore.getState().logout();
 			spy.mockRestore();
+			forgetStored();
 		};
 	};
 }
@@ -85,10 +97,13 @@ export function signIn(user: AppUser = storyUser) {
 /** A story's `beforeEach` that makes sure nobody is signed in, with the api mocked. */
 export function signOut() {
 	const spy = mockAPI();
-	forgetSaved();
+	forgetStored();
 	configureApp(storyAppConfig);
 	useAuthStore.getState().logout();
-	return () => spy.mockRestore();
+	return () => {
+		spy.mockRestore();
+		forgetStored();
+	};
 }
 
 /* The email reports: the bakery's weekly operations email and its pieces. */

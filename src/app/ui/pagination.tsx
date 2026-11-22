@@ -54,7 +54,7 @@ export function Pagination({ page, totalPages, onPageChange, className }: Pagina
 				disabled={page <= 1}
 				aria-label="Previous page"
 			>
-				Prev
+				Previous
 			</Button>
 
 			{pageWindow(page, totalPages).map((item) =>

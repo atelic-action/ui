@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Badge } from "../../../src/app/ui";
-import { knownIssues } from "../../support/known-issues";
 
 /** A small rounded label: a status, a count, a tag. */
 const meta = {
@@ -24,17 +23,13 @@ export const Secondary: Story = { args: { variant: "secondary", children: "Trial
 
 export const Outline: Story = { args: { variant: "outline", children: "Paused" } };
 
-/** The destructive badge: white on the kit's red, which fails contrast. */
+/** The destructive badge: white on red 600, 4.63 to 1. */
 export const Destructive: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	args: { variant: "destructive", children: "Overdue" },
 };
 
 /** Every variant on one line, as a table's status column shows them. */
 export const AllVariants: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	render: () => (
 		<div className="flex gap-2">
 			<Badge>Active</Badge>

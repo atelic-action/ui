@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor } from "storybook/test";
+import { expect } from "storybook/test";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../src/app/ui";
 import { pin } from "../../support/viewports";
+import { noneLeft } from "../layers";
 
 const questions = [
 	{ value: "cutoff", q: "When do orders close?", a: "At 20:00 the night before the drop." },
@@ -64,7 +65,7 @@ export const Single: Story = {
 		await step("a second click closes it", async () => {
 			await userEvent.click(second);
 			await expect(second).toHaveAttribute("aria-expanded", "false");
-			await waitFor(() => expect(canvas.queryByRole("region")).toBeNull());
+			await noneLeft(() => canvas.queryByRole("region"));
 		});
 	},
 };

@@ -15,10 +15,20 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 		{ className, value, onValueChange, onClear, onKeyDown, placeholder = "Search...", ...props },
 		ref,
 	) => {
+		const inputRef = React.useRef<HTMLInputElement>(null);
+		React.useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
+
 		const handleClear = React.useCallback(() => {
 			onValueChange("");
 			onClear?.();
 		}, [onValueChange, onClear]);
+
+		// The clear button removes itself once the box is empty, so a press
+		// by keyboard would leave focus on nothing; it goes back to the box.
+		const handleClearClick = React.useCallback(() => {
+			handleClear();
+			inputRef.current?.focus();
+		}, [handleClear]);
 
 		const handleKeyDown = React.useCallback(
 			(e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -33,9 +43,12 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
 		return (
 			<div className="relative w-full">
-				<Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+				<Search
+					aria-hidden="true"
+					className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+				/>
 				<Input
-					ref={ref}
+					ref={inputRef}
 					type="text"
 					value={value}
 					onChange={(e) => onValueChange(e.target.value)}
@@ -49,7 +62,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 				/>
 				{value && (
 					<ClearButton
-						onClick={handleClear}
+						onClick={handleClearClick}
 						className="absolute right-3 top-1/2 -translate-y-1/2"
 						aria-label="Clear search"
 					/>

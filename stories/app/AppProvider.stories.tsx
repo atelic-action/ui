@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useMutation } from "@tanstack/react-query";
-import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { expect, screen, userEvent } from "storybook/test";
 import { AppProvider, queryClient } from "../../src/app";
 import { Button } from "../../src/app/ui";
 import { storyAppConfig, storyAppNav } from "../fixtures/app";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
+import { until } from "./layers";
 
 /** A save that succeeds or fails, carrying the toast it raises in its meta, as an app's mutations do. */
 function SaveOrder({ fails = false }: { fails?: boolean }) {
@@ -44,30 +44,26 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** A save that succeeds raises the success toast with its description, in green words that fail contrast. */
+/** A save that succeeds raises the success toast with its description, its green words darkened to pass on their tint. */
 export const SuccessToast: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("toast-rich-colors-contrast") },
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
 		const title = await screen.findByText("Order saved");
-		await waitFor(() => expect(title).toBeVisible());
+		await until(() => expect(title).toBeVisible());
 		await expect(screen.getByText("4 trays on Thursday's van.")).toBeVisible();
 		const region = screen.getByRole("region", { name: /Notifications/ });
 		await expect(region).toHaveAttribute("aria-live", "polite");
 	},
 };
 
-/** A save that fails raises the error toast with the error's message, in red words that fail contrast. */
+/** A save that fails raises the error toast with the error's message, its red words darkened to pass on their tint. */
 export const ErrorToast: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("toast-rich-colors-contrast") },
 	args: { children: <SaveOrder fails /> },
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
 		const title = await screen.findByText("The order did not save");
-		await waitFor(() => expect(title).toBeVisible());
-		await waitFor(() => expect(screen.getByText("The van is already loaded.")).toBeVisible());
+		await until(() => expect(title).toBeVisible());
+		await until(() => expect(screen.getByText("The van is already loaded.")).toBeVisible());
 	},
 };
 

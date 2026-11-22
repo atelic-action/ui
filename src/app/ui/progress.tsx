@@ -3,23 +3,35 @@ import * as React from "react";
 
 import { cn } from "../lib/utils";
 
+/**
+ * A bar filled to `value` out of `max` (100 by default). The value reaches the
+ * Radix root, so the `progressbar` reports it (`aria-valuenow`); a bar with no
+ * value, or a null one, is indeterminate, reports none, and draws empty.
+ */
 const Progress = React.forwardRef<
 	React.ElementRef<typeof ProgressPrimitive.Root>,
 	React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
 		indicatorClassName?: string;
 	}
->(({ className, value, indicatorClassName, ...props }, ref) => (
-	<ProgressPrimitive.Root
-		ref={ref}
-		className={cn("relative h-4 w-full overflow-hidden rounded-full bg-secondary", className)}
-		{...props}
-	>
-		<ProgressPrimitive.Indicator
-			className={cn("h-full w-full flex-1 bg-primary transition-all", indicatorClassName)}
-			style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-		/>
-	</ProgressPrimitive.Root>
-));
+>(({ className, value, max, indicatorClassName, ...props }, ref) => {
+	const ceiling = max ?? 100;
+	const share =
+		value == null || ceiling <= 0 ? 0 : Math.min(100, Math.max(0, (value / ceiling) * 100));
+	return (
+		<ProgressPrimitive.Root
+			ref={ref}
+			value={value ?? null}
+			max={max}
+			className={cn("relative h-4 w-full overflow-hidden rounded-full bg-secondary", className)}
+			{...props}
+		>
+			<ProgressPrimitive.Indicator
+				className={cn("h-full w-full flex-1 bg-primary transition-all", indicatorClassName)}
+				style={{ transform: `translateX(-${100 - share}%)` }}
+			/>
+		</ProgressPrimitive.Root>
+	);
+});
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
 export { Progress };

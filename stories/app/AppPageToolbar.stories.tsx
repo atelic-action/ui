@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Plus, RefreshCw } from "lucide-react";
 import { type ComponentProps, useState } from "react";
-import { expect, fn, screen, waitFor, within } from "storybook/test";
+import { expect, fn, screen, within } from "storybook/test";
 import { AppPage, AppPageToolbar, type ToolbarFilter } from "../../src/app";
 import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../src/app/ui";
-import { knownBug, knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
+import { layerOpened, until } from "./layers";
 
 type ToolbarProps = ComponentProps<typeof AppPageToolbar>;
 
@@ -63,9 +63,10 @@ function OnAPage({
 /**
  * The page's calm tool row: a search box with a clear button, filter
  * dropdowns carrying live counts, and action buttons (ghost or solid, a
- * button or a router link). An optional notice sits under the row; it is a
- * plain block, never a live region, since a ticking progress line would be
- * announced on every tick.
+ * button or a router link). An optional notice sits in the row on a desktop,
+ * after the search and the actions, and under the search on a phone; it is
+ * a plain block, never a live region, since a ticking progress line would
+ * be announced on every tick.
  */
 const meta = {
 	title: "App/AppPageToolbar",
@@ -110,12 +111,10 @@ export const Default: Story = {
 
 /**
  * An action with its trailing time, the last sync. The button is named by
- * its label alone, so the time a sighted reader sees is missing from the
- * name, and axe flags the mismatch.
+ * the words it shows, the time included, so a voice user can say what they
+ * see.
  */
 export const ActionWithTime: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("toolbar-action-time-name") },
 	args: {
 		withFilters: false,
 		actions: [
@@ -128,7 +127,8 @@ export const ActionWithTime: Story = {
 		],
 	},
 	play: async ({ canvas }) => {
-		const sync = canvas.getByRole("button", { name: "Sync" });
+		const sync = canvas.getByRole("button", { name: "Sync 06:02" });
+		await expect(sync).not.toHaveAttribute("aria-label");
 		await expect(sync).toHaveTextContent("Sync06:02");
 		await expect(canvas.getByText("06:02")).toBeVisible();
 	},
@@ -153,11 +153,9 @@ export const SearchAndClear: Story = {
 
 /**
  * Clearing from the keyboard: Tab to the clear button and press Enter. The
- * button removes itself, so focus should land back in the search box; it
- * falls to the page instead.
+ * button removes itself, and focus lands back in the search box.
  */
 export const ClearByKeyboard: Story = {
-	tags: ["known-issue"],
 	args: { initialSearch: "rye" },
 	play: async ({ canvas, userEvent }) => {
 		const search = canvas.getByRole("searchbox", { name: "Search orders" });
@@ -166,9 +164,7 @@ export const ClearByKeyboard: Story = {
 		await expect(canvas.getByRole("button", { name: "Clear search" })).toHaveFocus();
 		await userEvent.keyboard("{Enter}");
 		await expect(search).toHaveValue("");
-		await knownBug("toolbar-clear-drops-focus", async () => {
-			await expect(search).toHaveFocus();
-		});
+		await expect(search).toHaveFocus();
 	},
 };
 
@@ -178,11 +174,11 @@ export const PickAFilter: Story = {
 	play: async ({ canvas, args, userEvent }) => {
 		const filter = canvas.getByRole("combobox", { name: "Order status" });
 		await userEvent.click(filter);
-		const listbox = within(await screen.findByRole("listbox"));
+		const listbox = within(await layerOpened(() => screen.getByRole("listbox")));
 		await userEvent.click(listbox.getByRole("option", { name: "Proofing · 2" }));
-		await waitFor(() => expect(filter).toHaveTextContent("Proofing · 2"));
+		await until(() => expect(filter).toHaveTextContent("Proofing · 2"));
 		await expect(args.onFilter).toHaveBeenCalledWith("proofing");
-		await waitFor(() => expect(filter).toHaveFocus());
+		await until(() => expect(filter).toHaveFocus());
 	},
 };
 
@@ -240,7 +236,7 @@ export const NodeAction: Story = {
 	play: async ({ canvas, userEvent }) => {
 		const print = canvas.getByRole("button", { name: "Print labels" });
 		await userEvent.hover(print);
-		await waitFor(() =>
+		await until(() =>
 			expect(screen.getByRole("tooltip")).toHaveTextContent("Prints one label per tray."),
 		);
 		await expect(print).toHaveAccessibleDescription("Prints one label per tray.");
@@ -249,12 +245,10 @@ export const NodeAction: Story = {
 
 /**
  * The notice is a plain block, not a live region, so its ticks are never
- * announced. It is documented as a line below the toolbar row, but on a
- * desktop the tools wrap as one flex row and the notice sits beside the
- * search, between it and the filter.
+ * announced. On a desktop the tools are one wrapping row, and the notice
+ * sits in it beside the search and the actions, before the filter.
  */
 export const WithNotice: Story = {
-	tags: ["known-issue"],
 	args: { notice: "Synced 40 of 120 orders…" },
 	play: async ({ canvas }) => {
 		const notice = canvas.getByText("Synced 40 of 120 orders…");
@@ -262,16 +256,20 @@ export const WithNotice: Story = {
 			notice.closest("[aria-live], [role=status], [role=log], [role=alert], output"),
 		).toBeNull();
 		await expect(canvas.queryByRole("status")).toBeNull();
-		const search = canvas.getByRole("searchbox", { name: "Search orders" });
-		await knownBug("toolbar-notice-beside-row", async () => {
-			await expect(notice.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-				search.getBoundingClientRect().bottom,
-			);
-		});
+		const search = canvas.getByRole("searchbox", { name: "Search orders" }).getBoundingClientRect();
+		const sync = canvas.getByRole("button", { name: "Sync" }).getBoundingClientRect();
+		const box = notice.getBoundingClientRect();
+		// On the search's line, after the actions.
+		await expect(box.top).toBeLessThan(search.bottom);
+		await expect(box.bottom).toBeGreaterThan(search.top);
+		await expect(box.left).toBeGreaterThanOrEqual(sync.right);
 	},
 };
 
-/** On a phone the row stacks, the filter takes the full width, and nothing scrolls sideways. */
+/**
+ * On a phone the row stacks: the notice under the search, the filter under
+ * the notice at the full width, and nothing scrolls sideways.
+ */
 export const Phone: Story = {
 	args: { notice: "Synced 40 of 120 orders…" },
 	globals: pin("phone"),

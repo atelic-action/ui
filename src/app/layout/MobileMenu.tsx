@@ -145,7 +145,11 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 							<span className="text-xs text-muted-foreground">Profile</span>
 						</span>
 					</Link>
-					<button type="button" onClick={onLogout} className={cn(ROW, "w-full text-destructive")}>
+					<button
+						type="button"
+						onClick={onLogout}
+						className={cn(ROW, "w-full text-destructive active:text-destructive-hover")}
+					>
 						<LogOut className="h-5 w-5 flex-shrink-0" />
 						<span>Log out</span>
 					</button>

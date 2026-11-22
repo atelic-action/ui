@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor } from "storybook/test";
+import { expect } from "storybook/test";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../src/app/ui";
+import { layerOpened, until } from "../layers";
 
 /** A round picture of a person, with their initials while it loads or when it fails. */
 const meta = {
@@ -21,7 +22,7 @@ type Story = StoryObj<typeof meta>;
 /** The picture, once it loads, named by its alt text. */
 export const Picture: Story = {
 	play: async ({ canvas }) => {
-		await waitFor(() => expect(canvas.getByRole("img", { name: "Wren Okafor" })).toBeVisible());
+		await until(() => expect(canvas.getByRole("img", { name: "Wren Okafor" })).toBeVisible());
 		await expect(canvas.queryByText("WO")).toBeNull();
 	},
 };
@@ -47,7 +48,7 @@ export const BrokenPicture: Story = {
 		</Avatar>
 	),
 	play: async ({ canvas }) => {
-		await waitFor(() => expect(canvas.getByText("WO")).toBeVisible());
+		await until(() => expect(canvas.getByText("WO")).toBeVisible());
 		await expect(canvas.queryByRole("img")).toBeNull();
 	},
 };
@@ -56,7 +57,7 @@ export const BrokenPicture: Story = {
 export const Large: Story = {
 	args: { className: "h-16 w-16" },
 	play: async ({ canvas }) => {
-		const picture = await canvas.findByRole("img", { name: "Wren Okafor" });
+		const picture = await layerOpened(() => canvas.getByRole("img", { name: "Wren Okafor" }));
 		await expect(Math.round(picture.getBoundingClientRect().width)).toBe(64);
 	},
 };

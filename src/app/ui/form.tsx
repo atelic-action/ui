@@ -53,10 +53,11 @@ const useFormField = () => {
 
 	const fieldState = getFieldState(fieldContext.name, formState);
 
-	const { id } = itemContext;
+	const { id, parts } = itemContext;
 
 	return {
 		id,
+		parts,
 		name: fieldContext.name,
 		formItemId: `${id}-form-item`,
 		formDescriptionId: `${id}-form-item-description`,
@@ -65,18 +66,49 @@ const useFormField = () => {
 	};
 };
 
+/** Which of a field's describing parts are on the page right now. */
+type FormItemParts = { description: boolean; message: boolean };
+
 type FormItemContextValue = {
 	id: string;
+	parts: FormItemParts;
+	/** A describing part reports itself as it mounts and as it leaves. */
+	setPart: (part: keyof FormItemParts, present: boolean) => void;
 };
 
 const FormItemContext = React.createContext<FormItemContextValue | null>(null);
 
+/** A layout effect in the browser, before the frame paints; a plain effect on the server, where none runs. */
+const useBeforePaint = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
+/** A describing part of a field, which tells its item whether it is on the page. */
+function useFormItemPart(part: keyof FormItemParts, present: boolean) {
+	const field = useFormField();
+	const setPart = React.useContext(FormItemContext)?.setPart;
+	useBeforePaint(() => {
+		if (!setPart) return;
+		setPart(part, present);
+		return () => setPart(part, false);
+	}, [setPart, part, present]);
+	return field;
+}
+
 const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
 	({ className, ...props }, ref) => {
 		const id = React.useId();
+		const [parts, setParts] = React.useState<FormItemParts>({
+			description: false,
+			message: false,
+		});
+		const setPart = React.useCallback((part: keyof FormItemParts, present: boolean) => {
+			setParts((current) =>
+				current[part] === present ? current : { ...current, [part]: present },
+			);
+		}, []);
+		const value = React.useMemo(() => ({ id, parts, setPart }), [id, parts, setPart]);
 
 		return (
-			<FormItemContext.Provider value={{ id }}>
+			<FormItemContext.Provider value={value}>
 				<div ref={ref} className={cn("space-y-2", className)} {...props} />
 			</FormItemContext.Provider>
 		);
@@ -105,13 +137,19 @@ const FormControl = React.forwardRef<
 	React.ElementRef<typeof Slot>,
 	React.ComponentPropsWithoutRef<typeof Slot>
 >(({ ...props }, ref) => {
-	const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+	const { error, formItemId, formDescriptionId, formMessageId, parts } = useFormField();
+	// Only the parts on the page: a reference to a description or a message
+	// that never rendered points at nothing.
+	const describedBy =
+		[parts.description && formDescriptionId, parts.message && formMessageId]
+			.filter(Boolean)
+			.join(" ") || undefined;
 
 	return (
 		<Slot
 			ref={ref}
 			id={formItemId}
-			aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
+			aria-describedby={describedBy}
 			aria-invalid={!!error}
 			{...props}
 		/>
@@ -123,7 +161,7 @@ const FormDescription = React.forwardRef<
 	HTMLParagraphElement,
 	React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => {
-	const { formDescriptionId } = useFormField();
+	const { formDescriptionId } = useFormItemPart("description", true);
 
 	return (
 		<p
@@ -140,8 +178,9 @@ const FormMessage = React.forwardRef<
 	HTMLParagraphElement,
 	React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
-	const { error, formMessageId } = useFormField();
-	const body = error ? String(error?.message ?? "") : children;
+	const field = useFormField();
+	const body = field.error ? String(field.error?.message ?? "") : children;
+	const { formMessageId } = useFormItemPart("message", Boolean(body));
 
 	if (!body) {
 		return null;

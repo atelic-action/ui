@@ -3,7 +3,6 @@ import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { expect, fn } from "storybook/test";
 import { Button } from "../../../src/app/ui";
-import { knownIssues } from "../../support/known-issues";
 
 /** The kit's button: six variants and four sizes, or any element through `asChild`. */
 const meta = {
@@ -23,10 +22,8 @@ export const Default: Story = {
 	},
 };
 
-/** The destructive button: white on the kit's red, which fails contrast. */
+/** The destructive button: white on red 600, 4.63 to 1; its hover darkens the red. */
 export const Destructive: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	args: { variant: "destructive", children: "Delete the order" },
 };
 

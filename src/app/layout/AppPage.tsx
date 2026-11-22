@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { PanelRightClose, PanelRightOpen, Search, X } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { useRail } from "../context/SidebarContext";
 import { cn } from "../lib/utils";
 import { OptionSelect } from "../ui/option-select";
@@ -150,11 +150,15 @@ export interface ToolbarFilter {
 export interface ToolbarAction {
 	label?: string;
 	icon?: ReactNode;
-	/** Trailing muted timestamp (e.g. "9:38 am"). */
+	/** Trailing muted timestamp (e.g. "09:38"), part of the action's accessible name. */
 	ago?: string;
 	onClick?: () => void;
 	variant?: "ghost" | "solid";
 	disabled?: boolean;
+	/**
+	 * The name for an action with no visible label (an icon alone). An action
+	 * with a label is named by its words and its `ago`, so this is not needed.
+	 */
 	ariaLabel?: string;
 	/** Render the action as a router Link to this route instead of a button. */
 	to?: string;
@@ -167,7 +171,12 @@ interface AppPageToolbarProps {
 	search?: { value: string; onChange: (value: string) => void; placeholder?: string };
 	filters?: ToolbarFilter[];
 	actions?: ToolbarAction[];
-	/** Optional status line below the toolbar row (e.g. a sync-progress message). */
+	/**
+	 * Optional status line (a sync progress message). On a desktop it sits in
+	 * the toolbar's wrapping row, after the search and the actions and before
+	 * the filters; on a phone, where the row stacks, it sits under the search.
+	 * A plain block, never a live region, so a ticking line is not announced.
+	 */
 	notice?: ReactNode;
 }
 
@@ -182,6 +191,7 @@ export function AppPageToolbar({
 	actions = [],
 	notice,
 }: AppPageToolbarProps) {
+	const searchRef = useRef<HTMLInputElement>(null);
 	return (
 		<div className="ap-tools">
 			<div className="ap-toolrow">
@@ -189,6 +199,7 @@ export function AppPageToolbar({
 					<label className="ap-search">
 						<Search size={17} aria-hidden="true" />
 						<input
+							ref={searchRef}
 							type="search"
 							value={search.value}
 							onChange={(event) => search.onChange(event.target.value)}
@@ -199,10 +210,14 @@ export function AppPageToolbar({
 							<button
 								type="button"
 								className="ap-search-clear"
-								onClick={() => search.onChange("")}
+								onClick={() => {
+									search.onChange("");
+									// The button leaves with the value, so focus goes back to the box.
+									searchRef.current?.focus();
+								}}
 								aria-label="Clear search"
 							>
-								<X size={15} />
+								<X size={15} aria-hidden="true" />
 							</button>
 						)}
 					</label>
@@ -220,10 +235,15 @@ export function AppPageToolbar({
 										to={action.to}
 										disabled={action.disabled}
 										className={className}
-										aria-label={action.ariaLabel ?? action.label}
+										aria-label={
+											action.ariaLabel
+												? [action.ariaLabel, action.ago].filter(Boolean).join(" ")
+												: undefined
+										}
 									>
 										{action.icon}
 										{action.label}
+										{action.ago && <span className="ago">{action.ago}</span>}
 									</Link>
 								);
 							}
@@ -234,7 +254,13 @@ export function AppPageToolbar({
 									className={className}
 									onClick={action.onClick}
 									disabled={action.disabled}
-									aria-label={action.ariaLabel ?? action.label}
+									// The visible words name the action; an aria-label is
+									// for an icon only action, and keeps the visible time.
+									aria-label={
+										action.ariaLabel
+											? [action.ariaLabel, action.ago].filter(Boolean).join(" ")
+											: undefined
+									}
 								>
 									{action.icon}
 									{action.label}

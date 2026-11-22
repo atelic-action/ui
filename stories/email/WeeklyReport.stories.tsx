@@ -150,9 +150,9 @@ const kestrelPalette: Palette = {
  * A whole report email assembled from the pieces, as a runner sends it: the
  * masthead, the title card and its stats, a scoreboard under its read, the
  * wholesale records, a drops table, the week's strip, an item with a fold, a
- * card level fold, a note, and the footer. The palette's accent fails
- * contrast as words, so the atelic stories are marked; the client palette's
- * darker accent passes.
+ * card level fold, a note, and the footer. Every small accent word is in
+ * the palette's accent ink, so the atelic stories and the client palette's
+ * pass alike.
  */
 const meta = {
 	title: "Email/WeeklyReport",
@@ -166,8 +166,6 @@ type Story = StoryObj<typeof meta>;
 
 /** At a mail client's 600 column: every piece fits it, and the folds open. */
 export const MailClient: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement, step }) => {
 		await step("every piece fits the 600 column", async () => {
 			await expect(
@@ -187,8 +185,6 @@ export const MailClient: Story = {
 
 /** At phone width the whole email fits the screen and nothing scrolls sideways. */
 export const Phone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	globals: pin("phone"),
 	play: async ({ canvas, canvasElement }) => {
 		await userEvent.click(canvas.getByText(/What moved/));

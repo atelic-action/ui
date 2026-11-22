@@ -42,6 +42,10 @@
 
 	--color-destructive: hsl(var(--destructive));
 	--color-destructive-foreground: hsl(var(--destructive-foreground));
+	/* A destructive fill's hover and press, and destructive words on the
+	   grey highlight: darker than the fill, never lighter, so white words on
+	   it and it on the grey both stay above 4.5 to 1. */
+	--color-destructive-hover: color-mix(in srgb, hsl(var(--destructive)) 85%, black);
 
 	--color-muted: hsl(var(--muted));
 	--color-muted-foreground: hsl(var(--muted-foreground));
@@ -86,10 +90,15 @@
 		--secondary: 240 4.8% 95.9%;
 		--secondary-foreground: 240 5.9% 10%;
 		--muted: 240 4.8% 95.9%;
-		--muted-foreground: 240 3.8% 46.1%;
+		/* #6b6b73, a step darker than shadcn's #71717a, so muted words pass
+		   on the grey highlight too: 4.81 to 1 on --muted and --accent. */
+		--muted-foreground: 240 3.6% 43.5%;
 		--accent: 240 4.8% 95.9%;
 		--accent-foreground: 240 5.9% 10%;
-		--destructive: 0 84.2% 60.2%;
+		/* #dc2626 (red 600), not shadcn's #ef4444, whose white words read 3.6
+		   to 1 and which reads 3.76 as words on a card: 4.63 under the
+		   foreground, 4.83 on a card, 4.66 on the ground. */
+		--destructive: 0 72.2% 50.6%;
 		--destructive-foreground: 0 0% 98%;
 		--border: 240 5.9% 90%;
 		--input: 240 5.9% 90%;
@@ -154,6 +163,19 @@
 	a {
 		@apply cursor-pointer;
 	}
+}
+
+/* ---- toasts ----
+   The provider's toaster is sonner with rich colors, whose light tones read
+   4.25 (success) and 4.34 (error) to 1 at 13px. Its own variables carry the
+   words' color; these darken each tone's words to pass on its own tint. One
+   element more specific than sonner's rule, so the order the two sheets
+   load in does not matter. */
+html [data-sonner-toaster][data-sonner-theme="light"] {
+	--success-text: hsl(140, 100%, 24%);
+	--info-text: hsl(210, 92%, 40%);
+	--warning-text: hsl(31, 92%, 32%);
+	--error-text: hsl(360, 100%, 41%);
 }
 
 /* ============================================================

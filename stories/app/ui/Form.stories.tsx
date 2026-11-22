@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useForm } from "react-hook-form";
-import { expect, fn, userEvent, waitFor } from "storybook/test";
+import { expect, fn, userEvent } from "storybook/test";
 import {
 	Button,
 	Form,
@@ -13,8 +13,8 @@ import {
 	Input,
 	Textarea,
 } from "../../../src/app/ui";
-import { knownBug, knownIssues } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
+import { until } from "../layers";
 
 type StandingOrder = { cafe: string; trays: string; note: string };
 
@@ -121,16 +121,14 @@ export const Untouched: Story = {
 	},
 };
 
-/** Submitting empty marks both required fields invalid, their labels and messages in the kit's red,, each described by its own message, and sends nothing. */
+/** Submitting empty marks both required fields invalid, their labels and messages in the kit's red (4.83 to 1), each described by its own message, and sends nothing. */
 export const SubmitEmpty: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	play: async ({ canvas, step }) => {
 		const cafe = canvas.getByRole("textbox", { name: "Cafe" });
 		const trays = canvas.getByRole("textbox", { name: "Trays" });
 		await step("submit with nothing filled in", async () => {
 			await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
-			await waitFor(() => expect(cafe).toHaveAttribute("aria-invalid", "true"));
+			await until(() => expect(cafe).toHaveAttribute("aria-invalid", "true"));
 		});
 		await step("each message is tied to its field", async () => {
 			await expect(cafe).toHaveAccessibleDescription(
@@ -155,7 +153,7 @@ export const FixAnError: Story = {
 			await userEvent.type(cafe, "Larkspur Coffee Bar");
 			await userEvent.type(trays, "two");
 			await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
-			await waitFor(() =>
+			await until(() =>
 				expect(trays).toHaveAccessibleDescription("Trays are a whole number, one or more."),
 			);
 			await expect(cafe).toHaveAttribute("aria-invalid", "false");
@@ -164,7 +162,7 @@ export const FixAnError: Story = {
 			await userEvent.clear(trays);
 			await userEvent.type(trays, "4");
 			await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
-			await waitFor(() =>
+			await until(() =>
 				expect(submitted.spy).toHaveBeenCalledWith({
 					cafe: "Larkspur Coffee Bar",
 					trays: "4",
@@ -178,27 +176,27 @@ export const FixAnError: Story = {
 };
 
 /**
- * A field with no description still points `aria-describedby` at the
- * description's id, which is on no element: a dangling reference.
+ * A field with no description points `aria-describedby` at nothing that is
+ * not on the page: untouched it carries none, and once its message shows it
+ * names that message alone.
  */
-export const DescribedByAMissingId: Story = {
-	tags: ["known-issue"],
+export const DescribedOnlyByWhatShows: Story = {
 	play: async ({ canvas }) => {
 		const trays = canvas.getByRole("textbox", { name: "Trays" });
-		await knownBug("form-describedby-dangles", async () => {
-			await expect(describedBy(trays).every((ref) => ref.found)).toBe(true);
-		});
+		await expect(trays).not.toHaveAttribute("aria-describedby");
+		await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
+		await until(() => expect(trays).toHaveAccessibleDescription("Say how many trays."));
+		await expect(describedBy(trays).every((ref) => ref.found)).toBe(true);
+		await expect(describedBy(trays)).toHaveLength(1);
 	},
 };
 
 /** On a phone the fields take the width and the messages wrap. */
 export const ErrorsPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
-		await waitFor(() => expect(canvas.getByText("Say how many trays.")).toBeVisible());
+		await until(() => expect(canvas.getByText("Say how many trays.")).toBeVisible());
 		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
 	},
 };

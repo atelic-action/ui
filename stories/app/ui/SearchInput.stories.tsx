@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent } from "storybook/test";
 import { SearchInput } from "../../../src/app/ui";
-import { knownBug } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
 
 function Held({ value: initial, onValueChange, ...props }: Parameters<typeof SearchInput>[0]) {
@@ -87,11 +86,9 @@ export const EscapeClears: Story = {
 
 /**
  * Clearing from the keyboard: Tab to the clear button and press Enter. The
- * button removes itself, so focus should land back in the box; it falls to
- * the page instead.
+ * button removes itself, and focus lands back in the box.
  */
 export const ClearByKeyboard: Story = {
-	tags: ["known-issue"],
 	args: { value: "country" },
 	play: async ({ canvas }) => {
 		const box = canvas.getByRole("textbox", { name: "Search" });
@@ -100,9 +97,7 @@ export const ClearByKeyboard: Story = {
 		await expect(canvas.getByRole("button", { name: "Clear search" })).toHaveFocus();
 		await userEvent.keyboard("{Enter}");
 		await expect(box).toHaveValue("");
-		await knownBug("search-clear-drops-focus", async () => {
-			await expect(box).toHaveFocus();
-		});
+		await expect(box).toHaveFocus();
 	},
 };
 

@@ -16,6 +16,7 @@ import {
 	AppPage,
 	AppPageToolbar,
 	Breadcrumbs,
+	ErrorFallback,
 	GoogleGlyph,
 	matchesSearch,
 	PageError,
@@ -310,6 +311,20 @@ export function StatesPage() {
 				<section>
 					<p className="kit-label">PageSkeleton</p>
 					<PageSkeleton showHeaderAction cardCount={2} cardLayout="two-column" />
+				</section>
+				<section>
+					<p className="kit-label">ErrorFallback, with details</p>
+					<div className="kit-fallback">
+						<ErrorFallback
+							error={
+								new Error(
+									"GET /api/wholesale/accounts/standing-orders/2026-10-12/export.json failed: 503",
+								)
+							}
+							resetError={() => {}}
+							showDetails
+						/>
+					</div>
 				</section>
 			</div>
 		</AppPage>

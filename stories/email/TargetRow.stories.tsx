@@ -10,12 +10,13 @@ function colorOf(element: HTMLElement) {
 }
 
 const INK = "rgb(21, 21, 21)";
-const ACCENT = "rgb(252, 74, 26)";
+/** The accent's ink, `#B8300B`: the bright accent fails as small words. */
+const ACCENT_INK = "rgb(184, 48, 11)";
 
 /**
- * One target: its label, the count over the target (in the accent when
- * short), the bar, and a faint note. The accent count fails contrast as
- * words, so the stories short of their target are marked.
+ * One target: its label, the count over the target (in the accent's ink when
+ * short), the bar, and a faint note. The bar is decoration beside the count
+ * that says it.
  */
 const meta = {
 	title: "Email/TargetRow",
@@ -38,12 +39,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Short of the target: the count in the accent. */
+/** Short of the target: the count in the accent's ink, and the bar silent beside it. */
 export const Short: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
-		await expect(colorOf(canvas.getByText("3 / 5"))).toBe(ACCENT);
+		await expect(colorOf(canvas.getByText("3 / 5"))).toBe(ACCENT_INK);
+		await expect(canvas.queryByRole("img")).toBeNull();
 		await fitsTheColumn(canvasElement);
 	},
 };
@@ -76,8 +76,6 @@ export const ZeroTarget: Story = {
 
 /** A long label and note on a phone wrap inside the card. */
 export const LongPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: {
 		text: "Wholesale tastings at new cafes",
 		logged: 1,

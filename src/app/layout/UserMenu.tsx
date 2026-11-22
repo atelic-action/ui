@@ -34,10 +34,16 @@ export function UserMenu({ user, onLogout, collapsed = false }: UserMenuProps) {
 	const name = displayName(user);
 	const initials = avatarInitials(name);
 
+	// The trigger is named by what it shows, never a fixed "User menu" that
+	// replaces it: the user's name expanded, the initials and the name
+	// (visually hidden) collapsed, so a voice user can say what they see.
+	// The picture is decorative either way, since the name is in the text.
 	const avatar = (
 		<Avatar className="h-9 w-9 border border-border/40 flex-shrink-0">
-			<AvatarImage src={user?.avatar ?? undefined} alt={name} />
-			<AvatarFallback className="text-sm">{initials}</AvatarFallback>
+			<AvatarImage src={user?.avatar ?? undefined} alt="" />
+			<AvatarFallback className="text-sm" aria-hidden={collapsed ? undefined : true}>
+				{initials}
+			</AvatarFallback>
 		</Avatar>
 	);
 
@@ -46,25 +52,25 @@ export function UserMenu({ user, onLogout, collapsed = false }: UserMenuProps) {
 			variant="ghost"
 			size="sm"
 			className="w-full p-2 hover:bg-accent"
-			aria-label="User menu"
 			aria-expanded={open}
-			aria-haspopup="true"
+			aria-haspopup="menu"
 		>
 			{avatar}
+			<span className="sr-only">{name}</span>
 		</Button>
 	) : (
 		<Button
 			variant="ghost"
 			className="w-full justify-between px-3 py-2.5 h-auto hover:bg-accent overflow-hidden"
-			aria-label="User menu"
 			aria-expanded={open}
-			aria-haspopup="true"
+			aria-haspopup="menu"
 		>
 			<div className="flex items-center space-x-3 min-w-0">
 				{avatar}
 				<span className="text-sm font-medium truncate">{name}</span>
 			</div>
 			<ChevronDown
+				aria-hidden="true"
 				className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")}
 			/>
 		</Button>

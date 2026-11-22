@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
 	BigFold,
 	Card,
+	DayStrip,
 	Eyebrow,
 	FoldRow,
 	Footer,
@@ -13,6 +14,7 @@ import {
 	Note,
 	RecordStack,
 	type RecordStackItem,
+	Records,
 	Row,
 	recordStackText,
 	Scoreboard,
@@ -106,6 +108,51 @@ function weekEmail(): string {
 						/>
 					</Scoreboard>
 				</Card>
+				<Eyebrow text="Deliveries" />
+				<Card>
+					<Row last={false}>
+						<Records
+							columns={[
+								{ label: "Account" },
+								{ label: "Stop", right: true, width: 120 },
+								{ label: "Trays", right: true, width: 90 },
+							]}
+							rows={[
+								[
+									{ value: "Alder Street Coffee" },
+									{ value: "07:10", mono: true },
+									{ value: "6", mono: true },
+								],
+								[
+									{ value: "Whittier Grocery Cooperative" },
+									{ value: "Missed", hot: true },
+									{ value: "4", mono: true },
+								],
+							]}
+						/>
+					</Row>
+					<DayStrip
+						days={[
+							{ label: "Mon", entries: [] },
+							{ label: "Tue", entries: [{ name: "sourdough", strong: true }] },
+							{ label: "Wed", entries: [{ name: "rye" }] },
+							{
+								label: "Thu",
+								entries: [{ name: "buns", badge: "S", badgeLabel: "Social" }],
+							},
+							{ label: "Fri", entries: [{ name: "croissants" }] },
+							{ label: "Sat", entries: [{ name: "market", strong: true }] },
+							{ label: "Sun", entries: [] },
+						]}
+						last={false}
+					/>
+					<Note
+						eyebrowText="Export"
+						text="Saved to /srv/bakehouse/runners/weekly_ops/cache/ledger_2026W41_wholesale_accounts_export.json"
+						accented={false}
+						last
+					/>
+				</Card>
 				<Eyebrow text="Catering" />
 				<Card>
 					<Item
@@ -146,7 +193,7 @@ function failureEmail(): string {
 		eyebrowText: "Week 41",
 		reason: "The orders export came back empty, so nothing was counted.",
 		logTail:
-			"fetch orders: 200 OK, 0 rows\nexpected at least 1 row for 2026-10-05..2026-10-11\nexit 1",
+			"fetch orders: 200 OK, 0 rows\nexpected at least 1 row for 2026-10-05..2026-10-11\nwrote /srv/bakehouse/runners/weekly_ops/cache/ledger_2026W41_wholesale_accounts_export.json\nexit 1",
 	});
 }
 
@@ -201,7 +248,7 @@ export function EmailPiece() {
 			title="Email"
 			lead="The runner email design as components born inline: tables for layout, inline styles, the palette from context, so they render in a mail client and mount on a page alike. renderEmail builds the whole document from them; each frame below is its output, untouched."
 		>
-			<Example caption="A week: the masthead, the title card, a record stack with its timeline, the scoreboard, and the catering rows">
+			<Example caption="A week: the masthead, the title card, a record stack with its timeline, the scoreboard, the deliveries (a records table, the day strip, a long path that wraps), and the catering rows">
 				<EmailFrame html={week} title="A made up weekly email, rendered" />
 			</Example>
 			<Example caption="The failure page renderFailureEmail sends when a run cannot finish">

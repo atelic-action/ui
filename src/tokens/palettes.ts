@@ -2,7 +2,8 @@
  * The palette the runner emails are painted in, ported one to one from
  * homebase `runners/lib/email.jq` (the tokens section). Cream ground, paper
  * cards on a hairline, near black ink, the orange reserved for the one number
- * that matters on a row.
+ * that matters on a row. The bright orange marks (a rule, a dot, a link's
+ * underline) and never colors small words: those take the accent's ink.
  *
  * A client branded email passes its own Palette to EmailThemeProvider; the
  * values below are the default.
@@ -18,8 +19,19 @@ export type Palette = {
 	dim: string;
 	/** Eyebrows, captions, and anything deliberately quiet. */
 	faint: string;
-	/** The single accent. */
+	/**
+	 * The single accent, as a mark: a rule, a dot, a link's underline, a
+	 * callout's edge. Never the color of small words; see `accentInk`.
+	 */
 	accent: string;
+	/**
+	 * The accent as the color of small words: the value on a title line, a
+	 * short count, a group's name, a hot cell, a pill. It must read 4.5 to 1
+	 * on both `paper` and `ground`. Optional (8.0.0): a palette without it
+	 * gets one derived from `accent`, darkened toward black until it passes
+	 * on both, which is the accent itself when that already passes.
+	 */
+	accentInk?: string;
 	/** A card's border and the heavier rule. */
 	line: string;
 	/** The lighter rule inside a card. */
@@ -44,16 +56,21 @@ export const atelicPalette: Palette = {
 	paper: "#FDFBF6",
 	ink: "#151515",
 	dim: "#55503f",
-	// Darkened from the jq's #8a8272 (3.38 to 1 on the ground, 3.68 on paper)
-	// to pass text contrast at the 11px a masthead's title and meta are set
-	// in: 4.62 to 1 on the ground, 5.03 on paper (8.0.0).
-	faint: "#736c5f",
+	// The brand kit's Faint, darkened from the jq's #8a8272 (3.38 to 1 on the
+	// ground, 3.68 on paper) to pass text contrast at the 11px a masthead's
+	// title and meta are set in: 4.99 to 1 on the ground, 5.43 on paper (8.0.0).
+	faint: "#6e6757",
+	// The mark. As words it reads 3.31 to 1 on paper and 3.04 on the ground.
 	accent: "#FC4A1A",
+	// The brand kit's Orange Ink: 5.86 to 1 on paper, 5.38 on the ground (8.0.0).
+	accentInk: "#B8300B",
 	line: "#E6DFD2",
 	hair: "#F0EAE0",
 	up: "#2F7A4B",
 	down: "#B23A2E",
-	warm: "#B7791F",
+	// Darkened from the jq's #B7791F (3.52 to 1 on paper) along the same hue:
+	// 4.96 on paper, 4.55 on the ground (8.0.0).
+	warm: "#966319",
 };
 
 /**

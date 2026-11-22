@@ -29,6 +29,16 @@ export interface AppConfig {
 	apiBaseURL: string;
 	/** Where the Profile link in the rail menu and the mobile menu goes. Defaults to "/profile". */
 	profileHref?: string;
+	/**
+	 * Where `CountryDropdown` and `getCountryFlag` load a country's round
+	 * flag from: a base address ending in a slash, each flag at
+	 * `<base><code>.svg` with the lowercase two letter code (`/flags/pt.svg`),
+	 * the file names `react-circle-flags` ships. The app serves the files
+	 * itself, from its own origin or a host it already trusts. Unset, the
+	 * shell asks no host for a flag and draws the country's code in a plain
+	 * circle instead, so no visitor's browser calls a third party by default.
+	 */
+	flagsBaseURL?: string;
 }
 
 let current: AppConfig | null = null;

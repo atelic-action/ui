@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, within } from "storybook/test";
 import {
 	Button,
 	Dialog,
@@ -14,6 +14,7 @@ import {
 	Label,
 } from "../../../src/app/ui";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft } from "../layers";
 
 /**
  * A modal dialog: it opens from its trigger, holds focus, and closes by its
@@ -61,7 +62,7 @@ async function settled(element: Element) {
 async function open() {
 	const trigger = screen.getByRole("button", { name: "Rename the cafe" });
 	await userEvent.click(trigger);
-	const dialog = await screen.findByRole("dialog", { name: "Rename the cafe" });
+	const dialog = await layerOpened(() => screen.getByRole("dialog", { name: "Rename the cafe" }));
 	return { trigger, dialog };
 }
 
@@ -85,7 +86,7 @@ export const OpenTrapEscape: Story = {
 		});
 		await step("Escape closes it and focus returns to the trigger", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+			await noneLeft(() => screen.queryByRole("dialog"));
 			await expect(trigger).toHaveFocus();
 			await expect(trigger).toHaveAttribute("aria-expanded", "false");
 		});
@@ -97,7 +98,7 @@ export const CloseButton: Story = {
 	play: async () => {
 		const { trigger, dialog } = await open();
 		await userEvent.click(within(dialog).getByRole("button", { name: "Close" }));
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };
@@ -107,7 +108,7 @@ export const CancelButton: Story = {
 	play: async () => {
 		const { trigger, dialog } = await open();
 		await userEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };
@@ -119,7 +120,7 @@ export const PressOutside: Story = {
 		await settled(dialog);
 		// The overlay has no role; it is whatever sits at the screen's corner.
 		await userEvent.click(document.elementFromPoint(4, 4) as Element);
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };

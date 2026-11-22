@@ -4,14 +4,12 @@ import { Card, GroupRow, Scoreboard, TargetRow } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A group's name spanning the scoreboard, in the accent over a hairline. The
- * accent at 11px fails contrast on the paper, so every story is marked.
+ * A group's name spanning the scoreboard, in the accent's ink over a
+ * hairline.
  */
 const meta = {
 	title: "Email/GroupRow",
 	component: GroupRow,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

@@ -192,6 +192,36 @@ export function recordTimelineText(timeline: RecordTimeline): string {
 	return `${days}d [${strip}|]`;
 }
 
+/** "today", "yesterday", or "<n> days ago". */
+function daysAgo(ago: number): string {
+	if (ago <= 0) return "today";
+	if (ago === 1) return "yesterday";
+	return `${ago} days ago`;
+}
+
+/** "no sends", "1 send, today", "3 sends, the latest 2 days ago". */
+function countedDays(days: number[], one: string, many: string): string {
+	if (days.length === 0) return `no ${many}`;
+	const latest = daysAgo(Math.min(...days));
+	if (days.length === 1) return `1 ${one}, ${latest}`;
+	return `${days.length} ${many}, the latest ${latest}`;
+}
+
+/**
+ * The timeline in words, for a screen reader in place of the drawn strip:
+ * "Last 30 days: 2 sends, the latest 3 days ago; 1 open, today". Days are
+ * counted once each, as the strip draws them, and a day past the window is
+ * left out the same way.
+ */
+export function recordTimelineSummary(timeline: RecordTimeline): string {
+	const days = Math.max(1, Math.round(timeline.days));
+	const within = (list: number[]) =>
+		[...new Set(list.map((d) => Math.round(d)))].filter((d) => d >= 0 && d < days);
+	const sends = countedDays(within(timeline.touches), "send", "sends");
+	const opens = countedDays(within(timeline.opens), "open", "opens");
+	return `Last ${days} ${days === 1 ? "day" : "days"}: ${sends}; ${opens}`;
+}
+
 /**
  * The plain text twin of `RecordStack`: each title on its own line under a
  * two space indent with every badge after it in square brackets, the
