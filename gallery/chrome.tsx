@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	type Brand,
 	BrandLockup,
 	type CallToAction,
 	ClosingBar,
+	ContactDock,
+	type ContactDockItem,
 	Copyright,
 	Credit,
 	Footer,
+	type HeaderPhone,
 	type MenuContact,
 	type NavLink,
 	type Phone,
@@ -47,6 +50,122 @@ const contact: MenuContact = {
 	address: { street: "1420 Alder Street", locality: "Denver", region: "CO", postalCode: "80205" },
 };
 
+/** The bakery's nav with two groups: what it bakes, and who it bakes for. */
+const groupedLinks: NavLink[] = [
+	{
+		label: "Menu",
+		href: "#menu",
+		allLabel: "The whole menu",
+		columns: [
+			{
+				heading: "Bread",
+				href: "#bread",
+				links: [
+					{ label: "Country sourdough", href: "#sourdough", description: "The daily loaf" },
+					{ label: "Seeded rye", href: "#rye", description: "Thursdays and Saturdays" },
+					{ label: "Baguettes", href: "#baguettes" },
+				],
+			},
+			{
+				heading: "Pastry",
+				links: [
+					{ label: "Morning buns", href: "#buns", description: "Gone by ten" },
+					{ label: "Croissants", href: "#croissants" },
+					{ label: "Seasonal tarts", href: "#tarts" },
+				],
+			},
+			{
+				heading: "Cakes",
+				links: [
+					{ label: "Cakes to order", href: "#cakes", description: "Two days ahead" },
+					{ label: "Allergens", href: "#allergens" },
+				],
+			},
+		],
+		feature: {
+			eyebrow: "Order ahead",
+			title: "Skip the Saturday line.",
+			text: "Order by Friday noon and the loaf waits for you at the counter.",
+			cta: { label: "Order Ahead", href: "#site-header" },
+			image: { src: "/images/bakery-loop-first-frame.jpg", alt: "The bakery's ovens at dawn" },
+		},
+	},
+	{
+		label: "Wholesale",
+		href: "#wholesale",
+		columns: [
+			{
+				heading: "For cafes",
+				links: [
+					{ label: "Morning delivery", href: "#delivery", description: "Before you open" },
+					{ label: "Standing orders", href: "#standing" },
+				],
+			},
+			{
+				heading: "For grocers",
+				links: [{ label: "Shelf program", href: "#shelf", description: "Bagged and labeled" }],
+			},
+		],
+	},
+	{ label: "Visit", href: "#visit" },
+];
+
+const phones: HeaderPhone[] = [
+	{ e164: "+15555550123", display: "(555) 555-0123", label: "The shop" },
+	{ e164: "+15555550124", display: "(555) 555-0124", label: "Wholesale" },
+];
+
+const dockItems: ContactDockItem[] = [
+	{
+		label: "Order ahead",
+		description: "Pick a loaf and a pickup time",
+		icon: "calendar",
+		href: "#contact-dock",
+		lead: true,
+	},
+	{
+		label: "Call (555) 555-0123",
+		description: "Seven to three, Tuesday to Sunday",
+		icon: "phone",
+		href: "tel:+15555550123",
+	},
+	{
+		label: "Send a message",
+		description: "We answer within a day",
+		icon: "mail",
+		href: "#contact-dock",
+	},
+	{ label: "Find the shop", description: "418 Alder Street", icon: "map", href: "#contact-dock" },
+];
+
+/**
+ * The grouped header with its first group open, the way a hover leaves it.
+ * The gallery clicks the control once on mount, which pins the panel; a click
+ * anywhere else on the page closes it again, as on a site.
+ */
+function OpenGroupHeader() {
+	const frame = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		frame.current?.querySelector<HTMLButtonElement>(".nav-group-btn")?.click();
+	}, []);
+	return (
+		<div ref={frame}>
+			<Frame height={780}>
+				<SiteHeader
+					brand={bakery}
+					links={groupedLinks}
+					primaryCTA={cta}
+					variant="solid"
+					currentPath="#buns"
+					contact={contact}
+					phones={phones}
+				/>
+				<FramePage />
+			</Frame>
+		</div>
+	);
+}
+
 /** The page behind a framed header: enough to read the bar against. */
 function FramePage({ hero = false }: { hero?: boolean }) {
 	return (
@@ -57,6 +176,25 @@ function FramePage({ hero = false }: { hero?: boolean }) {
 					: "Country sourdough, rye, and the morning buns."}
 			</p>
 		</div>
+	);
+}
+
+function GroupedMenuDemo() {
+	const [open, setOpen] = useState(false);
+	return (
+		<>
+			<Button onClick={() => setOpen(true)}>Open the grouped menu</Button>
+			<SiteMenu
+				open={open}
+				onClose={() => setOpen(false)}
+				links={groupedLinks}
+				primaryCTA={cta}
+				contact={contact}
+				phones={phones}
+				currentPath="#buns"
+				label="Kestrel Hollow menu"
+			/>
+		</>
 	);
 }
 
@@ -134,6 +272,9 @@ export function ChromePieces() {
 						<FramePage />
 					</Frame>
 				</Example>
+				<Example caption="Groups: an entry with columns opens a mega menu panel on a hover, a keyboard focus, or a click, here pinned open on the Menu group, with its feature card and the bar's two numbers. Below 1180px the burger carries it all.">
+					<OpenGroupHeader />
+				</Example>
 			</Piece>
 
 			<Piece
@@ -143,6 +284,9 @@ export function ChromePieces() {
 			>
 				<Example caption="Opens over the page; Escape or the close button shuts it">
 					<MenuDemo />
+				</Example>
+				<Example caption="Groups: each opens as an accordion, one at a time, and every group starts closed, even the one holding the current page; the numbers sit at the foot">
+					<GroupedMenuDemo />
 				</Example>
 			</Piece>
 
@@ -240,6 +384,33 @@ export function ChromePieces() {
 					<Frame height={190}>
 						<FramePage />
 						<StickyCTABar primaryCTA={cta} phone={phone} threshold={-1} />
+					</Frame>
+				</Example>
+			</Piece>
+
+			<Piece
+				id="contact-dock"
+				title="ContactDock"
+				lead="The floating launcher in the page's corner and the panel of ways to reach the business it opens, each an item passed as data. On a site it sits the same distance from the right and the bottom, lifts over the phone's sticky bar once the bar shows, and rides up above the footer as it scrolls in; these frames hold it at its corner. On a phone the launcher is its icon alone and the panel a sheet across the bottom."
+			>
+				<Example caption="Closed: the launcher alone">
+					<Frame height={150}>
+						<FramePage />
+						<ContactDock label="Talk to us" items={dockItems} track={false} />
+					</Frame>
+				</Example>
+				<Example caption="Open: the heading, the ways to reach the shop, and the hours at the foot">
+					<Frame height={560}>
+						<FramePage />
+						<ContactDock
+							label="Talk to us"
+							title="How can we help?"
+							subtitle="Order, call, or come by. Whatever is easiest."
+							items={dockItems}
+							footnote="Open Tuesday to Sunday, seven to three"
+							track={false}
+							defaultOpen
+						/>
 					</Frame>
 				</Example>
 			</Piece>

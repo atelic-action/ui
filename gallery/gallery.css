@@ -296,7 +296,7 @@ body {
    absolute inside it (a transform makes it one), so the header, the sticky
    bar, the skip link, and the watermark sit on the box here as they sit on
    the viewport in a site. ---- */
-.atelic-ui .gallery-frame {
+.atelic-ui .gallery-pane {
 	position: relative;
 	transform: translateZ(0);
 	overflow: hidden;
@@ -324,11 +324,11 @@ body {
 	font-weight: 700;
 }
 /* A site shows the bar on a phone only; the frame shows it at every width. */
-.atelic-ui .gallery-frame .sticky-cta {
+.atelic-ui .gallery-pane .sticky-cta {
 	display: flex;
 }
 /* The watermark's pill keeps inside the frame, not the viewport. */
-.atelic-ui .gallery-frame .gate-wm {
+.atelic-ui .gallery-pane .gate-wm {
 	max-width: calc(100% - 32px);
 }
 /* The skip link held where focus puts it. */

@@ -1,4 +1,5 @@
 import {
+	CalloutPanel,
 	CredentialList,
 	Gallery as PhotoGallery,
 	PressQuotes,
@@ -18,6 +19,23 @@ export function MarketingProof() {
 			title="People and Proof"
 			lead="The team, the work, and what customers and the press have said. A rating shows only where the source shows one."
 		>
+			<Specimen
+				id="callout-panel"
+				name="CalloutPanel"
+				lead="Short callouts on the primary field, set inside a section after its copy: four across, two by two below, and the titles and the subtitles each on a shared line whatever a title's length."
+			>
+				<Band>
+					<CalloutPanel
+						items={[
+							{ title: "Since 2014", subtitle: "One shop on Alder Street" },
+							{ title: "Best morning bun in the county", subtitle: "Fairhaven Gazette readers" },
+							{ title: "11 cafes", subtitle: "Carry the morning bake" },
+							{ title: "Two days", subtitle: "Notice for a cake to order" },
+						]}
+					/>
+				</Band>
+			</Specimen>
+
 			<Specimen
 				id="review-carousel"
 				name="ReviewCarousel"
