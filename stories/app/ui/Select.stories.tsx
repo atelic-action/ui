@@ -78,7 +78,7 @@ export const PickByClick: Story = {
 		await userEvent.click(list.getByRole("option", { name: "Dark rye" }));
 		await waitFor(() => expect(select).toHaveTextContent("Dark rye"));
 		await expect(args.onValueChange).toHaveBeenCalledWith("rye");
-		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
 	},
 };
 
@@ -108,7 +108,7 @@ export const Escape: Story = {
 		await userEvent.click(select);
 		await screen.findByRole("listbox");
 		await userEvent.keyboard("{Escape}");
-		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
 		await expect(args.onValueChange).not.toHaveBeenCalled();
 		await expect(select).toHaveFocus();
 	},

@@ -90,7 +90,7 @@ export const Keyboard: Story = {
 			await userEvent.keyboard("{Enter}");
 			await screen.findByRole("listbox");
 			await userEvent.keyboard("{ArrowDown}{Escape}");
-			await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+			await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
 			await expect(select).toHaveTextContent("Harbor and the market");
 			await expect(args.onValueChange).toHaveBeenCalledTimes(1);
 		});

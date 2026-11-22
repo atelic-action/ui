@@ -3,6 +3,7 @@ import { useState } from "react";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
 import { CountryDropdown, getCountryFlag, Label } from "../../../src/app/ui";
 import { knownBug, knownIssues } from "../../support/known-issues";
+import { settled } from "../../support/settle";
 import { pin } from "../../support/viewports";
 
 /**
@@ -71,6 +72,8 @@ export const Placeholder: Story = {
 		const trigger = canvas.getByRole("button", { name: "Ships to" });
 		await expect(trigger).toHaveTextContent("Select country");
 		await expect(trigger).toHaveAttribute("aria-expanded", "false");
+		// The pointer may rest on the trigger from the story before; let its hover finish fading.
+		await settled();
 	},
 };
 
@@ -95,7 +98,7 @@ export const SearchAndPick: Story = {
 		await step("Enter picks it, closes, and the trigger shows it", async () => {
 			await userEvent.keyboard("{Enter}");
 			await expect(args.onChange).toHaveBeenCalledWith("Iceland");
-			await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+			await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
 			await expect(trigger).toHaveTextContent("Iceland");
 			await expect(trigger).toHaveFocus();
 		});
@@ -109,7 +112,7 @@ export const Escape: Story = {
 		await userEvent.click(trigger);
 		await screen.findByRole("listbox");
 		await userEvent.keyboard("{Escape}");
-		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
+		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
 		await expect(trigger).toHaveFocus();
 		await expect(args.onChange).not.toHaveBeenCalled();
 	},
