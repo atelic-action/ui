@@ -152,9 +152,9 @@
 		--destructive: 0 62.8% 30.6%;
 		--destructive-foreground: 30 8% 95%;
 		/* #f87171 (red 400) for destructive words: the fill above reads 1.79
-		   to 1 as words on the card; this reads 6.47 on the card and 5.66 on
+		   to 1 as words on the card; this reads 6.48 on the card and 5.62 on
 		   the grey highlight. */
-		--destructive-ink: 0 91% 71%;
+		--destructive-ink: 0 90.6% 70.8%;
 		--border: 30 5% 18%;
 		--input: 30 5% 18%;
 		--ring: 30 4.9% 83.9%;
