@@ -1758,6 +1758,12 @@
 		   below everything, so nothing on screen moves when it appears. */
 		padding-bottom: calc(18px + var(--sticky-cta-space, 0px));
 	}
+	/* The two sides share one line, the copyright at the start and the credit
+	   at the end, while they fit; when they do not, the credit wraps under
+	   the copyright and both start at the same edge. That is space-between
+	   alone: a line holding one side sets it at the start, so no width
+	   decides it and a long attribution on a tablet stacks the same way. A
+	   side longer than the line wraps inside itself (min-width 0). */
 	.atelic-ui .closing-bar-line {
 		display: flex;
 		flex-wrap: wrap;
@@ -1765,15 +1771,13 @@
 		align-items: center;
 		justify-content: space-between;
 	}
+	.atelic-ui .closing-bar-left,
 	.atelic-ui .closing-bar-right {
-		margin-left: auto;
+		min-width: 0;
 	}
 	.atelic-ui .closing-bar.is-solo .closing-bar-line {
 		justify-content: center;
 		text-align: center;
-	}
-	.atelic-ui .closing-bar.is-solo .closing-bar-right {
-		margin-left: 0;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the footer's link rules */
 	.atelic-ui .closing-bar a {

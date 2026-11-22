@@ -7,6 +7,13 @@
  */
 export const viewports = {
 	phone: { name: "Phone 390", styles: { width: "390px", height: "844px" }, type: "mobile" },
+	// The narrowest phone a site still meets (an older small phone), where a
+	// row that fits at 390 runs out of room first.
+	smallPhone: {
+		name: "Small phone 320",
+		styles: { width: "320px", height: "640px" },
+		type: "mobile",
+	},
 	tablet: { name: "Tablet 820", styles: { width: "820px", height: "1180px" }, type: "tablet" },
 	desktop: { name: "Desktop 1280", styles: { width: "1280px", height: "800px" }, type: "desktop" },
 	// The narrowest desktop a bar holding groups shows them at (1180, chrome.css),

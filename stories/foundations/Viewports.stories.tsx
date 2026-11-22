@@ -25,6 +25,14 @@ export const Phone: Story = {
 	},
 };
 
+export const SmallPhone: Story = {
+	globals: pin("smallPhone"),
+	play: async () => {
+		await expect(window.innerWidth).toBe(320);
+		await expect(window.innerHeight).toBe(640);
+	},
+};
+
 export const Tablet: Story = {
 	globals: pin("tablet"),
 	play: async () => {
