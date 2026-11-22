@@ -115,3 +115,44 @@ describe("the access wall middleware and the allowlist", () => {
 		expect((await middleware(request("/writeup", cookie)))?.status).toBe(302);
 	});
 });
+
+describe("the middleware's error reporting", () => {
+	afterEach(() => {
+		delete process.env.GATE_SESSION_SECRET;
+		vi.unstubAllGlobals();
+		vi.unstubAllEnvs();
+	});
+
+	it("reports a throw to Sentry and throws it again, so the request fails as it did", async () => {
+		process.env.GATE_SESSION_SECRET = SECRET;
+		vi.stubEnv("SENTRY_DSN", "https://key@o1.ingest.example.com/7");
+		const fetch = vi.fn(async () => new Response("{}"));
+		vi.stubGlobal("fetch", fetch);
+		const boom = new Error("the wall could not decide");
+		const broken = createMiddleware({
+			needsSession: () => {
+				throw boom;
+			},
+		});
+		await expect(broken(request("/writeup?token=private"))).rejects.toBe(boom);
+		const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+		expect(url).toContain("o1.ingest.example.com/api/7/envelope/");
+		const event = JSON.parse((init.body as string).split("\n")[2] as string);
+		expect(event.tags.source).toBe("middleware");
+		expect(event.request.url).toBe(`${ORIGIN}/writeup`);
+	});
+
+	it("reports nothing for a pass or a block", async () => {
+		process.env.GATE_SESSION_SECRET = SECRET;
+		vi.stubEnv("SENTRY_DSN", "https://key@o1.ingest.example.com/7");
+		const fetch = vi.fn();
+		vi.stubGlobal("fetch", fetch);
+		expect((await middleware(request("/writeup")))?.status).toBe(302);
+		expect(await middleware(request("/login"))).toBeUndefined();
+		expect(await middleware(request("/writeup", "gate_session=not-a-token"))).toHaveProperty(
+			"status",
+			302,
+		);
+		expect(fetch).not.toHaveBeenCalled();
+	});
+});

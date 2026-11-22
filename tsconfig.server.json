@@ -20,6 +20,7 @@
   },
   "include": [
     "src/gate/*.ts",
+    "src/monitoring/server.ts",
     "src/vite/*.ts",
     "src/artifact/readers.ts",
     "src/routing/basePath.ts"

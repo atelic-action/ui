@@ -14,9 +14,11 @@ vi.mock("@vitejs/plugin-react", () => ({
 }));
 
 import {
+	buildRelease,
 	marketingBasePath,
 	marketingConfig,
 	NOT_FOUND_PAGE,
+	sentryUpload,
 } from "../../src/vite/marketing-config";
 
 interface StartOptions {
@@ -115,5 +117,58 @@ describe("marketingBasePath", () => {
 
 	it("lets VITE_BASE_PATH rehearse a base the config does not carry", () => {
 		expect(marketingBasePath(SITE, { VITE_BASE_PATH: "/proto" })).toBe("/proto");
+	});
+});
+
+describe("marketingConfig's error reporting", () => {
+	const SENTRY = {
+		SENTRY_AUTH_TOKEN: "token",
+		SENTRY_ORG: "an-org",
+		SENTRY_PROJECT: "a-site",
+		VERCEL_GIT_COMMIT_SHA: "0123456789abcdef",
+	};
+
+	it("hands the browser the commit as its release, Vercel's first, then the CI's", () => {
+		expect(
+			marketingConfig({ site: SITE, env: { VERCEL_GIT_COMMIT_SHA: "0123abc", GITHUB_SHA: "ffff" } })
+				.define,
+		).toEqual({ "import.meta.env.VITE_RELEASE": JSON.stringify("0123abc") });
+		expect(marketingConfig({ site: SITE, env: { GITHUB_SHA: "ffff" } }).define).toEqual({
+			"import.meta.env.VITE_RELEASE": JSON.stringify("ffff"),
+		});
+		expect(marketingConfig({ site: SITE, env: {} }).define).toBeUndefined();
+	});
+
+	it("leaves the build unchanged when any of the token, the org, the project, or the commit is missing", () => {
+		for (const missing of Object.keys(SENTRY)) {
+			const env = { ...SENTRY, [missing]: "" };
+			const config = marketingConfig({ site: SITE, env });
+			expect((config.plugins ?? []).length, missing).toBe(2);
+			expect(config.build?.sourcemap, missing).toBeUndefined();
+			expect(sentryUpload(env), missing).toBeUndefined();
+		}
+	});
+
+	it("with all three and a commit, adds the Sentry plugin and hidden source maps", async () => {
+		const config = marketingConfig({ site: SITE, env: SENTRY });
+		expect(config.build?.sourcemap).toBe("hidden");
+		expect(config.plugins).toHaveLength(3);
+		expect(sentryUpload(SENTRY)).toEqual({
+			org: "an-org",
+			project: "a-site",
+			authToken: "token",
+			release: "0123456789abcdef",
+		});
+		const plugin = await (config.plugins?.[2] as Promise<Array<{ name: string }>>);
+		expect(
+			[plugin]
+				.flat()
+				.map((part) => part.name)
+				.join(" "),
+		).toMatch(/sentry/i);
+	});
+
+	it("names the release by the commit, the browser and the upload alike", () => {
+		expect(buildRelease(SENTRY)).toBe(sentryUpload(SENTRY)?.release);
 	});
 });

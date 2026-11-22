@@ -10,10 +10,13 @@ export {
 	artifactPages,
 } from "./artifact-config.js";
 export {
+	buildRelease,
 	type MarketingConfigOptions,
 	type MarketingPage,
 	marketingBasePath,
 	marketingConfig,
 	NOT_FOUND_PAGE,
+	type SentryUpload,
+	sentryUpload,
 } from "./marketing-config.js";
 export { DOC_DIR, isPrivateContent, privateChunks } from "./private-chunks.js";

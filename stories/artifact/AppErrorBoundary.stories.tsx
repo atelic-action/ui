@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, spyOn } from "storybook/test";
 import { AppErrorBoundary } from "../../src/artifact";
+import { readCatcher } from "../../src/monitoring";
 
 /** Whether the child below throws on its next render; a story flips it. */
 const fault = { on: true };
@@ -65,5 +66,38 @@ export const CatchesAndRetries: Story = {
 			await userEvent.click(canvas.getByRole("button", { name: "Try Again" }));
 			await expect(canvas.getByText("The morning bake, back on the shelf.")).toBeVisible();
 		});
+	},
+};
+
+/** Takes any early catcher off the story's window, its listeners with it. */
+function clearCatcher() {
+	const catcher = readCatcher(window);
+	if (catcher) {
+		window.removeEventListener("error", catcher.onError);
+		window.removeEventListener("unhandledrejection", catcher.onRejection);
+	}
+	delete (window as { __atelicErrors?: unknown }).__atelicErrors;
+}
+
+/**
+ * A render crash never reaches the window's error handlers, so the boundary
+ * hands it to error reporting itself: before the Sentry SDK has loaded it
+ * waits in the early catcher's buffer, marked as a boundary's, for the SDK
+ * to replay.
+ */
+export const ReportsTheCrash: Story = {
+	beforeEach: () => {
+		fault.on = true;
+		clearCatcher();
+		return clearCatcher;
+	},
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("heading", { name: "Something went wrong" })).toBeVisible();
+		const held = readCatcher(window)?.q ?? [];
+		const crash = held.find((item) => item.kind === "boundary");
+		await expect(crash?.error).toBeInstanceOf(Error);
+		await expect((crash?.error as Error | undefined)?.message).toBe(
+			"The oven timer came back undefined",
+		);
 	},
 };
