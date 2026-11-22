@@ -44,11 +44,17 @@
 
 	/* A title fills the line before it wraps, where the base headings balance
 	   their lines; pretty still keeps a last word from standing alone. */
+	/* A card's title in a list: an h2 for the outline, but never the brand's
+	   headline style, so it pins the look the heading tokens would set. */
 	.atelic-ui .bi-title {
 		margin: 0 0 10px;
 		font-size: 1.4rem;
 		line-height: 1.25;
 		text-wrap: pretty;
+		text-transform: none;
+		font-weight: var(--weight-heavy);
+		letter-spacing: -0.02em;
+		color: inherit;
 	}
 
 	.atelic-ui .bi-excerpt {
@@ -928,6 +934,7 @@
 	}
 	.atelic-ui .feature-card h3 {
 		margin: 14px 0 10px;
+		color: var(--card-title-color, inherit);
 	}
 	.atelic-ui .feature-card p {
 		color: var(--ink-soft);
@@ -1142,6 +1149,14 @@
 			display: inline-flex;
 		}
 	}
+	/* The contact dock holds the screen's bottom right corner, where the cue
+	   sits, so on a page that wears the dock the cue moves to the middle of
+	   the hero's foot. A page without the dock keeps it at the right. */
+	.atelic-ui:has(.contact-dock) .hero-scroll {
+		right: auto;
+		left: 50%;
+		margin-left: -23px;
+	}
 
 	/* The split layout: the copy and its actions on the primary field on one
 	   side, the photo on the other, at the height the copy needs. The copy
@@ -1166,7 +1181,9 @@
 	.atelic-ui .hero-split-inner {
 		--hero-split-edge: max(var(--gutter), calc((100cqw - var(--max-width)) / 2 + var(--gutter)));
 		width: 100%;
-		padding: var(--section-space) var(--hero-split-edge);
+		/* --hero-split-pad sets the copy's sides outright, for a design that
+		   wants them tighter than the wrap's edge. */
+		padding: var(--section-space) var(--hero-split-pad, var(--hero-split-edge));
 	}
 	/* From 900px the copy sits beside the photo under the transparent header;
 	   below it the photo stacks first and takes the header, so the copy needs
@@ -1242,6 +1259,10 @@
 		gap: 8px;
 		font-size: 1.08rem;
 		line-height: 1.25;
+	}
+	/* A star row in a proof value takes --proof-star-fill, else the primary it always read. */
+	.atelic-ui .proof-strip-value .star-row {
+		color: var(--proof-star-fill, var(--primary));
 	}
 	/* Classed, never a bare span: a value may hold a star row, whose own spans keep their color. */
 	.atelic-ui .proof-strip-label {
@@ -1673,7 +1694,7 @@
 	   aligned on its line in tabular numerals. */
 	.atelic-ui .link-columns {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--link-columns-min, 170px)), 1fr));
 		gap: 24px 28px;
 	}
 	.atelic-ui * + .link-columns {
@@ -1701,7 +1722,7 @@
 		padding: 7px 0;
 		color: var(--ink-soft);
 	}
-	.atelic-ui .lc-link:hover {
+	.atelic-ui a.lc-link:hover {
 		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .lc-label {
@@ -1742,6 +1763,7 @@
 		min-width: 0;
 	}
 	.atelic-ui .callout-panel-title {
+		text-transform: var(--callout-transform, none);
 		font-family: var(--font-condensed, var(--font-heading, var(--font-sans)));
 		font-size: clamp(1.35rem, 2.15vw, 1.9rem);
 		font-weight: var(--weight-heavy);
@@ -1750,6 +1772,7 @@
 		text-wrap: balance;
 	}
 	.atelic-ui .callout-panel-sub {
+		font-family: var(--callout-sub-font, inherit);
 		font-size: clamp(0.85rem, 1.1vw, 1rem);
 		line-height: 1.3;
 		color: var(--on-primary);

@@ -11,6 +11,8 @@ export interface EyebrowProps {
 	 * Accepted so existing call sites keep compiling.
 	 */
 	run?: boolean;
+	/** Draws the trailing rule. Defaults to true; false sets the kicker alone. */
+	rule?: boolean;
 	children: ReactNode;
 }
 
@@ -19,7 +21,9 @@ export interface EyebrowProps {
  * that fades out to the right (the practice wordmark's signature), rendered
  * from the primary token so it carries each site's brand color.
  */
-export function Eyebrow({ onDark = false, center = false, children }: EyebrowProps) {
-	const classes = ["eyebrow", onDark && "on-dark", center && "center"].filter(Boolean).join(" ");
+export function Eyebrow({ onDark = false, center = false, rule = true, children }: EyebrowProps) {
+	const classes = ["eyebrow", onDark && "on-dark", center && "center", !rule && "no-rule"]
+		.filter(Boolean)
+		.join(" ");
 	return <p className={classes}>{children}</p>;
 }

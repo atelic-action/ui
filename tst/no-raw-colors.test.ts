@@ -40,7 +40,7 @@ const DEFAULTS = {
 	rules: [
 		":where(.atelic-ui) {",
 		":where(.atelic-ui table) {",
-		':where(.atelic-ui a[href^="tel:"]) {',
+		':where(.atelic-ui a[href^="tel:"]:not(:has(*)), .atelic-ui .tel-number) {',
 	],
 };
 

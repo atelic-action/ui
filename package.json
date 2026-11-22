@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "8.0.0",
+	"version": "8.1.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -21,6 +21,7 @@
 		"atelic-check-base-path": "./bin/atelic-check-base-path.ts",
 		"atelic-check-images": "./bin/atelic-check-images.ts",
 		"atelic-check-links": "./bin/atelic-check-links.ts",
+		"atelic-check-sentry": "./bin/atelic-check-sentry.ts",
 		"atelic-check-wall": "./bin/atelic-check-wall.ts",
 		"atelic-clean-sitemap": "./bin/atelic-clean-sitemap.ts",
 		"atelic-contact-canary": "./bin/atelic-contact-canary.ts",
@@ -46,6 +47,11 @@
 		"./email": "./src/email/index.ts",
 		"./email/render": "./src/email/render.tsx",
 		"./hooks": "./src/hooks/index.ts",
+		"./monitoring": "./src/monitoring/index.ts",
+		"./monitoring/server": {
+			"types": "./dist/monitoring/server.d.ts",
+			"default": "./dist/monitoring/server.js"
+		},
 		"./primitives": "./src/primitives/index.ts",
 		"./routing": "./src/routing/index.ts",
 		"./routing/base-path": {
@@ -91,7 +97,7 @@
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.server.json",
-		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path']) await import('@atelic-action/ui/' + entry)\"",
+		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path', 'monitoring/server']) await import('@atelic-action/ui/' + entry)\"",
 		"prepack": "bun run build",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
@@ -103,6 +109,8 @@
 	},
 	"dependencies": {
 		"@radix-ui/react-tabs": "^1.2.1",
+		"@sentry/browser": "^11.16.0",
+		"@sentry/vite-plugin": "^11.16.0",
 		"jose": "^6.2.12"
 	},
 	"peerDependencies": {

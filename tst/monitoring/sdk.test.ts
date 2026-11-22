@@ -1,0 +1,93 @@
+import { addEventProcessor, type Event, getClient } from "@sentry/browser";
+import { DENY_URLS, IGNORE_ERRORS, initSentry, scrubRequest } from "../../src/monitoring/sdk";
+
+describe("the browser SDK, set up for errors alone", () => {
+	it("starts a client with the error integrations and no tracing, replay, or breadcrumbs", () => {
+		initSentry({
+			dsn: "https://key@o1.ingest.example.com/42",
+			release: "abc123",
+			environment: "test",
+		});
+		const client = getClient();
+		const options = client?.getOptions();
+		expect(options?.release).toBe("abc123");
+		expect(options?.environment).toBe("test");
+		expect(options?.tracesSampleRate).toBeUndefined();
+		const names = (options?.integrations ?? []).map((integration) => integration.name).sort();
+		expect(names).toEqual(
+			[
+				"Dedupe",
+				"EventFilters",
+				"FunctionToString",
+				"GlobalHandlers",
+				"HttpContext",
+				"LinkedErrors",
+			].sort(),
+		);
+	});
+
+	it("leaves out a browser extension's frames and the in app webview bridges, and nothing else named", () => {
+		for (const url of [
+			"chrome-extension://abcdef/content.js",
+			"moz-extension://abcdef/content.js",
+			"safari-extension://abcdef/content.js",
+			"safari-web-extension://abcdef/content.js",
+		]) {
+			expect(DENY_URLS.some((pattern) => pattern.test(url))).toBe(true);
+		}
+		expect(DENY_URLS.some((pattern) => pattern.test("https://example.com/assets/index.js"))).toBe(
+			false,
+		);
+		expect(IGNORE_ERRORS.some((pattern) => pattern.test("Error: Java object is gone"))).toBe(true);
+		expect(IGNORE_ERRORS.some((pattern) => pattern.test("Error invoking postMessage: Java"))).toBe(
+			true,
+		);
+		expect(IGNORE_ERRORS.some((pattern) => pattern.test("TypeError: x is undefined"))).toBe(false);
+	});
+
+	it("cuts an event's request to the URL without query or fragment, and the user agent alone", () => {
+		const event = scrubRequest({
+			request: {
+				url: "https://example.com/menu?token=abc&email=a@b.c#frag",
+				headers: { Referer: "https://other.example/?x=1", "User-Agent": "Agent/1" },
+			},
+		});
+		expect(event.request).toEqual({
+			url: "https://example.com/menu",
+			headers: { "User-Agent": "Agent/1" },
+		});
+		expect(
+			scrubRequest({ request: { headers: { Referer: "https://o.example/?x=1" } } }).request,
+		).toEqual({});
+		const framed = scrubRequest({
+			exception: {
+				values: [
+					{ stacktrace: { frames: [{ filename: "https://example.com/menu?email=a@b.c#x" }] } },
+				],
+			},
+		});
+		expect(framed.exception?.values?.[0]?.stacktrace?.frames?.[0]?.filename).toBe(
+			"https://example.com/menu",
+		);
+		expect(getClient()?.getOptions().beforeSend).toBe(scrubRequest);
+	});
+});
+
+describe("what a capture carries", () => {
+	it("tags an error by what raised it, marks a replayed one early, and counts what the catcher dropped", async () => {
+		const capture = initSentry({ dsn: "https://key@o1.ingest.example.com/42" });
+		const seen: Event[] = [];
+		// Held here, so nothing is sent.
+		addEventProcessor((event) => {
+			seen.push(event);
+			return null;
+		});
+		capture(new Error("thrown before the app ran"), "error", true, 3);
+		capture(new Error("render crash"), "boundary");
+		await vi.waitFor(() => expect(seen).toHaveLength(2));
+		expect(seen[0]?.tags).toMatchObject({ source: "error", early: "true" });
+		expect(seen[0]?.extra).toEqual({ earlyDropped: 3 });
+		expect(seen[1]?.tags).toEqual({ source: "boundary" });
+		expect(seen[1]?.extra).toBeUndefined();
+	});
+});

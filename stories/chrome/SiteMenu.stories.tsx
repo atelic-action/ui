@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { expect, fn, type MockInstance, spyOn, waitFor, within } from "storybook/test";
 import { SiteMenu } from "../../src/chrome";
 import { contact, cta, flatLinks, groupedLinks, phones, sectionedLinks } from "../fixtures/bakery";
@@ -300,5 +300,90 @@ export const ChildSharesParentHref: Story = {
 			String(call[0]).includes("same key"),
 		);
 		await expect(keyWarnings).toHaveLength(0);
+	},
+};
+
+/**
+ * A theme whose sheet is its primary (`--surface-dark` set to the brand's
+ * deep green fill) sets `--menu-badge-bg` and `--menu-badge-ink`: a link's
+ * badge takes a light fill and the primary's words, so it reads there,
+ * where the default primary filled pill vanished. The accessibility check
+ * holds its contrast.
+ */
+export const BadgeOnPrimarySheet: Story = {
+	args: { links: sectionedLinks },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						// A deep green brand whose sheet is its primary, with the light
+						// neutrals such a theme sets for words on it.
+						"--surface-dark": "#1e4d2b",
+						"--primary": "#1e4d2b",
+						"--primary-fill": "#1e4d2b",
+						"--primary-ink": "#1e4d2b",
+						"--primary-bright": "#b8e0c0",
+						"--neutral-300": "#dcd6ca",
+						// The sheet's ground is the primary, so the badge and the call
+						// to action take the light fill and the primary's words.
+						"--menu-badge-bg": "var(--on-primary)",
+						"--menu-badge-ink": "var(--primary-ink)",
+						"--menu-cta-bg": "var(--on-primary)",
+						"--menu-cta-ink": "var(--primary-ink)",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		const badge = menu.getByText("Popular");
+		await expect(badge).toBeVisible();
+		const sheet = canvas.getByRole("dialog");
+		await expect(getComputedStyle(badge).backgroundColor).not.toBe(
+			getComputedStyle(sheet).backgroundColor,
+		);
+	},
+};
+
+/**
+ * The menu's call to action on the same primary sheet, with `--menu-cta-bg`
+ * and `--menu-cta-ink` set: a light fill and the primary's words, so it
+ * shows as a button there, where the default primary filled one vanished.
+ * The accessibility check holds its contrast.
+ */
+export const CTAOnPrimarySheet: Story = {
+	...BadgeOnPrimarySheet,
+	args: { links: flatLinks, primaryCTA: cta },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const action = menu.getByRole("link", { name: cta.label });
+		const sheet = canvas.getByRole("dialog");
+		await expect(getComputedStyle(action).backgroundColor).not.toBe(
+			getComputedStyle(sheet).backgroundColor,
+		);
+		await expect(getComputedStyle(action).color).toBe("rgb(30, 77, 43)");
+	},
+};
+
+/**
+ * The default, with no menu tokens set: the badge and the call to action
+ * are the primary filled pill and button they were in 8.0.0.
+ */
+export const BadgeAndCTADefaults: Story = {
+	args: { links: sectionedLinks, primaryCTA: cta },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const action = menu.getByRole("link", { name: cta.label });
+		await expect(getComputedStyle(action).backgroundColor).toBe("rgb(214, 58, 16)");
+		await expect(getComputedStyle(action).color).toBe("rgb(255, 255, 255)");
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		const badge = menu.getByText("Popular");
+		await expect(getComputedStyle(badge).backgroundColor).toBe("rgb(214, 58, 16)");
+		await expect(getComputedStyle(badge).color).toBe("rgb(255, 255, 255)");
 	},
 };

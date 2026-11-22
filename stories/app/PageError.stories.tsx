@@ -83,3 +83,29 @@ export const LongMessagePhone: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/**
+ * The app's dark theme (`.dark` on the document): the title's destructive
+ * words read the dark theme's own destructive ink on the dark card, where
+ * the fill's deep red read 1.79 to 1, and a destructive button keeps the
+ * deep fill under light words.
+ */
+export const DarkTheme: Story = {
+	args: { title: "Orders unavailable" },
+	beforeEach: () => {
+		document.documentElement.classList.add("dark");
+		return () => document.documentElement.classList.remove("dark");
+	},
+	render: (args) => (
+		<div className="space-y-4 bg-background p-6 text-foreground">
+			<PageError {...args} />
+			<Button variant="destructive">Cancel the standing order</Button>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const title = canvas.getByText("Orders unavailable");
+		const button = canvas.getByRole("button", { name: "Cancel the standing order" });
+		// The words and the fill are two reds: light ink on the card, a deep fill under the button.
+		await expect(getComputedStyle(title).color).not.toBe(getComputedStyle(button).backgroundColor);
+	},
+};

@@ -122,8 +122,11 @@
 		overflow-wrap: break-word;
 	}
 	/* A phone number is one thing to read and dial, so it never breaks, at
-	   its spaces or its hyphen, wherever it is set (Component Rules 17). */
-	:where(.atelic-ui a[href^="tel:"]) {
+	   its spaces or its hyphen, wherever it is set (Component Rules 17). The
+	   rule holds the number, never a whole row that links to a call: a tel
+	   link of words alone is the number, and a tel link with more in it (a
+	   dock row, an icon beside the number) marks the number .tel-number. */
+	:where(.atelic-ui a[href^="tel:"]:not(:has(*)), .atelic-ui .tel-number) {
 		white-space: nowrap;
 	}
 

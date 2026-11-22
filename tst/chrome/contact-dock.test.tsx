@@ -51,6 +51,35 @@ describe("dockPlacement", () => {
 			dockPlacement({ viewportWidth: 390, viewportHeight: 844, barHeight: 72, avoidTop: 500 }),
 		).toEqual({ inset: 16, bottom: 360 });
 	});
+
+	it("never rises into the fixed header, and holds under it when the footer is taller than the room", () => {
+		// A phone whose footer's top has scrolled up past the 64px header: the
+		// launcher stops 16px under the header, 844 - 64 - 52 - 16 from the foot.
+		const held = dockPlacement({
+			viewportWidth: 390,
+			viewportHeight: 844,
+			barHeight: 72,
+			avoidTop: 40,
+			headerBottom: 64,
+		});
+		expect(held).toEqual({ inset: 16, bottom: 712 });
+		const launcherTop = 844 - held.bottom - 52;
+		expect(launcherTop).toBeGreaterThanOrEqual(64 + 16);
+		// And it stays there however far the footer runs.
+		expect(
+			dockPlacement({
+				viewportWidth: 390,
+				viewportHeight: 844,
+				barHeight: 72,
+				avoidTop: -600,
+				headerBottom: 64,
+			}),
+		).toEqual(held);
+		// With no header the screen's top edge is the limit, as before.
+		expect(
+			dockPlacement({ viewportWidth: 390, viewportHeight: 844, barHeight: 72, avoidTop: 40 }),
+		).toEqual({ inset: 16, bottom: 776 });
+	});
 });
 
 describe("ContactDock", () => {

@@ -15,7 +15,7 @@ None open.
 - `UI/Card`'s `CardTitle` is a `div`, not a heading (`Composed` asserts the card holds none), so a page of cards gives a screen reader nothing to move between.
 - `UI/BadgeList` truncates a long tag at `max-w-24` with no title or tooltip (`LongTag`), so a sighted reader sees "Seventy tw…" and cannot read the rest.
 - `ActionButton` sets `aria-label={label}` at every width, though the label is visible from `sm` up. Harmless while the two agree (`OwnAccessibleName` shows an `aria-label` must keep the label's words, or axe flags the mismatch).
-- The shell's dark theme (`.dark` in `styles/app.css`) carries shadcn's stock values, never checked: destructive words (`--destructive`, `#7f1d1d`) on a dark card (`#181716`) read 1.79 to 1. No story renders the dark theme, so nothing marks it.
+- The shell's dark theme (`.dark` in `styles/app.css`) carries shadcn's stock values, checked only for destructive words on a card (8.1.0: `--destructive-ink`, held by `PageError`'s `DarkTheme`). Seen and not yet marked: the phone menu's sign out row presses to `--color-destructive-hover`, the deep fill darkened further, as words on the dark ground.
 - `PageSkeleton` stops its pulse under `prefers-reduced-motion` (`motion-reduce:animate-none`), and no story shows it: the run does not emulate the media query.
 
 ## Checker Limits (Not Bugs)

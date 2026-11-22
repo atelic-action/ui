@@ -67,7 +67,7 @@ export function Locations({
 								<div className="loc-links">
 									<a href={`tel:${loc.phoneE164}`}>
 										<Phone size={14} aria-hidden />
-										{loc.phoneDisplay}
+										<span className="tel-number">{loc.phoneDisplay}</span>
 									</a>
 									<a href={loc.mapLink} {...newTabProps(loc.mapLink, true)}>
 										<Navigation size={14} aria-hidden />

@@ -36,12 +36,13 @@ function run(command: string, args: string[], cwd: string, env: Record<string, s
  * package publishes, run by the program its first line names.
  */
 describe("the bin map", () => {
-	it("names the twelve commands", () => {
+	it("names the thirteen commands", () => {
 		expect(Object.keys(manifest.bin).sort()).toEqual([
 			"atelic-check-access",
 			"atelic-check-base-path",
 			"atelic-check-images",
 			"atelic-check-links",
+			"atelic-check-sentry",
 			"atelic-check-wall",
 			"atelic-clean-sitemap",
 			"atelic-contact-canary",
@@ -121,6 +122,49 @@ describe("the commands' own lines", () => {
 		});
 		expect(refused.status).toBe(1);
 		expect(refused.stderr).toContain("is not on GATE_ALLOWLIST");
+	});
+
+	const DSN = "https://key@o1.ingest.example.com/42";
+
+	it("atelic-check-sentry stops a production deploy with no DSN", () => {
+		const result = run("atelic-check-sentry", [], site, {
+			VITE_SENTRY_DSN: "",
+			VERCEL_ENV: "production",
+		});
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain("production build has no VITE_SENTRY_DSN");
+	});
+
+	it("atelic-check-sentry lets a production deploy with the waiver through, loudly", () => {
+		const result = run("atelic-check-sentry", ["--allow-missing"], site, {
+			VITE_SENTRY_DSN: "",
+			VERCEL_ENV: "production",
+		});
+		expect(result.status).toBe(0);
+		expect(result.stdout).toContain("WARNING: this PRODUCTION build has no VITE_SENTRY_DSN");
+	});
+
+	it("atelic-check-sentry passes a production deploy whose DSN is in the environment or the site's .env file", () => {
+		const fromEnv = run("atelic-check-sentry", [], site, {
+			VERCEL_ENV: "production",
+			VITE_SENTRY_DSN: DSN,
+		});
+		expect(fromEnv.status).toBe(0);
+		expect(fromEnv.stdout).toContain("VITE_SENTRY_DSN is set");
+
+		writeFileSync(join(site, ".env.production"), `VITE_SENTRY_DSN=${DSN}\n`);
+		const fromFile = run("atelic-check-sentry", [], site, { VERCEL_ENV: "production" });
+		expect(fromFile.status).toBe(0);
+		expect(fromFile.stdout).toContain("VITE_SENTRY_DSN is set");
+	});
+
+	it("atelic-check-sentry passes a preview or a local build with no DSN, on one line", () => {
+		for (const VERCEL_ENV of ["preview", ""]) {
+			const result = run("atelic-check-sentry", [], site, { VITE_SENTRY_DSN: "", VERCEL_ENV });
+			expect(result.status).toBe(0);
+			expect(result.stdout.trim().split("\n")).toHaveLength(1);
+			expect(result.stdout).toContain("no VITE_SENTRY_DSN");
+		}
 	});
 
 	it("atelic-check-access reads the config of the directory it is run in", () => {

@@ -9,12 +9,23 @@ import type { ReactNode } from "react";
  */
 export interface PageBehindProps {
 	hero?: boolean;
+	/**
+	 * The hero band in one flat dark color rather than a gradient, for a
+	 * story whose accessibility check measures words over it: axe cannot
+	 * measure contrast over a gradient and leaves it unjudged.
+	 */
+	flatHero?: boolean;
 	/** Three screens of body, for a story that scrolls. */
 	tall?: boolean;
 	children?: ReactNode;
 }
 
-export function PageBehind({ hero = false, tall = false, children }: PageBehindProps) {
+export function PageBehind({
+	hero = false,
+	flatHero = false,
+	tall = false,
+	children,
+}: PageBehindProps) {
 	return (
 		<main id="main" style={{ minHeight: tall ? "300vh" : "100vh" }}>
 			{hero && (
@@ -23,7 +34,7 @@ export function PageBehind({ hero = false, tall = false, children }: PageBehindP
 						minHeight: "100vh",
 						display: "grid",
 						placeItems: "center",
-						background: "linear-gradient(160deg, #3a2a1c, #151515)",
+						background: flatHero ? "#1c1712" : "linear-gradient(160deg, #3a2a1c, #151515)",
 						color: "#f4efe6",
 					}}
 				>

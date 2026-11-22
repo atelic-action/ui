@@ -131,19 +131,21 @@ export function DesktopRail({ pathname, collapsed, onToggle, user, onLogout }: D
 				<nav className="flex-1 space-y-1 px-4 py-6" aria-label="Primary navigation">
 					{navItems
 						.filter((item) => !item.mobileOnly)
-						.map((item) => {
+						.map((item, at) => {
 							const active = isActiveSection(pathname, item);
 							const showChildren = active && !collapsed && item.children?.length;
 							return (
-								<div key={item.href}>
+								// biome-ignore lint/suspicious/noArrayIndexKey: two entries may share a link, so the place keeps the key unique; the nav never reorders
+								<div key={at}>
 									<RailLink item={item} active={active} collapsed={collapsed} />
 									{showChildren ? (
 										<ul className="mt-1 space-y-0.5 pb-1" aria-label={`${item.label} pages`}>
-											{item.children?.map((child) => {
+											{item.children?.map((child, childAt) => {
 												const childActive = isActivePath(pathname, child.href);
 												const ChildIcon = child.icon;
 												return (
-													<li key={child.href}>
+													// biome-ignore lint/suspicious/noArrayIndexKey: two entries may share a link, so the place keeps the key unique; the nav never reorders
+													<li key={childAt}>
 														<Link
 															to={child.href}
 															className={cn(

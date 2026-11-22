@@ -97,3 +97,26 @@ describe("the light theme in styles/app.css", () => {
 		}
 	});
 });
+
+describe("the dark theme's destructive words in styles/app.css", () => {
+	const dark = (name: string) => token(".dark {", name);
+
+	it("sets destructive words in their own ink, 4.5 to 1 or better on the card and the grey", () => {
+		expect(dark("--destructive-ink")).toBe("#f87171");
+		expect(ratio(dark("--destructive-ink"), dark("--card"))).toBeGreaterThanOrEqual(4.5);
+		expect(ratio(dark("--destructive-ink"), dark("--muted"))).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("keeps the deep fill under light words, which as words on the card read under 2 to 1", () => {
+		expect(ratio(dark("--destructive-foreground"), dark("--destructive"))).toBeGreaterThanOrEqual(
+			4.5,
+		);
+		expect(ratio(dark("--destructive"), dark("--card"))).toBeLessThan(2);
+	});
+
+	it("reads the ink through its own color token, falling back to the fill for the light theme", () => {
+		expect(css).toContain(
+			"--color-destructive-ink: hsl(var(--destructive-ink, var(--destructive)));",
+		);
+	});
+});

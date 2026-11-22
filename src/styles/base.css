@@ -110,6 +110,32 @@
 		text-wrap: balance;
 		margin: 0;
 	}
+	/* A brand's headline style, set by tokens rather than a site's rules: the
+	   page and section headings (h1, h2) take the case, the weight, the
+	   tracking, and the color a theme sets, each defaulting to the look
+	   above. The color never reaches a heading on a filled or dark ground,
+	   which resets it below, nor one a component colors itself (the hero's,
+	   a dark section heading's). */
+	.atelic-ui h1,
+	.atelic-ui h2 {
+		text-transform: var(--heading-transform, none);
+		font-weight: var(--heading-weight, var(--weight-heavy));
+		letter-spacing: var(--heading-tracking, -0.02em);
+		color: var(--heading-color, inherit);
+	}
+	.atelic-ui
+		:is(
+			.on-primary,
+			.on-dark,
+			.hero,
+			.creds,
+			.callout-panel,
+			.price-band,
+			.process,
+			.contact-info-card
+		) {
+		--heading-color: currentColor;
+	}
 	.atelic-ui h1 {
 		font-size: clamp(2.6rem, 8vw, 5rem);
 	}

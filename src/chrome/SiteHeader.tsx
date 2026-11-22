@@ -53,6 +53,11 @@ export interface SiteHeaderProps {
 	 * first as a call button beside the burger on a phone. A third is dropped.
 	 */
 	phones?: HeaderPhone[];
+	/**
+	 * Words shown beside the burger, e.g. "Menu", which also name it. Absent,
+	 * the burger is its three lines alone, named "Open menu" or "Close menu".
+	 */
+	menuLabel?: string;
 }
 
 /** The keys that move focus along the bar and down into an open panel. */
@@ -102,6 +107,7 @@ export function SiteHeader({
 	hideCTA = false,
 	contact,
 	phones,
+	menuLabel,
 }: SiteHeaderProps) {
 	const [scrolled, setScrolled] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -232,7 +238,8 @@ export function SiteHeader({
 								>
 									{links.map((link, index) =>
 										isGroup(link) ? (
-											<div className="nav-item" key={link.href}>
+											// biome-ignore lint/suspicious/noArrayIndexKey: a one page site points several entries at one page or anchor, so the place keeps the key unique; the bar never reorders
+											<div className="nav-item" key={index}>
 												<button
 													type="button"
 													id={`${baseId}g${index}`}
@@ -282,7 +289,8 @@ export function SiteHeader({
 											</div>
 										) : (
 											<a
-												key={link.href}
+												// biome-ignore lint/suspicious/noArrayIndexKey: as above, entries may share an href
+												key={index}
 												href={link.href}
 												aria-current={currentPath === link.href ? "page" : undefined}
 												onPointerEnter={(event) => {
@@ -324,6 +332,11 @@ export function SiteHeader({
 								{...newTabProps(barCTA.href, barCTA.external)}
 							>
 								{barCTA.label}
+								{barCTA.arrow && (
+									<span className="arrow" aria-hidden="true">
+										→
+									</span>
+								)}
 							</a>
 						</span>
 					)}
@@ -339,15 +352,30 @@ export function SiteHeader({
 					{hasMenu && (
 						<button
 							type="button"
-							className="nav-burger"
-							aria-label={menuOpen ? "Close menu" : "Open menu"}
+							className={menuLabel ? "nav-burger has-label" : "nav-burger"}
+							// Words beside the burger name it, so the name holds what a reader
+							// sees; the open state is aria-expanded's to say.
+							aria-label={menuLabel ? undefined : menuOpen ? "Close menu" : "Open menu"}
 							aria-expanded={menuOpen}
 							aria-controls={menuId}
 							onClick={() => setMenuOpen((open) => !open)}
 						>
-							<span />
-							<span />
-							<span />
+							{menuLabel ? (
+								<>
+									<span className="nav-burger-label">{menuLabel}</span>
+									<span className="nav-burger-lines" aria-hidden="true">
+										<span />
+										<span />
+										<span />
+									</span>
+								</>
+							) : (
+								<>
+									<span />
+									<span />
+									<span />
+								</>
+							)}
 						</button>
 					)}
 				</div>

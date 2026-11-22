@@ -22,7 +22,7 @@
  */
 export interface BrandLogo {
 	src?: string;
-	/** Alt text where the mark stands alone, as in the footer. */
+	/** Alt text where the mark stands alone: the footer's, when `wordmark` is false. */
 	alt?: string;
 	tile?: string;
 	/** The live name beside the mark; `false` leaves it out. Defaults to the brand's name. */
@@ -97,6 +97,11 @@ export interface NavGroupLink extends NavGroupChildLink {
 	description?: string;
 	/** Links drawn indented under this one on a desktop and a phone alike. */
 	children?: NavGroupChildLink[];
+	/**
+	 * Sets the link in the panel's quieter words and regular weight, for a
+	 * long list such as the towns under a region's heading. Off by default.
+	 */
+	quiet?: boolean;
 }
 
 /**
@@ -210,6 +215,8 @@ export interface CallToAction {
 	href: string;
 	/** Opens in a new tab, except on mailto, tel, and sms links. */
 	external?: boolean;
+	/** The header's button carries the arrow a hero's primary button shows. Off by default. */
+	arrow?: boolean;
 }
 
 /** A footer or legal link that may open in a new tab. */

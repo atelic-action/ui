@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
 import { Hero } from "../../src/sections";
 import { expectNoSidewaysScroll } from "../support/geometry";
@@ -160,5 +161,42 @@ export const LongestContent: Story = {
 	},
 	play: async () => {
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** The kicker without its trailing rule (`eyebrowRule={false}`). */
+export const EyebrowWithoutRule: Story = {
+	args: { eyebrowRule: false },
+	play: async ({ canvas }) => {
+		const eyebrow = canvas.getByText("Alder Street, since 2014");
+		await expect(getComputedStyle(eyebrow, "::after").display).toBe("none");
+	},
+};
+
+/**
+ * The split hero's copy sides set by `--hero-split-pad` (here 40px) rather
+ * than the page wrap's edge, which puts them 176px in at 1280.
+ */
+export const SplitTighterPad: Story = {
+	args: { layout: "split" },
+	decorators: [
+		(Story) => (
+			<div style={{ "--hero-split-pad": "40px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const heading = canvas.getByRole("heading", { level: 1 });
+		await expect(Math.round(heading.getBoundingClientRect().left)).toBe(40);
+	},
+};
+
+/** The default: the copy starts where the page wrap's content does. */
+export const SplitDefaultPad: Story = {
+	args: { layout: "split" },
+	play: async ({ canvas }) => {
+		const heading = canvas.getByRole("heading", { level: 1 });
+		await expect(Math.round(heading.getBoundingClientRect().left)).toBe(176);
 	},
 };

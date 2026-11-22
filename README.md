@@ -13,7 +13,7 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `SiteHeader` | `@atelic-action/ui/chrome` | The fixed bar: the lockup, the nav or a page's own stops, the call to action, the burger; transparent, solid, or dark. A nav entry with `columns` is a group that opens a mega menu panel of link columns (nested links, badges), a picture, icon rows, and cards beside a ticked feature card, and `phones` puts up to two tel links in the bar (8.0.0) | [Chrome/SiteHeader](https://ui.atelic.me/?path=/docs/chrome-siteheader--docs) |
 | `SiteMenu` | `@atelic-action/ui/chrome` | The phone's full screen menu, on a native modal dialog; a group is an accordion that opens one at a time, every group closed when the menu opens (8.0.0) | [Chrome/SiteMenu](https://ui.atelic.me/?path=/docs/chrome-sitemenu--docs) |
 | `ContactDock` | `@atelic-action/ui/chrome` | The floating Get in Touch launcher and its panel of ways to reach the business, inset alike from the right and the bottom, lifting over the phone's sticky bar and riding above the footer; `SiteShell` mounts it from `site.contactDock` (8.0.0) | [Chrome/ContactDock](https://ui.atelic.me/?path=/docs/chrome-contactdock--docs) |
-| `Footer` | `@atelic-action/ui/chrome` | The default footer: the brand column (logo, Google rating, linked address, phone, email), the link columns, and the closing bar | [Chrome/Footer](https://ui.atelic.me/?path=/docs/chrome-footer--docs) |
+| `Footer` | `@atelic-action/ui/chrome` | The default footer: the brand column (the header's lockup, the Google rating linked to the profile, linked address, phone, email), the hours, the link columns, and the closing bar | [Chrome/Footer](https://ui.atelic.me/?path=/docs/chrome-footer--docs) |
 | `ClosingBar`, `Copyright`, `Credit` | `@atelic-action/ui/chrome` | The line that closes every page, in two sides that each take anything: by default `Copyright` with the business's name on the left and `Credit`, the practice's made with line, on the right | [Chrome/ClosingBar](https://ui.atelic.me/?path=/docs/chrome-closingbar--docs) |
 | `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut, there from the top on an interior page (`fromTop`) and sliding in after a scroll on a hero page | [Chrome/StickyCTABar](https://ui.atelic.me/?path=/docs/chrome-stickyctabar--docs) |
 | `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document; the brand's own mark per surface (`onLight`, `onDark`), never recolored, at `--brand-mark-height` (8.0.0) | [Chrome/BrandLockup](https://ui.atelic.me/?path=/docs/chrome-brandlockup--docs) |
@@ -102,14 +102,18 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, the contact dock when configured, mounting the base path provider and setting the section density | [Chrome/SiteShell](https://ui.atelic.me/?path=/docs/chrome-siteshell--docs) |
 | `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
 | `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing/base-path` | The same four pure helpers, built, for what Node runs (a Playwright spec, a script) | none |
-| `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call | none |
+| `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call; with the three Sentry variables it uploads hidden source maps under the commit (8.1.0) | none |
+| `buildRelease`, `sentryUpload`, `SentryUpload`, `environmentPlugin` | `@atelic-action/ui/vite` | The commit a build is filed under, the source map upload's settings (on only with its three variables), and the plugin that names the build's environment for the browser (8.1.0) | none |
+| `isMiss`, `MissMatch`, `CATCH_ALL_ROUTE_ID` | `@atelic-action/ui/routing` | Whether a router's matches are a miss (the catch all route, or a route whose params name no page), router free, for a site's root route (8.1.0) | none |
+| `startErrorReporting`, `ErrorCatcherScript`, `errorCatcherScript`, `reportError`, `installCatcher`, `readCatcher`, `afterFirstPaint`, `throwLaunchCheck`, `LAUNCH_CHECK_MESSAGE` | `@atelic-action/ui/monitoring` | Error reporting in the browser: the inline early catcher, and the start function that loads the Sentry SDK after first paint, errors only (8.1.0; see [Error Reporting](#error-reporting)) | none |
+| `reportServerError`, `withErrorReporting`, `parseDSN`, `parseStack`, `buildEnvelope` | `@atelic-action/ui/monitoring/server` | Error reporting from a function or the middleware, dependency free and built, for what Vercel runs uncompiled (8.1.0) | none |
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
 | `AppProvider`, `AppConfigProvider`, `useAppConfig`, `useNav`, `useUser`, `configureApp`, `getAppConfig`, `AppConfig`, `NavItem`, `AppUser`, `Register` | `@atelic-action/ui/app` | The app shell's seam: the app hands in its config and nav, registers its user type, and reads them back | [App/AppProvider](https://ui.atelic.me/?path=/docs/app-appprovider--docs) |
 | `AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `DesktopRail`, `MobileTabBar`, `MobileMenu`, `UserMenu`, `PageSkeleton`, `PageError`, `ActionButton`, `FormActionButtons`, `activeSection` | `@atelic-action/ui/app` | The app frame: the rails, the tab bar, the page scaffold with its toolbar and right rail | [App/AppLayout](https://ui.atelic.me/?path=/docs/app-applayout--docs) |
 | `AuthGuard`, `ErrorFallback`, `GoogleGlyph`, `useAuthStore`, `useUnitsStore`, `apiFetch`, `publicFetch`, `session`, the hooks and the wire types | `@atelic-action/ui/app` | Auth, transport, the two shell stores, and the helpers the shell runs on | [App/AuthGuard](https://ui.atelic.me/?path=/docs/app-authguard--docs) |
 | The shadcn kit (`Button`, `Dialog`, `Select`, `OptionSelect`, `SearchInput`, `BadgeList`, `Callout`, and the rest) | `@atelic-action/ui/app/ui` | The kit the shell is set in; a new kit component lands here, never in an app | [App/UI/Button](https://ui.atelic.me/?path=/docs/app-ui-button--docs) |
 | `app.css` | `@atelic-action/ui/styles/app.css` | The shell's Tailwind sheet: the token mapping, the default tokens, the base layer, the `ap-*` scaffold, and the `@source` that points Tailwind at the shell | none |
-| The eleven `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, and contact canary | none |
+| The `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, contact canary, and Sentry check (8.1.0) | none |
 
 
 ## Install
@@ -252,6 +256,18 @@ export function NotFoundPage() {
 }
 ```
 
+A site's root route asks whether the matches are a miss twice: to emit the 404's head tags from the root (tags on the still pending catch all route would land twice), and to draw a miss inside the site's shell from the root layout, so the shell stays mounted while the not found body swaps from its pending render to its own and a menu opened in the first moments stays open. `isMiss(matches)` from `@atelic-action/ui/routing` answers it with no router import: the catch all route (`/$`) took the path, or a route's `staticData.missing(params)` says its params name no page.
+
+```tsx
+// src/routes/__root.tsx
+import { isMiss } from "@atelic-action/ui/routing";
+
+head: ({ matches }) => ({ ...(isMiss(matches) ? buildPageHead(site, notFound.meta) : {}) }),
+// RootLayout
+const miss = useMatches({ select: isMiss });
+return miss ? <SiteShell site={site}><Outlet /></SiteShell> : <Outlet />;
+```
+
 `staticNotFoundRouting` is for prerendered sites only. On a live app the pending state is a real loading moment and the page would flash through every slow load, so an app sets `defaultNotFoundComponent` alone. A browser test is the only proof any of this works; template-marketing's `e2e/not-found.spec.ts` is the one to copy.
 
 ## Primitives
@@ -371,6 +387,79 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 ```
 
 `GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader `Watermark` uses and a site's own code can: empty during prerender, for a missing cookie, and for one that will not decode. `GateLogin` says so when an address is not an email, holds a second submit while the first is in flight, and announces each outcome to a screen reader.
+
+## Error Reporting
+
+Every site reports its errors to Sentry, errors only and never performance tracing, through three pieces the package owns (8.1.0). A site cannot launch without it: `atelic-check-sentry` stops a production build with no DSN.
+
+1. **The early catcher.** `ErrorCatcherScript`, first in the root route's `<head>`, is a 443 byte inline script (281 gzipped, ES5, no dependencies) that listens for `error` and `unhandledrejection` from the first moment and holds up to twenty (`CATCHER_CAP`) in a buffer on `window.__atelicErrors` (`CATCHER_GLOBAL`), counting the rest as dropped; the count rides on each replayed error as `earlyDropped`. An error thrown before the app's own JavaScript runs is held, not lost.
+2. **The start function.** `startErrorReporting({ dsn, release, environment })` from `@atelic-action/ui/monitoring` (with `environment` defaulting to the build's `import.meta.env.VITE_ENVIRONMENT`) makes sure the catcher is listening (installing it when the page has none), then after first paint (falling back to the load event where the browser cannot report paints, and to ten seconds whatever happens) loads the Sentry browser SDK, replays what the catcher held, each tagged `early`, and takes the catcher's listeners off so nothing is reported twice. With no `dsn` it does nothing and loads nothing. The SDK chunk is the client set up by hand with six integrations (event filters, function to string, the global handlers, linked errors, dedupe, the page's URL and user agent): no tracing, no replay, no breadcrumbs. Measured alone with esbuild, the chunk weighs 69.9 KB raw, 24.6 KB gzipped, and 22.3 KB in brotli, where the old `@sentry/react` chunk with browser tracing, measured the same way, weighed 136.2 KB, 47.0 KB, and 41.5 KB; a site's own build bundles them with what it shares, so its figures differ (a real site's new chunk measured 81 KB raw and 28 KB gzipped, replacing one of 425 KB raw and 141 KB gzipped). `AppErrorBoundary` hands a render crash to the same buffer (`reportError`), since React keeps a caught crash from the window's handlers; on a page where reporting never started and no inline catcher runs, the crash is let go quietly rather than held by a catcher nobody reads. The package carries `@sentry/browser`, so a site needs no Sentry dependency of its own.
+3. **The server reporter.** `@atelic-action/ui/monitoring/server`, built like the gate so a Vercel function imports it uncompiled: `reportServerError(error, { dsn?, request?, tags?, release?, environment? })` posts a Sentry envelope to the ingest the DSN names (`SENTRY_DSN`, then `VITE_SENTRY_DSN`), with the stack's frames, the runtime as a tag, and the release from `VERCEL_GIT_COMMIT_SHA`. It waits two seconds at most, never throws, and resolves whether or not the send worked. `withErrorReporting(handler)` reports a handler's throw and throws it again. The gate's middleware reports anything it throws, and passes and blocks exactly as before.
+
+**The launch check.** Once reporting has started, `window.__atelicErrors.test()` in the browser's console throws an error from the package's own code on the next turn, uncaught, named "Atelic error reporting launch check: thrown on purpose from @atelic-action/ui" (`LAUNCH_CHECK_MESSAGE`). Run it on a site's first production deploy: the error should reach Sentry under the deploy's release and environment with a readable, source mapped stack. A stack of minified names means the upload did not run.
+
+Two noises are left out, the list kept short: an error whose top frame is a browser extension's (`chrome-extension://`, `moz-extension://`, `safari-extension://`, `safari-web-extension://`), and the in app webview bridges failing ("Java object is gone", "Error invoking postMessage").
+
+**What is captured:** uncaught errors and unhandled rejections in the browser, from before first paint on; render crashes an error boundary catches; a function's or the middleware's throw, and whatever a function reports by hand. **What is not:** performance, sessions, replays, breadcrumbs, console output, and the expected misses (a contact form's validation answer, a malformed or expired gate cookie). **Privacy:** a server report carries the request's method, its path with no query string, and its user agent, and nothing else from the request: never a body, never another header. A browser report is cut the same way before it leaves the page: the page's URL and each stack frame's file lose their query string and fragment, the referrer goes, and the user agent is the one header kept. A contact form's request holds a person's name, address, and message.
+
+| Variable | Where | What it does |
+|---|---|---|
+| `VITE_SENTRY_DSN` | the Vercel project, every environment | The browser's DSN, read by the start function; the server reporter falls back to it. Required for a production build |
+| `SENTRY_DSN` | the Vercel project, optional | The server's DSN when it should differ from the browser's |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | the Vercel project, production | With all three, `marketingConfig` adds the Sentry Vite plugin: it creates a release named by the commit, uploads hidden source maps (`build.sourcemap: "hidden"`, only then), and deletes every map from `dist/` once uploaded. With any missing, the build is unchanged |
+
+`marketingConfig` hands the browser the commit (`VERCEL_GIT_COMMIT_SHA`, else `GITHUB_SHA`) as `import.meta.env.VITE_RELEASE`, the same name the upload's release takes, so a stack trace meets its source maps, and the environment as `import.meta.env.VITE_ENVIRONMENT`: `VERCEL_ENV` (production, preview, development) on Vercel, else the build's mode, since a production build's mode is production on every deploy, a preview's included. `atelic-check-sentry` also fails any build whose DSN is set but is not one.
+
+What a site changes. `src/router.tsx` drops its own Sentry import and its `afterFirstPaint`, and starts reporting where the lazy init was:
+
+```ts
+import { startErrorReporting } from "@atelic-action/ui/monitoring";
+
+if (typeof window !== "undefined") {
+	startErrorReporting({
+		dsn: env.VITE_SENTRY_DSN,
+		release: import.meta.env.VITE_RELEASE,
+		environment: import.meta.env.VITE_ENVIRONMENT,
+	});
+}
+```
+
+`src/routes/__root.tsx` puts the catcher first in `<head>`, and imports the boundary from the package in place of its own copy, so a render crash is reported (the site deletes its `src/shared/components/AppErrorBoundary.tsx` and `ErrorFallback.tsx`, whose package twins are the same page with a long message that wraps):
+
+```tsx
+import { AppErrorBoundary } from "@atelic-action/ui/artifact";
+import { ErrorCatcherScript } from "@atelic-action/ui/monitoring";
+
+<head>
+	<ErrorCatcherScript />
+	<HeadContent />
+</head>
+```
+
+`api/contact.ts` wraps its handler, and reports a refused send by hand, since that path answers rather than throws:
+
+```ts
+import { reportServerError, withErrorReporting } from "@atelic-action/ui/monitoring/server";
+
+export const POST = withErrorReporting(
+	async (request: Request): Promise<Response> => {
+		// ...the handler as it was, and where Resend refuses:
+		if (!response.ok) {
+			await reportServerError(new Error(`Resend answered ${response.status}`), { request, tags: { route: "contact" } });
+			return json(502, { ok: false, error: "Sending failed. Please try again in a moment." });
+		}
+	},
+	{ tags: { route: "contact" } },
+);
+```
+
+`package.json` runs the check first in `build` and drops its own `@sentry/react` dependency:
+
+```json
+"build": "atelic-check-sentry && atelic-check-images && tsc -b && vite build && ..."
+```
+
+A site with a real reason to launch without Sentry runs `atelic-check-sentry --allow-missing`, which lets the build through under a loud warning. `middleware.ts` changes nothing: the gate's middleware reports on its own.
 
 ## The Artifact Documents
 
@@ -513,20 +602,23 @@ export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath"
 
 Every site's footer has one shape, and `Footer` draws it (7.0.0):
 
-- **The brand column:** the logo, then the Google rating as plain text beside five stars (never a link), then the one address, the headquarters, linked to the business's Google profile, then the phone and the email, each a link.
-- **Four link columns:** Company, Resources, Social, and Legal, in that order. A Social link carries its icon in front of its words. A column with no links is left out, and the grid sizes itself to the columns shown.
+- **The brand column:** the header's lockup (the mark with the wordmark beside it, or the mark alone when `logo.wordmark` is false), then the Google rating beside five stars, the whole line one link to the business's Google profile when it has one, then the one address, the headquarters, linked to the same profile, then the phone and the email, each a link.
+- **The hours,** when the site gives them: a column of their own headed Hours (`hoursHeading`), each row's days beside or over its range, as the column's width allows (8.1.0).
+- **Four link columns:** Company, Resources, Social, and Legal, in that order. From 760px the columns share one row at their shares but never narrower than their longest word, wrapping a column to a second row before a label breaks inside itself (8.1.0). A Social link carries its icon in front of its words. A column with no links is left out, and the grid sizes itself to the columns shown.
 - **The closing bar:** `ClosingBar` under it all, `Copyright` with the business's name on the left and `Credit` on the right.
 
-The rating's five stars read `--star-fill`, the same token `StarRating`'s filled star reads, and fall back to `--review-gold` (`#f5b301`) when a theme sets none, so one line in `theme.css` recolors every star on a site (8.0.0). The logo is the mark the dark surface resolves to, by the header's own order (see the table under [Rendering From Props](#rendering-from-props)). The column headings are level 2 by default (`headingLevel` takes 2 to 6): the footer is a landmark beside the page's main content, so its sections sit one level under the page's `h1` whatever the page's own outline ends on, which satisfies axe's `heading-order` on every page and keeps the columns in a screen reader's heading list. Each is a `div` with `role="heading"` and `aria-level`, wearing `.footer-heading`, rather than an `h2`: a site's own bare `h2` rule is unlayered, so it beats every rule in the package's layer whatever its weight, and it is written for a page's section titles, not these small labels. A heading by role keeps the outline and matches no element rule, with no `!important` and no specificity raised.
+The rating's stars are hidden from assistive technology, so the line, linked or not, is named by its words ("4.8 on Google"); `ratingLabel` gives the link a fuller name when a site wants one ("4.8 on Google, opens the Google profile"). Linked, it opens in a new tab as the address does. With the hours the footer holds six columns, so from 760px to 1100px the brand column keeps a row of its own above the other five, and from 1100px all six share one row with the brand column a little wider; a phone sets the brand column over two across, as without them. The rating's five stars read `--star-fill`, the same token `StarRating`'s filled star reads, and fall back to `--review-gold` (`#f5b301`) when a theme sets none, so one line in `theme.css` recolors every star on a site (8.0.0). The logo is the header's lockup drawn on the dark band (8.1.0): the mark the dark surface resolves to, by the header's own order (see the table under [Rendering From Props](#rendering-from-props)), with the wordmark beside it, composed by the same parts the header's `BrandLockup` draws. Its picture is silent there, since the words name it. `logo.wordmark: false` draws the mark alone, named by `logo.alt`; a glyph tile keeps the name beside it, and a logo with no picture is the words alone. The column headings are level 2 by default (`headingLevel` takes 2 to 6): the footer is a landmark beside the page's main content, so its sections sit one level under the page's `h1` whatever the page's own outline ends on, which satisfies axe's `heading-order` on every page and keeps the columns in a screen reader's heading list. Each is a `div` with `role="heading"` and `aria-level`, wearing `.footer-heading`, rather than an `h2`: a site's own bare `h2` rule is unlayered, so it beats every rule in the package's layer whatever its weight, and it is written for a page's section titles, not these small labels. A heading by role keeps the outline and matches no element rule, with no `!important` and no specificity raised.
 
-The header carries the services and the service areas, so the footer does not repeat them. It holds no blurb, no hours, no call to action, and no credential badges; a site that needs one of those puts it on a page.
+The header carries the services and the service areas, so the footer does not repeat them. It holds no blurb, no call to action, and no credential badges; a site that needs one of those puts it on a page.
 
 `SiteShell` fills the footer from the `SiteConfig`, so a site names nothing twice:
 
 | The footer shows | From the config |
 |---|---|
 | The rating | `footer.rating`, as printed (`"4.8 on Google"`) |
+| The rating's link | `footer.ratingHref`, else `mapLinkURL`, the Google profile, whenever a rating is set; `footer.ratingLabel` names it |
 | The address and its link | `address` and `mapLinkURL`; `footer.showAddress: false` drops the address |
+| The hours | `hours`, each row's `labelShort` and its range on `clock`; `footer.showHours: false` keeps them out of the footer and in the structured data |
 | The phone and the email | `phone`, `email` |
 | Company | `nav` |
 | Resources | `footerLinks` |
@@ -536,7 +628,7 @@ The header carries the services and the service areas, so the footer does not re
 
 A site whose footer genuinely needs other columns names them outright in `footer.columns`, which replaces the derived four. Rendering `Footer` directly, a site passes `columns` itself.
 
-Moving to 7.0.0: `footerBlurb` and `footer.contactHeading` are gone from the config, and `Footer` no longer takes `blurb`, `socialLinks`, `links`, `extraLinks`, `contactHeading`, `hours`, or `legalLinks`. Delete `footerBlurb` from the site config; the rest carries over through the mapping above. The hours stay in the config for the structured data and the page sections that print them.
+Moving to 7.0.0: `footerBlurb` and `footer.contactHeading` are gone from the config, and `Footer` no longer takes `blurb`, `socialLinks`, `links`, `extraLinks`, `contactHeading`, `hours`, or `legalLinks`. Delete `footerBlurb` from the site config; the rest carries over through the mapping above. The hours stay in the config for the structured data and the page sections that print them, and since 8.1.0 the footer draws them again (see [Moving to 8.1.0](#moving-to-810)).
 
 ### The Mega Menu
 
@@ -546,14 +638,14 @@ A section is one of four kinds, named by `kind`; a section without one is a link
 
 | Kind | What it draws | Its data |
 |---|---|---|
-| link column (`kind` left out, or `"links"`) | A mono heading over its links. The heading is itself a link when it has an `href`. A link may carry a `description` under it, a `badge` ("Popular") in a pill after its label, and `children`, drawn indented under it with an elbow, each with its own `badge` | `{ heading, href?, links: [{ label, href, description?, badge?, external?, children? }] }` |
+| link column (`kind` left out, or `"links"`) | A mono heading over its links. The heading is itself a link when it has an `href`. A link may carry a `description` under it, a `badge` ("Popular") in a pill after its label, and `children`, drawn indented under it with an elbow, each with its own `badge`; `quiet` sets a link in the softer words and the regular weight, for a long list such as the towns under a region (8.1.0) | `{ heading, href?, links: [{ label, href, description?, badge?, external?, quiet?, children? }] }` |
 | `"picture"` | One photo filling the section, its caption over a wash at the foot, the whole of it a link named by the caption | `{ kind: "picture", image: { src, alt? }, caption, href }` |
 | `"rows"` | Icon rows two across under an optional heading: a lucide icon by name, a label, and a short line, one row (`highlight`) set on the primary | `{ kind: "rows", heading?, rows: [{ label, description?, icon, href, highlight? }] }` |
 | `"cards"` | Small cards under an optional heading, set off by a rule: a kicker, a title, and a meta line beside a square picture, or a quiet tile without one | `{ kind: "cards", heading?, cards: [{ kicker?, title, meta?, image?, href }] }` |
 
 A row's `icon` is one of `calculator`, `calendar`, `card`, `chat`, `document`, `help`, `home`, `mail`, `map`, `phone`, `pin`, `play`, `shield`, `star`, `tool`, `truck`, and `users` (the `NavIcon` type), each a lucide icon. `feature` is the card at the panel's right, 340px wide on `--primary-deep`: a picture taking the height the words leave, an eyebrow, a headline, a line (`text`), ticked `points` (`TickList`), and its action as a `Button` with the arrow, which turns light on the card (`.on-primary`). `allLabel` is off unless given; given, it links the group's own page first in the panel at a column link's weight.
 
-Every link in a panel that leads to the page being read carries `aria-current="page"`, the picture, the cards, a column heading, and the group's own link included, and a flat bar link on the current page is marked as a group holding it is. The sections share one row and wrap to a second when their least widths outrun it (a picture, icon rows, and cards beside the feature card at a narrow desktop), so none is squeezed past reading or pushed out of the card.
+Every link in a panel that leads to the page being read carries `aria-current="page"`, the picture, the cards, a column heading, and the group's own link included, and a flat bar link on the current page is marked as a group holding it is. On the solid bar the current entry reads `--primary-ink`; over a hero the transparent bar keeps it in `--on-dark` with its siblings and marks it with an underline, so it reads on a dark photograph whatever the theme's primary (8.1.0). The sections share one row and wrap to a second when their least widths outrun it (a picture, icon rows, and cards beside the feature card at a narrow desktop, or two link columns, icon rows, and cards on a wide wrap), so none is squeezed past reading or pushed out of the card. A section's least width is the larger of its floor (a link column's list 120px, the icon rows 320px, the cards 240px, the picture 220px) and its longest word, and words in a panel break only as a last resort, so no label breaks inside a word to make a row fit (8.1.0).
 
 On a phone and a tablet the menu opens each group as an accordion, one at a time, and every group starts closed whenever the menu opens, the one holding the current page included. It draws the same data: each section's heading, a link's children indented under it with the same elbow, the badges kept, icon rows and cards as plain links of their labels and titles, and a picture as a plain link of its caption. A plain entry wears a number, and the numbers count plain entries alone, so a group between them leaves no gap.
 
@@ -621,6 +713,24 @@ The space a section leaves above and below itself is one token, `--section-space
 | `compact` | `clamp(24px, 3.2vw, 44px)` | 20px | 0 |
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
+
+### Moving to 8.1.0
+
+Nothing breaks: every addition is an optional prop, config key, token, or entry. On a site that changes nothing, these change: the footer's hours, linked rating, and lockup; the fixes below; the current nav entry's underline on the solid bar; the credit link's underline; the footer's row wrapping a column before it squeezes a word; an email address breaking only at its @ or a dot; the contact dock never rising into the header; and the eyebrow's rule following its last line. Error reporting arrives for a site to wire.
+
+- **The hours come back to the footer, on by default.** A site whose config holds `hours` (every site does, for the structured data) shows them in its footer as a column headed Hours, beside the link columns. To keep them out of the footer, and in the structured data and the sections that print them, set `footer: { showHours: false }` in the site config. Rendering `Footer` directly, a site passes `hours` (`HoursRow[]`, already formatted) and, if it wants other words, `hoursHeading`.
+- **The rating links to the Google profile.** With `footer.rating` set, the whole rating line (the stars and the words) is one link, opening in a new tab, to `footer.ratingHref`, else `mapLinkURL`. A site with no `mapLinkURL` and no `ratingHref` keeps the plain line. `footer.ratingLabel` (and `Footer`'s `ratingLabel`) gives the link a fuller accessible name; `Footer` takes `ratingHref` directly.
+- **The footer draws the header's lockup.** A brand with a mark image gets the mark with its wordmark beside it in the footer, as in the header, where 8.0.0 drew the image alone. `logo.wordmark: false` keeps the image alone, named by `logo.alt`. The header and the footer draw it from one composition (`LockupParts`, internal to `BrandLockup.tsx`), so the two never drift.
+- **Fixed: a crowded mega panel no longer breaks words.** A panel's sections wrap to a second row before any is squeezed below its longest word or its floor; no label in a panel breaks inside a word. A panel that already fit lays out as before.
+- **Fixed: the current entry over a hero.** On the transparent bar over a hero the current entry (a page, a group holding it, or a scroll spied stop) reads `--on-dark` with its siblings and is underlined, where it read `--primary` (a dark green primary read 1.64 to 1 over a dark hero). The solid bar's current entry keeps its `--primary-ink` and takes the same 2px underline, since a deep primary can sit within 2 to 1 of the bar's other words (1.67 on a real site), and color alone told the current page.
+- **Error reporting, optional but expected** (see [Error Reporting](#error-reporting)): the early catcher, `startErrorReporting` from `@atelic-action/ui/monitoring`, the server reporter from `@atelic-action/ui/monitoring/server`, the middleware reporting its throws, the `atelic-check-sentry` command, and the source map upload in `marketingConfig`. Nothing changes for a site until it wires them, with two exceptions: `marketingConfig` now defines `import.meta.env.VITE_RELEASE` whenever the build knows its commit, and with `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` all set it uploads hidden source maps and deletes them from `dist/`. The package now depends on `@sentry/browser` and `@sentry/vite-plugin`, so a site drops its own `@sentry/react`. `AppErrorBoundary` hands a caught render crash to error reporting, which holds it in a buffer on the window until the SDK loads; with no DSN it goes nowhere.
+- **Fixed on a crowded page:** the header's lockup never shrinks (a wide mark in a bar with five groups, a number, and the call to action drew at 100 by 39 where it is 141 by 55 at its height); a phone number's no wrap holds the number alone, not a whole call row (a tel link of words alone, or the `.tel-number` the dock, the menu, the panel, `Button`, and `Locations` now put around the number), so a dock row's line wraps inside the panel; links sharing an href are keyed by place everywhere (the bar, the menu, the panels, the footer, the not found page, the dock, the app's nav), so a one page site renders every link and React warns of nothing; a theme whose phone menu sheet's ground equals its primary sets `--menu-badge-bg`, `--menu-badge-ink`, `--menu-cta-bg`, and `--menu-cta-ink` to `--on-primary` and `--primary-ink`, so the badge and the call to action show there rather than vanish; left unset they draw as in 8.0.0. The number's wrapper sits inside one plain span, so a button reading "Call (555) 555-0142" measures exactly what the bare words measure. The contact dock's title is a heading by role, so the brand's heading tokens and a site's heading rules never reach it, and a `BlogIndex` card's title pins its own look against the tokens.
+- **Fixed in the footer:** from 760px its columns are one row that wraps, each at its share as the grid gave it but never narrower than its longest word, so a crowded footer (the hours beside four link columns, or another machine's wider font) wraps a column to a second row rather than break "Instagram" inside itself; an icon stays on its label's line; an email address offers breaks after its @ and before each dot (`<wbr>`), so it never breaks inside a word.
+- **Fixed in the dock:** the launcher never rises into the fixed header. Over a footer taller than the room left it holds 16px under the header (`ContactDock`'s new `header` selector, default `header.nav`), where it once rose over the phone's burger.
+- **Fixed in the eyebrow:** the kicker is inline, so its trailing rule follows the last line of a kicker that wraps rather than standing apart beside the block; `Eyebrow rule={false}` and `Hero eyebrowRule={false}` set the kicker without it. The credit link in the closing bar is underlined, a link in a sentence never marked by color alone.
+- **New options, each off or at today's look by default:** a `LinkColumns` row without `href` is words alone, and `--link-columns-min` (170px) sets a column's least width; a panel link takes `quiet` (the softer words, the regular weight); `site.cta.arrow` puts the hero's arrow on the header's button, `site.cta.stickyLabel` gives the phone's sticky bar its own words, and `site.menuLabel` sets words beside the burger on a phone, which then name it; and the tokens in the table under [Tokens](#tokens) marked 8.1.0.
+- **Error reporting, as wired since:** `startErrorReporting` defaults its environment to `import.meta.env.VITE_ENVIRONMENT`, which `marketingConfig` now defines from `VERCEL_ENV` (else the mode); `window.__atelicErrors.test()` is the launch check; `isMiss` in `@atelic-action/ui/routing` is the miss check a site's root route asks; `atelic-check-sentry` fails a malformed DSN.
+- **Smaller fixes:** `FullBleedVideo` given a `placeholder` and no `poster` never requests its `src`; `LinkColumns` holds two links to one page in a column; on a page wearing the contact dock the hero's scroll cue moves to the middle of the hero's foot, out from under the launcher; `StickyCTABar` hands the space back to the listener it told when a caller swaps `onSpaceChange`; and the app's dark theme sets destructive words in their own `--destructive-ink` (red 400, `0 90.6% 70.8%`, 6.48 to 1 on the dark card), where they read the fill's deep red at 1.79.
 
 ### Moving to 8.0.0
 
@@ -884,9 +994,9 @@ The sheets read a set of tokens beyond the theme's palette, type, radii, and lay
 | Token | Default | What it colors or sets |
 |---|---|---|
 | `--primary-fill` | `--primary`, read in place | Every primary field that carries words: `.btn-primary`, the dock's launcher, panel head, and lead icon, the split hero and callout panel bands, the price band, a step bubble's badge, a menu badge, a highlighted menu row, the reveal slider's after label, the map's directions chip. Its hover is 84% of it mixed with `--shade`, its press 74% |
-| `--primary-ink` | `--primary`, read in place | The primary's words on `--surface` and `--surface-alt`: the eyebrow, `em.serif` and a heading's `.serif`, the current nav entry, group, and panel link, inline accent links and hovers, feature numbers and links, the FAQ's links, the gate's brand line and links, the info tone, the surface button inside `.on-primary` |
+| `--primary-ink` | `--primary`, read in place | The primary's words on `--surface` and `--surface-alt`: the eyebrow, `em.serif` and a heading's `.serif`, the current nav entry and group on the solid bar, the current panel link, inline accent links and hovers, feature numbers and links, the FAQ's links, the gate's brand line and links, the info tone, the surface button inside `.on-primary` |
 | `--on-primary` | `#fff` | Anything set on the primary fill: a primary button's words, the dock's head and lead icon, the split hero's copy and accent, the callout panel, the price band, a step bubble's badge, a menu badge, a highlighted menu row, the feature card. Read whole, never softened, since a fill cut to pass leaves no room for a mix |
-| `--on-dark` | `#fff` | Anything on a dark band or over a photograph: the skip link, the transparent header, the dark header's text (mixed with `--surface`), the phone menu's rules, the footer's headings and links, a hero's headline, the contact card, the process band, a ghost button and a chip on dark, the reveal slider's handle |
+| `--on-dark` | `#fff` | Anything on a dark band or over a photograph: the skip link, the transparent header and its current entry (8.1.0), the dark header's text (mixed with `--surface`), the phone menu's rules, the footer's headings and links, a hero's headline, the contact card, the process band, a ghost button and a chip on dark, the reveal slider's handle |
 | `--on-dark-chip` | `#efe7da` | A chip's words on a dark band (the credentials chips, `Chip onDark`) |
 | `--on-dark-quiet` | `rgb(248 244 237 / 0.74)` | Quiet text on the dark process band |
 | `--on-dark-faint` | `rgb(248 244 237 / 0.52)` | The quietest text on a dark band: the closing bar's copyright and credit (5.23 to 1 on `#151515`), where a light ground's gray such as `--neutral-500` falls short |
@@ -902,9 +1012,20 @@ The sheets read a set of tokens beyond the theme's palette, type, radii, and lay
 | `--weight-light`, `--weight-regular`, `--weight-medium`, `--weight-semibold`, `--weight-strong`, `--weight-bold`, `--weight-heavy` | 300, 400, 500, 600, 650, 700, 800 | Every font weight in every layered sheet. A font kit with only 400 and 700 maps each name to one of those (medium to 400, semibold, strong, and heavy to 700), so the browser synthesizes no weight |
 | `--brand-mark-height` | `30px` (20px inside `ArtifactShell`) | The header mark's height, and a sent document's recipient mark; the width follows the image's own ratio |
 | `--sticky-cta-space` | `0px`, read in place | The room the phone's sticky bar takes while it shows, which the closing bar pads its foot by; `SiteShell` sets it on its root from `StickyCTABar`'s measurement, and a theme never does |
+| `--header-max`, `--header-gutter` | `--max-width`, `--gutter`, read in place | The bar's and the mega panel's width and side gutter, for a design that runs the bar wider than the content (8.1.0) |
+| `--nav-open-bg`, `--nav-open-ink` | `--hover-tint`, the bar's words | The open group's pill (8.1.0) |
+| `--nav-phone-pad`, `--nav-phone-size` | `6px 16px 6px 12px`, `0.95rem` | The header phone pill's padding and its number's size (8.1.0) |
+| `--heading-transform`, `--heading-weight`, `--heading-tracking`, `--heading-color` | `none`, `--weight-heavy`, `-0.02em`, inherited | Every `h1` and `h2` the package sets (section headings, the heroes', the page hero's). The color never reaches a heading on a filled or dark ground (`.on-primary`, `.on-dark`, the hero, the process band, the callout panel, the price band, the credentials band, the contact card), which reset it, nor one a component colors itself (8.1.0) |
+| `--card-title-color` | inherited | A `FeatureGrid` card's title (8.1.0) |
+| `--callout-transform`, `--callout-sub-font` | `none`, inherited | A `CalloutPanel` title's case and its line's face (8.1.0) |
+| `--proof-star-fill` | `--primary` | A star row in a `ProofStrip` value (8.1.0) |
+| `--hero-split-pad` | the wrap's edge, computed | The split hero's copy sides (8.1.0) |
+| `--footer-mark-height`, `--footer-nap-weight` | `38px`, `--weight-semibold` (the plain address: the column's own) | The footer lockup's mark and the address, phone, and email lines (8.1.0) |
+| `--menu-badge-bg`, `--menu-badge-ink`, `--menu-cta-bg`, `--menu-cta-ink` | `--primary-fill`, `--on-primary` (as 8.0.0 drew them) | The phone menu's badge and call to action. A theme whose sheet's ground equals its primary sets them to `--on-primary` and `--primary-ink`, or they vanish into the sheet (8.1.0) |
+| `--link-columns-min` | `170px` | The least a `LinkColumns` column narrows to (8.1.0) |
 | `--section-space`, `--block-gap`, `--card-min` | `clamp(56px, 9vw, 120px)`, `44px`, `240px` | The section rhythm where no `base.css` sets it (an app importing `components.css` alone); with `base.css` the settings under [Density](#density) win |
 
-Three more read a fallback in place: `--star-fill` colors every filled star (`StarRating`'s, which falls back to the text color, and the footer's rating, which falls back to `--review-gold`), `--font-condensed` sets a `CalloutPanel` title's face, and `--neutral-700` colors prose bodies (`ProseBlocks`, the blog's index and post), falling back to `--ink`. The tone palette (`--tone-good` and its kin) is declared with the defaults and described under [Page Components](#page-components).
+The review carousel's dots and a ghost button's outline already read neutral tokens a theme sets, so they take none of their own: the dots `--neutral-200` (hover `--neutral-500`, current `--ink`), the outline `--neutral-300` (hover `--ink`). Three more read a fallback in place: `--star-fill` colors every filled star (`StarRating`'s, which falls back to the text color, and the footer's rating, which falls back to `--review-gold`), `--font-condensed` sets a `CalloutPanel` title's face, and `--neutral-700` colors prose bodies (`ProseBlocks`, the blog's index and post), falling back to `--ink`. The tone palette (`--tone-good` and its kin) is declared with the defaults and described under [Page Components](#page-components).
 
 `@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
 
@@ -1060,7 +1181,7 @@ The import has to come before any other rule, or it is dropped without a word: t
 
 Proven on a copy of pinole-app thinned onto a packed tarball: with the line or the import, the built CSS holds every utility the shell uses; with neither, 165 of them are missing.
 
-The light theme's words pass 4.5 to 1 on what they sit on, and `tst/app/app-contrast.test.ts` reads the sheet to hold it there (8.0.0). Two stock shadcn values fell short and moved: `--destructive` is `0 72.2% 50.6%` (`#dc2626`; 4.63 to 1 under `--destructive-foreground`, 4.83 as words on a card, 4.66 on the ground) and `--muted-foreground` is `240 3.6% 43.5%` (`#6b6b73`; 4.81 on `--muted` and `--accent`, the grey a highlighted row wears). `--color-destructive-hover` is the fill mixed 85% with black, for a destructive fill's hover and press and for destructive words on the grey while pressed, so hovering never lightens the fill under its words. The provider's sonner toaster shows rich colors, whose stock light tones read 4.25 (success), 4.34 (error), 4.35 (info), and 3.07 (warning); the sheet darkens each tone's words through sonner's own variables, on a selector one element more specific than sonner's so the load order does not matter: success `hsl(140, 100%, 24%)` 5.22, info `hsl(210, 92%, 40%)` 5.28, warning `hsl(31, 92%, 32%)` 5.52, error `hsl(360, 100%, 41%)` 5.11. The dark theme's values are shadcn's and are not yet checked. The sheet sits outside the `atelic-ui` layer on purpose: its tokens and resets are in Tailwind's base layer and the scaffold is unlayered, as the template carried them, so the shell renders as it did.
+The light theme's words pass 4.5 to 1 on what they sit on, and `tst/app/app-contrast.test.ts` reads the sheet to hold it there (8.0.0). Two stock shadcn values fell short and moved: `--destructive` is `0 72.2% 50.6%` (`#dc2626`; 4.63 to 1 under `--destructive-foreground`, 4.83 as words on a card, 4.66 on the ground) and `--muted-foreground` is `240 3.6% 43.5%` (`#6b6b73`; 4.81 on `--muted` and `--accent`, the grey a highlighted row wears). `--color-destructive-hover` is the fill mixed 85% with black, for a destructive fill's hover and press and for destructive words on the grey while pressed, so hovering never lightens the fill under its words. The provider's sonner toaster shows rich colors, whose stock light tones read 4.25 (success), 4.34 (error), 4.35 (info), and 3.07 (warning); the sheet darkens each tone's words through sonner's own variables, on a selector one element more specific than sonner's so the load order does not matter: success `hsl(140, 100%, 24%)` 5.22, info `hsl(210, 92%, 40%)` 5.28, warning `hsl(31, 92%, 32%)` 5.52, error `hsl(360, 100%, 41%)` 5.11. Destructive words read `--color-destructive-ink`, which falls back to `--destructive`, so the light theme's one red serves both; the dark theme sets `--destructive-ink` to `0 90.6% 70.8%` (red 400, `#f87171`, 6.48 to 1 on its card, 5.62 on the grey highlight), since its fill, `0 62.8% 30.6%`, read 1.79 to 1 as words on the card (8.1.0). The rest of the dark theme's values are shadcn's and are not yet checked. The sheet sits outside the `atelic-ui` layer on purpose: its tokens and resets are in Tailwind's base layer and the scaffold is unlayered, as the template carried them, so the shell renders as it did.
 
 ### The Kit
 

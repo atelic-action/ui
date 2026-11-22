@@ -11,7 +11,11 @@ export interface FullBleedVideoProps {
 	poster?: string;
 	/** What the video shows, for a screen reader. Site copy, so it always comes in as a prop. */
 	label: string;
-	/** A shot brief rendered as a labeled block until the first frame exists. */
+	/**
+	 * A shot brief rendered as a labeled block until the first frame exists.
+	 * Given without a `poster`, it says the footage does not exist yet, so the
+	 * band draws the brief alone and never requests `src`.
+	 */
 	placeholder?: string;
 	/** The band's height, any CSS length. Defaults to clamp(260px, 42vw, 560px). */
 	height?: string;
@@ -60,10 +64,15 @@ export function FullBleedVideo({
 	// A pause the reader asked for holds until they ask to play again.
 	const [held, setHeld] = useState(false);
 
+	// A brief with no first frame is a band whose footage is not shot yet:
+	// there is no clip to fetch, so the video never mounts.
+	const footage = src !== "" && (poster !== undefined || placeholder === undefined);
+
 	useEffect(() => {
+		if (!footage) return;
 		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 		setLoad(true);
-	}, []);
+	}, [footage]);
 
 	useEffect(() => {
 		const band = bandRef.current;
@@ -127,7 +136,7 @@ export function FullBleedVideo({
 					{placeholder ?? label}
 				</div>
 			)}
-			{load && near && (
+			{footage && load && near && (
 				<video
 					ref={ref}
 					className={["fbv-video", playing && "is-on"].filter(Boolean).join(" ")}
@@ -143,7 +152,7 @@ export function FullBleedVideo({
 					<source src={withBase(src)} type={type} />
 				</video>
 			)}
-			{controls && load && near && (
+			{controls && footage && load && near && (
 				<button
 					type="button"
 					className="fbv-toggle"

@@ -34,14 +34,100 @@ describe("Footer", () => {
 		const { container } = render(<Footer {...props} />);
 		const brandColumn = container.querySelector(".footer-brand") as HTMLElement;
 
-		expect(within(brandColumn).getByRole("img", { name: brand.name })).toBeInTheDocument();
+		// The header's lockup: the mark, silent, beside the brand's name.
+		const lockup = brandColumn.querySelector(".footer-lockup");
+		expect(lockup?.querySelector("img")).toHaveAttribute("alt", "");
+		expect(lockup?.textContent).toBe(brand.name);
 		const order = Array.from(brandColumn.children, (child) => child.className || child.tagName);
-		expect(order).toEqual(["IMG", "footer-rating", "nap"]);
+		expect(order).toEqual(["footer-wordmark footer-lockup", "footer-rating", "nap"]);
 		const nap = Array.from(brandColumn.querySelectorAll(".nap > *"), (row) => row.textContent);
 		expect(nap).toEqual(["123 Main StDenver, CO 80205", phone.display, email]);
 	});
 
-	it("prints the rating as plain text beside five stars, never a link", () => {
+	it("draws artwork that spells the name alone, named by its alt, when wordmark is false", () => {
+		const { container } = render(
+			<Footer
+				{...props}
+				brand={{ ...brand, logo: { src: "/logo.png", alt: "Test Practice", wordmark: false } }}
+			/>,
+		);
+		const brandColumn = container.querySelector(".footer-brand") as HTMLElement;
+		expect(within(brandColumn).getByRole("img", { name: "Test Practice" })).toBeInTheDocument();
+		expect(brandColumn.querySelector(".footer-lockup")).toBeNull();
+	});
+
+	it("keeps the words alone for a brand with no image, and the tile beside the name", () => {
+		const words = render(
+			<Footer {...props} brand={{ name: "Test Practice", logo: { run: true } }} />,
+		);
+		const wordmark = words.container.querySelector(".footer-wordmark");
+		expect(wordmark?.textContent).toBe("Test Practice");
+		expect(wordmark).not.toHaveClass("footer-lockup");
+		expect(wordmark?.querySelector("img")).toBeNull();
+		words.unmount();
+
+		const tile = render(
+			<Footer {...props} brand={{ name: "Test Practice", logo: { tile: "T", wordmark: false } }} />,
+		);
+		expect(tile.container.querySelector(".footer-wordmark")?.textContent).toBe("Test Practice");
+	});
+
+	it("links the whole rating line to the profile in a new tab, named by its words", () => {
+		render(<Footer {...props} ratingHref="https://maps.example/profile" />);
+		const rating = screen.getByRole("link", { name: "4.8 on Google" });
+		expect(rating).toHaveAttribute("href", "https://maps.example/profile");
+		expect(rating).toHaveAttribute("target", "_blank");
+		expect(rating.querySelectorAll(".footer-stars svg")).toHaveLength(5);
+		expect(rating.querySelector(".footer-stars")).toHaveAttribute("aria-hidden", "true");
+	});
+
+	it("names the rating link by the site's own words when it gives them", () => {
+		render(
+			<Footer
+				{...props}
+				ratingHref="https://maps.example/profile"
+				ratingLabel="4.8 on Google, opens the profile"
+			/>,
+		);
+		expect(
+			screen.getByRole("link", { name: "4.8 on Google, opens the profile" }),
+		).toHaveTextContent("4.8 on Google");
+	});
+
+	it("draws the hours as a column of their own, headed Hours, and counts it in the grid", () => {
+		const hours = [
+			{ label: "Mon to Fri", range: "9a to 5p" },
+			{ label: "Sat", range: "Closed" },
+		];
+		const { container } = render(<Footer {...props} hours={hours} />);
+		const heading = screen.getByRole("heading", { name: "Hours", level: 2 });
+		const column = heading.parentElement as HTMLElement;
+		expect(
+			within(column)
+				.getAllByRole("term")
+				.map((term) => term.textContent),
+		).toEqual(["Mon to Fri", "Sat"]);
+		expect(
+			within(column)
+				.getAllByRole("definition")
+				.map((d) => d.textContent),
+		).toEqual(["9a to 5p", "Closed"]);
+		const grid = container.querySelector(".footer-grid") as HTMLElement;
+		expect(grid).toHaveClass("has-hours");
+		expect(grid.style.getPropertyValue("--footer-columns")).toBe("5");
+	});
+
+	it("draws no hours column for no hours or an empty list, and takes its own heading", () => {
+		const { unmount } = render(<Footer {...props} hours={[]} />);
+		expect(screen.queryByRole("heading", { name: "Hours" })).toBeNull();
+		unmount();
+		render(
+			<Footer {...props} hours={[{ label: "Daily", range: "7a to 3p" }]} hoursHeading="Open" />,
+		);
+		expect(screen.getByRole("heading", { name: "Open" })).toBeInTheDocument();
+	});
+
+	it("prints the rating as plain text beside five stars when it has no link", () => {
 		const { container } = render(<Footer {...props} />);
 		const rating = container.querySelector(".footer-rating");
 
@@ -61,7 +147,12 @@ describe("Footer", () => {
 			"href",
 			`tel:${phone.e164}`,
 		);
-		expect(screen.getByRole("link", { name: email })).toHaveAttribute("href", `mailto:${email}`);
+		// The address carries <wbr> break points, which jsdom (no UA sheet) reads
+		// as blocks when it names the link, so it is found by its href here; the
+		// stories name it in a real browser.
+		const mail = document.querySelector(`a[href="mailto:${email}"]`);
+		expect(mail?.textContent).toBe(email);
+		expect(mail?.querySelectorAll("wbr")).toHaveLength(2);
 	});
 
 	it("prints the address as text when it has no profile to link, and drops it when none is given", () => {

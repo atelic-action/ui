@@ -1,6 +1,7 @@
 import { type ReactNode, useCallback, useRef } from "react";
 import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
+import { formatHoursRange } from "../lib/hours";
 import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
 import type { Density, NavItem, SiteConfig } from "../sections/siteConfig";
@@ -140,6 +141,8 @@ export function SiteShell({
 		else root.style.removeProperty("--sticky-cta-space");
 	}, []);
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
+	// The phone's sticky bar may carry its own words (`cta.stickyLabel`).
+	const stickyLink = { ...cta, label: site.cta.stickyLabel ?? cta.label };
 	// Every link and picture a panel section holds, based.
 	const section = (part: NavPanelSection): NavPanelSection => {
 		if (isLinkColumn(part)) {
@@ -202,6 +205,19 @@ export function SiteShell({
 		},
 		{ heading: "Legal", links: based(site.legalLinks) ?? [] },
 	];
+	// The footer's hours, formatted as the footer prints them, unless the site
+	// keeps them out; the config's hours still feed its structured data.
+	const footerHours =
+		site.footer?.showHours === false
+			? undefined
+			: site.hours?.map((row) => ({
+					label: row.labelShort,
+					range: formatHoursRange(row, { short: true, clock: site.clock }),
+				}));
+	// The rating links to the Google profile: the site's own link for it, else
+	// the profile the address already links to.
+	const rating = site.footer?.rating;
+	const ratingHref = rating ? (site.footer?.ratingHref ?? site.mapLinkURL) : undefined;
 	// The header takes one variant. A hero page wins over a dark one: the bar
 	// sits transparent over the hero either way, and only its scrolled state
 	// differed.
@@ -225,6 +241,7 @@ export function SiteShell({
 					hideCTA={hideNavCTA}
 					contact={{ phone: site.phone, email: site.email, address: site.address }}
 					phones={site.header?.phones}
+					menuLabel={site.menuLabel}
 				/>
 				<main id="main" className={heroNav ? undefined : "clears-nav"}>
 					{children}
@@ -233,7 +250,7 @@ export function SiteShell({
 				    the bar is there from the top; the hero home page keeps the slide in. */}
 				{stickyCTA && (
 					<StickyCTABar
-						primaryCTA={cta}
+						primaryCTA={stickyLink}
 						phone={site.phone}
 						fromTop={!heroNav}
 						onSpaceChange={setBarSpace}
@@ -242,11 +259,14 @@ export function SiteShell({
 				{footer ? (
 					<Footer
 						brand={brand}
-						rating={site.footer?.rating}
+						rating={rating}
+						ratingHref={ratingHref}
+						ratingLabel={site.footer?.ratingLabel}
 						address={site.footer?.showAddress === false ? undefined : site.address}
 						addressHref={site.mapLinkURL}
 						phone={site.phone}
 						email={site.email}
+						hours={footerHours}
 						columns={footerColumns}
 						attribution={site.attribution}
 						note={site.footer?.note}

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Eyebrow } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { expectNoSidewaysScroll } from "../support/geometry";
+import { expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
 import { onDarkBand } from "./support";
 
@@ -68,6 +68,34 @@ export const LongestOnPhone: Story = {
 	globals: pin("phone"),
 	args: { children: `Wholesale for cafes, grocers, and ${longWord} lovers across Fairhaven` },
 	play: async () => {
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** `rule={false}` sets the kicker alone, with no trailing rule. */
+export const NoRule: Story = {
+	args: { rule: false },
+	play: async ({ canvas }) => {
+		const eyebrow = canvas.getByText("Baked daily");
+		await expect(getComputedStyle(eyebrow, "::after").display).toBe("none");
+	},
+};
+
+/**
+ * A kicker that wraps on a phone: its rule runs inline after the last line's
+ * words, where a flex row once stood it apart beside the whole block.
+ */
+export const WrappedRuleFollowsLastLine: Story = {
+	globals: pin("phone"),
+	args: { children: "Wholesale for the cafes and grocers of Fairhaven and the Riverside blocks" },
+	play: async ({ canvas }) => {
+		const eyebrow = canvas.getByText(/Wholesale for the cafes/);
+		await expect(lines(eyebrow)).toBeGreaterThan(1);
+		// The rule is inline content after the words, not a flex item beside them.
+		await expect(getComputedStyle(eyebrow).display).toBe("inline-block");
+		const rule = getComputedStyle(eyebrow, "::after");
+		await expect(rule.display).toBe("inline-block");
+		await expect(rule.width).toBe("40px");
 		await expectNoSidewaysScroll();
 	},
 };

@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
-import { Footer, type FooterColumn, SiteHeader } from "../../src/chrome";
+import { Footer, type FooterColumn, type HoursRow, SiteHeader } from "../../src/chrome";
+import { formatHoursRange } from "../../src/sections";
 import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
-import { expectNoSidewaysScroll } from "../support/geometry";
+import { brokenWords, expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** The default footer's four columns, as SiteShell derives them from the bakery's config. */
@@ -15,6 +17,21 @@ const columns: FooterColumn[] = [
 	},
 	{ heading: "Legal", links: site.legalLinks ?? [] },
 ];
+
+/** The bakery's hours as SiteShell formats them for the footer. */
+const hours: HoursRow[] = site.hours.map((row) => ({
+	label: row.labelShort,
+	range: formatHoursRange(row, { short: true }),
+}));
+
+const profile = "https://maps.example.com/?q=418+Alder+Street";
+
+/**
+ * The words the browser broke inside themselves. An email address counts
+ * too: it offers breaks after its @ and before each dot (each part its own
+ * run of text), so a part broken inside itself is a word broken.
+ */
+const brokenLabels = (element: HTMLElement) => brokenWords(element);
 
 /** The one footer shape every site wears (README, The Default Footer). */
 const meta = {
@@ -119,13 +136,46 @@ export const NoAddress: Story = {
 	},
 };
 
-/** The mark as a picture in place of the wordmark. */
+/** The footer's lockup image, reached from the words beside it (it is alt="", named by them). */
+const lockupMark = (words: HTMLElement) =>
+	words.closest(".footer-lockup")?.querySelector("img") ?? undefined;
+
+/**
+ * A mark image with the wordmark: the footer draws the header's lockup, the
+ * mark and the live words beside it on one line, the picture silent since
+ * the words name it.
+ */
 export const ImageLogo: Story = {
+	args: { brand },
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const words = footer.getByText("Kestrel Hollow");
+		const mark = lockupMark(words);
+		await expect(mark).toBeVisible();
+		await expect(mark).toHaveAttribute("alt", "");
+		const [image, text] = [mark as HTMLElement, words].map((element) =>
+			element.getBoundingClientRect(),
+		);
+		// Side by side, centered on one line.
+		await expect(image.right).toBeLessThanOrEqual(text.left);
+		await expect(
+			Math.abs((image.top + image.bottom) / 2 - (text.top + text.bottom) / 2),
+		).toBeLessThan(3);
+	},
+};
+
+/** Artwork that already spells the name (`wordmark: false`) stands alone, named by its alt. */
+export const ImageLogoAlone: Story = {
 	args: {
-		brand: { ...brand, logo: { src: "/images/kestrel-mark-light.svg", alt: "Kestrel Hollow" } },
+		brand: {
+			...brand,
+			logo: { src: "/images/kestrel-mark-light.svg", alt: "Kestrel Hollow", wordmark: false },
+		},
 	},
 	play: async ({ canvas }) => {
-		await expect(canvas.getByRole("img", { name: "Kestrel Hollow" })).toBeVisible();
+		const footer = within(canvas.getByRole("contentinfo"));
+		await expect(footer.getByRole("img", { name: "Kestrel Hollow" })).toBeVisible();
+		await expect(footer.queryByText("Kestrel Hollow Bakehouse")).toBeNull();
 	},
 };
 
@@ -173,12 +223,40 @@ export const LongestContent: Story = {
 /** The file a picture draws, by its path. */
 const file = (img: HTMLImageElement | undefined) => (img ? new URL(img.src).pathname : undefined);
 
-/** A brand cut per surface: the dark band draws the cut for a dark ground, named for the business. */
+/**
+ * A brand cut per surface: the dark band draws the cut for a dark ground
+ * (`resolveMark`'s dark choice), beside the wordmark, as the dark header does.
+ */
 export const MarkCutForTheDarkBand: Story = {
 	args: {
 		brand: {
 			...brand,
-			logo: { onLight: marks.wideOnLight, onDark: marks.wideOnDark, alt: "Kestrel Hollow" },
+			logo: {
+				onLight: marks.glyphOnLight,
+				onDark: marks.glyphOnDark,
+				alt: "Kestrel Hollow",
+				wordmark: "Kestrel Hollow",
+			},
+		},
+	},
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const mark = lockupMark(footer.getByText("Kestrel Hollow"));
+		await expect(file(mark)).toBe(marks.glyphOnDark);
+	},
+};
+
+/** The wide cut alone (`wordmark: false`): the dark ground's artwork, named for the business. */
+export const MarkCutForTheDarkBandAlone: Story = {
+	args: {
+		brand: {
+			...brand,
+			logo: {
+				onLight: marks.wideOnLight,
+				onDark: marks.wideOnDark,
+				alt: "Kestrel Hollow",
+				wordmark: false,
+			},
 		},
 	},
 	play: async ({ canvas }) => {
@@ -210,7 +288,8 @@ export const SameConfigAsTheDarkHeader: Story = {
 		const headerMark = Array.from(header.querySelectorAll("img")).find(
 			(img) => getComputedStyle(img).display !== "none",
 		);
-		const footerMark = canvas.getByRole("img", { name: "Kestrel Hollow" }) as HTMLImageElement;
+		const footer = within(canvas.getByRole("contentinfo"));
+		const footerMark = lockupMark(footer.getByText("Kestrel Hollow Bakehouse"));
 		await expect(file(headerMark)).toBe(file(footerMark));
 		await expect(file(footerMark)).toBe(marks.glyphOnDark);
 	},
@@ -307,5 +386,170 @@ export const UnderASiteHeadingRule: Story = {
 		await step("the footer's headings look as they did", async () => {
 			await expect(look(heading)).toEqual(before);
 		});
+	},
+};
+
+/**
+ * The hours, when the site gives them: a column of their own headed Hours,
+ * beside the link columns and on their row, each day's range by its days.
+ */
+export const WithHours: Story = {
+	args: { hours },
+	play: async ({ canvas, step }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const heading = footer.getByRole("heading", { name: "Hours", level: 2 });
+		await step("each row's days and its range", async () => {
+			const column = heading.parentElement as HTMLElement;
+			const terms = within(column).getAllByRole("term");
+			const definitions = within(column).getAllByRole("definition");
+			await expect(terms.map((term) => term.textContent)).toEqual([
+				"Tue to Fri",
+				"Sat and Sun",
+				"Mon",
+			]);
+			await expect(definitions.map((definition) => definition.textContent)).toEqual([
+				"7a to 3p",
+				"8a to 2p",
+				"Closed",
+			]);
+		});
+		await step("the hours share the link columns' row, and nothing is crowded", async () => {
+			const top = (element: HTMLElement) => Math.round(element.getBoundingClientRect().top);
+			const navs = footer.getAllByRole("navigation");
+			await expect(new Set([heading, ...navs].map(top)).size).toBe(1);
+			await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
+		});
+	},
+};
+
+/** On a phone the hours take a column in the pairs under the brand column. */
+export const WithHoursPhone: Story = {
+	args: { hours },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const box = (element: HTMLElement) => element.getBoundingClientRect();
+		const hoursHeading = footer.getByRole("heading", { name: "Hours" });
+		const [company] = footer.getAllByRole("navigation");
+		await expect(Math.round(box(hoursHeading).top)).toBe(
+			Math.round(box(company as HTMLElement).top),
+		);
+		await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * The rating linked to the Google profile: the stars and the words one link,
+ * opening in a new tab, named by the words alone since the stars are hidden.
+ */
+export const RatingLinked: Story = {
+	args: { ratingHref: profile },
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const rating = footer.getByRole("link", { name: "4.9 on Google" });
+		await expect(rating).toHaveAttribute("href", profile);
+		await expect(rating).toHaveAttribute("target", "_blank");
+		await expect(rating).toHaveAttribute("rel", expect.stringContaining("noopener"));
+		// The stars ride inside the link, hidden from assistive technology.
+		const stars = rating.querySelector("[aria-hidden='true']");
+		await expect(stars?.querySelectorAll("svg")).toHaveLength(5);
+	},
+};
+
+/** A site's own accessible name for the linked rating, saying where it leads. */
+export const RatingLinkedWithItsOwnName: Story = {
+	args: { ratingHref: profile, ratingLabel: "4.9 on Google, opens the Google profile" },
+	play: async ({ canvas }) => {
+		const rating = within(canvas.getByRole("contentinfo")).getByRole("link", {
+			name: "4.9 on Google, opens the Google profile",
+		});
+		await expect(rating).toHaveTextContent("4.9 on Google");
+	},
+};
+
+/**
+ * Everything the footer can hold: the lockup, the rating linked to the
+ * profile, the linked address, the phone, the email, the hours, and the four
+ * link columns.
+ */
+export const Full: Story = {
+	args: { brand, ratingHref: profile, hours },
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		await expect(lockupMark(footer.getByText("Kestrel Hollow"))).toBeVisible();
+		await expect(footer.getByRole("link", { name: "4.9 on Google" })).toBeVisible();
+		await expect(footer.getByRole("heading", { name: "Hours" })).toBeVisible();
+		await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** The same footer on a phone. */
+export const FullPhone: Story = {
+	...Full,
+	globals: pin("phone"),
+};
+
+/**
+ * The full footer under wider type than the stories' font: a wide fallback
+ * face and a little letter spacing, the kind of difference another
+ * machine's font metrics make. No label breaks inside a word, an icon stays
+ * with its label, the email breaks only at its @ or a dot, and when the row
+ * cannot hold every column at its longest word, a column wraps to the next
+ * row rather than squeeze.
+ */
+export const FullWiderMetrics: Story = {
+	...Full,
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--font-sans": 'Verdana, "DejaVu Sans", sans-serif',
+						fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+						letterSpacing: "0.04em",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		await expect(brokenLabels(footer)).toEqual([]);
+		// The icon and its one word label share a line: the word in one line
+		// box, its middle level with the icon's.
+		const instagram = within(footer).getByRole("link", { name: "Instagram" });
+		const word = document.createRange();
+		word.selectNodeContents(instagram.lastChild as Node);
+		const boxes = Array.from(word.getClientRects());
+		await expect(new Set(boxes.map((box) => Math.round(box.top))).size).toBe(1);
+		const icon = (instagram.querySelector("svg") as SVGElement).getBoundingClientRect();
+		const text = boxes[0] as DOMRect;
+		await expect(icon.right).toBeLessThanOrEqual(text.left);
+		await expect(Math.abs(icon.top + icon.height / 2 - (text.top + text.height / 2))).toBeLessThan(
+			4,
+		);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** The same at the narrowest desktop with the hours on one row. */
+export const FullWiderMetricsNarrow: Story = {
+	...FullWiderMetrics,
+	globals: pin("narrowDesktop"),
+};
+
+/** A long email address in the brand column at 1280 breaks at its @ or a dot, never inside a word. */
+export const LongEmailDesktop: Story = {
+	args: { email: "wholesale.orders.and.catering@kestrelhollowbakehouse.example.com", hours },
+	play: async ({ canvas }) => {
+		const mail = within(canvas.getByRole("contentinfo")).getByRole("link", {
+			name: "wholesale.orders.and.catering@kestrelhollowbakehouse.example.com",
+		});
+		await expect(brokenWords(mail)).toEqual([]);
+		await expectNoSidewaysScroll();
 	},
 };

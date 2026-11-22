@@ -1,5 +1,5 @@
 import { Component, type ReactNode } from "react";
-
+import { reportError } from "../monitoring/catcher";
 import { ErrorFallback } from "./ErrorFallback";
 
 interface AppErrorBoundaryState {
@@ -8,18 +8,23 @@ interface AppErrorBoundaryState {
 }
 
 /**
- * Plain React error boundary rendering the dependency-free ErrorFallback.
- * Replaces Sentry.ErrorBoundary so @sentry/react stays out of the critical
- * bundle: on PSI-class hardware the SDK's hydration cost ran ahead of first
- * paint and Google clocked the page as seconds slower than it is. When a
- * DSN is configured, Sentry's global handlers (attached by the lazy init in
- * router.tsx) still capture errors, including ones caught here.
+ * Plain React error boundary rendering the dependency free ErrorFallback, so
+ * no Sentry code sits in the critical bundle. A render crash it catches
+ * never reaches the window's error handlers (React keeps it), so it hands
+ * the error to the package's error reporting itself (`reportError`): to the
+ * Sentry SDK once `startErrorReporting` has loaded it, and to the early
+ * catcher's buffer before that, which the SDK replays when it arrives. With
+ * no DSN configured the buffer simply holds it and nothing is sent.
  */
 export class AppErrorBoundary extends Component<{ children: ReactNode }, AppErrorBoundaryState> {
 	state: AppErrorBoundaryState = { error: null, hasError: false };
 
 	static getDerivedStateFromError(error: unknown): AppErrorBoundaryState {
 		return { error, hasError: true };
+	}
+
+	componentDidCatch(error: unknown) {
+		reportError(error, "boundary");
 	}
 
 	render() {

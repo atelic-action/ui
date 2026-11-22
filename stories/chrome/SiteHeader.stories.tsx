@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, waitFor, within } from "storybook/test";
 import type { NavLink, NavPanelSection } from "../../src/chrome";
 import { SiteHeader } from "../../src/chrome";
@@ -12,7 +13,7 @@ import {
 	sectionedLinks,
 } from "../fixtures/bakery";
 import { CrashBoundary } from "../support/boundary";
-import { expectNoSidewaysScroll, textLeft } from "../support/geometry";
+import { brokenWords, expectNoSidewaysScroll, textLeft } from "../support/geometry";
 import { PageBehind, type PageBehindProps } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -282,6 +283,63 @@ export const Transparent: Story = {
 	},
 };
 
+/**
+ * Over a dark hero the current entry keeps its siblings' light words and is
+ * marked by an underline, never by the primary, which a theme cuts for light
+ * grounds. The hero is one flat color, so the accessibility check measures
+ * every entry against it.
+ */
+export const CurrentOverDarkHero: Story = {
+	args: { variant: "transparent", currentPath: "/menu" },
+	parameters: { page: { hero: true, flatHero: true } },
+	play: async ({ canvas }) => {
+		const nav = within(primaryNav(canvas));
+		const current = nav.getByRole("link", { name: "Menu" });
+		const sibling = nav.getByRole("link", { name: "Cakes" });
+		await expect(current).toHaveAttribute("aria-current", "page");
+		await expect(getComputedStyle(current).color).toBe(getComputedStyle(sibling).color);
+		await expect(getComputedStyle(current).textDecorationLine).toBe("underline");
+		await expect(getComputedStyle(sibling).textDecorationLine).toBe("none");
+	},
+};
+
+/**
+ * The same bar on a theme whose primary is a deep green, the kind that read
+ * 1.64 to 1 as the current entry over a dark hero. The entry reads the light
+ * words its siblings do, whatever the primary.
+ */
+export const CurrentOverDarkHeroDarkPrimary: Story = {
+	...CurrentOverDarkHero,
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--primary": "#1e4d2b",
+						"--primary-fill": "#1e4d2b",
+						"--primary-ink": "#1e4d2b",
+						"--primary-deep": "#163a20",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+};
+
+/** A group holding the current page is marked the same way over the hero. */
+export const CurrentGroupOverDarkHero: Story = {
+	args: { variant: "transparent", links: groupedLinks, currentPath: "/menu/buns" },
+	parameters: { page: { hero: true, flatHero: true } },
+	play: async ({ canvas }) => {
+		const group = canvas.getByRole("button", { name: "Menu" });
+		const other = canvas.getByRole("button", { name: "Wholesale" });
+		await expect(getComputedStyle(group).color).toBe(getComputedStyle(other).color);
+		await expect(getComputedStyle(group).textDecorationLine).toBe("underline");
+	},
+};
+
 /** The dark bar, matching a dark page surface. */
 export const Dark: Story = {
 	args: { variant: "dark" },
@@ -521,6 +579,122 @@ export const CrowdedPanel: Story = {
 };
 
 /**
+ * The panel a trades site builds: two link columns of service names, icon
+ * rows, and small cards, with no feature card, on the template's 1200 wrap.
+ * Their least widths fit one row at 1280, so it is the row that gives way.
+ */
+const crowdedServices: NavLink[] = [
+	{
+		label: "Services",
+		href: "/services",
+		columns: [
+			{
+				heading: "Wholesale",
+				links: [
+					{ label: "Wholesale accounts", href: "/wholesale/accounts" },
+					{ label: "Restaurant deliveries", href: "/wholesale/restaurants" },
+					{ label: "Grocery shelving", href: "/wholesale/grocers" },
+				],
+			},
+			{
+				heading: "Occasions",
+				links: [
+					{ label: "Celebration cakes", href: "/cakes/celebration" },
+					{ label: "Wedding consultations", href: "/cakes/weddings" },
+					{ label: "Corporate catering", href: "/catering" },
+				],
+			},
+			{
+				kind: "rows",
+				heading: "Plan an order",
+				rows: [
+					{
+						label: "Standing orders",
+						description: "Delivered before you open",
+						icon: "truck",
+						href: "/wholesale/standing",
+						highlight: true,
+					},
+					{
+						label: "Seasonal pricing",
+						description: "This season's list",
+						icon: "document",
+						href: "/wholesale/prices",
+					},
+					{
+						label: "Consultations",
+						description: "Thirty minutes with a baker",
+						icon: "calendar",
+						href: "/consultations",
+					},
+					{
+						label: "Questions",
+						description: "Plain answers",
+						icon: "help",
+						href: "/faq",
+					},
+				],
+			},
+			{
+				kind: "cards",
+				heading: "Latest",
+				cards: [
+					{
+						kicker: "Journal",
+						title: "Why our rye rests two days",
+						meta: "Five minute read",
+						image: { src: "/images/bakery-loop-first-frame.jpg" },
+						href: "/journal/rye",
+					},
+					{ kicker: "Hiring", title: "Morning baker", meta: "Full time", href: "/jobs/baker" },
+				],
+			},
+		],
+	},
+	{ label: "Visit", href: "/visit" },
+];
+
+/**
+ * Two link columns, icon rows, and cards in one panel at 1280, on a 1200
+ * wrap (the template's own `--max-width`). The sections wrap to a second row
+ * before any is squeezed below its words, and no label in the panel breaks
+ * inside a word.
+ */
+export const CrowdedServicesPanel: Story = {
+	args: { links: crowdedServices, currentPath: "/" },
+	decorators: [
+		(Story) => (
+			<div style={{ "--max-width": "1200px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent, step }) => {
+		await expect(window.innerWidth).toBe(1280);
+		const control = await openGroup(canvas, userEvent, "Services");
+		const region = document.getElementById(control.getAttribute("aria-controls") ?? "");
+		const card = region?.firstElementChild;
+		if (!card) throw new Error("The open group's panel holds no card.");
+		await step("no word in the panel breaks inside itself", async () => {
+			await expect(brokenWords(card)).toEqual([]);
+		});
+		await step("every section stays inside the card", async () => {
+			const edge = card.getBoundingClientRect().right;
+			for (const name of [/Corporate catering/, /Consultations/, /Morning baker/]) {
+				const box = canvas.getByRole("link", { name }).getBoundingClientRect();
+				await expect(box.right).toBeLessThanOrEqual(edge + 1);
+			}
+		});
+		await step("the cards wrap below the rows rather than squeeze them", async () => {
+			const row = canvas.getByRole("link", { name: /Standing orders/ }).getBoundingClientRect();
+			const latest = canvas.getByRole("link", { name: /Morning baker/ }).getBoundingClientRect();
+			await expect(latest.top).toBeGreaterThanOrEqual(row.bottom);
+		});
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
  * The same panel at the narrowest desktop the bar shows its groups at, on
  * the theme's 1040 wrap: the picture, the icon rows, and the cards cannot
  * share one row beside the feature card, so they wrap to a second rather
@@ -553,5 +727,261 @@ export const CrowdedPanelNarrowDesktop: Story = {
 		const card = canvas.getByRole("link", { name: /Morning baker/ }).getBoundingClientRect();
 		await expect(card.top).toBeGreaterThanOrEqual(picture.bottom);
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** Five groups of one link column each, for the crowded bar. */
+const fiveGroups: NavLink[] = ["Bread", "Pastry", "Cakes", "Wholesale", "Catering"].map(
+	(label) => ({
+		label,
+		href: `/${label.toLowerCase()}`,
+		columns: [
+			{
+				heading: label,
+				links: [{ label: `All ${label.toLowerCase()}`, href: `/${label.toLowerCase()}/all` }],
+			},
+		],
+	}),
+);
+
+/**
+ * A wide mark (141 by 55) in a bar crowded with five groups, a number, and
+ * the call to action at 1280: the lockup never shrinks, so the mark stands
+ * at the theme's mark height and its own width.
+ */
+export const WideMarkCrowdedBar: Story = {
+	args: {
+		brand: {
+			name: "Kestrel Hollow Bakehouse",
+			logo: { src: "/images/kestrel-badge-wide.svg", wordmark: false, alt: "Kestrel Hollow" },
+		},
+		links: fiveGroups,
+		phones: [phones[0] as (typeof phones)[0]],
+		primaryCTA: { label: "Order for Saturday pickup", href: "/order" },
+		variant: "solid",
+	},
+	play: async ({ canvas }) => {
+		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		const mark = home.querySelector("img") as HTMLImageElement;
+		// The picture loads before it is measured; a loaded whole suite takes a while.
+		await waitFor(() => expect(mark.complete && mark.naturalWidth > 0).toBe(true), {
+			timeout: 5000,
+		});
+		const box = mark.getBoundingClientRect();
+		const height = Number.parseFloat(
+			getComputedStyle(home).getPropertyValue("--brand-mark-height"),
+		);
+		await expect(Math.round(box.height)).toBe(height);
+		// Its own ratio: 141 by 55 at the mark height.
+		await expect(Math.round(box.width)).toBe(Math.round((height * 141) / 55));
+		await expect(canvas.getByRole("link", { name: "Order for Saturday pickup" })).toBeVisible();
+	},
+};
+
+/** A one page site: every entry points at an anchor on one page, several at the same one. */
+const sharedHrefs: NavLink[] = [
+	{ label: "Bread", href: "/#menu" },
+	{ label: "Pastry", href: "/#menu" },
+	{
+		label: "Visit",
+		href: "/#visit",
+		columns: [
+			{
+				heading: "The shop",
+				links: [
+					{ label: "Hours", href: "/#visit" },
+					{ label: "Parking", href: "/#visit" },
+				],
+			},
+			{
+				kind: "rows",
+				rows: [
+					{ label: "Directions", icon: "map", href: "/#visit" },
+					{ label: "Call the shop", icon: "phone", href: "/#visit" },
+				],
+			},
+		],
+	},
+	{
+		label: "Wholesale",
+		href: "/#visit",
+		columns: [{ heading: "Cafes", links: [{ label: "Accounts", href: "/#visit" }] }],
+	},
+];
+
+/**
+ * Every entry, link, and row pointing at one page's anchors, several at the
+ * same: each renders, and the bar keeps them apart by their place.
+ */
+export const SharedHrefs: Story = {
+	args: { links: sharedHrefs, currentPath: "/" },
+	play: async ({ canvas, userEvent }) => {
+		const nav = within(primaryNav(canvas));
+		await expect(nav.getByRole("link", { name: "Bread" })).toHaveAttribute("href", "/#menu");
+		await expect(nav.getByRole("link", { name: "Pastry" })).toHaveAttribute("href", "/#menu");
+		await openGroup(canvas, userEvent, "Visit");
+		for (const name of ["Hours", "Parking", /Directions/, /Call the shop/]) {
+			await expect(canvas.getByRole("link", { name })).toHaveAttribute("href", "/#visit");
+		}
+	},
+};
+
+/**
+ * Quiet links: the towns under a region heading, in the softer words and
+ * the regular weight, beside a link column at its full weight.
+ */
+export const QuietLinks: Story = {
+	args: {
+		links: [
+			{
+				label: "Delivery",
+				href: "/delivery",
+				columns: [
+					{
+						heading: "Fairhaven",
+						links: [
+							{ label: "Alder Street", href: "/delivery/alder" },
+							{ label: "Old Mill", href: "/delivery/old-mill", quiet: true },
+							{ label: "Birch Row", href: "/delivery/birch-row", quiet: true },
+						],
+					},
+				],
+			},
+		],
+	},
+	play: async ({ canvas, userEvent }) => {
+		await openGroup(canvas, userEvent, "Delivery");
+		const loud = canvas.getByRole("link", { name: "Alder Street" });
+		const quiet = canvas.getByRole("link", { name: "Old Mill" });
+		const weight = (link: HTMLElement) =>
+			Number(getComputedStyle(link.querySelector(".nav-mega-label") as Element).fontWeight);
+		await expect(weight(quiet)).toBeLessThan(weight(loud));
+		await expect(getComputedStyle(quiet).color).not.toBe(getComputedStyle(loud).color);
+	},
+};
+
+/** The call to action with the arrow a hero's primary button shows. */
+export const CTAWithArrow: Story = {
+	args: { primaryCTA: { ...cta, arrow: true } },
+	play: async ({ canvas }) => {
+		const action = canvas.getByRole("link", { name: "Order ahead" });
+		await expect(action.querySelector(".arrow")).toHaveAttribute("aria-hidden", "true");
+		await expect(action).toHaveTextContent("Order ahead→");
+	},
+};
+
+/** No arrow unless asked, as before. */
+export const CTAWithoutArrow: Story = {
+	play: async ({ canvas }) => {
+		await expect(
+			canvas.getByRole("link", { name: "Order ahead" }).querySelector(".arrow"),
+		).toBeNull();
+	},
+};
+
+/**
+ * A design that runs the bar wider than the content: `--header-max` and
+ * `--header-gutter` set the bar's and the panel's width and sides, and
+ * `--nav-open-bg` and `--nav-open-ink` the open group's pill; the phone
+ * pill's padding and size take `--nav-phone-pad` and `--nav-phone-size`.
+ */
+export const HeaderTokens: Story = {
+	args: { links: groupedLinks, phones, currentPath: "/" },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--header-max": "1240px",
+						"--header-gutter": "20px",
+						"--nav-open-bg": "var(--primary-fill)",
+						"--nav-open-ink": "var(--on-primary)",
+						"--nav-phone-pad": "4px 12px 4px 10px",
+						"--nav-phone-size": "1.05rem",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		// The bar's content starts 40px in (a 1240 bar, 20px sides), where the
+		// 1040 wrap with its 56px gutter starts it 176px in.
+		await expect(Math.round(home.getBoundingClientRect().left)).toBe(40);
+		const menu = await openGroup(canvas, userEvent, "Menu");
+		// The pill eases in, so its fill is read once it has arrived.
+		await waitFor(() => expect(getComputedStyle(menu).backgroundColor).toBe("rgb(214, 58, 16)"));
+		await waitFor(() => expect(getComputedStyle(menu).color).toBe("rgb(255, 255, 255)"));
+		const card = document.getElementById(menu.getAttribute("aria-controls") ?? "")
+			?.firstElementChild as HTMLElement;
+		await expect(Math.round(card.getBoundingClientRect().width)).toBe(1200);
+		const number = canvas.getByText("(555) 555-0142");
+		await expect(getComputedStyle(number).fontSize).toBe("16.8px");
+		await expect(getComputedStyle(number.closest("a") as Element).paddingLeft).toBe("10px");
+	},
+};
+
+/** The defaults: the bar holds to the page's wrap, and the open pill is the hover tint. */
+export const HeaderTokenDefaults: Story = {
+	args: { links: groupedLinks, phones, currentPath: "/" },
+	play: async ({ canvas, userEvent }) => {
+		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		await expect(Math.round(home.getBoundingClientRect().left)).toBe(176);
+		const menu = await openGroup(canvas, userEvent, "Menu");
+		const bar = canvas.getByRole("banner");
+		await waitFor(() => expect(getComputedStyle(menu).color).toBe(getComputedStyle(bar).color));
+		await expect(getComputedStyle(canvas.getByText("(555) 555-0142")).fontSize).toBe("15.2px");
+	},
+};
+
+/**
+ * On a phone, `menuLabel` sets words beside the burger, which name it; the
+ * lines still close to an X while the menu is open.
+ */
+export const MenuLabelPhone: Story = {
+	args: { menuLabel: "Menu" },
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		const burger = canvas.getByRole("button", { name: "Menu" });
+		await expect(canvas.getByText("Menu", { selector: ".nav-burger-label" })).toBeVisible();
+		await expect(burger).toHaveAttribute("aria-expanded", "false");
+		await userEvent.click(burger);
+		await expect(burger).toHaveAttribute("aria-expanded", "true");
+		await expect(canvas.getByRole("dialog", { name: "Menu" })).toBeVisible();
+	},
+};
+
+/**
+ * The solid bar on a deep green theme, where the current entry's hue sits
+ * within 2 to 1 of its siblings': it is marked by an underline too, so a
+ * reader who cannot tell the hues apart still sees which page this is.
+ */
+export const CurrentOnSolidBarDarkPrimary: Story = {
+	args: { variant: "solid", currentPath: "/menu" },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--primary": "#1e4d2b",
+						"--primary-fill": "#1e4d2b",
+						"--primary-ink": "#1e4d2b",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const nav = within(primaryNav(canvas));
+		const current = nav.getByRole("link", { name: "Menu" });
+		const sibling = nav.getByRole("link", { name: "Cakes" });
+		await expect(current).toHaveAttribute("aria-current", "page");
+		await expect(getComputedStyle(current).color).toBe("rgb(30, 77, 43)");
+		await expect(getComputedStyle(current).textDecorationLine).toBe("underline");
+		await expect(getComputedStyle(sibling).textDecorationLine).toBe("none");
 	},
 };

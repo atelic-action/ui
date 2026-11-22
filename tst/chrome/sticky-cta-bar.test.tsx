@@ -40,6 +40,31 @@ describe("StickyCTABar", () => {
 		expect(bar).not.toHaveAttribute("inert");
 	});
 
+	it("hands the space back to the listener it told, when the caller swaps listeners", () => {
+		const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(64);
+		const first = vi.fn();
+		const second = vi.fn();
+		const { rerender, unmount } = render(
+			<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={first} />,
+		);
+		expect(first).toHaveBeenLastCalledWith(64);
+
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={second} />);
+		act(() => {
+			window.dispatchEvent(new Event("resize"));
+		});
+		// The first gives its space back, and the second is told the height.
+		expect(first).toHaveBeenLastCalledWith(0);
+		expect(second).toHaveBeenLastCalledWith(64);
+
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={first} />);
+		unmount();
+		// The second held the space when the bar went, so it is the one released.
+		expect(second).toHaveBeenLastCalledWith(0);
+		expect(first).toHaveBeenLastCalledWith(0);
+		height.mockRestore();
+	});
+
 	it("slides in once the page scrolls past the threshold", () => {
 		const { container } = render(<StickyCTABar primaryCTA={primaryCTA} threshold={300} />);
 		const bar = container.querySelector(".sticky-cta");

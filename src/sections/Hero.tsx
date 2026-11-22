@@ -16,6 +16,8 @@ export interface HeroTrustItem {
 
 export interface HeroProps {
 	eyebrow?: string;
+	/** Draws the eyebrow's trailing rule. Defaults to true; false sets the kicker alone. */
+	eyebrowRule?: boolean;
 	/** Headline; use <em className="serif"> spans for the serif accent. */
 	title: ReactNode;
 	subtitle?: ReactNode;
@@ -48,6 +50,7 @@ export interface HeroProps {
 /** Full-bleed image hero with scrim, headline, CTA pair, and trust stats. */
 export function Hero({
 	eyebrow,
+	eyebrowRule = true,
 	title,
 	subtitle,
 	image,
@@ -66,7 +69,11 @@ export function Hero({
 
 	const copy = (
 		<>
-			{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}
+			{eyebrow && (
+				<Eyebrow onDark rule={eyebrowRule}>
+					{eyebrow}
+				</Eyebrow>
+			)}
 			<h1>{title}</h1>
 			{subtitle && <p className="hero-sub">{subtitle}</p>}
 			{(primaryCTA || secondaryCTA) && (

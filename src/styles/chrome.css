@@ -97,11 +97,13 @@
 			box-shadow 0.3s ease,
 			backdrop-filter 0.3s ease;
 	}
+	/* The bar and its panels run as wide as the page's wrap unless a design
+	   sets --header-max and --header-gutter to run them wider. */
 	.atelic-ui .nav-inner {
 		width: 100%;
-		max-width: var(--max-width);
+		max-width: var(--header-max, var(--max-width));
 		margin-inline: auto;
-		padding-inline: var(--gutter);
+		padding-inline: var(--header-gutter, var(--gutter));
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -115,6 +117,9 @@
 		font-weight: var(--weight-heavy);
 		letter-spacing: -0.02em;
 		font-size: 1.02rem;
+		/* The lockup never shrinks: a crowded bar (five groups, a number, a
+		   call to action) once squeezed a wide mark below its height. */
+		flex: none;
 		/* The brand's name never breaks inside a word: the root's anywhere
 		   (defaults.css, Long words) would let a crowded bar squeeze the wordmark
 		   letter by letter. It still wraps at its spaces. */
@@ -126,6 +131,7 @@
 		display: block;
 		height: var(--brand-mark-height);
 		width: auto;
+		max-width: none;
 		flex: none;
 	}
 	/* A mark cut per surface: the light bar shows the one for a light ground,
@@ -175,23 +181,41 @@
 			color 0.15s;
 	}
 	.atelic-ui .nav-links > a:hover,
-	.atelic-ui .nav-links .nav-group-btn:hover,
-	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
+	.atelic-ui .nav-links .nav-group-btn:hover {
 		background: var(--hover-tint);
+	}
+	/* The open group's pill: the hover tint and the bar's own words unless a
+	   theme sets --nav-open-bg and --nav-open-ink. */
+	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
+		background: var(--nav-open-bg, var(--hover-tint));
+		color: var(--nav-open-ink, inherit);
 	}
 	/* The entry for where the reader is: a page's scroll spied stop, the
 	   page being read, or the group holding it. Words on the bar's surface,
-	   so they read --primary-ink; over a hero the transparent bar keeps the
-	   plain primary, since no surface sits behind it. */
+	   so they read --primary-ink. */
 	.atelic-ui .nav-links > a.active,
 	.atelic-ui .nav-links > a[aria-current="page"],
 	.atelic-ui .nav-links .nav-group-btn.is-current {
 		color: var(--primary-ink, var(--primary));
+		/* Marked by more than its hue: a deep primary can sit within 2 to 1 of
+		   the bar's other words, so the entry carries the underline the
+		   transparent bar gives it too. */
+		text-decoration-line: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 6px;
 	}
+	/* Over a hero no surface sits behind the transparent bar, and a primary
+	   cut for light grounds can read under 2 to 1 on a dark photograph, so
+	   the entry keeps its siblings' --on-dark and is marked by an underline
+	   instead of a hue. An underline, not a weight: the entries are already
+	   semibold, and a heavier one would shift the bar as the reader moves. */
 	.atelic-ui .nav.is-transparent .nav-links > a.active,
 	.atelic-ui .nav.is-transparent .nav-links > a[aria-current="page"],
 	.atelic-ui .nav.is-transparent .nav-links .nav-group-btn.is-current {
-		color: var(--primary);
+		color: var(--on-dark);
+		text-decoration-line: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 6px;
 	}
 	/* Desktop only, and hidden until the bar is solid: on small screens the
 	   sticky CTA bar and the menu carry the action, and the wordmark needs the
@@ -216,6 +240,30 @@
 		transition:
 			transform 0.25s,
 			opacity 0.2s;
+	}
+	/* The burger with its words beside it (menuLabel): the words, then the
+	   three lines in their own column, which close to an X as before. */
+	.atelic-ui .nav-burger.has-label {
+		flex-direction: row;
+		align-items: center;
+		gap: 10px;
+	}
+	.atelic-ui .nav-burger.has-label > .nav-burger-label {
+		width: auto;
+		height: auto;
+		background: none;
+		border-radius: 0;
+		font-weight: var(--weight-semibold);
+		font-size: 0.95rem;
+		line-height: 1;
+	}
+	.atelic-ui .nav-burger.has-label > .nav-burger-lines {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		width: 24px;
+		height: auto;
+		background: none;
 	}
 	/* A mark drawn on a surface it was not cut for is flattened to that
 	   surface's silhouette (resolveMark): to ink on the light bar (a single
@@ -319,7 +367,7 @@
 		left: 0;
 		right: 0;
 		top: 100%;
-		padding: 10px var(--gutter) 0;
+		padding: 10px var(--header-gutter, var(--gutter)) 0;
 		color: var(--ink);
 		max-height: calc(100vh - var(--nav-height));
 		overflow-y: auto;
@@ -330,7 +378,7 @@
 	.atelic-ui .nav-mega-card {
 		box-sizing: border-box;
 		width: 100%;
-		max-width: calc(var(--max-width) - 2 * var(--gutter));
+		max-width: calc(var(--header-max, var(--max-width)) - 2 * var(--header-gutter, var(--gutter)));
 		margin-inline: auto;
 		display: flex;
 		align-items: stretch;
@@ -364,9 +412,12 @@
 	   along the bar never makes the panel jump. */
 	/* The sections share the row, and wrap to a second one when their least
 	   widths outrun it (a picture, icon rows, and cards beside a feature card
-	   at a narrow desktop), so none is squeezed past reading or pushed out of
-	   the card. A section's least width matters only once the row is full, so
-	   a wide panel lays out exactly as before. */
+	   at a narrow desktop, or two link columns, icon rows, and cards on a
+	   wide wrap), so none is squeezed past reading or pushed out of the card.
+	   A section's least width is the larger of a readable floor (set on its
+	   list) and its longest word, so a crowded row wraps a section before any
+	   label breaks inside a word. It matters only once the row is full, so a
+	   roomy panel lays out exactly as before. */
 	.atelic-ui .nav-mega-sections {
 		flex: 1;
 		display: flex;
@@ -375,18 +426,28 @@
 		align-items: stretch;
 		min-height: 440px;
 	}
+	/* Words in a panel break only as a last resort, never to make a section
+	   narrower: the root's anywhere (defaults.css, Long words) would let a
+	   section's least width fall to a single letter. */
+	.atelic-ui .nav-mega-card {
+		overflow-wrap: break-word;
+	}
 	.atelic-ui .nav-mega-sec {
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
 	}
+	.atelic-ui .nav-mega-sec:is(.is-links, .is-rows, .is-cards) {
+		min-width: auto;
+	}
 	.atelic-ui .nav-mega-sec.is-links {
 		flex: 1 1 0;
-		min-width: 120px;
+	}
+	.atelic-ui .nav-mega-sec.is-links > ul {
+		min-width: min(120px, 100%);
 	}
 	.atelic-ui .nav-mega-sec.is-rows {
 		flex: 2.4 1 0;
-		min-width: min(320px, 100%);
 	}
 	.atelic-ui .nav-mega-head {
 		display: block;
@@ -420,6 +481,16 @@
 		font-size: 0.86rem;
 		line-height: 1.35;
 		color: var(--ink-soft);
+	}
+	/* A quiet link (a long list, such as the towns under a region): the
+	   softer words and the regular weight, a little closer together. */
+	.atelic-ui .nav-mega-link.is-quiet {
+		color: var(--ink-soft);
+		padding: 5px 0;
+	}
+	.atelic-ui .nav-mega-link.is-quiet .nav-mega-label {
+		font-weight: var(--weight-regular);
+		font-size: 1rem;
 	}
 	.atelic-ui .nav-mega-link:hover .nav-mega-label,
 	.atelic-ui .nav-mega-link[aria-current="page"] .nav-mega-label,
@@ -498,7 +569,8 @@
 	/* Icon rows, two across, one of them set on the primary when it leads. */
 	.atelic-ui .nav-mega-rows {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(2, minmax(min-content, 1fr));
+		min-width: min(320px, 100%);
 		gap: 4px 16px;
 		align-content: start;
 	}
@@ -567,7 +639,6 @@
 	/* Small cards, set off from the sections before them by a rule. */
 	.atelic-ui .nav-mega-sec.is-cards {
 		flex: 1 1 0;
-		min-width: min(240px, 100%);
 		padding-left: 32px;
 		border-left: 1px solid var(--neutral-100);
 	}
@@ -575,6 +646,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+		/* The section's 240px floor, less its rule's padding. */
+		min-width: min(208px, 100%);
 	}
 	.atelic-ui .nav-mega-card-link {
 		display: flex;
@@ -712,7 +785,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		padding: 6px 16px 6px 12px;
+		padding: var(--nav-phone-pad, 6px 16px 6px 12px);
 		border-radius: var(--radius-pill);
 		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
 		white-space: nowrap;
@@ -738,7 +811,7 @@
 	}
 	.atelic-ui .nav-phone-number {
 		font-weight: var(--weight-bold);
-		font-size: 0.95rem;
+		font-size: var(--nav-phone-size, 0.95rem);
 	}
 	.atelic-ui .nav-call {
 		display: inline-flex;
@@ -890,6 +963,28 @@
 	.atelic-ui .mobile-menu .mm-cta {
 		margin-top: 28px;
 	}
+	/* The menu's call to action reads --menu-cta-bg and --menu-cta-ink,
+	   defaulting to the primary button it always was. A theme whose sheet's
+	   ground is its primary sets them to --on-primary and --primary-ink, or
+	   the button vanishes into the sheet. */
+	.atelic-ui .mobile-menu .mm-cta.btn-primary {
+		background: var(--menu-cta-bg, var(--primary-fill, var(--primary)));
+		color: var(--menu-cta-ink, var(--on-primary));
+	}
+	.atelic-ui .mobile-menu .mm-cta.btn-primary:hover {
+		background: color-mix(
+			in srgb,
+			var(--menu-cta-bg, var(--primary-fill, var(--primary))) 84%,
+			var(--shade)
+		);
+	}
+	.atelic-ui .mobile-menu .mm-cta.btn-primary:active {
+		background: color-mix(
+			in srgb,
+			var(--menu-cta-bg, var(--primary-fill, var(--primary))) 74%,
+			var(--shade)
+		);
+	}
 	.atelic-ui .mobile-menu .mm-contact {
 		margin-top: auto;
 		font-family: var(--font-mono);
@@ -988,12 +1083,16 @@
 		border-bottom: 1.5px solid color-mix(in srgb, var(--surface) 28%, transparent);
 		border-bottom-left-radius: 6px;
 	}
+	/* The phone menu's badge reads --menu-badge-bg and --menu-badge-ink,
+	   defaulting to the primary pill it always was. A theme whose sheet's
+	   ground is its primary sets them to --on-primary and --primary-ink, or
+	   the pill vanishes into the sheet. */
 	.atelic-ui .mobile-menu .mm-badge {
 		flex: none;
 		padding: 3px 9px;
 		border-radius: var(--radius-pill);
-		background: var(--primary-fill, var(--primary));
-		color: var(--on-primary);
+		background: var(--menu-badge-bg, var(--primary-fill, var(--primary)));
+		color: var(--menu-badge-ink, var(--on-primary));
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: var(--weight-semibold);
@@ -1122,12 +1221,16 @@
 		outline: 2px solid var(--on-primary);
 		outline-offset: -2px;
 	}
+	/* A heading by role (ContactDock.tsx says why), so it carries the whole
+	   of its look, the balance and the margin an h2 took included. */
 	.atelic-ui .cd-panel .cd-title {
+		margin: 0;
 		font-family: var(--font-sans);
 		font-size: 1.15rem;
 		font-weight: var(--weight-bold);
 		letter-spacing: 0;
 		line-height: 1.2;
+		text-wrap: balance;
 		color: var(--on-primary);
 	}
 	.atelic-ui .cd-sub {
@@ -1272,7 +1375,7 @@
 		margin: 0 0 14px;
 	}
 	.atelic-ui .footer-brand img {
-		height: 38px;
+		height: var(--footer-mark-height, 38px);
 		margin-bottom: 18px;
 	}
 	.atelic-ui .footer-rating {
@@ -1289,6 +1392,43 @@
 		display: inline-flex;
 		gap: 2px;
 		color: var(--star-fill, var(--review-gold));
+	}
+	/* A rating linked to the Google profile: the stars and the words one
+	   link, laid out as the plain line is. */
+	.atelic-ui .footer .footer-rating-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		color: var(--on-dark);
+		text-decoration-line: underline;
+		text-decoration-color: color-mix(in srgb, var(--on-dark) 40%, transparent);
+		text-underline-offset: 4px;
+	}
+	.atelic-ui .footer .footer-rating-link:hover {
+		text-decoration-color: currentColor;
+	}
+	/* The hours, a column of their own beside the links: each row's days over
+	   or beside its range, whichever the column's width allows. */
+	.atelic-ui .footer-hours dl {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+	.atelic-ui .footer-hours dl > div {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 8px;
+	}
+	.atelic-ui .footer-hours dt {
+		color: var(--on-dark);
+		font-weight: var(--weight-medium);
+	}
+	.atelic-ui .footer-hours dd {
+		margin: 0;
+		color: var(--neutral-200);
 	}
 	.atelic-ui .footer nav a {
 		display: flex;
@@ -1311,22 +1451,52 @@
 	}
 	.atelic-ui .footer .nap a {
 		color: var(--on-dark);
-		font-weight: var(--weight-semibold);
+		font-weight: var(--footer-nap-weight, var(--weight-semibold));
 	}
+	/* An address with no profile to link takes the token too, and otherwise
+	   the column's own weight, as it always has. */
+	.atelic-ui .footer .nap span.nap-address {
+		font-weight: var(--footer-nap-weight, inherit);
+	}
+	/* A word in a column breaks only as a last resort, never to make the
+	   column narrower: each column's least width is its longest word (an
+	   icon and a one word label together), so a crowded row wraps a column
+	   to the next row before a label breaks inside a word. An email address
+	   offers its own breaks, after the @ and before each dot (Footer.tsx). */
 	.atelic-ui .footer-grid > * {
-		overflow-wrap: anywhere;
+		overflow-wrap: break-word;
 	}
 	.atelic-ui .footer .nap-address {
 		display: flex;
 		flex-direction: column;
 	}
+	/* From 760px one row that wraps: the brand column at 1.4 shares, each
+	   other column at one, as the grid laid them out, but a column never
+	   narrows past its longest word; when the row cannot hold every column
+	   at that, the last wraps to a second row rather than squeeze. */
 	@media (min-width: 760px) {
 		.atelic-ui .footer-grid {
-			grid-template-columns: minmax(0, 1.4fr) repeat(var(--footer-columns, 4), minmax(0, 1fr));
+			display: flex;
+			flex-wrap: wrap;
 			gap: 48px 32px;
 		}
-		.atelic-ui .footer-brand {
-			grid-column: auto;
+		.atelic-ui .footer-grid > * {
+			flex: 1 1 0;
+		}
+		.atelic-ui .footer-grid > .footer-brand {
+			flex-grow: 1.4;
+		}
+		/* With the hours beside the four link columns a tablet has no room for
+		   the brand column too, so it keeps the row above them until 1100px. */
+		.atelic-ui .footer-grid.has-hours > .footer-brand {
+			flex-basis: 100%;
+		}
+	}
+	/* One row from 1100px, the brand column a little wider than without the
+	   hours, so the lockup and the rating keep a line each. */
+	@media (min-width: 1100px) {
+		.atelic-ui .footer-grid.has-hours > .footer-brand {
+			flex: 2 1 0;
 		}
 	}
 	/* Text wordmark for a site with no mark image. */
@@ -1336,6 +1506,20 @@
 		font-weight: var(--weight-semibold);
 		letter-spacing: -0.045em;
 		margin-bottom: 18px;
+	}
+	/* The header's lockup on the band: the mark at the footer's mark height,
+	   the wordmark beside it, and the brand's name never broken in a word. */
+	.atelic-ui .footer-lockup {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		overflow-wrap: normal;
+	}
+	.atelic-ui .footer-brand .footer-lockup .mark {
+		display: block;
+		flex: none;
+		width: auto;
+		margin-bottom: 0;
 	}
 
 	/* ---- Closing bar ---- */
@@ -1377,6 +1561,12 @@
 	.atelic-ui .closing-bar a {
 		color: var(--neutral-300);
 		font-weight: var(--weight-medium);
+	}
+	/* The credit's link sits inside a sentence, so it is underlined, never
+	   marked by its color alone. */
+	.atelic-ui .closing-bar .credit a {
+		text-decoration-line: underline;
+		text-underline-offset: 3px;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the header's link rules */
 	.atelic-ui .closing-bar a:hover {

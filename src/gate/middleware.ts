@@ -29,6 +29,7 @@
  * open file of its own passes `open`; one whose matcher already leaves its
  * open paths out may still pass its own `needsSession`, which wins over both.
  */
+import { reportServerError } from "../monitoring/server.js";
 import { isAllowed } from "./config.js";
 import { verifyToken } from "./tokens.js";
 import { createNeedsSession, type WallOpenings } from "./wall.js";
@@ -53,7 +54,7 @@ function readCookie(header: string, name: string): string | undefined {
 export function createMiddleware(options: MiddlewareOptions = {}) {
 	const needsSession = options.needsSession ?? createNeedsSession(options.open);
 
-	return async function middleware(request: Request): Promise<Response | undefined> {
+	async function decide(request: Request): Promise<Response | undefined> {
 		const secret = process.env.GATE_SESSION_SECRET;
 		if (!secret) return; // gate off, let everything through
 
@@ -69,6 +70,19 @@ export function createMiddleware(options: MiddlewareOptions = {}) {
 		const login = new URL("/login", url.origin);
 		login.searchParams.set("next", url.pathname + url.search);
 		return Response.redirect(login.toString(), 302);
+	}
+
+	// A throw is reported to Sentry (when a DSN is set) and thrown again, so
+	// the request fails exactly as it did; a pass and a block are untouched.
+	// The expected misses (a malformed cookie, a token that fails to verify)
+	// are answers, not errors, and stay quiet.
+	return async function middleware(request: Request): Promise<Response | undefined> {
+		try {
+			return await decide(request);
+		} catch (error) {
+			await reportServerError(error, { request, tags: { source: "middleware" } });
+			throw error;
+		}
 	};
 }
 

@@ -46,6 +46,11 @@
 	   grey highlight: darker than the fill, never lighter, so white words on
 	   it and it on the grey both stay above 4.5 to 1. */
 	--color-destructive-hover: color-mix(in srgb, hsl(var(--destructive)) 85%, black);
+	/* Destructive words, as against the destructive fill: the light theme's
+	   one red does both, so it falls back to --destructive, and the dark
+	   theme, whose fill is too deep to read as words on a dark card, sets its
+	   own. */
+	--color-destructive-ink: hsl(var(--destructive-ink, var(--destructive)));
 
 	--color-muted: hsl(var(--muted));
 	--color-muted-foreground: hsl(var(--muted-foreground));
@@ -146,6 +151,10 @@
 		--accent-foreground: 30 8% 95%;
 		--destructive: 0 62.8% 30.6%;
 		--destructive-foreground: 30 8% 95%;
+		/* #f87171 (red 400) for destructive words: the fill above reads 1.79
+		   to 1 as words on the card; this reads 6.48 on the card and 5.62 on
+		   the grey highlight. */
+		--destructive-ink: 0 90.6% 70.8%;
 		--border: 30 5% 18%;
 		--input: 30 5% 18%;
 		--ring: 30 4.9% 83.9%;
