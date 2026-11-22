@@ -44,7 +44,7 @@ export const issues = {
 		elements: ".process .steps h4",
 		base: "h1, h2, h3, h4, h5, h6, [role=heading]",
 	},
-	/** The marked jump rail tab, `--primary` on the rail's `--surface`: about 3:1 at 15.2px. The primary as small text. */
+	/** The marked jump rail tab, `--primary` on the rail's `--surface`: 3.04 to 3.06:1 at 15.2px. The primary as small text. */
 	"jump-rail-active-contrast": { rule: "color-contrast", elements: ".jump-rail a.active" },
 	/** An expand row's mono index, `--primary` on `--surface`: 3.04:1 at 12.5px. The primary as small text. */
 	"expand-index-contrast": { rule: "color-contrast", elements: ".xl-num" },
@@ -59,7 +59,7 @@ export const issues = {
 	"map-directions-contrast": { rule: "color-contrast", elements: ".map-directions" },
 	/**
 	 * Soft words on the inset well: the map facade's hint and a gallery
-	 * tile's shot brief, `--ink-soft` on `--surface-inset`, 4.4:1 at 12.8 and 13px.
+	 * tile's shot brief, `--neutral-600` (#6b6559) on `--surface-inset`, 4.4:1 at 12.8 and 13px.
 	 */
 	"inset-soft-text-contrast": {
 		rule: "color-contrast",

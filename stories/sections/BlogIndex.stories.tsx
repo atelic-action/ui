@@ -75,6 +75,9 @@ export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** No posts yet: an empty list. */
 export const Empty: Story = {
+	// Nothing here shows the file's known issue, so the story is checked whole.
+	tags: ["!known-issue"],
+	parameters: { ...knownIssues() },
 	args: { items: [] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryAllByRole("listitem")).toHaveLength(0);

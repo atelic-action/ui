@@ -131,6 +131,9 @@ export const BodiesInThePage: Story = {
 
 /** An empty list draws nothing. */
 export const Empty: Story = {
+	// Nothing here shows the file's known issue, so the story is checked whole.
+	tags: ["!known-issue"],
+	parameters: { ...knownIssues() },
 	args: { items: [] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole("button")).toBeNull();

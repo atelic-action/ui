@@ -106,6 +106,9 @@ export const LinkInsideDescription: Story = {
 
 /** No numbers, no eyebrow, no lead. */
 export const Plain: Story = {
+	// Nothing here shows the file's known issue, so the story is checked whole.
+	tags: ["!known-issue"],
+	parameters: { ...knownIssues() },
 	args: {
 		eyebrow: undefined,
 		lead: undefined,

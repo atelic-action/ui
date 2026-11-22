@@ -115,6 +115,9 @@ export const DefaultName: Story = {
 
 /** Many stops on a phone: the rail scrolls sideways inside itself, never the page. */
 export const ManyStopsPhone: Story = {
+	// Nothing here shows the file's known issue, so the story is checked whole.
+	tags: ["!known-issue"],
+	parameters: { ...knownIssues() },
 	globals: pin("phone"),
 	args: {
 		items: [

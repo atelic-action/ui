@@ -75,6 +75,9 @@ export const Placeholder: Story = {
 
 /** Only a title: every other part is optional, and the frame still holds its place. */
 export const TitleOnly: Story = {
+	// Nothing here shows the file's known issue, so the story is checked whole.
+	tags: ["!known-issue"],
+	parameters: { ...knownIssues() },
 	args: {
 		num: undefined,
 		eyebrow: undefined,

@@ -93,6 +93,9 @@ export const NoCaptions: Story = {
 
 /** Only the title over the grid. */
 export const TitleOnly: Story = {
+	// Nothing here shows the file's known issue, so the story is checked whole.
+	tags: ["!known-issue"],
+	parameters: { ...knownIssues() },
 	args: { eyebrow: undefined, lead: undefined, footnote: undefined },
 };
 
