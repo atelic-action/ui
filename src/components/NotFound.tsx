@@ -54,8 +54,9 @@ export function NotFound({
 					<div className="wrap center">
 						<span className="eyebrow center">{linksLabel}</span>
 						<nav aria-label={linksLabel} className="cta-row center">
-							{links.map((link) => (
-								<a key={link.href} className="btn btn-ghost" href={link.href}>
+							{links.map((link, at) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: two links may share a page, so the place keeps the key unique; links never reorder
+								<a key={at} className="btn btn-ghost" href={link.href}>
 									{link.label}
 								</a>
 							))}

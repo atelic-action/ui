@@ -141,6 +141,8 @@ export function SiteShell({
 		else root.style.removeProperty("--sticky-cta-space");
 	}, []);
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
+	// The phone's sticky bar may carry its own words (`cta.stickyLabel`).
+	const stickyLink = { ...cta, label: site.cta.stickyLabel ?? cta.label };
 	// Every link and picture a panel section holds, based.
 	const section = (part: NavPanelSection): NavPanelSection => {
 		if (isLinkColumn(part)) {
@@ -239,6 +241,7 @@ export function SiteShell({
 					hideCTA={hideNavCTA}
 					contact={{ phone: site.phone, email: site.email, address: site.address }}
 					phones={site.header?.phones}
+					menuLabel={site.menuLabel}
 				/>
 				<main id="main" className={heroNav ? undefined : "clears-nav"}>
 					{children}
@@ -247,7 +250,7 @@ export function SiteShell({
 				    the bar is there from the top; the hero home page keeps the slide in. */}
 				{stickyCTA && (
 					<StickyCTABar
-						primaryCTA={cta}
+						primaryCTA={stickyLink}
 						phone={site.phone}
 						fromTop={!heroNav}
 						onSpaceChange={setBarSpace}

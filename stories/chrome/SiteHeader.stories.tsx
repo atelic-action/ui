@@ -729,3 +729,223 @@ export const CrowdedPanelNarrowDesktop: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/** Five groups of one link column each, for the crowded bar. */
+const fiveGroups: NavLink[] = ["Bread", "Pastry", "Cakes", "Wholesale", "Catering"].map(
+	(label) => ({
+		label,
+		href: `/${label.toLowerCase()}`,
+		columns: [
+			{
+				heading: label,
+				links: [{ label: `All ${label.toLowerCase()}`, href: `/${label.toLowerCase()}/all` }],
+			},
+		],
+	}),
+);
+
+/**
+ * A wide mark (141 by 55) in a bar crowded with five groups, a number, and
+ * the call to action at 1280: the lockup never shrinks, so the mark stands
+ * at the theme's mark height and its own width.
+ */
+export const WideMarkCrowdedBar: Story = {
+	args: {
+		brand: {
+			name: "Kestrel Hollow Bakehouse",
+			logo: { src: "/images/kestrel-badge-wide.svg", wordmark: false, alt: "Kestrel Hollow" },
+		},
+		links: fiveGroups,
+		phones: [phones[0] as (typeof phones)[0]],
+		primaryCTA: { label: "Order for Saturday pickup", href: "/order" },
+		variant: "solid",
+	},
+	play: async ({ canvas }) => {
+		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		const mark = home.querySelector("img") as HTMLImageElement;
+		await waitFor(() => expect(mark.complete).toBe(true));
+		const box = mark.getBoundingClientRect();
+		const height = Number.parseFloat(
+			getComputedStyle(home).getPropertyValue("--brand-mark-height"),
+		);
+		await expect(Math.round(box.height)).toBe(height);
+		// Its own ratio: 141 by 55 at the mark height.
+		await expect(Math.round(box.width)).toBe(Math.round((height * 141) / 55));
+		await expect(canvas.getByRole("link", { name: "Order for Saturday pickup" })).toBeVisible();
+	},
+};
+
+/** A one page site: every entry points at an anchor on one page, several at the same one. */
+const sharedHrefs: NavLink[] = [
+	{ label: "Bread", href: "/#menu" },
+	{ label: "Pastry", href: "/#menu" },
+	{
+		label: "Visit",
+		href: "/#visit",
+		columns: [
+			{
+				heading: "The shop",
+				links: [
+					{ label: "Hours", href: "/#visit" },
+					{ label: "Parking", href: "/#visit" },
+				],
+			},
+			{
+				kind: "rows",
+				rows: [
+					{ label: "Directions", icon: "map", href: "/#visit" },
+					{ label: "Call the shop", icon: "phone", href: "/#visit" },
+				],
+			},
+		],
+	},
+	{
+		label: "Wholesale",
+		href: "/#visit",
+		columns: [{ heading: "Cafes", links: [{ label: "Accounts", href: "/#visit" }] }],
+	},
+];
+
+/**
+ * Every entry, link, and row pointing at one page's anchors, several at the
+ * same: each renders, and the bar keeps them apart by their place.
+ */
+export const SharedHrefs: Story = {
+	args: { links: sharedHrefs, currentPath: "/" },
+	play: async ({ canvas, userEvent }) => {
+		const nav = within(primaryNav(canvas));
+		await expect(nav.getByRole("link", { name: "Bread" })).toHaveAttribute("href", "/#menu");
+		await expect(nav.getByRole("link", { name: "Pastry" })).toHaveAttribute("href", "/#menu");
+		await openGroup(canvas, userEvent, "Visit");
+		for (const name of ["Hours", "Parking", /Directions/, /Call the shop/]) {
+			await expect(canvas.getByRole("link", { name })).toHaveAttribute("href", "/#visit");
+		}
+	},
+};
+
+/**
+ * Quiet links: the towns under a region heading, in the softer words and
+ * the regular weight, beside a link column at its full weight.
+ */
+export const QuietLinks: Story = {
+	args: {
+		links: [
+			{
+				label: "Delivery",
+				href: "/delivery",
+				columns: [
+					{
+						heading: "Fairhaven",
+						links: [
+							{ label: "Alder Street", href: "/delivery/alder" },
+							{ label: "Old Mill", href: "/delivery/old-mill", quiet: true },
+							{ label: "Birch Row", href: "/delivery/birch-row", quiet: true },
+						],
+					},
+				],
+			},
+		],
+	},
+	play: async ({ canvas, userEvent }) => {
+		await openGroup(canvas, userEvent, "Delivery");
+		const loud = canvas.getByRole("link", { name: "Alder Street" });
+		const quiet = canvas.getByRole("link", { name: "Old Mill" });
+		const weight = (link: HTMLElement) =>
+			Number(getComputedStyle(link.querySelector(".nav-mega-label") as Element).fontWeight);
+		await expect(weight(quiet)).toBeLessThan(weight(loud));
+		await expect(getComputedStyle(quiet).color).not.toBe(getComputedStyle(loud).color);
+	},
+};
+
+/** The call to action with the arrow a hero's primary button shows. */
+export const CTAWithArrow: Story = {
+	args: { primaryCTA: { ...cta, arrow: true } },
+	play: async ({ canvas }) => {
+		const action = canvas.getByRole("link", { name: "Order ahead" });
+		await expect(action.querySelector(".arrow")).toHaveAttribute("aria-hidden", "true");
+		await expect(action).toHaveTextContent("Order ahead→");
+	},
+};
+
+/** No arrow unless asked, as before. */
+export const CTAWithoutArrow: Story = {
+	play: async ({ canvas }) => {
+		await expect(
+			canvas.getByRole("link", { name: "Order ahead" }).querySelector(".arrow"),
+		).toBeNull();
+	},
+};
+
+/**
+ * A design that runs the bar wider than the content: `--header-max` and
+ * `--header-gutter` set the bar's and the panel's width and sides, and
+ * `--nav-open-bg` and `--nav-open-ink` the open group's pill; the phone
+ * pill's padding and size take `--nav-phone-pad` and `--nav-phone-size`.
+ */
+export const HeaderTokens: Story = {
+	args: { links: groupedLinks, phones, currentPath: "/" },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--header-max": "1240px",
+						"--header-gutter": "20px",
+						"--nav-open-bg": "var(--primary-fill)",
+						"--nav-open-ink": "var(--on-primary)",
+						"--nav-phone-pad": "4px 12px 4px 10px",
+						"--nav-phone-size": "1.05rem",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		// The bar's content starts 40px in (a 1240 bar, 20px sides), where the
+		// 1040 wrap with its 56px gutter starts it 176px in.
+		await expect(Math.round(home.getBoundingClientRect().left)).toBe(40);
+		const menu = await openGroup(canvas, userEvent, "Menu");
+		// The pill eases in, so its fill is read once it has arrived.
+		await waitFor(() => expect(getComputedStyle(menu).backgroundColor).toBe("rgb(214, 58, 16)"));
+		await waitFor(() => expect(getComputedStyle(menu).color).toBe("rgb(255, 255, 255)"));
+		const card = document.getElementById(menu.getAttribute("aria-controls") ?? "")
+			?.firstElementChild as HTMLElement;
+		await expect(Math.round(card.getBoundingClientRect().width)).toBe(1200);
+		const number = canvas.getByText("(555) 555-0142");
+		await expect(getComputedStyle(number).fontSize).toBe("16.8px");
+		await expect(getComputedStyle(number.closest("a") as Element).paddingLeft).toBe("10px");
+	},
+};
+
+/** The defaults: the bar holds to the page's wrap, and the open pill is the hover tint. */
+export const HeaderTokenDefaults: Story = {
+	args: { links: groupedLinks, phones, currentPath: "/" },
+	play: async ({ canvas, userEvent }) => {
+		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		await expect(Math.round(home.getBoundingClientRect().left)).toBe(176);
+		const menu = await openGroup(canvas, userEvent, "Menu");
+		const bar = canvas.getByRole("banner");
+		await waitFor(() => expect(getComputedStyle(menu).color).toBe(getComputedStyle(bar).color));
+		await expect(getComputedStyle(canvas.getByText("(555) 555-0142")).fontSize).toBe("15.2px");
+	},
+};
+
+/**
+ * On a phone, `menuLabel` sets words beside the burger, which name it; the
+ * lines still close to an X while the menu is open.
+ */
+export const MenuLabelPhone: Story = {
+	args: { menuLabel: "Menu" },
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		const burger = canvas.getByRole("button", { name: "Menu" });
+		await expect(canvas.getByText("Menu", { selector: ".nav-burger-label" })).toBeVisible();
+		await expect(burger).toHaveAttribute("aria-expanded", "false");
+		await userEvent.click(burger);
+		await expect(burger).toHaveAttribute("aria-expanded", "true");
+		await expect(canvas.getByRole("dialog", { name: "Menu" })).toBeVisible();
+	},
+};

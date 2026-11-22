@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
+import { holdPhoneNumbers, isTel } from "../lib/phoneText";
 import type {
 	CallToAction,
 	HeaderPhone,
@@ -119,7 +120,8 @@ export function SiteMenu({
 			</button>
 			{links.map((link, i) =>
 				isGroup(link) ? (
-					<div className="mm-group" key={link.href}>
+					// biome-ignore lint/suspicious/noArrayIndexKey: a one page site points several entries at one page or anchor, so the place keeps the key unique; the menu never reorders
+					<div className="mm-group" key={i}>
 						<button
 							type="button"
 							className="mm-link mm-group-btn"
@@ -153,7 +155,8 @@ export function SiteMenu({
 					</div>
 				) : (
 					<a
-						key={link.href}
+						// biome-ignore lint/suspicious/noArrayIndexKey: as above, entries may share an href
+						key={i}
 						className="mm-link"
 						href={link.href}
 						onClick={close}
@@ -214,7 +217,7 @@ function MenuSection({
 			aria-current={currentPath === item.href ? "page" : undefined}
 			{...newTabProps(item.href, item.external)}
 		>
-			{item.label}
+			{isTel(item.href) ? holdPhoneNumbers(item.label) : item.label}
 			<Badge text={item.badge} />
 		</a>
 	);

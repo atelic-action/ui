@@ -367,3 +367,36 @@ export const FooterRatingOwnLink: Story = {
 		await expect(rating).toHaveAttribute("href", "https://reviews.example.com/kestrel-hollow");
 	},
 };
+
+/**
+ * The config's phone options: the sticky bar's own words (`cta.stickyLabel`),
+ * the burger's words (`menuLabel`), and the header's arrow (`cta.arrow`).
+ */
+export const PhoneOptionsFromTheConfig: Story = {
+	args: {
+		...visitPage,
+		site: {
+			...site,
+			menuLabel: "Menu",
+			cta: { ...site.cta, stickyLabel: "Order", arrow: true },
+		},
+	},
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("button", { name: "Menu" })).toBeVisible();
+		const bar = canvas.getByRole("link", { name: "Call us" }).parentElement as HTMLElement;
+		await waitFor(() =>
+			expect(within(bar).getByRole("link", { name: "Order" })).toHaveAttribute("href", "/order"),
+		);
+	},
+};
+
+/** The sticky bar keeps the call to action's own words when the config gives no other. */
+export const StickyLabelDefault: Story = {
+	args: visitPage,
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const bar = canvas.getByRole("link", { name: "Call us" }).parentElement as HTMLElement;
+		await expect(within(bar).getByRole("link", { name: site.cta.label })).toBeVisible();
+	},
+};

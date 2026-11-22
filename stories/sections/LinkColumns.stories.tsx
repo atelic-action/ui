@@ -203,3 +203,27 @@ export const SamePageTwice: Story = {
 		);
 	},
 };
+
+/**
+ * A row whose page does not exist yet: its name and its count as words, no
+ * link, beside rows that do link.
+ */
+export const RowWithNoPageYet: Story = {
+	args: {
+		columns: [
+			{
+				heading: "Fairhaven",
+				links: [
+					{ label: "Alder Street", href: "/areas/alder-street", count: "14" },
+					{ label: "Birch Row", count: "6" },
+				],
+			},
+		],
+	},
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("link", { name: /Alder Street/ })).toBeVisible();
+		await expect(canvas.queryByRole("link", { name: /Birch Row/ })).toBeNull();
+		await expect(canvas.getByText("Birch Row")).toBeVisible();
+		await expect(canvas.getByText("6")).toBeVisible();
+	},
+};

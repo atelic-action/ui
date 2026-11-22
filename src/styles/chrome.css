@@ -97,11 +97,13 @@
 			box-shadow 0.3s ease,
 			backdrop-filter 0.3s ease;
 	}
+	/* The bar and its panels run as wide as the page's wrap unless a design
+	   sets --header-max and --header-gutter to run them wider. */
 	.atelic-ui .nav-inner {
 		width: 100%;
-		max-width: var(--max-width);
+		max-width: var(--header-max, var(--max-width));
 		margin-inline: auto;
-		padding-inline: var(--gutter);
+		padding-inline: var(--header-gutter, var(--gutter));
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -115,6 +117,9 @@
 		font-weight: var(--weight-heavy);
 		letter-spacing: -0.02em;
 		font-size: 1.02rem;
+		/* The lockup never shrinks: a crowded bar (five groups, a number, a
+		   call to action) once squeezed a wide mark below its height. */
+		flex: none;
 		/* The brand's name never breaks inside a word: the root's anywhere
 		   (defaults.css, Long words) would let a crowded bar squeeze the wordmark
 		   letter by letter. It still wraps at its spaces. */
@@ -126,6 +131,7 @@
 		display: block;
 		height: var(--brand-mark-height);
 		width: auto;
+		max-width: none;
 		flex: none;
 	}
 	/* A mark cut per surface: the light bar shows the one for a light ground,
@@ -175,9 +181,14 @@
 			color 0.15s;
 	}
 	.atelic-ui .nav-links > a:hover,
-	.atelic-ui .nav-links .nav-group-btn:hover,
-	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
+	.atelic-ui .nav-links .nav-group-btn:hover {
 		background: var(--hover-tint);
+	}
+	/* The open group's pill: the hover tint and the bar's own words unless a
+	   theme sets --nav-open-bg and --nav-open-ink. */
+	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
+		background: var(--nav-open-bg, var(--hover-tint));
+		color: var(--nav-open-ink, inherit);
 	}
 	/* The entry for where the reader is: a page's scroll spied stop, the
 	   page being read, or the group holding it. Words on the bar's surface,
@@ -223,6 +234,30 @@
 		transition:
 			transform 0.25s,
 			opacity 0.2s;
+	}
+	/* The burger with its words beside it (menuLabel): the words, then the
+	   three lines in their own column, which close to an X as before. */
+	.atelic-ui .nav-burger.has-label {
+		flex-direction: row;
+		align-items: center;
+		gap: 10px;
+	}
+	.atelic-ui .nav-burger.has-label > .nav-burger-label {
+		width: auto;
+		height: auto;
+		background: none;
+		border-radius: 0;
+		font-weight: var(--weight-semibold);
+		font-size: 0.95rem;
+		line-height: 1;
+	}
+	.atelic-ui .nav-burger.has-label > .nav-burger-lines {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		width: 24px;
+		height: auto;
+		background: none;
 	}
 	/* A mark drawn on a surface it was not cut for is flattened to that
 	   surface's silhouette (resolveMark): to ink on the light bar (a single
@@ -326,7 +361,7 @@
 		left: 0;
 		right: 0;
 		top: 100%;
-		padding: 10px var(--gutter) 0;
+		padding: 10px var(--header-gutter, var(--gutter)) 0;
 		color: var(--ink);
 		max-height: calc(100vh - var(--nav-height));
 		overflow-y: auto;
@@ -337,7 +372,7 @@
 	.atelic-ui .nav-mega-card {
 		box-sizing: border-box;
 		width: 100%;
-		max-width: calc(var(--max-width) - 2 * var(--gutter));
+		max-width: calc(var(--header-max, var(--max-width)) - 2 * var(--header-gutter, var(--gutter)));
 		margin-inline: auto;
 		display: flex;
 		align-items: stretch;
@@ -427,6 +462,16 @@
 		gap: 2px;
 		padding: 9px 0;
 		color: var(--ink);
+	}
+	/* A quiet link (a long list, such as the towns under a region): the
+	   softer words and the regular weight, a little closer together. */
+	.atelic-ui .nav-mega-link.is-quiet {
+		color: var(--ink-soft);
+		padding: 5px 0;
+	}
+	.atelic-ui .nav-mega-link.is-quiet .nav-mega-label {
+		font-weight: var(--weight-regular);
+		font-size: 1rem;
 	}
 	.atelic-ui .nav-mega-label {
 		display: flex;
@@ -734,7 +779,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		padding: 6px 16px 6px 12px;
+		padding: var(--nav-phone-pad, 6px 16px 6px 12px);
 		border-radius: var(--radius-pill);
 		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
 		white-space: nowrap;
@@ -760,7 +805,7 @@
 	}
 	.atelic-ui .nav-phone-number {
 		font-weight: var(--weight-bold);
-		font-size: 0.95rem;
+		font-size: var(--nav-phone-size, 0.95rem);
 	}
 	.atelic-ui .nav-call {
 		display: inline-flex;
@@ -1010,12 +1055,15 @@
 		border-bottom: 1.5px solid color-mix(in srgb, var(--surface) 28%, transparent);
 		border-bottom-left-radius: 6px;
 	}
+	/* The phone menu's badge carries its own light fill and the primary's
+	   words, so it reads on whatever ground the sheet takes: the dark band,
+	   or a theme's primary, where a primary filled pill vanished. */
 	.atelic-ui .mobile-menu .mm-badge {
 		flex: none;
 		padding: 3px 9px;
 		border-radius: var(--radius-pill);
-		background: var(--primary-fill, var(--primary));
-		color: var(--on-primary);
+		background: var(--on-primary);
+		color: var(--primary-ink, var(--primary));
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: var(--weight-semibold);
@@ -1294,7 +1342,7 @@
 		margin: 0 0 14px;
 	}
 	.atelic-ui .footer-brand img {
-		height: 38px;
+		height: var(--footer-mark-height, 38px);
 		margin-bottom: 18px;
 	}
 	.atelic-ui .footer-rating {
@@ -1370,7 +1418,12 @@
 	}
 	.atelic-ui .footer .nap a {
 		color: var(--on-dark);
-		font-weight: var(--weight-semibold);
+		font-weight: var(--footer-nap-weight, var(--weight-semibold));
+	}
+	/* An address with no profile to link takes the token too, and otherwise
+	   the column's own weight, as it always has. */
+	.atelic-ui .footer .nap span.nap-address {
+		font-weight: var(--footer-nap-weight, inherit);
 	}
 	.atelic-ui .footer-grid > * {
 		overflow-wrap: anywhere;
@@ -1468,6 +1521,12 @@
 	.atelic-ui .closing-bar a {
 		color: var(--neutral-300);
 		font-weight: var(--weight-medium);
+	}
+	/* The credit's link sits inside a sentence, so it is underlined, never
+	   marked by its color alone. */
+	.atelic-ui .closing-bar .credit a {
+		text-decoration-line: underline;
+		text-underline-offset: 3px;
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the header's link rules */
 	.atelic-ui .closing-bar a:hover {

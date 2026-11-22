@@ -14,10 +14,15 @@ export function SectionCards({ section }: { section: string }) {
 
 	return (
 		<nav className="ap-sections" aria-label={`${item.label} pages`}>
-			{item.children.map((child) => {
+			{item.children.map((child, at) => {
 				const Icon = child.icon;
 				return (
-					<Link key={child.href} to={child.href} className="ap-section-card">
+					<Link
+						// biome-ignore lint/suspicious/noArrayIndexKey: two entries may share a link, so the place keeps the key unique; the nav never reorders
+						key={at}
+						to={child.href}
+						className="ap-section-card"
+					>
 						<span className="ic">
 							<Icon size={20} />
 						</span>

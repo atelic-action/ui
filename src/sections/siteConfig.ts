@@ -60,6 +60,14 @@ export interface CTA {
 	href: string;
 	/** Opens in a new tab with rel="noopener" when true (e.g. a booking portal). */
 	external?: boolean;
+	/** The header's button carries the arrow the hero's primary button shows. Defaults to false. */
+	arrow?: boolean;
+	/**
+	 * The phone's sticky bar's own words, when they should differ from
+	 * `label` (a shorter "Book" where the header says "Book a visit").
+	 * Defaults to `label`.
+	 */
+	stickyLabel?: string;
 }
 
 /** How opening hours print: "12h" reads "9a to 5p", "24h" reads "09:00 to 17:00". */
@@ -290,6 +298,11 @@ export interface SiteConfig {
 	gate?: GateConfig;
 	/** The section spacing every page wears (see Density). Defaults to `default`. */
 	density?: Density;
+	/**
+	 * Words shown beside the burger on a phone, e.g. "Menu", which then also
+	 * name the button. Absent, the burger stands alone as it always has.
+	 */
+	menuLabel?: string;
 	/** What the header shows beyond the nav and the CTA. */
 	header?: {
 		/** Up to two numbers in the bar, each a tel link; the first is the phone's call button. */

@@ -18,12 +18,13 @@ export function MobileTabBar({ pathname }: { pathname: string }) {
 			<div className="flex h-16 items-center justify-around">
 				{navItems
 					.filter((item) => !item.desktopOnly)
-					.map((item) => {
+					.map((item, at) => {
 						const Icon = item.icon;
 						const active = isActiveSection(pathname, item);
 						return (
 							<Link
-								key={item.href}
+								// biome-ignore lint/suspicious/noArrayIndexKey: two entries may share a link, so the place keeps the key unique; the nav never reorders
+								key={at}
 								to={item.href}
 								className={cn(
 									"flex h-full flex-1 flex-col items-center justify-center py-2 transition-colors duration-150 active:bg-accent",

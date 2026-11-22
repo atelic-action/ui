@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { newTabProps } from "../lib/newTabProps";
+import { holdPhoneNumbers, isTel } from "../lib/phoneText";
 import { Button } from "../primitives/Button";
 import { TickList } from "../primitives/TickList";
 import type {
@@ -111,7 +112,7 @@ function LinkColumn({
 				aria-current={current(linkKey(index, parent, at))}
 				{...newTabProps(link.href, link.external)}
 			>
-				{link.label}
+				{isTel(link.href) ? holdPhoneNumbers(link.label) : link.label}
 				<Badge text={link.badge} />
 			</a>
 		</li>
@@ -135,17 +136,21 @@ function LinkColumn({
 					// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
 					<li key={`${at} ${link.href}`}>
 						<a
-							className="nav-mega-link"
+							className={link.quiet ? "nav-mega-link is-quiet" : "nav-mega-link"}
 							href={link.href}
 							onClick={onNavigate}
 							aria-current={current(linkKey(index, at))}
 							{...newTabProps(link.href, link.external)}
 						>
 							<span className="nav-mega-label">
-								{link.label}
+								{isTel(link.href) ? holdPhoneNumbers(link.label) : link.label}
 								<Badge text={link.badge} />
 							</span>
-							{link.description && <span className="nav-mega-desc">{link.description}</span>}
+							{link.description && (
+								<span className="nav-mega-desc">
+									{isTel(link.href) ? holdPhoneNumbers(link.description) : link.description}
+								</span>
+							)}
 						</a>
 						{link.children && link.children.length > 0 && (
 							<ul className="nav-mega-children">{link.children.map(child(at))}</ul>
@@ -211,8 +216,14 @@ function RowsSection({
 									<Icon size={21} strokeWidth={1.75} aria-hidden="true" />
 								</span>
 								<span className="nav-mega-row-text">
-									<span className="nav-mega-row-label">{row.label}</span>
-									{row.description && <span className="nav-mega-row-desc">{row.description}</span>}
+									<span className="nav-mega-row-label">
+										{isTel(row.href) ? holdPhoneNumbers(row.label) : row.label}
+									</span>
+									{row.description && (
+										<span className="nav-mega-row-desc">
+											{isTel(row.href) ? holdPhoneNumbers(row.description) : row.description}
+										</span>
+									)}
 								</span>
 								<ChevronRight className="nav-mega-row-go" size={16} aria-hidden="true" />
 							</a>

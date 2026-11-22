@@ -2,6 +2,7 @@ import { ChevronRight, MessageCircle, X } from "lucide-react";
 import { type RefObject, useEffect, useId, useRef, useState } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { newTabProps } from "../lib/newTabProps";
+import { holdPhoneNumbers, isTel } from "../lib/phoneText";
 import type { ContactDockConfig } from "../types";
 import { dockIcons } from "./icons";
 
@@ -268,23 +269,28 @@ export function ContactDock({
 					</button>
 				</div>
 				<ul className="cd-items">
-					{items.map((item) => {
+					{items.map((item, at) => {
 						const Icon = dockIcons[item.icon ?? "chat"];
+						// A call row holds its number whole and wraps its words.
+						const words = (text: string) => (isTel(item.href) ? holdPhoneNumbers(text) : text);
 						const inner = (
 							<>
 								<span className="cd-item-icon">
 									<Icon size={20} aria-hidden="true" />
 								</span>
 								<span className="cd-item-text">
-									<span className="cd-item-label">{item.label}</span>
-									{item.description && <span className="cd-item-desc">{item.description}</span>}
+									<span className="cd-item-label">{words(item.label)}</span>
+									{item.description && (
+										<span className="cd-item-desc">{words(item.description)}</span>
+									)}
 								</span>
 								<ChevronRight className="cd-item-go" size={18} aria-hidden="true" />
 							</>
 						);
 						const className = ["cd-item", item.lead && "is-lead"].filter(Boolean).join(" ");
 						return (
-							<li key={item.label}>
+							// biome-ignore lint/suspicious/noArrayIndexKey: two items may share a label or a link, so the place keeps the key unique; items never reorder
+							<li key={at}>
 								{item.href !== undefined ? (
 									<a
 										className={className}

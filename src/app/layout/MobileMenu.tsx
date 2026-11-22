@@ -72,14 +72,15 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 
 				<nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
 					<ul className="space-y-0.5">
-						{navItems.map((item) => {
+						{navItems.map((item, at) => {
 							const Icon = item.icon;
 							const active = isActiveSection(pathname, item);
 							// A section with sub pages lights its row only on its own landing
 							// page; deeper in, the sub page row carries the highlight.
 							const exact = pathname === item.href;
 							return (
-								<li key={item.href}>
+								// biome-ignore lint/suspicious/noArrayIndexKey: two entries may share a link, so the place keeps the key unique; the nav never reorders
+								<li key={at}>
 									<Link
 										onClick={() => setOpen(false)}
 										to={item.href}
@@ -98,11 +99,12 @@ export function MobileMenu({ pathname, user, onLogout }: MobileMenuProps) {
 									</Link>
 									{item.children ? (
 										<ul className="mb-1 mt-0.5 space-y-0.5" aria-label={`${item.label} pages`}>
-											{item.children.map((child) => {
+											{item.children.map((child, childAt) => {
 												const ChildIcon = child.icon;
 												const childActive = isActivePath(pathname, child.href);
 												return (
-													<li key={child.href}>
+													// biome-ignore lint/suspicious/noArrayIndexKey: two entries may share a link, so the place keeps the key unique; the nav never reorders
+													<li key={childAt}>
 														<Link
 															onClick={() => setOpen(false)}
 															to={child.href}

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { type CSSProperties, useState } from "react";
 import { expect, fn, type MockInstance, spyOn, waitFor, within } from "storybook/test";
 import { SiteMenu } from "../../src/chrome";
 import { contact, cta, flatLinks, groupedLinks, phones, sectionedLinks } from "../fixtures/bakery";
@@ -300,5 +300,45 @@ export const ChildSharesParentHref: Story = {
 			String(call[0]).includes("same key"),
 		);
 		await expect(keyWarnings).toHaveLength(0);
+	},
+};
+
+/**
+ * A theme whose sheet is its primary (`--surface-dark` set to the brand's
+ * deep green fill): a link's badge carries its own light fill and the primary's words,
+ * so it reads there, where a primary filled pill vanished. The
+ * accessibility check holds its contrast.
+ */
+export const BadgeOnPrimarySheet: Story = {
+	args: { links: sectionedLinks },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						// A deep green brand whose sheet is its primary, with the light
+						// neutrals such a theme sets for words on it.
+						"--surface-dark": "#1e4d2b",
+						"--primary": "#1e4d2b",
+						"--primary-fill": "#1e4d2b",
+						"--primary-ink": "#1e4d2b",
+						"--primary-bright": "#b8e0c0",
+						"--neutral-300": "#dcd6ca",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		const badge = menu.getByText("Popular");
+		await expect(badge).toBeVisible();
+		const sheet = canvas.getByRole("dialog");
+		await expect(getComputedStyle(badge).backgroundColor).not.toBe(
+			getComputedStyle(sheet).backgroundColor,
+		);
 	},
 };

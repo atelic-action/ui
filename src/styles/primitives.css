@@ -256,6 +256,10 @@
 	.atelic-ui .on-primary em.serif {
 		color: var(--on-primary);
 	}
+	/* An eyebrow drawn without its trailing rule (Eyebrow rule={false}). */
+	.atelic-ui .eyebrow.no-rule::after {
+		display: none;
+	}
 	.atelic-ui .eyebrow::after {
 		content: "";
 		width: 40px;

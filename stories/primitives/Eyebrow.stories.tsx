@@ -71,3 +71,12 @@ export const LongestOnPhone: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/** `rule={false}` sets the kicker alone, with no trailing rule. */
+export const NoRule: Story = {
+	args: { rule: false },
+	play: async ({ canvas }) => {
+		const eyebrow = canvas.getByText("Baked daily");
+		await expect(getComputedStyle(eyebrow, "::after").display).toBe("none");
+	},
+};

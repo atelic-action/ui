@@ -60,3 +60,11 @@ export const Empty: Story = {
 		await expect(canvasElement.textContent).toBe("");
 	},
 };
+
+/** The credit's link sits in a sentence, so it is underlined, not marked by color alone. */
+export const CreditLinkUnderlined: Story = {
+	play: async ({ canvas }) => {
+		const credit = canvas.getByRole("link", { name: "Atelic" });
+		await expect(getComputedStyle(credit).textDecorationLine).toBe("underline");
+	},
+};

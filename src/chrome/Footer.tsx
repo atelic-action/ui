@@ -341,8 +341,9 @@ export function Footer({
 								<div className="footer-heading" role="heading" aria-level={headingLevel}>
 									{column.heading}
 								</div>
-								{column.links.map((link) => (
-									<ColumnLink key={`${link.label} ${link.href}`} link={link} />
+								{column.links.map((link, at) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: two links may share a label and a page, so the place keeps the key unique; links never reorder
+									<ColumnLink key={at} link={link} />
 								))}
 							</nav>
 						))}
