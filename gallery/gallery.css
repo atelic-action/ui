@@ -41,12 +41,13 @@
 	/* The primary does three jobs, each its own token (README, Tokens): the
 	   bright brand orange for marks, lines, and focus rings; a deeper fill
 	   behind white words (4.70 to 1, where the brand orange gives 3.42); and
-	   a deeper still ink for orange words on the cream surfaces (4.94 to 1 on
-	   --surface, 4.57 on --surface-alt, 5.38 on --card, where the brand
-	   orange gives 3.04, 2.81, and 3.31). */
+	   a deeper still ink for orange words on the cream surfaces (5.38 to 1 on
+	   --surface, 4.97 on --surface-alt, 5.86 on --card, and 4.80 under the
+	   bar's hover tint, where the brand orange gives 3.04, 2.81, 3.31, and
+	   2.71). */
 	--primary: #fc4a1a;
 	--primary-fill: #d63a10;
-	--primary-ink: #c2330c;
+	--primary-ink: #b8300b;
 	--on-primary: #fff;
 	--primary-deep: #d63a10;
 	--primary-bright: #ff8059;
