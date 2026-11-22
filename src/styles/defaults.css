@@ -99,6 +99,58 @@
 		--section-space: clamp(56px, 9vw, 120px);
 		--block-gap: 44px;
 		--card-min: 240px;
+
+		/* The optional tokens a theme sets to restyle one piece, each at the
+		   look the piece had before it was a token (README.md, Tokens). A
+		   default that names another token reads it here, on the root, where
+		   a theme sets it. A color whose old look was the inherited one is
+		   currentColor, which as a color is exactly the inherited value. */
+		/* The bar and its panels' width and side gutter. */
+		--header-max: var(--max-width);
+		--header-gutter: var(--gutter);
+		/* The open group's pill on the bar. */
+		--nav-open-bg: var(--hover-tint);
+		--nav-open-ink: currentColor;
+		/* The header phone pill's padding and its number's size. */
+		--nav-phone-pad: 6px 16px 6px 12px;
+		--nav-phone-size: 0.95rem;
+		/* The mega panel's feature card: its ground and its words. */
+		--menu-card-bg: var(--primary-deep);
+		--menu-card-ink: var(--on-primary);
+		/* The phone menu's badge and call to action. */
+		--menu-badge-bg: var(--primary-fill, var(--primary));
+		--menu-badge-ink: var(--on-primary);
+		--menu-cta-bg: var(--primary-fill, var(--primary));
+		--menu-cta-ink: var(--on-primary);
+		/* The page and section headings (h1, h2), and the smaller ones (h3 at
+		   the tracking, h4 at two thirds of it). */
+		--heading-transform: none;
+		--heading-weight: var(--weight-heavy);
+		--heading-tracking: -0.02em;
+		--heading-color: currentColor;
+		--subheading-tracking: -0.015em;
+		/* The hero's eyebrow line and its lead paragraph. */
+		--hero-kicker-weight: var(--weight-medium);
+		--hero-kicker-tracking: 0.18em;
+		--hero-kicker-size: 0.74rem;
+		--hero-lead-size: clamp(1.05rem, 2.2vw, 1.35rem);
+		/* A FeatureGrid card's title. */
+		--card-title-color: currentColor;
+		/* A CalloutPanel title's case, and its subtitle's case and tracking. */
+		--callout-transform: none;
+		--callout-sub-transform: none;
+		--callout-sub-tracking: normal;
+		/* A star row in a ProofStrip value. */
+		--proof-star-fill: var(--primary);
+		/* The least a LinkColumns column narrows to. */
+		--link-columns-min: 170px;
+		/* The footer: its lockup's mark, its column links and their hover,
+		   and the closing bar's links (the credit's among them) and theirs. */
+		--footer-mark-height: 38px;
+		--footer-link: var(--neutral-200);
+		--footer-link-hover: var(--on-dark);
+		--closing-link: var(--neutral-300);
+		--closing-link-hover: color-mix(in srgb, var(--surface) 96%, var(--on-dark));
 	}
 
 	/* ---- Long words ----
@@ -124,9 +176,11 @@
 	/* A phone number is one thing to read and dial, so it never breaks, at
 	   its spaces or its hyphen, wherever it is set (Component Rules 17). The
 	   rule holds the number, never a whole row that links to a call: a tel
-	   link of words alone is the number, and a tel link with more in it (a
-	   dock row, an icon beside the number) marks the number .tel-number. */
-	:where(.atelic-ui a[href^="tel:"]:not(:has(*)), .atelic-ui .tel-number) {
+	   link of words alone is the number, and so is one of an icon beside the
+	   words (every element in it an svg), held with its icon; a tel link
+	   with more in it (a dock row, a label over the number) marks the number
+	   .tel-number, which every such link the package draws does. */
+	:where(.atelic-ui a[href^="tel:"]:not(:has(:not(svg, svg *))), .atelic-ui .tel-number) {
 		white-space: nowrap;
 	}
 

@@ -21,7 +21,7 @@ export interface PricingBandProps {
 export function PricingBand({ eyebrow, title, lead, price, unit, detail }: PricingBandProps) {
 	const withBase = useWithBase();
 	return (
-		<section className="price-band">
+		<section className="price-band" data-ground="primary">
 			<div className="wrap price-inner">
 				<div>
 					{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}

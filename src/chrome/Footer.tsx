@@ -1,5 +1,5 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import type { ComponentProps, CSSProperties, Ref } from "react";
+import type { ComponentProps, Ref } from "react";
 import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
 import type {
@@ -255,10 +255,7 @@ export function Footer({
 		<>
 			<footer ref={ref} className="footer">
 				<div className="wrap">
-					<div
-						className={hoursShown ? "footer-grid has-hours" : "footer-grid"}
-						style={{ "--footer-columns": shown.length + (hoursShown ? 1 : 0) } as CSSProperties}
-					>
+					<div className={hoursShown ? "footer-grid has-hours" : "footer-grid"}>
 						<div className="footer-brand">
 							{logo?.tile ? (
 								<p className="footer-wordmark">

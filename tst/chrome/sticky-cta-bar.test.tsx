@@ -65,6 +65,24 @@ describe("StickyCTABar", () => {
 		height.mockRestore();
 	});
 
+	it("tells a swapped in listener the height at once, with no resize to wait for", () => {
+		const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(64);
+		const first = vi.fn();
+		const second = vi.fn();
+		const { rerender, unmount } = render(
+			<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={first} />,
+		);
+		expect(first).toHaveBeenCalledTimes(1);
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={second} />);
+		expect(first).toHaveBeenLastCalledWith(0);
+		expect(second).toHaveBeenCalledExactlyOnceWith(64);
+		// A render that keeps the listener reports nothing again.
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={second} />);
+		expect(second).toHaveBeenCalledTimes(1);
+		unmount();
+		height.mockRestore();
+	});
+
 	it("slides in once the page scrolls past the threshold", () => {
 		const { container } = render(<StickyCTABar primaryCTA={primaryCTA} threshold={300} />);
 		const bar = container.querySelector(".sticky-cta");

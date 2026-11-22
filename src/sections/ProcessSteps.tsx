@@ -36,7 +36,7 @@ export function ProcessSteps({
 }: ProcessStepsProps) {
 	const Title = `h${headingLevel}` as const;
 	return (
-		<section className="section process" id={id}>
+		<section className="section process" data-ground="dark" id={id}>
 			<div className="wrap process-grid">
 				<div>
 					{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}

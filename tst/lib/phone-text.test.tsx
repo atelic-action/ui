@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { holdPhoneNumbers, isTel } from "../../src/lib/phoneText";
+import { holdPhoneNumbers, isTel, telText } from "../../src/lib/phoneText";
 
 describe("holdPhoneNumbers", () => {
 	it("wraps each phone number in a run of words, and leaves the words around it", () => {
@@ -23,5 +23,12 @@ describe("holdPhoneNumbers", () => {
 		expect(isTel("tel:+15555550142")).toBe(true);
 		expect(isTel("/contact")).toBe(false);
 		expect(isTel(undefined)).toBe(false);
+	});
+
+	it("holds the number in a call link's words, and leaves any other link's words as given", () => {
+		const { container } = render(<p>{telText("tel:+15555550142", "Call (555) 555-0142")}</p>);
+		expect(container.querySelector(".tel-number")?.textContent).toBe("(555) 555-0142");
+		expect(telText("/contact", "Call (555) 555-0142")).toBe("Call (555) 555-0142");
+		expect(telText(undefined, "Call (555) 555-0142")).toBe("Call (555) 555-0142");
 	});
 });

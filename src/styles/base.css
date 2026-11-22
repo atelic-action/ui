@@ -118,23 +118,29 @@
 	   a dark section heading's). */
 	.atelic-ui h1,
 	.atelic-ui h2 {
-		text-transform: var(--heading-transform, none);
-		font-weight: var(--heading-weight, var(--weight-heavy));
-		letter-spacing: var(--heading-tracking, -0.02em);
-		color: var(--heading-color, inherit);
+		text-transform: var(--heading-transform);
+		font-weight: var(--heading-weight);
+		letter-spacing: var(--heading-tracking);
+		color: var(--heading-color);
 	}
-	.atelic-ui
-		:is(
-			.on-primary,
-			.on-dark,
-			.hero,
-			.creds,
-			.callout-panel,
-			.price-band,
-			.process,
-			.contact-info-card
-		) {
+	/* A ground that is dark or the primary fill says so with data-ground
+	   ("dark" or "primary"), which every such section the package draws
+	   wears (the heroes, the credentials band, the callout panel, the price
+	   band, the process band, the contact card), and a site's own dark band
+	   wears too; .on-primary and .on-dark say the same. Headings there keep
+	   the ground's own words, so a new dark section gets it by the attribute
+	   alone. */
+	.atelic-ui :is([data-ground], .on-primary, .on-dark) {
 		--heading-color: currentColor;
+	}
+	/* The smaller headings take the brand's tracking the same way: h3 at
+	   --subheading-tracking, h4 at two thirds of it, the proportion they
+	   always had (-0.015em and -0.01em). */
+	.atelic-ui h3 {
+		letter-spacing: var(--subheading-tracking);
+	}
+	.atelic-ui h4 {
+		letter-spacing: calc(var(--subheading-tracking) * 2 / 3);
 	}
 	.atelic-ui h1 {
 		font-size: clamp(2.6rem, 8vw, 5rem);
@@ -144,12 +150,10 @@
 	}
 	.atelic-ui h3 {
 		font-size: clamp(1.35rem, 3vw, 1.85rem);
-		letter-spacing: -0.015em;
 	}
 	.atelic-ui h4 {
 		font-size: 1.15rem;
 		font-weight: var(--weight-bold);
-		letter-spacing: -0.01em;
 	}
 	.atelic-ui p {
 		text-wrap: pretty;

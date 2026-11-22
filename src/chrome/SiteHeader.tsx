@@ -10,7 +10,7 @@ import {
 } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { type PageStop, useScrollSpy } from "../hooks/useScrollSpy";
-import { newTabProps } from "../lib/newTabProps";
+import { Button } from "../primitives/Button";
 import type { Brand, CallToAction, HeaderPhone, MenuContact, NavLink } from "../types";
 import { BrandLockup } from "./BrandLockup";
 import { NavMegaPanel } from "./NavMegaPanel";
@@ -315,7 +315,7 @@ export function SiteHeader({
 									<PhoneIcon size={17} aria-hidden="true" />
 									<span className="nav-phone-text">
 										{phone.label && <span className="nav-phone-label">{phone.label}</span>}
-										<span className="nav-phone-number">{phone.display}</span>
+										<span className="nav-phone-number tel-number">{phone.display}</span>
 									</span>
 								</a>
 							))}
@@ -326,18 +326,9 @@ export function SiteHeader({
 						// display rule lives outside the atelic-ui layer and would beat
 						// any rule here that hid the button itself.
 						<span className="nav-cta">
-							<a
-								className="btn btn-primary"
-								href={barCTA.href}
-								{...newTabProps(barCTA.href, barCTA.external)}
-							>
+							<Button href={barCTA.href} newTab={barCTA.external} arrow={barCTA.arrow}>
 								{barCTA.label}
-								{barCTA.arrow && (
-									<span className="arrow" aria-hidden="true">
-										→
-									</span>
-								)}
-							</a>
+							</Button>
 						</span>
 					)}
 					{barPhones[0] && (

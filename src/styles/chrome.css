@@ -101,9 +101,9 @@
 	   sets --header-max and --header-gutter to run them wider. */
 	.atelic-ui .nav-inner {
 		width: 100%;
-		max-width: var(--header-max, var(--max-width));
+		max-width: var(--header-max);
 		margin-inline: auto;
-		padding-inline: var(--header-gutter, var(--gutter));
+		padding-inline: var(--header-gutter);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -187,8 +187,8 @@
 	/* The open group's pill: the hover tint and the bar's own words unless a
 	   theme sets --nav-open-bg and --nav-open-ink. */
 	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
-		background: var(--nav-open-bg, var(--hover-tint));
-		color: var(--nav-open-ink, inherit);
+		background: var(--nav-open-bg);
+		color: var(--nav-open-ink);
 	}
 	/* The entry for where the reader is: a page's scroll spied stop, the
 	   page being read, or the group holding it. Words on the bar's surface,
@@ -367,7 +367,7 @@
 		left: 0;
 		right: 0;
 		top: 100%;
-		padding: 10px var(--header-gutter, var(--gutter)) 0;
+		padding: 10px var(--header-gutter) 0;
 		color: var(--ink);
 		max-height: calc(100vh - var(--nav-height));
 		overflow-y: auto;
@@ -378,7 +378,7 @@
 	.atelic-ui .nav-mega-card {
 		box-sizing: border-box;
 		width: 100%;
-		max-width: calc(var(--header-max, var(--max-width)) - 2 * var(--header-gutter, var(--gutter)));
+		max-width: calc(var(--header-max) - 2 * var(--header-gutter));
 		margin-inline: auto;
 		display: flex;
 		align-items: stretch;
@@ -712,8 +712,8 @@
 		flex-direction: column;
 		overflow: hidden;
 		border-radius: var(--radius-md);
-		background: var(--primary-deep);
-		color: var(--on-primary);
+		background: var(--menu-card-bg);
+		color: var(--menu-card-ink);
 	}
 	.atelic-ui .nav-feature-img {
 		flex: 1 1 0;
@@ -736,7 +736,7 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		/* The bright primary on the card's deep primary is under 2 to 1. */
-		color: var(--on-primary);
+		color: var(--menu-card-ink);
 	}
 	.atelic-ui .nav-feature-title {
 		font-size: 1.3rem;
@@ -748,7 +748,7 @@
 	.atelic-ui .nav-feature-text {
 		font-size: 0.95rem;
 		line-height: 1.45;
-		color: var(--on-primary);
+		color: var(--menu-card-ink);
 	}
 	/* The ticked points: the tick bare and the words both in the card's own
 	   words color, since the bright primary all but vanishes on the deep
@@ -761,7 +761,7 @@
 	}
 	.atelic-ui .nav-feature .nav-feature-points li {
 		gap: 10px;
-		color: var(--on-primary);
+		color: var(--menu-card-ink);
 	}
 	.atelic-ui .nav-feature .nav-feature-points .tick {
 		width: 16px;
@@ -769,7 +769,7 @@
 		margin-top: 3px;
 		background: none;
 		box-shadow: none;
-		color: var(--on-primary);
+		color: var(--menu-card-ink);
 	}
 	.atelic-ui .nav-feature-cta {
 		margin-top: 8px;
@@ -785,7 +785,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		padding: var(--nav-phone-pad, 6px 16px 6px 12px);
+		padding: var(--nav-phone-pad);
 		border-radius: var(--radius-pill);
 		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
 		white-space: nowrap;
@@ -811,7 +811,7 @@
 	}
 	.atelic-ui .nav-phone-number {
 		font-weight: var(--weight-bold);
-		font-size: var(--nav-phone-size, 0.95rem);
+		font-size: var(--nav-phone-size);
 	}
 	.atelic-ui .nav-call {
 		display: inline-flex;
@@ -968,22 +968,14 @@
 	   ground is its primary sets them to --on-primary and --primary-ink, or
 	   the button vanishes into the sheet. */
 	.atelic-ui .mobile-menu .mm-cta.btn-primary {
-		background: var(--menu-cta-bg, var(--primary-fill, var(--primary)));
-		color: var(--menu-cta-ink, var(--on-primary));
+		background: var(--menu-cta-bg);
+		color: var(--menu-cta-ink);
 	}
 	.atelic-ui .mobile-menu .mm-cta.btn-primary:hover {
-		background: color-mix(
-			in srgb,
-			var(--menu-cta-bg, var(--primary-fill, var(--primary))) 84%,
-			var(--shade)
-		);
+		background: color-mix(in srgb, var(--menu-cta-bg) 84%, var(--shade));
 	}
 	.atelic-ui .mobile-menu .mm-cta.btn-primary:active {
-		background: color-mix(
-			in srgb,
-			var(--menu-cta-bg, var(--primary-fill, var(--primary))) 74%,
-			var(--shade)
-		);
+		background: color-mix(in srgb, var(--menu-cta-bg) 74%, var(--shade));
 	}
 	.atelic-ui .mobile-menu .mm-contact {
 		margin-top: auto;
@@ -1091,8 +1083,8 @@
 		flex: none;
 		padding: 3px 9px;
 		border-radius: var(--radius-pill);
-		background: var(--menu-badge-bg, var(--primary-fill, var(--primary)));
-		color: var(--menu-badge-ink, var(--on-primary));
+		background: var(--menu-badge-bg);
+		color: var(--menu-badge-ink);
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: var(--weight-semibold);
@@ -1348,7 +1340,7 @@
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .footer, so it never meets the header's link rules */
 	.atelic-ui .footer a:hover {
-		color: var(--on-dark);
+		color: var(--footer-link-hover);
 	}
 	/* One grid: the brand column, then the link columns, however many the
 	   footer was given. A phone stacks the brand column over two across. */
@@ -1375,7 +1367,7 @@
 		margin: 0 0 14px;
 	}
 	.atelic-ui .footer-brand img {
-		height: var(--footer-mark-height, 38px);
+		height: var(--footer-mark-height);
 		margin-bottom: 18px;
 	}
 	.atelic-ui .footer-rating {
@@ -1435,7 +1427,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 6px 0;
-		color: var(--neutral-200);
+		color: var(--footer-link);
 		font-weight: var(--weight-medium);
 	}
 	.atelic-ui .footer nav a svg {
@@ -1449,6 +1441,9 @@
 		font-style: normal;
 		color: var(--neutral-200);
 	}
+	/* --footer-nap-weight keeps its defaults at the reads: the links' is
+	   semibold and the plain address's is inherited, two looks one token
+	   restyles together, and no custom property can hold inherit. */
 	.atelic-ui .footer .nap a {
 		color: var(--on-dark);
 		font-weight: var(--footer-nap-weight, var(--weight-semibold));
@@ -1559,7 +1554,7 @@
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the footer's link rules */
 	.atelic-ui .closing-bar a {
-		color: var(--neutral-300);
+		color: var(--closing-link);
 		font-weight: var(--weight-medium);
 	}
 	/* The credit's link sits inside a sentence, so it is underlined, never
@@ -1570,6 +1565,6 @@
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the header's link rules */
 	.atelic-ui .closing-bar a:hover {
-		color: color-mix(in srgb, var(--surface) 96%, var(--on-dark));
+		color: var(--closing-link-hover);
 	}
 }

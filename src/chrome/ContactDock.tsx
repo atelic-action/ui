@@ -2,7 +2,7 @@ import { ChevronRight, MessageCircle, X } from "lucide-react";
 import { type RefObject, useEffect, useId, useRef, useState } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { newTabProps } from "../lib/newTabProps";
-import { holdPhoneNumbers, isTel } from "../lib/phoneText";
+import { telText } from "../lib/phoneText";
 import type { ContactDockConfig } from "../types";
 import { dockIcons } from "./icons";
 
@@ -187,6 +187,7 @@ export function ContactDock({
 					? document.querySelector(avoid)
 					: avoid.current;
 		const bind = () => {
+			head?.removeEventListener("transitionend", schedule);
 			bar = findBar();
 			footer = findFooter();
 			head = findHeader();
@@ -200,6 +201,13 @@ export function ContactDock({
 				shows?.observe(bar, { attributes: true, attributeFilter: ["data-showing", "class"] });
 			}
 			if (footer) sizes?.observe(footer);
+			// The header sets the launcher's ceiling, so a change in its size (a
+			// logo that loads late, a bar that grows) measures again, and so does
+			// the end of its own transition, which moves it without resizing it.
+			if (head) {
+				sizes?.observe(head);
+				head.addEventListener("transitionend", schedule);
+			}
 			measure();
 		};
 		// A route change swaps the footer, and a bar can mount after the dock:
@@ -230,6 +238,7 @@ export function ContactDock({
 			cancelAnimationFrame(bound);
 			window.removeEventListener("scroll", schedule);
 			window.removeEventListener("resize", schedule);
+			head?.removeEventListener("transitionend", schedule);
 			sizes?.disconnect();
 			shows?.disconnect();
 			added?.disconnect();
@@ -298,7 +307,7 @@ export function ContactDock({
 					{items.map((item, at) => {
 						const Icon = dockIcons[item.icon ?? "chat"];
 						// A call row holds its number whole and wraps its words.
-						const words = (text: string) => (isTel(item.href) ? holdPhoneNumbers(text) : text);
+						const words = (text: string) => telText(item.href, text);
 						const inner = (
 							<>
 								<span className="cd-item-icon">

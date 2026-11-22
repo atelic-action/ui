@@ -38,3 +38,12 @@ export function holdPhoneNumbers(content: ReactNode): ReactNode {
 		</span>
 	);
 }
+
+/**
+ * The words of a link, with any phone number in them held whole when the
+ * link calls (`holdPhoneNumbers` on a `tel:` href), and as given otherwise.
+ * The one way a component sets a link's words that may hold a number.
+ */
+export function telText(href: string | undefined, content: ReactNode): ReactNode {
+	return isTel(href) ? holdPhoneNumbers(content) : content;
+}

@@ -40,7 +40,7 @@ export function ContactInfoCard({
 	const withBase = useWithBase();
 	const portal = site.footerLinks?.find((link) => link.label.toLowerCase().includes("portal"));
 	return (
-		<div className="contact-info-card">
+		<div className="contact-info-card" data-ground="dark">
 			<h3>{title}</h3>
 			<div className="ci-rows">
 				{phones?.length

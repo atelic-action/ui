@@ -1,7 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
-import { holdPhoneNumbers, isTel } from "../lib/phoneText";
+import { telText } from "../lib/phoneText";
 import type {
 	CallToAction,
 	HeaderPhone,
@@ -217,7 +217,7 @@ function MenuSection({
 			aria-current={currentPath === item.href ? "page" : undefined}
 			{...newTabProps(item.href, item.external)}
 		>
-			{isTel(item.href) ? holdPhoneNumbers(item.label) : item.label}
+			{telText(item.href, item.label)}
 			<Badge text={item.badge} />
 		</a>
 	);
