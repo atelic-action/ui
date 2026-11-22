@@ -14,12 +14,13 @@ export const issues = {
 	 * Small muted text set in `--neutral-500`: 3.38:1 on `--surface` and 3.12:1
 	 * on `--surface-alt`, at 11.5 to 15.2px. A closed day's hours, the journal's
 	 * dates and reading times, a post's way back and byline, the comparison's
-	 * heads, ungraded notes, and footnote, and a legal page's dateline.
+	 * heads, ungraded notes, and footnote, a legal page's dateline, and the
+	 * reviews' stat labels, details, and dates (3.68:1 on `--card`).
 	 */
 	"muted-text-contrast": {
 		rule: "color-contrast",
 		elements:
-			".hours-row.closed, .bi-meta, .bp-back, .bp-meta, .cmp-table thead th, .cmp-grade.is-note, .cmp-footnote, .legal-updated",
+			".hours-row.closed, .bi-meta, .bp-back, .bp-meta, .cmp-table thead th, .cmp-grade.is-note, .cmp-footnote, .legal-updated, .rvc-stat-label, .rvc-detail, .rw-date, .rw-detail",
 	},
 	/**
 	 * A feature's mono index and a linked card's label read `--primary` as
@@ -76,4 +77,20 @@ export const issues = {
 		elements: ".loc-block h4",
 		base: "h1, h2, h3, h4, h5, h6, [role=heading]",
 	},
+	/**
+	 * The contact form's error words, `--primary-deep`: a field's message
+	 * 4.17:1 on `--surface` at 13px, the send failure 3.96:1 on `--primary-tint` at 17px.
+	 */
+	"form-error-contrast": { rule: "color-contrast", elements: ".field .err, .form-error" },
+	/**
+	 * The reveal's after label, `--on-primary` (white) on `--primary`: 3.42:1
+	 * at 10.9px. The same cause as `on-primary-field-contrast`.
+	 */
+	"reveal-label-contrast": { rule: "color-contrast", elements: ".rslider-label-after" },
+	/** The carousel's "/ 5" beside the score, `--neutral-300` on `--surface`: 2.05:1 at 25.6px, under the large text floor. */
+	"review-score-out-contrast": { rule: "color-contrast", elements: ".rvc-score-out" },
+	/** A review card's initials, `--primary` on `--primary-tint`: 2.88:1 at 12.5px, though the avatar is hidden from a screen reader. */
+	"review-avatar-contrast": { rule: "color-contrast", elements: ".rw-avatar" },
+	/** Read more, `--primary` on `--card`: 3.31:1 at 11.8px. The primary as small text. */
+	"review-more-contrast": { rule: "color-contrast", elements: ".rw-more" },
 } satisfies Record<string, Issue>;
