@@ -29,6 +29,28 @@ describe("isMiss", () => {
 		expect(isMiss([])).toBe(false);
 	});
 
+	it("is a miss once the router reports a match not found, and not for any other status", () => {
+		const slug = { routeId: "/blog/$slug", params: { slug: "unwritten" } };
+		expect(isMiss([root, { ...slug, status: "notFound" }])).toBe(true);
+		for (const status of ["pending", "success", "error", "redirected"]) {
+			expect(isMiss([root, { ...slug, status }]), status).toBe(false);
+		}
+		// The status counts on any match, the root's included.
+		expect(
+			isMiss([
+				{ ...root, status: "notFound" },
+				{ ...slug, status: "success" },
+			]),
+		).toBe(true);
+	});
+
+	it("is a miss when a match renders a not found nothing below handled, and only when set true", () => {
+		const slug = { routeId: "/blog/$slug", params: { slug: "unwritten" } };
+		expect(isMiss([root, { ...slug, globalNotFound: true }])).toBe(true);
+		expect(isMiss([{ ...root, globalNotFound: true }, slug])).toBe(true);
+		expect(isMiss([root, { ...slug, globalNotFound: false }])).toBe(false);
+	});
+
 	it("takes another catch all id for a tree that names it otherwise", () => {
 		expect(isMiss([{ routeId: "/_site/$", params: {} }], "/_site/$")).toBe(true);
 		expect(isMiss([{ routeId: "/_site/$", params: {} }])).toBe(false);

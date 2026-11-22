@@ -146,6 +146,8 @@
 		--hero-lead-size: clamp(1.05rem, 2.2vw, 1.35rem);
 		--hero-lead-measure: 52ch;
 		--hero-lead-leading: 1.55;
+		/* The hero's kicker: the inline block it has always been. */
+		--hero-kicker-display: inline-block;
 		/* A FeatureGrid card's title. */
 		--card-title-color: currentColor;
 		/* A CalloutPanel title's case, and its subtitle's case and tracking. */

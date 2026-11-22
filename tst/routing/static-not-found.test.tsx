@@ -145,22 +145,47 @@ describe("the pending view on a parameter route", () => {
 });
 
 describe("the root's 404 head and the pending view", () => {
-	it("agree on every kind of match, both asking isMiss", () => {
-		const cases: MissMatch[][] = [
-			[{ routeId: "/$", params: {} }],
-			[{ routeId: "/blog/$slug", params: { slug: "x" }, staticData: { missing: () => true } }],
-			[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "notFound" }],
-			[{ routeId: "/blog/$slug", params: { slug: "x" }, globalNotFound: true }],
-			[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "pending" }],
-			[{ routeId: "/menu", params: {}, status: "success" }],
+	it("agree on every kind of match, each against an answer written out by hand", () => {
+		// The answer for each case is written here, not asked of isMiss, so a
+		// change to the predicate that the pending view did not follow (or the
+		// other way round) fails one side against the table.
+		const cases: Array<[label: string, matches: MissMatch[], miss: boolean]> = [
+			["the catch all took the path", [{ routeId: "/$", params: {} }], true],
+			[
+				"a route's missing says no such page",
+				[{ routeId: "/blog/$slug", params: { slug: "x" }, staticData: { missing: () => true } }],
+				true,
+			],
+			[
+				"a route's missing says the page is there",
+				[{ routeId: "/blog/$slug", params: { slug: "x" }, staticData: { missing: () => false } }],
+				false,
+			],
+			[
+				"a loader threw notFound()",
+				[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "notFound" }],
+				true,
+			],
+			[
+				"a not found nothing below handled",
+				[{ routeId: "/blog/$slug", params: { slug: "x" }, globalNotFound: true }],
+				true,
+			],
+			[
+				"a parameter route still loading",
+				[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "pending" }],
+				false,
+			],
+			["an ordinary page", [{ routeId: "/menu", params: {}, status: "success" }], false],
+			["no matches at all", [], false],
 		];
-		for (const matches of cases) {
+		for (const [label, matches, miss] of cases) {
+			expect(isMiss(matches), label).toBe(miss);
 			const Pending = staticNotFoundRouting(NotFoundPage, {
 				useMatches: matchesOf(matches),
 			}).defaultPendingComponent;
 			const { container, unmount } = render(<Pending />);
-			const drawn = container.textContent === "Nothing at this address";
-			expect(drawn, JSON.stringify(matches)).toBe(isMiss(matches));
+			expect(container.textContent === "Nothing at this address", label).toBe(miss);
 			unmount();
 		}
 	});
