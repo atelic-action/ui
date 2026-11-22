@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useScrollsSideways } from "../lib/useScrollsSideways";
 import { useWithBase } from "../routing/BasePathProvider";
 
 /**
@@ -42,6 +43,12 @@ export interface ComparisonTableProps {
 	columns?: { stage?: string; before?: string; after?: string };
 	/** Small print under the table, e.g. what the grades mean. */
 	footnote?: ReactNode;
+	/**
+	 * What a screen reader calls the table's box while the table is wider
+	 * than the page and scrolls inside it, as on a phone; defaults to
+	 * "Comparison". Name what the table compares ("The site, before and after").
+	 */
+	ariaLabel?: string;
 	className?: string;
 }
 
@@ -72,8 +79,18 @@ function Cell({ state, highlight }: { state: ComparisonState; highlight: boolean
 	);
 }
 
-export function ComparisonTable({ rows, columns, footnote, className }: ComparisonTableProps) {
+export function ComparisonTable({
+	rows,
+	columns,
+	footnote,
+	ariaLabel = "Comparison",
+	className,
+}: ComparisonTableProps) {
 	const withBase = useWithBase();
+	// The box scrolls sideways on a phone, where the table keeps its shape
+	// (Component Rules 6), so while it scrolls it is a named region a
+	// keyboard can reach and scroll, as DataTable's is.
+	const scrolls = useScrollsSideways();
 	const heads = {
 		stage: columns?.stage ?? "Area",
 		before: columns?.before ?? "Before",
@@ -82,7 +99,11 @@ export function ComparisonTable({ rows, columns, footnote, className }: Comparis
 
 	return (
 		<div className={["comparison", className].filter(Boolean).join(" ")}>
-			<div className="cmp-scroll">
+			<div
+				ref={scrolls.ref}
+				className="cmp-scroll"
+				{...(scrolls.active ? { tabIndex: 0, role: "region", "aria-label": ariaLabel } : {})}
+			>
 				<table className="cmp-table">
 					<colgroup>
 						<col className="cmp-col-stage" />

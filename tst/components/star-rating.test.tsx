@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { useState } from "react";
 import { describeStarRating, StarRating } from "../../src/components";
 
 describe("describeStarRating", () => {
@@ -73,6 +74,33 @@ describe("StarRating", () => {
 		// And the pointer leaving the row drops a preview too.
 		fireEvent.mouseMove(half(container, 2));
 		fireEvent.mouseLeave(screen.getByRole("slider"));
+		expect(widths()).toEqual(["100%", "100%", "100%", "100%", "0%"]);
+	});
+
+	it("keeps the preview down while the pointer moves on the half it just picked", () => {
+		// A clear: the row is unrated, and the pointer, still on the half it
+		// cleared, keeps moving. The preview would fill the stars back in and
+		// hide the clear behind the very stars it emptied.
+		function Rated() {
+			const [value, setValue] = useState<number | null>(4);
+			return <StarRating value={value} onChange={setValue} />;
+		}
+		const { container } = render(<Rated />);
+		const widths = () =>
+			[...container.querySelectorAll<HTMLElement>(".star-rating-fill")].map(
+				(fill) => fill.style.width,
+			);
+		fireEvent.mouseMove(half(container, 4));
+		fireEvent.click(half(container, 4));
+		expect(screen.getByRole("slider")).toHaveAttribute("aria-valuetext", "Not rated");
+		fireEvent.mouseMove(half(container, 4));
+		expect(widths()).toEqual(["0%", "0%", "0%", "0%", "0%"]);
+
+		// Moving on to another half previews again, and coming back to the
+		// picked one previews it too: the hold lasts only until the pointer moves on.
+		fireEvent.mouseMove(half(container, 2));
+		expect(widths()).toEqual(["100%", "100%", "0%", "0%", "0%"]);
+		fireEvent.mouseMove(half(container, 4));
 		expect(widths()).toEqual(["100%", "100%", "100%", "100%", "0%"]);
 	});
 

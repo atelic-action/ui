@@ -13,15 +13,19 @@ const layered = readdirSync(STYLES).filter((name) => name.endsWith(".css") && na
 const sheet = (name: string) => readFileSync(join(STYLES, name), "utf8");
 
 describe("tokens read but once undefined", () => {
-	it("defaults the shadows and the script face to the templates' own values", () => {
+	it("defaults the shadows and the script face to neutral values, no site's brand", () => {
 		const defaults = sheet("defaults.css");
 		expect(defaults).toMatch(
-			/--shadow-md: 0 4px 14px rgb\(33 28 23 \/ 0\.08\), 0 12px 32px rgb\(33 28 23 \/ 0\.06\);/,
+			/--shadow-md: 0 4px 14px rgb\(0 0 0 \/ 0\.08\), 0 12px 32px rgb\(0 0 0 \/ 0\.06\);/,
 		);
 		expect(defaults).toMatch(
-			/--shadow-lg: 0 10px 30px rgb\(33 28 23 \/ 0\.12\), 0 30px 70px rgb\(33 28 23 \/ 0\.1\);/,
+			/--shadow-lg: 0 10px 30px rgb\(0 0 0 \/ 0\.12\), 0 30px 70px rgb\(0 0 0 \/ 0\.1\);/,
 		);
-		expect(defaults).toMatch(/--font-script: "Yellowtail", "Brush Script MT", cursive;/);
+		expect(defaults).toMatch(
+			/--font-script: "Brush Script MT", "Segoe Script", "Snell Roundhand", cursive;/,
+		);
+		// No self hosted face a template ships: the package bundles no font.
+		expect(defaults).not.toMatch(/Yellowtail/);
 	});
 
 	it("reads --neutral-700, which no theme sets, with the ink behind it everywhere", () => {

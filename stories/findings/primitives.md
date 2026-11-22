@@ -12,7 +12,7 @@ None open.
 
 ## Observed, Not Yet Marked
 
-- `Disclosure`: a closed controlled card's `aria-controls` names a panel that is not in the page (the body is unmounted while closed). axe allows it when `aria-expanded="false"`, so nothing fails, but assistive tech following the relation finds nothing.
+None open.
 
 ## Checker Limits
 

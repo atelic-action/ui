@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
-import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
+import { type ReactNode, useId, useMemo, useState } from "react";
+import { useScrollsSideways } from "../lib/useScrollsSideways";
 import { Hint } from "./Hint";
 
 export type SortDirection = "asc" | "desc";
@@ -85,28 +86,6 @@ function sortValue(cell: DataTableCell): number | string {
 function compare(a: number | string, b: number | string): number {
 	if (typeof a === "number" && typeof b === "number") return a - b;
 	return String(a).localeCompare(String(b), "en", { numeric: true });
-}
-
-/**
- * Whether a box is narrower than what it holds, kept current as either
- * resizes. False on the server and until the first measure, so the box only
- * takes a tab stop and a name once it actually scrolls.
- */
-function useScrollsSideways() {
-	const ref = useRef<HTMLDivElement>(null);
-	const [active, setActive] = useState(false);
-	useEffect(() => {
-		const box = ref.current;
-		if (!box) return;
-		const measure = () => setActive(box.scrollWidth > box.clientWidth + 1);
-		measure();
-		if (typeof ResizeObserver === "undefined") return;
-		const observer = new ResizeObserver(measure);
-		observer.observe(box);
-		if (box.firstElementChild) observer.observe(box.firstElementChild);
-		return () => observer.disconnect();
-	}, []);
-	return { ref, active };
 }
 
 /**

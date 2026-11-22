@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../src/app/ui";
-import { layerOpened, until } from "../layers";
+import { layerOpened, until } from "../../support/settle";
 
 /** A round picture of a person, with their initials while it loads or when it fails. */
 const meta = {

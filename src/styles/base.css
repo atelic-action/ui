@@ -70,24 +70,8 @@
 		-webkit-font-smoothing: antialiased;
 		text-rendering: optimizeLegibility;
 	}
-	/* ---- Long words ----
-	   A word too long for its line (a bare URL, a long address, a handle)
-	   breaks where it must instead of scrolling a phone sideways. Ordinary
-	   words still wrap at spaces: the break happens only when a word alone
-	   overflows its line. It is anywhere and not break-word because only
-	   anywhere lowers a flex or grid item's minimum content width, so the
-	   tracks a word sits in can shrink to the screen (Component Rules 5).
-	   Set once on the root and inherited, so every text element under it has
-	   it. A table keeps break-word: anywhere would collapse an auto table's
-	   columns below their longest ordinary word, and a wide table scrolls in
-	   its own box instead (rule 6). primitives.css and components.css carry
-	   the same two rules for a consumer that loads either alone. */
-	.atelic-ui {
-		overflow-wrap: anywhere;
-	}
-	.atelic-ui table {
-		overflow-wrap: break-word;
-	}
+	/* Long words break on the root by defaults.css (Long words), which every
+	   layered sheet imports first. */
 	.atelic-ui a {
 		color: inherit;
 		text-decoration: none;

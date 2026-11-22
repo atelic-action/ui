@@ -12,8 +12,8 @@ import {
 	SelectValue,
 } from "../../../src/app/ui";
 import { knownIssues } from "../../support/known-issues";
+import { layerOpened, noneLeft, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft, until } from "../layers";
 
 /**
  * The raw select parts, for what `OptionSelect` does not express: grouped

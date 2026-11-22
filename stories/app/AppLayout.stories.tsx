@@ -3,9 +3,10 @@ import { useLocation } from "@tanstack/react-router";
 import { expect, screen, userEvent, within } from "storybook/test";
 import { AppLayout, AppPage, useAuthStore } from "../../src/app";
 import { longNameUser, signIn, signOut } from "../fixtures/email-app";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { knownIssues } from "../support/known-issues";
+import { layerOpened, noneLeft, until } from "../support/settle";
 import { pin } from "../support/viewports";
-import { layerOpened, noneLeft, until } from "./layers";
 
 /** Where the memory router is, printed on the page so a story can read it. */
 function Where() {
@@ -199,7 +200,7 @@ export const LongUserName: Story = {
 		await expect(trigger.getBoundingClientRect().right).toBeLessThanOrEqual(
 			rail.getBoundingClientRect().right,
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -219,7 +220,7 @@ export const Phone: Story = {
 			"page",
 		);
 		await expect(canvas.queryByRole("complementary", { name: "Main navigation" })).toBeNull();
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 		// The tab bar is pinned to the bottom of the screen.
 		const bar = canvas.getByRole("navigation", { name: "Mobile navigation" });
 		await expect(Math.round(bar.getBoundingClientRect().bottom)).toBe(window.innerHeight);

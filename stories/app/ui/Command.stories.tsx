@@ -14,8 +14,8 @@ import {
 	CommandSeparator,
 	CommandShortcut,
 } from "../../../src/app/ui";
+import { layerOpened, noneLeft, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft, until } from "../layers";
 
 /** What a pick reports, fresh for each story. */
 const picked = { spy: fn() };

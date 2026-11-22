@@ -4,8 +4,8 @@ import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { expect, fn } from "storybook/test";
 import { ActionButton } from "../../src/app";
+import { until } from "../support/settle";
 import { pin } from "../support/viewports";
-import { until } from "./layers";
 
 /**
  * The app's responsive action button: an icon alone on a phone, the icon and

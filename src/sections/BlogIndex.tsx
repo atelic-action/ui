@@ -24,7 +24,7 @@ export interface BlogIndexProps {
 /**
  * The blog listing: every post, newest first, as a plain readable stack
  * rather than a card grid. These are articles, not products, and a list
- * that reads top to bottom suits a small archive better than a gallery
+ * that reads top to bottom suits a small archive better than a grid
  * that pads it out.
  *
  * Every entry is a real anchor to a prerendered page, which is what lets

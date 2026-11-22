@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent } from "storybook/test";
 import { SearchInput } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 function Held({ value: initial, onValueChange, ...props }: Parameters<typeof SearchInput>[0]) {
@@ -111,6 +112,6 @@ export const LongQueryPhone: Story = {
 		await expect(clear.getBoundingClientRect().right).toBeLessThanOrEqual(
 			box.getBoundingClientRect().right,
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

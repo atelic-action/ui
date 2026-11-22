@@ -37,40 +37,78 @@ function Badge({ text }: { text?: string }) {
 	return <NavBadge text={text} className="nav-mega-badge" />;
 }
 
-/** Says whether a link is the panel's current item, as its `aria-current`. */
-type Current = (href: string | undefined) => "page" | undefined;
+/**
+ * Says whether a link is the panel's current item, as its `aria-current`,
+ * by the link's place in the panel (`linkKey`).
+ */
+type Current = (key: string) => "page" | undefined;
+
+/** A link's place in the panel: which section, and where inside it. */
+function linkKey(section: number, ...place: (number | string)[]): string {
+	return [section, ...place].join(" ");
+}
 
 /**
- * The panel's one current item: the first link, in reading order, to the
- * page being read. A panel may link one page several times (the group's own
- * page as its "all" link and a column's head, a child sharing its parent's
- * href), and a reader is told the page is here once. Made fresh each render,
- * and called in the order the links render.
+ * The place of the panel's one current item: the first link, in reading
+ * order, to the page being read. A panel may link one page several times
+ * (the group's own page as its "all" link and a column's head, a child
+ * sharing its parent's href), and a reader is told the page is here once.
+ * Worked out from the props alone, in the order the links render, so any
+ * render (StrictMode's second, a child's on its own) marks the same link.
  */
-function currentClaim(currentPath?: string): Current {
-	let claimed = false;
-	return (href) => {
-		if (claimed || currentPath === undefined || href !== currentPath) return undefined;
-		claimed = true;
-		return "page";
-	};
+function currentKey(
+	group: NavLink,
+	sections: NavPanelSection[],
+	currentPath?: string,
+): string | undefined {
+	if (currentPath === undefined) return undefined;
+	if (group.allLabel && group.href === currentPath) return "all";
+	for (const [index, section] of sections.entries()) {
+		if (isLinkColumn(section)) {
+			if (section.href === currentPath) return linkKey(index, "head");
+			for (const [at, link] of section.links.entries()) {
+				if (link.href === currentPath) return linkKey(index, at);
+				for (const [child, sub] of (link.children ?? []).entries()) {
+					if (sub.href === currentPath) return linkKey(index, at, child);
+				}
+			}
+		} else if (section.kind === "picture") {
+			if (section.href === currentPath) return linkKey(index, "picture");
+		} else if (section.kind === "rows") {
+			for (const [at, row] of section.rows.entries()) {
+				if (row.href === currentPath) return linkKey(index, "row", at);
+			}
+		} else if (section.kind === "cards") {
+			for (const [at, card] of section.cards.entries()) {
+				if (card.href === currentPath) return linkKey(index, "card", at);
+			}
+		}
+	}
+	return undefined;
 }
 
 interface SectionProps {
+	/** The section's place in the panel, which its links' keys begin with. */
+	index: number;
 	current: Current;
 	onNavigate?: () => void;
 }
 
-function LinkColumn({ column, current, onNavigate }: { column: NavGroupColumn } & SectionProps) {
+function LinkColumn({
+	column,
+	index,
+	current,
+	onNavigate,
+}: { column: NavGroupColumn } & SectionProps) {
 	// A child may share its parent's href, and two links may share one, so
 	// every key carries its place.
-	const child = (link: NavGroupChildLink, index: number) => (
-		<li key={`${index} ${link.href}`}>
+	const child = (parent: number) => (link: NavGroupChildLink, at: number) => (
+		<li key={`${at} ${link.href}`}>
 			<a
 				className="nav-mega-sub"
 				href={link.href}
 				onClick={onNavigate}
-				aria-current={current(link.href)}
+				aria-current={current(linkKey(index, parent, at))}
 				{...newTabProps(link.href, link.external)}
 			>
 				{link.label}
@@ -85,7 +123,7 @@ function LinkColumn({ column, current, onNavigate }: { column: NavGroupColumn } 
 					className="nav-mega-head"
 					href={column.href}
 					onClick={onNavigate}
-					aria-current={current(column.href)}
+					aria-current={current(linkKey(index, "head"))}
 				>
 					{column.heading}
 				</a>
@@ -93,14 +131,14 @@ function LinkColumn({ column, current, onNavigate }: { column: NavGroupColumn } 
 				<p className="nav-mega-head">{column.heading}</p>
 			)}
 			<ul>
-				{column.links.map((link, index) => (
+				{column.links.map((link, at) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
-					<li key={`${index} ${link.href}`}>
+					<li key={`${at} ${link.href}`}>
 						<a
 							className="nav-mega-link"
 							href={link.href}
 							onClick={onNavigate}
-							aria-current={current(link.href)}
+							aria-current={current(linkKey(index, at))}
 							{...newTabProps(link.href, link.external)}
 						>
 							<span className="nav-mega-label">
@@ -110,7 +148,7 @@ function LinkColumn({ column, current, onNavigate }: { column: NavGroupColumn } 
 							{link.description && <span className="nav-mega-desc">{link.description}</span>}
 						</a>
 						{link.children && link.children.length > 0 && (
-							<ul className="nav-mega-children">{link.children.map(child)}</ul>
+							<ul className="nav-mega-children">{link.children.map(child(at))}</ul>
 						)}
 					</li>
 				))}
@@ -121,6 +159,7 @@ function LinkColumn({ column, current, onNavigate }: { column: NavGroupColumn } 
 
 function PictureSection({
 	section,
+	index,
 	current,
 	onNavigate,
 }: { section: NavPictureSection } & SectionProps) {
@@ -129,7 +168,7 @@ function PictureSection({
 			className="nav-mega-sec is-picture"
 			href={section.href}
 			onClick={onNavigate}
-			aria-current={current(section.href)}
+			aria-current={current(linkKey(index, "picture"))}
 			{...newTabProps(section.href, section.external)}
 		>
 			<img
@@ -146,6 +185,7 @@ function PictureSection({
 
 function RowsSection({
 	section,
+	index,
 	current,
 	onNavigate,
 }: { section: NavIconRowsSection } & SectionProps) {
@@ -153,18 +193,18 @@ function RowsSection({
 		<div className="nav-mega-sec is-rows">
 			{section.heading && <p className="nav-mega-head">{section.heading}</p>}
 			<ul className="nav-mega-rows">
-				{section.rows.map((row, index) => {
+				{section.rows.map((row, at) => {
 					const Icon = navIcons[row.icon];
 					return (
 						// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
-						<li key={`${index} ${row.href}`}>
+						<li key={`${at} ${row.href}`}>
 							<a
 								className={["nav-mega-row", row.highlight && "is-highlight"]
 									.filter(Boolean)
 									.join(" ")}
 								href={row.href}
 								onClick={onNavigate}
-								aria-current={current(row.href)}
+								aria-current={current(linkKey(index, "row", at))}
 								{...newTabProps(row.href, row.external)}
 							>
 								<span className="nav-mega-row-icon">
@@ -186,6 +226,7 @@ function RowsSection({
 
 function CardsSection({
 	section,
+	index,
 	current,
 	onNavigate,
 }: { section: NavCardsSection } & SectionProps) {
@@ -193,14 +234,14 @@ function CardsSection({
 		<div className="nav-mega-sec is-cards">
 			{section.heading && <p className="nav-mega-head">{section.heading}</p>}
 			<ul className="nav-mega-cards">
-				{section.cards.map((card, index) => (
+				{section.cards.map((card, at) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a panel's links never reorder
-					<li key={`${index} ${card.href}`}>
+					<li key={`${at} ${card.href}`}>
 						<a
 							className="nav-mega-card-link"
 							href={card.href}
 							onClick={onNavigate}
-							aria-current={current(card.href)}
+							aria-current={current(linkKey(index, "card", at))}
 							{...newTabProps(card.href, card.external)}
 						>
 							{card.image ? (
@@ -239,7 +280,8 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 	const { feature, allLabel, href } = group;
 	// A section of a kind this version does not know is left out, never drawn as another kind.
 	const columns = panelSections(group);
-	const current = currentClaim(currentPath);
+	const claim = currentKey(group, columns, currentPath);
+	const current: Current = (key) => (key === claim ? "page" : undefined);
 	return (
 		<div
 			id={id}
@@ -253,7 +295,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 							className="nav-mega-all"
 							href={href}
 							onClick={onNavigate}
-							aria-current={current(href)}
+							aria-current={current("all")}
 						>
 							{allLabel}
 						</a>
@@ -265,6 +307,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 								return (
 									<LinkColumn
 										key={key}
+										index={index}
 										column={section}
 										current={current}
 										onNavigate={onNavigate}
@@ -275,6 +318,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 								return (
 									<PictureSection
 										key={key}
+										index={index}
 										section={section}
 										current={current}
 										onNavigate={onNavigate}
@@ -285,6 +329,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 								return (
 									<RowsSection
 										key={key}
+										index={index}
 										section={section}
 										current={current}
 										onNavigate={onNavigate}
@@ -295,6 +340,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 								return (
 									<CardsSection
 										key={key}
+										index={index}
 										section={section}
 										current={current}
 										onNavigate={onNavigate}

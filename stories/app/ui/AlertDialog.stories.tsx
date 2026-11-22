@@ -12,8 +12,8 @@ import {
 	AlertDialogTrigger,
 	Button,
 } from "../../../src/app/ui";
+import { layerOpened, noneLeft, settledLayer, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft, until } from "../layers";
 
 /** The confirm handler, fresh for each story. */
 const confirm = { spy: fn() };
@@ -97,7 +97,7 @@ export const OpenAndEscape: Story = {
 export const OutsidePressStays: Story = {
 	play: async () => {
 		const { dialog, trigger } = await open();
-		await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+		await settledLayer(dialog);
 		// The overlay has no role; it is whatever sits at the screen's corner.
 		await userEvent.click(document.elementFromPoint(4, 4) as Element);
 		await new Promise((resolve) => setTimeout(resolve, 300));

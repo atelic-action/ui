@@ -72,7 +72,7 @@ export interface ArtifactRecipient {
 }
 
 export interface ArtifactConfig {
-	/** Canonical origin of the hosted twin, no trailing slash, e.g. "https://og.atelic.me". */
+	/** Canonical origin of the hosted twin, no trailing slash, e.g. "https://example.atelic.me". */
 	url: string;
 	/**
 	 * Who may read it, which decides where it may be hosted (the practice's

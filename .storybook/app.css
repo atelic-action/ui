@@ -1,6 +1,6 @@
 /*
- * The app shell's Tailwind entry, set up the way an app's globals.css is
- * (and the gallery's app page): Tailwind, the package's app sheet straight
+ * The app shell's Tailwind entry, set up the way an app's globals.css is:
+ * Tailwind, the package's app sheet straight
  * after it, the animation plugin, and the fonts. The app decorator imports it
  * inline and mounts it only while an app story is showing, so Tailwind's reset
  * never reaches a marketing story in the same tab.

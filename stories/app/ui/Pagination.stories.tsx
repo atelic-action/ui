@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { Pagination } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 function Held({ page: initial, onPageChange, ...props }: Parameters<typeof Pagination>[0]) {
@@ -141,7 +142,7 @@ export const Phone: Story = {
 	play: async ({ canvas }) => {
 		const nav = canvas.getByRole("navigation", { name: "Pagination" });
 		await expect(nav.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 

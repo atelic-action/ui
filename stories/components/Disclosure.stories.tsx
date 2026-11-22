@@ -140,8 +140,9 @@ export const HeldOpensAndCloses: Story = {
 	render: (args) => <Held label={args.label}>{args.children}</Held>,
 	play: async ({ canvas, userEvent, step }) => {
 		const toggle = canvas.getByRole("button", { name: "How the Saturday order works" });
-		await step("closed: collapsed and no body", async () => {
+		await step("closed: collapsed, no body, and no relation to one", async () => {
 			await expect(toggle).toHaveAttribute("aria-expanded", "false");
+			await expect(toggle).not.toHaveAttribute("aria-controls");
 			await expect(canvas.queryByRole("link", { name: "order ahead" })).toBeNull();
 		});
 		await step("the click opens it and the body it controls appears", async () => {

@@ -1,0 +1,5 @@
+# Storybook, served at ui.atelic.me, shows the package's components to the
+# people who build with them. It is never search inventory; both of its
+# pages' robots meta say the same.
+User-agent: *
+Disallow: /

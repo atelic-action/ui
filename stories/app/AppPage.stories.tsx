@@ -4,8 +4,9 @@ import { expect, within } from "storybook/test";
 import { AppPage, AppPageToolbar, Breadcrumbs } from "../../src/app";
 import { Badge } from "../../src/app/ui";
 import { cleanStorage } from "../fixtures/email-app";
+import { expectNoSidewaysScroll } from "../support/geometry";
+import { until } from "../support/settle";
 import { pin } from "../support/viewports";
-import { until } from "./layers";
 
 function Orders() {
 	return (
@@ -149,7 +150,7 @@ export const WithRailPhone: Story = {
 		await expect(glance.getBoundingClientRect().bottom).toBeLessThanOrEqual(
 			canvas.getByText(/Larkspur Coffee Bar/).getBoundingClientRect().top,
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -172,6 +173,6 @@ export const LongestContentPhone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("heading", { level: 1 })).toBeVisible();
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

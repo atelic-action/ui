@@ -16,16 +16,6 @@
    `--primary` and `--card` hold something else (shadcn keeps bare HSL
    channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
-	/* Long words break rather than scroll a phone sideways; a table keeps
-	   break-word. The reasons are base.css's (Long words), repeated here
-	   for a consumer that loads this sheet alone. */
-	.atelic-ui {
-		overflow-wrap: anywhere;
-	}
-	.atelic-ui table {
-		overflow-wrap: break-word;
-	}
-
 	/* The opener's padding is a share of the section spacing (base.css), with
 	   the spacing it had before 8.0.0 where no base sheet sets the token. */
 	.atelic-ui .not-found-hero {
@@ -1148,7 +1138,7 @@
 		width: 100%;
 	}
 	/* Stacked, a row is a flex line: its cells shrink to the screen and a
-	   long word in one breaks (base.css, Long words), table or not. */
+	   long word in one breaks (defaults.css, Long words), table or not. */
 	.atelic-ui .data-table {
 		min-width: 0;
 	}

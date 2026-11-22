@@ -6,7 +6,9 @@ import { cn } from "../lib/utils";
 /**
  * A bar filled to `value` out of `max` (100 by default). The value reaches the
  * Radix root, so the `progressbar` reports it (`aria-valuenow`); a bar with no
- * value, or a null one, is indeterminate, reports none, and draws empty.
+ * value, or a null one, is indeterminate, reports none, and draws empty. A
+ * value past either end is held at that end (Radix reads one outside 0 to
+ * `max` as no value at all, so 120 of 100 would say indeterminate).
  */
 const Progress = React.forwardRef<
 	React.ElementRef<typeof ProgressPrimitive.Root>,
@@ -15,12 +17,12 @@ const Progress = React.forwardRef<
 	}
 >(({ className, value, max, indicatorClassName, ...props }, ref) => {
 	const ceiling = max ?? 100;
-	const share =
-		value == null || ceiling <= 0 ? 0 : Math.min(100, Math.max(0, (value / ceiling) * 100));
+	const held = value == null ? null : Math.min(Math.max(value, 0), Math.max(ceiling, 0));
+	const share = held == null || ceiling <= 0 ? 0 : (held / ceiling) * 100;
 	return (
 		<ProgressPrimitive.Root
 			ref={ref}
-			value={value ?? null}
+			value={held}
 			max={max}
 			className={cn("relative h-4 w-full overflow-hidden rounded-full bg-secondary", className)}
 			{...props}

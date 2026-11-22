@@ -43,7 +43,6 @@ export function LocationSection({
 	headingLevel = 2,
 }: LocationSectionProps) {
 	const Title = `h${headingLevel}` as const;
-	const Subheading = `h${(headingLevel + 1) as 3 | 4 | 5 | 6}` as const;
 	return (
 		<section
 			className={["section location", surface === "alt" && "surface-alt"].filter(Boolean).join(" ")}
@@ -58,7 +57,13 @@ export function LocationSection({
 					)}
 
 					<div className="loc-block">
-						<Subheading className="loc-heading">Hours</Subheading>
+						{/* A heading by role, as the footer's column labels are
+						    (Footer.tsx): a site's own bare heading rules would
+						    restyle this small mono label. */}
+						{/* biome-ignore lint/a11y/useSemanticElements: a heading element would take a site's bare heading rules, see above */}
+						<div className="loc-heading" role="heading" aria-level={headingLevel + 1}>
+							Hours
+						</div>
 						<HoursTable hours={site.hours} clock={site.clock} />
 					</div>
 

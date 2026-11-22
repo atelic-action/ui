@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Wheat } from "lucide-react";
 import { expect } from "storybook/test";
 import { BadgeList } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 const tags = [
@@ -66,6 +67,6 @@ export const Phone: Story = {
 	globals: pin("phone"),
 	args: { items: [...tags, ...tags.map((tag) => ({ ...tag, label: `${tag.label} loaf` }))] },
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

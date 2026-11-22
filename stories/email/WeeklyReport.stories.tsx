@@ -29,6 +29,7 @@ import {
 import { renderEmail } from "../../src/email/render";
 import { atelicPalette, type Palette } from "../../src/tokens";
 import { wholesaleRecords } from "../fixtures/email-app";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
@@ -190,7 +191,7 @@ export const Phone: Story = {
 		await userEvent.click(canvas.getByText(/What moved/));
 		await userEvent.click(canvas.getByText(/the formula/));
 		await fitsTheColumn(canvasElement);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 

@@ -85,7 +85,7 @@
 		font-family: var(--font-sans);
 		font-size: 15px;
 		/* The pill, matching the primary Button, so the pair reads as one
-		   control set (Forni's review of the SkySpec gate, 2026-08-25). */
+		   control set (Forni's review of a client's gate, 2026-08-25). */
 		padding: 15px 22px;
 		border-radius: var(--radius-pill);
 		border: 1px solid var(--neutral-200);

@@ -10,9 +10,7 @@ import type {
 import type { NavItem, SiteConfig } from "../../src/sections";
 
 /*
- * Kestrel Hollow Bakehouse, the fictional bakery every story is set in,
- * copied from the gallery's data (gallery/marketing-data.ts and
- * gallery/chrome.tsx) so the stories do not move when the gallery does.
+ * Kestrel Hollow Bakehouse, the fictional bakery every story is set in.
  * Every name, number, address, and review is made up: the numbers are 555
  * numbers, the addresses sit on reserved example domains, and Fairhaven is
  * no real town. Add to this file rather than inventing a second business.

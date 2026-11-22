@@ -12,7 +12,6 @@ None open.
 
 ## Observed, Not Yet Marked
 
-- `ComparisonTable`'s scrolling box (`.cmp-scroll`) is not focusable, so on a phone, where it scrolls, a keyboard cannot scroll it; axe's `scrollable-region-focusable` flags it in the gallery at 390. No story here shows it, since the stories' tables fit. `DataTable`'s box solves the same thing by taking a tab stop and a name only while it scrolls.
 - The prime directive (no site copy in a component): many sections carry fixed English the page cannot change, visible and accessible alike. `FAQBrowser` (Search questions, Clear search, Expand all, Collapse all, Back to top, Copy link to this question, Link copied, the no match sentence), `ContactForm` (every label, every error, Send Message, Sending), `MapEmbed` (Get Directions, Tap to load the map), `LocationSection` (Proudly serving, Hours), `Locations` (Directions), `ContactInfoCard` (Call / Text, Email, Visit, Portal), `ReviewCarousel` (Previous review, Go to review N, Review N of M), `ReviewWall` (Read more, Show less, both control labels, Newest, Oldest), `LegalPage` (Last updated), `BlogIndex` (min read), `BlogPost` (Updated).
 - `ContactInfoCard` finds its Portal row by searching `footerLinks` for a label containing "portal": any footer link so named is promoted into the card, and a portal named otherwise never shows.
 - `ReviewCarousel`'s dots are 8 by 8 px targets; axe's target size rule passed them (their spacing may carry them), unverified by hand.

@@ -401,6 +401,26 @@ describe("the sticky bar's room at the foot of the page", () => {
 		expect(next).not.toHaveBeenCalled();
 	});
 
+	it("hands back its space with a final 0 when the listener is taken away", () => {
+		const space = vi.fn();
+		const { rerender } = render(
+			<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={space} />,
+		);
+		expect(space).toHaveBeenLastCalledWith(74);
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop />);
+		expect(space).toHaveBeenLastCalledWith(0);
+	});
+
+	it("hands back its space with a final 0 when it unmounts", () => {
+		const space = vi.fn();
+		const { unmount } = render(
+			<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={space} />,
+		);
+		expect(space).toHaveBeenLastCalledWith(74);
+		unmount();
+		expect(space).toHaveBeenLastCalledWith(0);
+	});
+
 	it("sets the shell's space without rendering the shell again", () => {
 		// Every commit under the shell after its first is a render the bar's
 		// height caused, the only thing that changes here.

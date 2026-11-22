@@ -32,7 +32,7 @@ type Story = StoryObj<typeof meta>;
 
 - **One per meaningfully different state**: every value of a prop that changes the shape (`variant`, `layout`, `surface`), the empty and placeholder states (no image, no address, a column with no links), and the longest realistic content (a long name, a long email, every entry filled).
 - **A phone story wherever the layout changes by width**, pinned with `globals: pin("phone")`, and a tablet story when a breakpoint falls between (820 sits below the 900 and 1000 steps). A story that pins nothing runs at 1200 by 900 in the test run; pin `desktop` (1280) whenever the width matters.
-- The four widths are `phone` 390 by 844, `tablet` 820 by 1180, `desktop` 1280 by 800, and `narrowDesktop` 1180 by 800, the narrowest a bar holding groups shows them at, for a story about the mega panel's least room (`support/viewports.ts`). The run sizes the real page, so media queries, `window.innerWidth`, and a component's own measurements all see it.
+- The five widths are `phone` 390 by 844, `tablet` 820 by 1180, `desktop` 1280 by 800, `narrowDesktop` 1180 by 800, the narrowest a bar holding groups shows them at, for a story about the mega panel's least room, and `smallDesktop` 900 by 800, the narrowest the desktop bar shows at, for a row with the least room a desktop gives it (`support/viewports.ts`). The run sizes the real page, so media queries, `window.innerWidth`, and a component's own measurements all see it.
 
 ## What a `play` Function Covers
 
@@ -53,7 +53,7 @@ Use `userEvent`, `expect`, `fn`, `spyOn`, and `waitFor` from `storybook/test`. W
 - **A followed link stays in the story.** The preview cancels every click on a link that is not an in page `#` jump, after the component's handler runs, so a story can click a link and assert the panel closed.
 - **Scroll is instant only when asked.** The base sheet sets `scroll-behavior: smooth`; scroll with `window.scrollTo({ top, behavior: "instant" })` and wait for scroll driven state with `waitFor`.
 - **Reduced motion reaches only what the story turns on.** `support/motion.ts`'s `withReducedMotion`, as a story's `beforeEach`, answers `matchMedia` and copies the loaded sheets' reduced motion rules into the story's own document, so script and sheet both see the setting and no other file's stories do. It throws on a condition it cannot copy faithfully (a `no-preference` rule, an `or`, a `not`, a list), naming it.
-- **A short transition can finish before a check looks.** To show one runs, or does not, listen for `transitionrun` or `animationstart` from before the action rather than polling for a running animation afterward. To wait for an entrance to end, wait for it to begin (or to have ended), then `await settled()` (`support/settle.ts`), which waits for every finite animation on the page.
+- **A short transition can finish before a check looks.** To show one runs, or does not, listen for `transitionrun` or `animationstart` from before the action rather than polling for a running animation afterward. To wait for an entrance to end, wait for it to begin (or to have ended), then `await settled()` (`support/settle.ts`), which waits for every finite animation on the page. A Radix layer (a menu, a popover, a select's list, a dialog, a sheet) has its own forms in the same file, each waiting on what the layer is doing rather than a clock: `layerOpened(find)` waits for it to appear and its entrance to end and hands it back, `layerClosed(layer)` for its exit and its unmount, `settledLayer(layer)` for its own animations alone, `noneLeft(query)` until nothing answers, and `until(check)` for any other condition.
 
 ## The Frame a Story Gets
 
@@ -102,7 +102,7 @@ Every export that draws has its stories as of ATE-772. A new component brings it
 
 - Every story is set in the one fictional business, Kestrel Hollow Bakehouse (`fixtures/bakery.ts`), and the app stories in its ops app (`fixtures/app.ts`). Build on those rather than inventing a second business: a group's own data goes in its fixture file above, and data only one story uses can sit in its story file.
 - Fictional only: a name, a number, or an address on the page is made up. Phone numbers are `555-01xx`; email addresses and hosts are on `example.com` or `example.test`; towns are invented (Fairhaven). The repo is public, so no real business, person, email, phone, or host, ever.
-- Pictures and the clip come from the static folders, served at the root as a site serves its public folder: the gallery's (`/images/...`, `/video/...`, `/fonts/...`) and the stories' own (`stories/public/`, the marks cut per surface in `/images/`, a group's own pictures in `/images/<group>/`).
+- Pictures, the clip, and the fonts come from `stories/public/`, served at the root as a site serves its public folder: the shared pictures and the marks cut per surface in `/images/`, a group's own pictures in `/images/<group>/`, the clip in `/video/`, the fonts in `/fonts/`, and `robots.txt`, which keeps the served Storybook out of search.
 
 ## Templates
 

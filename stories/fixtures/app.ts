@@ -3,8 +3,7 @@ import type { AppConfig, NavItem } from "../../src/app";
 
 /*
  * The fictional bakery's ops app every app story runs in, the way an app's
- * src/app/config.ts reads, copied in shape from the gallery's app page
- * (gallery/app/data.ts). Nothing is fetched: the api host is a reserved
+ * src/app/config.ts reads. Nothing is fetched: the api host is a reserved
  * example domain and the decorator's query client never retries.
  */
 export const storyAppConfig: AppConfig = {

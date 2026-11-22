@@ -121,7 +121,9 @@ function ControlledDisclosure({
 						className="disclosure-toggle"
 						onClick={onToggle}
 						aria-expanded={open}
-						aria-controls={id}
+						// The body is unmounted while closed, so the relation is
+						// drawn only while there is a panel to follow it to.
+						aria-controls={open ? id : undefined}
 					>
 						{label}
 					</button>

@@ -13,8 +13,9 @@ import {
 	Input,
 	Textarea,
 } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
+import { until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { until } from "../layers";
 
 type StandingOrder = { cafe: string; trays: string; note: string };
 
@@ -197,6 +198,6 @@ export const ErrorsPhone: Story = {
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Save the order" }));
 		await until(() => expect(canvas.getByText("Say how many trays.")).toBeVisible());
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

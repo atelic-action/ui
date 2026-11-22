@@ -47,6 +47,22 @@ describe("Disclosure", () => {
 		expect(screen.queryByText("Apples")).not.toBeInTheDocument();
 	});
 
+	it("names the panel it controls only while the panel is there", () => {
+		const { rerender } = render(
+			<Disclosure label="Produce" open={false} onToggle={() => {}} panelId="aisle-produce">
+				<p>Apples</p>
+			</Disclosure>,
+		);
+		expect(screen.getByRole("button")).not.toHaveAttribute("aria-controls");
+		rerender(
+			<Disclosure label="Produce" open onToggle={() => {}} panelId="aisle-produce">
+				<p>Apples</p>
+			</Disclosure>,
+		);
+		expect(screen.getByRole("button")).toHaveAttribute("aria-controls", "aisle-produce");
+		expect(document.getElementById("aisle-produce")).toHaveTextContent("Apples");
+	});
+
 	it("takes a panel id, and is a plain block with no heading when no level is given", () => {
 		const { container } = render(
 			<Disclosure label="Produce" open onToggle={() => {}} panelId="aisle-produce">

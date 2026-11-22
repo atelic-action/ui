@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Lightbulb } from "lucide-react";
 import { expect } from "storybook/test";
 import { Callout } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 /** A quiet boxed aside with an optional icon: a tip, a hint, a reminder. */
@@ -35,6 +36,6 @@ export const LongContentPhone: Story = {
 			"A standing order changes from the next drop after 20:00, so a change made at 21:00 on a Tuesday reaches Thursday's van, not Wednesday's, and the cafe is billed for Wednesday as it stood.",
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

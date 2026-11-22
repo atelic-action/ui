@@ -1,8 +1,8 @@
 /**
- * The four widths a story pins, by name. A story sets
+ * The widths a story pins, by name. A story sets
  * `globals: { viewport: { value: "phone" } }`; the test run sizes the page
  * to the named width and height before the story renders, and the toolbar
- * offers the same three by hand. A story that pins none runs at 1200 by 900,
+ * offers the same ones by hand. A story that pins none runs at 1200 by 900,
  * Storybook's own default.
  */
 export const viewports = {
@@ -14,6 +14,13 @@ export const viewports = {
 	narrowDesktop: {
 		name: "Narrow desktop 1180",
 		styles: { width: "1180px", height: "800px" },
+		type: "desktop",
+	},
+	// The narrowest width the desktop bar shows at (900, chrome.css), where
+	// every row a desktop lays out side by side has the least room.
+	smallDesktop: {
+		name: "Small desktop 900",
+		styles: { width: "900px", height: "800px" },
 		type: "desktop",
 	},
 } as const;

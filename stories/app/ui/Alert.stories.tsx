@@ -3,6 +3,7 @@ import { CircleAlert, Info } from "lucide-react";
 import { expect } from "storybook/test";
 import { AppPage } from "../../../src/app";
 import { Alert, AlertDescription, AlertTitle } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 /**
@@ -121,6 +122,6 @@ export const TitleAsAHeading: Story = {
 export const LongContentPhone: Story = {
 	globals: pin("phone"),
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

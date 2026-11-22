@@ -27,6 +27,15 @@ jobs:
         with:
           bun-version: latest
 
+      # The same Node the Publish workflow publishes with, so the gates run on
+      # one runtime in both. Its check steps match publish.yml's step for
+      # step; change them together.
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
       - name: Install dependencies
         run: bun install
 
@@ -65,9 +74,6 @@ jobs:
 
       - name: Build the gate, then load it the way a Vercel function does
         run: bun run build && bun run build:smoke
-
-      - name: Build the gallery
-        run: bun run gallery:build
 
       - name: Build Storybook
         run: bun run storybook:build
