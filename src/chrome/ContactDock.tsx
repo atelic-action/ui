@@ -104,6 +104,8 @@ export function ContactDock({
 	const [place, setPlace] = useState({ inset: 24, bottom: 24 });
 	const rootRef = useRef<HTMLDivElement>(null);
 	const launchRef = useRef<HTMLButtonElement>(null);
+	const panelRef = useRef<HTMLElement>(null);
+	const opened = useRef(defaultOpen);
 	const panelId = useId();
 	const headingId = `${panelId}h`;
 
@@ -164,6 +166,17 @@ export function ContactDock({
 		};
 	}, [open]);
 
+	// The panel sits before the launcher in the DOM (it opens upward), so Tab
+	// from the launcher would skip it: opening by hand moves focus in.
+	useEffect(() => {
+		if (!open) return;
+		if (!opened.current) panelRef.current?.querySelector<HTMLElement>(".cd-close")?.focus();
+		opened.current = true;
+		return () => {
+			opened.current = false;
+		};
+	}, [open]);
+
 	const heading = title ?? label;
 
 	return (
@@ -179,6 +192,7 @@ export function ContactDock({
 			}}
 		>
 			<section
+				ref={panelRef}
 				id={panelId}
 				className="cd-panel"
 				aria-labelledby={headingId}

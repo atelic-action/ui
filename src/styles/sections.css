@@ -1288,8 +1288,13 @@
 		width: 100%;
 		padding: var(--section-space, clamp(56px, 9vw, 120px)) var(--gutter);
 	}
-	.atelic-ui main:not(.clears-nav) .hero.is-split .hero-split-inner {
-		padding-top: calc(var(--nav-height, 72px) + var(--section-space, clamp(56px, 9vw, 120px)));
+	/* From 900px the copy sits beside the photo under the transparent header;
+	   below it the photo stacks first and takes the header, so the copy needs
+	   no clearance. */
+	@media (min-width: 900px) {
+		.atelic-ui main:not(.clears-nav) .hero.is-split .hero-split-inner {
+			padding-top: calc(var(--nav-height, 72px) + var(--section-space, clamp(56px, 9vw, 120px)));
+		}
 	}
 	.atelic-ui .hero.is-split h1 {
 		font-size: clamp(2.1rem, 4vw, 3.3rem);
