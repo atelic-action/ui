@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, type Mock, spyOn, waitFor } from "storybook/test";
+import { expect, fn, type Mock, spyOn, waitFor, within } from "storybook/test";
 import { ContactForm } from "../../src/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /*
@@ -78,8 +78,10 @@ const send = (canvas: Canvas) => canvas.getByRole("button", { name: /Send Messag
  * you shows, the form clears, and one lead is counted.
  */
 export const SendsAndThanks: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas, userEvent, step }) => {
+		await step("an empty status region waits on the page before anything is sent", async () => {
+			await expect(canvas.getByRole("status")).toBeEmptyDOMElement();
+		});
 		await step("filled in and sent", async () => {
 			await fillIn(canvas, userEvent);
 			await userEvent.click(send(canvas));
@@ -103,23 +105,20 @@ export const SendsAndThanks: Story = {
 			await expect(onLead).toHaveBeenCalledOnce();
 			await expect(onLead).toHaveBeenCalledWith();
 		});
-		// The thank you is a plain block, so a screen reader is never told the
-		// note went: nothing announces it and focus stays on the button.
+		// The thank you lands in a status region that was on the page, empty,
+		// before the send, so a screen reader watching it announces it once.
 		await step("the thank you is announced", async () => {
-			await knownBug("contact-status-unannounced", async () => {
-				await expect(canvas.getByRole("status")).toHaveTextContent(/Thank you/);
-			});
+			await expect(canvas.getByRole("status")).toHaveTextContent(/Thank you/);
 		});
 	},
 };
 
 /**
- * Sent empty: each required field says what it needs, and nothing is sent.
- * Then fixed one at a time, each message leaves with its fix.
+ * Sent empty: each required field says what it needs, is marked invalid and
+ * described by its message, focus goes to the first of them, and nothing is
+ * sent. Then fixed one at a time, each message leaves with its fix.
  */
 export const Validation: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("form-error-contrast") },
 	play: async ({ canvas, userEvent, step }) => {
 		await step("before a send, no field complains", async () => {
 			await expect(canvas.getByText("Please enter your name.")).not.toBeVisible();
@@ -132,6 +131,12 @@ export const Validation: Story = {
 			await expect(relay).not.toHaveBeenCalled();
 			await expect(onLead).not.toHaveBeenCalled();
 		});
+		await step("focus moves to the first refused field", async () => {
+			await expect(canvas.getByLabelText("Your name")).toHaveFocus();
+			await expect(canvas.getByLabelText("Your name")).toHaveAccessibleDescription(
+				"Please enter your name.",
+			);
+		});
 		await step("an address with no domain is still refused", async () => {
 			await userEvent.type(canvas.getByLabelText("Your name"), "Robin Ash");
 			await userEvent.type(canvas.getByLabelText("Email"), "robin@");
@@ -139,15 +144,16 @@ export const Validation: Story = {
 			await expect(canvas.getByText("Please enter your name.")).not.toBeVisible();
 			await expect(canvas.getByText("Please enter a valid email.")).toBeVisible();
 		});
-		// The messages are drawn, but no field is marked invalid or described
-		// by its message, so a screen reader hears none of them.
-		await step("a refused field is marked invalid and names its message", async () => {
-			await knownBug("contact-errors-unannounced", async () => {
+		await step(
+			"a refused field is marked invalid and names its message; a fixed one is not",
+			async () => {
 				const email = canvas.getByLabelText("Email");
 				await expect(email).toHaveAttribute("aria-invalid", "true");
 				await expect(email).toHaveAccessibleDescription("Please enter a valid email.");
-			});
-		});
+				await expect(email).toHaveFocus();
+				await expect(canvas.getByLabelText("Your name")).not.toHaveAttribute("aria-invalid");
+			},
+		);
 		await step("whitespace alone is not a name or a message", async () => {
 			await userEvent.clear(canvas.getByLabelText("Your name"));
 			await userEvent.type(canvas.getByLabelText("Your name"), "   ");
@@ -207,16 +213,15 @@ export const HoneypotCatchesABot: Story = {
 	},
 };
 
-/** The relay refuses: the error shows, what was written stays, and no lead is counted. */
+/** The relay refuses: the error is announced, what was written stays, and no lead is counted. */
 export const RelayRefuses: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("form-error-contrast") },
 	beforeEach: answering(() => Promise.resolve(new Response("{}", { status: 500 }))),
 	args: { errorMessage: "That did not go through. Call us at (555) 555-0142 instead." },
 	play: async ({ canvas, userEvent }) => {
 		await fillIn(canvas, userEvent);
 		await userEvent.click(send(canvas));
 		await expect(await canvas.findByText(/That did not go through/)).toBeVisible();
+		await expect(canvas.getByRole("status")).toHaveTextContent(/That did not go through/);
 		await expect(canvas.getByLabelText("Message")).toHaveValue(
 			"A round cake for Saturday, please.",
 		);
@@ -246,6 +251,9 @@ export const NetworkFailsThenRetries: Story = {
 	},
 };
 
+/** Lets a held relay answer, in the story that holds it. */
+let releaseRelay = () => {};
+
 /** While the relay answers, the button says so and a second press sends nothing. */
 export const SendingOnce: Story = {
 	beforeEach: () => {
@@ -256,9 +264,11 @@ export const SendingOnce: Story = {
 					release = resolve;
 				}),
 		)();
-		(window as unknown as { releaseRelay: () => void }).releaseRelay = () =>
-			release(new Response("{}", { status: 200 }));
-		return restore;
+		releaseRelay = () => release(new Response("{}", { status: 200 }));
+		return () => {
+			releaseRelay = () => {};
+			restore();
+		};
 	},
 	play: async ({ canvas, userEvent }) => {
 		await fillIn(canvas, userEvent);
@@ -266,7 +276,7 @@ export const SendingOnce: Story = {
 		const sending = await canvas.findByRole("button", { name: /Sending/ });
 		await userEvent.click(sending);
 		await expect(relay).toHaveBeenCalledOnce();
-		(window as unknown as { releaseRelay: () => void }).releaseRelay();
+		releaseRelay();
 		await expect(await canvas.findByText(/Thank you/)).toBeVisible();
 		await expect(send(canvas)).toBeVisible();
 	},
@@ -274,8 +284,6 @@ export const SendingOnce: Story = {
 
 /** No endpoint and no inbox: a send fails rather than vanishing. */
 export const NowhereToSend: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("form-error-contrast") },
 	args: { endpoint: undefined, toEmail: undefined },
 	play: async ({ canvas, userEvent }) => {
 		await fillIn(canvas, userEvent);
@@ -294,6 +302,37 @@ export const MailHandoff: Story = {
 	args: { endpoint: undefined, toEmail: "hello@kestrelhollow.example.com", footnote: undefined },
 };
 
+/**
+ * Two forms on one page keep apart: every label names its own form's
+ * field, every id is unique, and a refusal in one marks nothing in the other.
+ */
+export const TwoForms: Story = {
+	render: (args) => (
+		<>
+			<ContactForm {...args} />
+			<h2>Or ask about wholesale</h2>
+			<ContactForm {...args} />
+		</>
+	),
+	play: async ({ canvas, userEvent, step }) => {
+		const forms = canvas
+			.getAllByRole("button", { name: /Send Message/ })
+			.map((button) => within(button.closest("form") as HTMLElement));
+		const [first, second] = forms as [ReturnType<typeof within>, ReturnType<typeof within>];
+		await step("each label names its own form's field", async () => {
+			await expect(first.getByLabelText("Your name")).not.toBe(second.getByLabelText("Your name"));
+			const ids = Array.from(document.querySelectorAll("form [id]"), (element) => element.id);
+			await expect(new Set(ids).size).toBe(ids.length);
+		});
+		await step("a refusal in the second form marks only the second", async () => {
+			await userEvent.click(second.getByRole("button", { name: /Send Message/ }));
+			await expect(second.getByLabelText("Your name")).toHaveAttribute("aria-invalid", "true");
+			await expect(second.getByLabelText("Your name")).toHaveFocus();
+			await expect(first.getByLabelText("Your name")).not.toHaveAttribute("aria-invalid");
+		});
+	},
+};
+
 /** On a phone the form fills the column, the button as wide as the fields. */
 export const Phone: Story = {
 	globals: pin("phone"),
@@ -301,7 +340,7 @@ export const Phone: Story = {
 		const field = canvas.getByLabelText("Message").getBoundingClientRect();
 		const button = send(canvas).getBoundingClientRect();
 		await expect(Math.round(button.width)).toBe(Math.round(field.width));
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -315,6 +354,6 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

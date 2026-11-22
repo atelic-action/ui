@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ProfileCards } from "../../src/sections";
 import { profiles, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -77,7 +77,7 @@ export const Phone: Story = {
 		await expect(b.getBoundingClientRect().top).toBeGreaterThanOrEqual(
 			a.getBoundingClientRect().bottom,
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -97,21 +97,18 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken handle under a name, on a phone. The card's body never breaks
- * it, so the card, and the page, scroll sideways.
+ * One unbroken handle under a name, on a phone: the card breaks it where it
+ * must, and neither the card nor the page scrolls sideways.
  */
 export const UnbrokenHandle: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ ...profiles[0], meta: `@${unbroken.toLowerCase()}` }] },
 	play: async () => {
-		await knownBug("profile-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { LogoMarquee } from "../../src/sections";
 import { marqueeItems } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
+import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
-import { withReducedMotion } from "./motion";
 
 /** A dark band with a row of credential chips scrolling across it, on a loop. */
 const meta = {
@@ -22,7 +22,6 @@ const band = (canvas: ReturnType<typeof within>) =>
 
 /** The row moves on its own, and every credential is read once. */
 export const Default: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas, step }) => {
 		await step("the row is moving", async () => {
 			const running = band(canvas)
@@ -31,16 +30,17 @@ export const Default: Story = {
 			await expect(running.length).toBeGreaterThan(0);
 		});
 		await step("the band stays inside the page", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+			await expectNoSidewaysScroll();
 		});
-		// The track repeats every chip for the seamless loop, and nothing
-		// hides the copy, so a screen reader hears each credential twice.
+		// The row is drawn twice for the seamless loop; the copy is hidden
+		// from assistive tech, so of the two chips bearing each credential,
+		// exactly one is in the accessibility tree.
 		await step("a screen reader hears each credential once", async () => {
-			await knownBug("marquee-reads-twice", async () => {
-				for (const item of marqueeItems) {
-					await expect(within(band(canvas)).getAllByText(item)).toHaveLength(1);
-				}
-			});
+			for (const item of marqueeItems) {
+				const drawn = within(band(canvas)).getAllByText(item);
+				await expect(drawn).toHaveLength(2);
+				await expect(drawn.filter((chip) => !chip.closest("[aria-hidden='true']"))).toHaveLength(1);
+			}
 		});
 	},
 };
@@ -59,21 +59,17 @@ export const DefaultName: Story = {
  * own reduced motion rules apply.
  */
 export const ReducedMotion: Story = {
-	tags: ["known-issue"],
 	beforeEach: withReducedMotion,
 	play: async ({ canvas, step }) => {
 		await step("nothing moves", async () => {
 			await expect(band(canvas).getAnimations({ subtree: true })).toHaveLength(0);
 		});
 		await step("the still block shows each credential once", async () => {
-			// The loop's copy of the row is still drawn, so the still block
-			// shows every chip twice.
-			await knownBug("marquee-reads-twice", async () => {
-				const shown = within(band(canvas))
-					.getAllByText(marqueeItems[0])
-					.filter((chip) => chip.getBoundingClientRect().width > 0);
-				await expect(shown).toHaveLength(1);
-			});
+			// The loop's copy is not drawn when nothing moves.
+			const shown = within(band(canvas))
+				.getAllByText(marqueeItems[0])
+				.filter((chip) => chip.getBoundingClientRect().width > 0);
+			await expect(shown).toHaveLength(1);
 		});
 	},
 };
@@ -82,7 +78,7 @@ export const ReducedMotion: Story = {
 export const Phone: Story = {
 	globals: pin("phone"),
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -92,7 +88,46 @@ export const ReducedMotionPhone: Story = {
 	beforeEach: withReducedMotion,
 	play: async ({ canvas }) => {
 		await expect(band(canvas).getAnimations({ subtree: true })).toHaveLength(0);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		// With nothing moving there is nothing to pause.
+		await expect(within(band(canvas)).queryByRole("button")).toBeNull();
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * The moving row can be stopped (WCAG 2.2.2): a quiet toggle at the band's
+ * edge, pressed while the row stands still, named by `pauseLabel`.
+ */
+export const Pause: Story = {
+	args: { pauseLabel: "Pause the credentials" },
+	play: async ({ canvas, userEvent, step }) => {
+		const toggle = within(band(canvas)).getByRole("button", { name: "Pause the credentials" });
+		const running = () =>
+			band(canvas)
+				.getAnimations({ subtree: true })
+				.filter((animation: Animation) => animation.playState === "running");
+		await step("the row moves, and the toggle is not pressed", async () => {
+			await expect(toggle).toHaveAttribute("aria-pressed", "false");
+			await expect(running().length).toBeGreaterThan(0);
+		});
+		await step("pressed, the row stands still", async () => {
+			await userEvent.click(toggle);
+			await expect(toggle).toHaveAttribute("aria-pressed", "true");
+			await expect(running()).toHaveLength(0);
+		});
+		await step("pressed again by keyboard, it moves again", async () => {
+			toggle.focus();
+			await userEvent.keyboard("{Enter}");
+			await expect(toggle).toHaveAttribute("aria-pressed", "false");
+			await expect(running().length).toBeGreaterThan(0);
+		});
+	},
+};
+
+/** The toggle's default name, when a page names none. */
+export const PauseDefaultName: Story = {
+	play: async ({ canvas }) => {
+		await expect(within(band(canvas)).getByRole("button", { name: "Pause" })).toBeVisible();
 	},
 };
 

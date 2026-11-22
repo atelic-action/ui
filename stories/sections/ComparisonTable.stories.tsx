@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ComparisonTable } from "../../src/sections";
 import { comparisonRows, unbroken } from "../fixtures/sections";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -105,7 +106,7 @@ export const Phone: Story = {
 		);
 		const scroller = table.parentElement as HTMLElement;
 		await expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -127,6 +128,6 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

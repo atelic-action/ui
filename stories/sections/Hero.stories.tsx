@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Hero } from "../../src/sections";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** The home page opener, in its two layouts: over a full bleed photo, and split beside one. */
@@ -74,7 +75,7 @@ export const OverlayPhone: Story = {
 		await expect(canvas.getByRole("img", { name: "Loaves cooling on a rack" })).toHaveStyle({
 			objectPosition: "27% 35%",
 		});
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -158,6 +159,6 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { HoursTable } from "../../src/sections";
 import { site } from "../fixtures/bakery";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** The week's hours as rows: the days on the left, the times on the right in mono. */
@@ -94,6 +95,6 @@ export const LongestContent: Story = {
 	},
 	play: async ({ canvas }) => {
 		await expect(canvas.getAllByText("6:30a to 3:30p")).toHaveLength(5);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

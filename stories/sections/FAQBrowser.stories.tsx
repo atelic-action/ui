@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, type MockInstance, spyOn, waitFor, within } from "storybook/test";
 import { FAQBrowser } from "../../src/sections";
 import { faqCategories, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { holdFragmentJumps } from "../support/fragments";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -160,7 +161,6 @@ export const AllOpenByHand: Story = {
  * brings everything back.
  */
 export const Search: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas, userEvent, step }) => {
 		await step("a word in a question and in an answer, either case", async () => {
 			await userEvent.type(search(canvas), "CAKE");
@@ -193,17 +193,19 @@ export const Search: Story = {
 			);
 			await expect(canvas.queryByRole("button", { name: "Clear search" })).toBeNull();
 		});
-		// The clear button removes itself, and the focus it held goes with it,
-		// to the top of the page, rather than back to the search it cleared.
+		// The clear button removes itself; the focus it held goes back to
+		// the search it cleared, never to the top of the page.
 		await step("focus returns to the search", async () => {
-			await knownBug("faq-clear-drops-focus", async () => {
-				await expect(search(canvas)).toHaveFocus();
-			});
+			await expect(search(canvas)).toHaveFocus();
 		});
 	},
 };
 
-/** No match: a line saying so, with the word, and a way to ask instead. */
+/**
+ * No match: a line saying so, with the word, and a way to ask instead. With
+ * no category to jump to, no rail is drawn: an empty navigation landmark
+ * would be announced with nothing in it.
+ */
 export const NoResults: Story = {
 	args: { contactHref: "/visit#ask" },
 	play: async ({ canvas, userEvent }) => {
@@ -215,7 +217,7 @@ export const NoResults: Story = {
 		);
 		await expect(canvas.queryByRole("heading", { level: 2 })).toBeNull();
 		await expect(canvas.queryByRole("link", { name: /Browse all questions/ })).toBeNull();
-		await expect(rail(canvas).queryAllByRole("link")).toHaveLength(0);
+		await expect(canvas.queryByRole("navigation", { name: "Question categories" })).toBeNull();
 	},
 };
 
@@ -227,25 +229,6 @@ export const BlankSearch: Story = {
 		await expect(canvas.queryByText(/No questions match/)).toBeNull();
 	},
 };
-
-/**
- * The jump a browser makes for an in page link, made by hand: a fragment
- * navigation inside the test frame closes the test run's connection, so a
- * story's `#` link is held and its target scrolled into view the way the
- * browser does, its scroll margin honored (stories/findings/sections.md,
- * Checker Limits).
- */
-function holdFragmentJumps() {
-	const jump = (event: MouseEvent) => {
-		const link = (event.target as Element | null)?.closest?.("a[href^='#']");
-		if (!link) return;
-		event.preventDefault();
-		const target = document.getElementById((link.getAttribute("href") ?? "").slice(1));
-		target?.scrollIntoView({ behavior: "instant", block: "start" });
-	};
-	document.addEventListener("click", jump);
-	return () => document.removeEventListener("click", jump);
-}
 
 /**
  * A category tab jumps to its category, which lands in view below the
@@ -379,7 +362,7 @@ export const Phone: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -403,6 +386,6 @@ export const UnbrokenWord: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,22 +2,17 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { ReviewCarousel } from "../../src/sections";
 import { longestReview, reviews } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
+import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
-import { withReducedMotion } from "./motion";
 
 /**
  * The aggregate rating beside one large review at a time, stepped by dots
- * and round arrows. The denominator beside the score fails contrast on this
- * theme (stories/findings/sections.md).
+ * and round arrows.
  */
 const meta = {
 	title: "Sections/ReviewCarousel",
 	component: ReviewCarousel,
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues("review-score-out-contrast"),
-	},
 	args: {
 		eyebrow: "What the line says",
 		score: "4.9",
@@ -195,11 +190,8 @@ export const ReducedMotion: Story = {
 		const started = await stepAndListen(canvas, () => userEvent.click(next(canvas)));
 		await expect(started.filter((name) => name.startsWith("Review "))).toEqual([]);
 		await expect(getComputedStyle(shown(canvas)).opacity).toBe("1");
-		// The dots still grow and recolor over a quarter second: their
-		// transition has no reduced motion rule.
-		await knownBug("carousel-dots-ignore-reduced-motion", async () => {
-			await expect(started).toEqual([]);
-		});
+		// The dots change at once too: no transition starts anywhere.
+		await expect(started).toEqual([]);
 	},
 };
 
@@ -266,6 +258,6 @@ export const LongestContent: Story = {
 		await userEvent.click(next(canvas));
 		await waitFor(() => expect(shown(canvas)).toHaveAccessibleName("Review 2 of 2"));
 		await expect(Math.round(card().height)).toBe(Math.round(before.height));
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

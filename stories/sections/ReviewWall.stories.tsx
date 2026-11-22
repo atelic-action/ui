@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ReviewWall } from "../../src/sections";
 import { longestReview, reviews, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -201,21 +201,18 @@ export const LongestContent: Story = {
 	play: async ({ canvas }) => {
 		const [a, b] = canvas.getAllByRole("figure").map((card) => card.getBoundingClientRect());
 		await expect(b.top).toBeGreaterThanOrEqual(a.bottom);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word as a reviewer's name, on a phone. The name never breaks
- * inside the word, so the card, and the page, scroll sideways.
+ * One unbroken word as a reviewer's name, on a phone: the name breaks where
+ * it must, and neither the card nor the page scrolls sideways.
  */
 export const UnbrokenName: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ quote: "Best bread in the county.", by: unbroken }] },
 	play: async () => {
-		await knownBug("review-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

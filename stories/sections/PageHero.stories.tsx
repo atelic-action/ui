@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PageHero } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -88,21 +88,18 @@ export const LongestContent: Story = {
 		lead: "Two days for a round cake, two weeks for anything tiered, and a tasting on a Saturday morning for a wedding, with every one decorated by hand in the back of the shop.",
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in the headline, on a phone. The headline never breaks
- * inside a word, so a word wider than the screen scrolls the page sideways.
+ * One unbroken word in the headline, on a phone: a word wider than the
+ * screen breaks where it must, and the page stays still.
  */
 export const UnbrokenWord: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { title: `The ${unbroken}` },
 	play: async () => {
-		await knownBug("heading-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

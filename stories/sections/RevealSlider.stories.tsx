@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, type within } from "storybook/test";
 import { RevealSlider } from "../../src/sections";
 import { image } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -64,9 +64,12 @@ export const Default: Story = {
 	},
 };
 
-/** The keyboard: the arrows step the divider by three, and stop at the ends. */
+/**
+ * The keyboard, by the platform's slider convention: Left and Down step the
+ * divider back by three, Right and Up forward, Page Down and Page Up by ten,
+ * Home and End to the ends, and it stops at both ends.
+ */
 export const Keyboard: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas, userEvent, step }) => {
 		const slider = handle(canvas);
 		await step("Tab reaches the handle", async () => {
@@ -89,16 +92,48 @@ export const Keyboard: Story = {
 			for (let i = 0; i < 40; i++) await userEvent.keyboard("{ArrowRight}");
 			await expect(slider).toHaveAttribute("aria-valuenow", "100");
 		});
-		// A slider answers Home and End (and the up and down arrows) by the
-		// platform's convention; this one answers only left and right.
 		await step("Home and End jump to the ends", async () => {
-			await knownBug("reveal-slider-home-end", async () => {
-				await userEvent.keyboard("{Home}");
-				await expect(slider).toHaveAttribute("aria-valuenow", "0");
-				await userEvent.keyboard("{End}");
-				await expect(slider).toHaveAttribute("aria-valuenow", "100");
-			});
+			await userEvent.keyboard("{Home}");
+			await expect(slider).toHaveAttribute("aria-valuenow", "0");
+			await userEvent.keyboard("{End}");
+			await expect(slider).toHaveAttribute("aria-valuenow", "100");
 		});
+		await step("Down and Up step by three, Page Down and Page Up by ten", async () => {
+			await userEvent.keyboard("{ArrowDown}");
+			await expect(slider).toHaveAttribute("aria-valuenow", "97");
+			await userEvent.keyboard("{PageDown}{PageDown}");
+			await expect(slider).toHaveAttribute("aria-valuenow", "77");
+			await userEvent.keyboard("{ArrowUp}{PageUp}");
+			await expect(slider).toHaveAttribute("aria-valuenow", "90");
+			await expect(shownBefore(canvas).percent).toBe(90);
+			await userEvent.keyboard("{PageUp}{PageUp}");
+			await expect(slider).toHaveAttribute("aria-valuenow", "100");
+		});
+	},
+};
+
+/**
+ * What the value means, said with it: each side's share by its corner label
+ * by default, kept current as the divider moves, or the page's own words.
+ */
+export const ValueText: Story = {
+	play: async ({ canvas, userEvent }) => {
+		const slider = handle(canvas);
+		await expect(slider).toHaveAttribute("aria-valuetext", "50% Today, 50% The rebuild");
+		slider.focus();
+		await userEvent.keyboard("{PageDown}");
+		await expect(slider).toHaveAttribute("aria-valuetext", "40% Today, 60% The rebuild");
+	},
+};
+
+/** The page names what the value means in its own words. */
+export const OwnValueText: Story = {
+	args: { startAt: 30, valueText: (value: number) => `${value} percent of the old page showing` },
+	play: async ({ canvas }) => {
+		await expect(handle(canvas)).toHaveAttribute(
+			"aria-valuetext",
+			"30 percent of the old page showing",
+		);
 	},
 };
 
@@ -203,7 +238,7 @@ export const Phone: Story = {
 			{ keys: "[/MouseLeft]", target: slider },
 		]);
 		await waitFor(() => expect(slider).toHaveAttribute("aria-valuenow", "80"));
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -221,6 +256,6 @@ export const LongestContent: Story = {
 		},
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { StarRow } from "../../src/primitives";
 import { ProofStrip } from "../../src/sections";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** One row of short proof facts under a hero, a figure over its label each. */
@@ -52,7 +53,7 @@ export const Phone: Story = {
 		await expect(Math.round(items[0].getBoundingClientRect().top)).toBe(
 			Math.round(items[1].getBoundingClientRect().top),
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -83,6 +84,6 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

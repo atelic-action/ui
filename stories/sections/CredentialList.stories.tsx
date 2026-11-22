@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { CredentialList } from "../../src/sections";
 import { credentials, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** Card rows of credentials, each led by a short mono code. */
@@ -68,7 +68,7 @@ export const Phone: Story = {
 		await expect(b.getBoundingClientRect().top).toBeGreaterThanOrEqual(
 			a.getBoundingClientRect().bottom,
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -86,22 +86,20 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in a title, on a phone. The row's text column keeps its
- * `min-width: auto`, so the word pushes the card, and the page, sideways.
+ * One unbroken word in a title, on a phone: the row's text column shrinks to
+ * the card and the word breaks where it must, so neither the card nor the
+ * page scrolls sideways.
  */
 export const UnbrokenWord: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ code: "GUILD", title: unbroken, detail: "Gold, three years running" }] },
 	play: async () => {
-		await knownBug("credential-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };
 
