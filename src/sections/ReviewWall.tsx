@@ -184,7 +184,7 @@ export function ReviewWall({
 				<div className="rw-controls">
 					{showFilter && (
 						<label className="rw-select">
-							<span className="rw-select-label">Filter reviews by tag</span>
+							<span className="visually-hidden">Filter reviews by tag</span>
 							<select value={tag} onChange={(event) => setTag(event.target.value)}>
 								<option value="">{allTagsLabel}</option>
 								{tags.map((option) => (
@@ -197,7 +197,7 @@ export function ReviewWall({
 					)}
 					{showSort && (
 						<label className="rw-select rw-select-end">
-							<span className="rw-select-label">Sort reviews by date</span>
+							<span className="visually-hidden">Sort reviews by date</span>
 							<select
 								value={order}
 								onChange={(event) => setOrder(event.target.value as "newest" | "oldest")}

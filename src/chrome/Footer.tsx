@@ -241,8 +241,10 @@ export function Footer({
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
 	const hoursGiven = hours && hours.length > 0 ? hours : null;
 	// The hours as a column of their own, or inside the brand column.
-	const hoursShown = hoursPlacement === "column" ? hoursGiven : null;
-	const hoursInBrand = hoursPlacement === "brand" ? hoursGiven : null;
+	// Any value but "brand" (a typo, a value from a later version) is a column.
+	const inBrand = hoursPlacement === "brand";
+	const hoursShown = inBrand ? null : hoursGiven;
+	const hoursInBrand = inBrand ? hoursGiven : null;
 	const hoursList = (rows: HoursRow[]) => (
 		<dl>
 			{rows.map((row, at) => (
@@ -277,7 +279,11 @@ export function Footer({
 		<>
 			<footer ref={ref} className="footer">
 				<div className="wrap">
-					<div className={hoursShown ? "footer-grid has-hours" : "footer-grid"}>
+					<div
+						className={["footer-grid", hoursShown && "has-hours", hoursInBrand && "has-brand-hours"]
+							.filter(Boolean)
+							.join(" ")}
+					>
 						<div className="footer-brand">
 							{logo?.tile ? (
 								<p className="footer-wordmark">

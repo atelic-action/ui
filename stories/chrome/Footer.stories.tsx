@@ -657,11 +657,21 @@ export const CrowdedHoursColumnPhone: Story = {
 /**
  * The hours inside the brand column (`hoursPlacement: "brand"`), under the
  * address, the phone, and the email as a compact list under a small label,
- * so four full link columns keep the row: at 1280 a three word label holds
- * one line, and no label breaks inside a word.
+ * so four full link columns keep the row: at 1280 every three word label
+ * holds one line, and no label breaks inside a word. The footer is set 4%
+ * wider than its font draws it (letter spacing), standing in for another
+ * machine's wider font, so the layout has room to spare rather than just
+ * enough.
  */
 export const CrowdedHoursInBrand: Story = {
 	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+	decorators: [
+		(Story) => (
+			<div style={{ letterSpacing: "0.04em" }}>
+				<Story />
+			</div>
+		),
+	],
 	play: async ({ canvas }) => {
 		const footer = within(canvas.getByRole("contentinfo"));
 		const hoursHeading = footer.getByRole("heading", { name: "Hours" });
@@ -670,7 +680,14 @@ export const CrowdedHoursInBrand: Story = {
 			nap.getBoundingClientRect().bottom,
 		);
 		await expect(nap.parentElement).toContainElement(hoursHeading);
-		await expect(lines(footer.getByRole("link", { name: "Order for Saturday" }))).toBe(1);
+		for (const label of [
+			"Order for Saturday",
+			"The morning bake",
+			"Visit the shop",
+			"Terms of sale",
+		]) {
+			await expect(lines(footer.getByRole("link", { name: label })), label).toBe(1);
+		}
 		// The days and the ranges side by side, a row a line.
 		const [day] = footer.getAllByRole("term");
 		const [range] = footer.getAllByRole("definition");

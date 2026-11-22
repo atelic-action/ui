@@ -50,13 +50,16 @@ describe("StickyCTABar", () => {
 		);
 		expect(first).toHaveBeenLastCalledWith(64);
 
+		// Swapped in, the second hears the height at once, with no resize to
+		// wait for, and the first gives its space back.
 		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={second} />);
+		expect(first).toHaveBeenLastCalledWith(0);
+		expect(second).toHaveBeenCalledExactlyOnceWith(64);
+		// A resize with nothing changed tells no one again.
 		act(() => {
 			window.dispatchEvent(new Event("resize"));
 		});
-		// The first gives its space back, and the second is told the height.
-		expect(first).toHaveBeenLastCalledWith(0);
-		expect(second).toHaveBeenLastCalledWith(64);
+		expect(second).toHaveBeenCalledTimes(1);
 
 		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={first} />);
 		unmount();
@@ -89,8 +92,17 @@ describe("StickyCTABar", () => {
 		}
 		const { unmount } = render(<Page />);
 		expect(screen.getByText("64")).toBeInTheDocument();
-		expect(heard).toHaveBeenCalledExactlyOnceWith(64);
-		expect(renders).toBeLessThanOrEqual(3);
+		// A new function each render reads as a new listener once, and then is
+		// adopted quietly: the calls settle within a couple of renders, each
+		// telling the same height (the zero is the first function's hand back).
+		expect(heard.mock.calls.length).toBeLessThanOrEqual(3);
+		expect(heard).toHaveBeenLastCalledWith(64);
+		expect(renders).toBeLessThanOrEqual(4);
+		const settled = heard.mock.calls.length;
+		act(() => {
+			window.dispatchEvent(new Event("scroll"));
+		});
+		expect(heard.mock.calls.length).toBe(settled);
 		unmount();
 		height.mockRestore();
 	});

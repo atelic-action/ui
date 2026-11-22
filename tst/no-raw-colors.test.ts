@@ -41,6 +41,7 @@ const DEFAULTS = {
 		":where(.atelic-ui) {",
 		":where(.atelic-ui table) {",
 		':where(.atelic-ui a[href^="tel:"]:not(:has(:not(svg, svg *))), .atelic-ui .tel-number) {',
+		".atelic-ui .visually-hidden {",
 	],
 };
 

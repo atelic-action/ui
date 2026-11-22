@@ -67,11 +67,8 @@ export function staticNotFoundRouting<Page extends ComponentType>(
 export function staticNotFoundRouting<Page>(page: Page, options?: StaticNotFoundOptions) {
 	if (!options) return { defaultNotFoundComponent: page, defaultPendingComponent: page };
 	const { useMatches, catchAllId = CATCH_ALL_ROUTE_ID } = options;
-	// A miss by the route tree (the catch all, or a route's own `missing`), or
-	// by the router's report once a loader has thrown notFound().
-	const select = (matches: ReadonlyArray<MissMatch>) =>
-		isMiss(matches, catchAllId) ||
-		matches.some((match) => match.status === "notFound" || match.globalNotFound === true);
+	// The one miss predicate the root's 404 head asks too, so the two agree.
+	const select = (matches: ReadonlyArray<MissMatch>) => isMiss(matches, catchAllId);
 	function NotFoundPending(): ReactElement | null {
 		const miss = useMatches({ select });
 		return miss ? createElement(page as ComponentType) : null;

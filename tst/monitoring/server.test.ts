@@ -388,8 +388,21 @@ describe("refusalError and reportRefusedResponse", () => {
 		);
 	});
 
-	it("scrubs phone number shapes, and leaves a status, a count, and a year", async () => {
-		for (const number of ["(555) 555-0142", "+1 555 555 0143", "555.555.0144", "5555550145"]) {
+	it("scrubs a phone however it is grouped and separated", async () => {
+		const numbers = [
+			"(555) 555-0142",
+			"(555)555-0142",
+			"+1 555 555 0143",
+			"+1-555-555-0143",
+			"555.555.0144",
+			"555/555-0144",
+			"555\u2013555\u20130145",
+			"555\u2014555\u20140145",
+			"555\u2011555\u20110146",
+			"555\u00a0555\u00a00147",
+			"+44 20 7946 0958",
+		];
+		for (const number of numbers) {
 			const error = await refusalError(
 				refused({ name: "refused", message: `Call ${number} to confirm` }),
 			);
@@ -397,11 +410,23 @@ describe("refusalError and reportRefusedResponse", () => {
 				"The upstream service answered 422: refused: Call [number] to confirm",
 			);
 		}
-		const kept = await refusalError(
-			refused({ name: "rate_limit", message: "429 after 120 sends since 2026" }),
+	});
+
+	it("leaves a date, a bare id, a count beside a year, and a status alone", async () => {
+		const message = "On 2026-11-23 send 12345678 failed: 429 after 120 2026 sends";
+		const kept = await refusalError(refused({ name: "rate_limit", message }));
+		expect(kept.message).toBe(`The upstream service answered 422: rate_limit: ${message}`);
+	});
+
+	it("catches an internationalized domain and an underscore in a label", async () => {
+		const error = await refusalError(
+			refused({
+				name: "refused",
+				message: "To owner@b\u00e4ckerei.example and ops@mail_relay.example.com.",
+			}),
 		);
-		expect(kept.message).toBe(
-			"The upstream service answered 422: rate_limit: 429 after 120 sends since 2026",
+		expect(error.message).toBe(
+			"The upstream service answered 422: refused: To [address] and [address].",
 		);
 	});
 

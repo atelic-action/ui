@@ -8,7 +8,7 @@ import {
 	useMatches,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { type MissMatch, staticNotFoundRouting } from "../../src/routing";
+import { isMiss, type MissMatch, staticNotFoundRouting } from "../../src/routing";
 
 function NotFoundPage() {
 	return <h1>Nothing at this address</h1>;
@@ -141,5 +141,27 @@ describe("the pending view on a parameter route", () => {
 		}).defaultPendingComponent;
 		const { container } = render(<Pending />);
 		expect(container).toBeEmptyDOMElement();
+	});
+});
+
+describe("the root's 404 head and the pending view", () => {
+	it("agree on every kind of match, both asking isMiss", () => {
+		const cases: MissMatch[][] = [
+			[{ routeId: "/$", params: {} }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, staticData: { missing: () => true } }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "notFound" }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, globalNotFound: true }],
+			[{ routeId: "/blog/$slug", params: { slug: "x" }, status: "pending" }],
+			[{ routeId: "/menu", params: {}, status: "success" }],
+		];
+		for (const matches of cases) {
+			const Pending = staticNotFoundRouting(NotFoundPage, {
+				useMatches: matchesOf(matches),
+			}).defaultPendingComponent;
+			const { container, unmount } = render(<Pending />);
+			const drawn = container.textContent === "Nothing at this address";
+			expect(drawn, JSON.stringify(matches)).toBe(isMiss(matches));
+			unmount();
+		}
 	});
 });

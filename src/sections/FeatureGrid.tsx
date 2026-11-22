@@ -94,7 +94,7 @@ export function FeatureGrid({
 								<a key={item.title} className="feature-card" href={withBase(item.href)} {...tab}>
 									{inner}
 									{/* Said to a screen reader only, as the card's last words. */}
-									{tab.target && <span className="feature-new-tab">, {newTabLabel}</span>}
+									{tab.target && <span className="visually-hidden">, {newTabLabel}</span>}
 								</a>
 							);
 						}

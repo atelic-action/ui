@@ -1748,6 +1748,15 @@
 		.atelic-ui .footer-grid.has-hours > .footer-brand {
 			flex-basis: 100%;
 		}
+		/* With the hours in the brand column the four link columns hold their
+		   labels whole: each is at least as wide as its longest label, the
+		   room left over shared as before, and a row that cannot hold them all
+		   at that wraps a column rather than a label. A font a few percent
+		   wider than the one a site was drawn in still sets an ordinary three
+		   word label on one line. */
+		.atelic-ui .footer-grid.has-brand-hours > .footer-column {
+			min-width: max-content;
+		}
 	}
 	/* One row from 1100px, the brand column a little wider than without the
 	   hours, so the lockup and the rating keep a line each. */
