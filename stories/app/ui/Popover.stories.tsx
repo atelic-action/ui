@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, within } from "storybook/test";
 import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "../../../src/app/ui";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft, until } from "../layers";
 
 /**
  * A floating panel from a trigger, for a small form or detail. Its content
@@ -44,9 +45,9 @@ export const OpenAndEscape: Story = {
 		});
 		await step("a click opens it, named by its heading, focus inside", async () => {
 			await userEvent.click(trigger);
-			const panel = await screen.findByRole("dialog", { name: "Drop time" });
+			const panel = await layerOpened(() => screen.getByRole("dialog", { name: "Drop time" }));
 			await expect(trigger).toHaveAttribute("aria-expanded", "true");
-			await waitFor(() => expect(panel.contains(document.activeElement)).toBe(true));
+			await until(() => expect(panel.contains(document.activeElement)).toBe(true));
 		});
 		await step("Tab reaches the field inside", async () => {
 			await userEvent.tab();
@@ -54,7 +55,7 @@ export const OpenAndEscape: Story = {
 		});
 		await step("Escape closes it and focus returns", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+			await noneLeft(() => screen.queryByRole("dialog"));
 			await expect(trigger).toHaveFocus();
 		});
 	},
@@ -65,9 +66,9 @@ export const ToggleByTrigger: Story = {
 	play: async ({ canvas }) => {
 		const trigger = canvas.getByRole("button", { name: "Change the drop time" });
 		await userEvent.click(trigger);
-		await screen.findByRole("dialog");
+		await layerOpened(() => screen.getByRole("dialog"));
 		await userEvent.click(trigger);
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveAttribute("aria-expanded", "false");
 	},
 };
@@ -76,12 +77,12 @@ export const ToggleByTrigger: Story = {
 export const PressOutside: Story = {
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Change the drop time" }));
-		const panel = await screen.findByRole("dialog");
+		const panel = await layerOpened(() => screen.getByRole("dialog"));
 		await Promise.all(panel.getAnimations().map((animation) => animation.finished));
 		await userEvent.click(
 			document.elementFromPoint(window.innerWidth - 4, window.innerHeight - 4) as Element,
 		);
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 	},
 };
 
@@ -90,7 +91,7 @@ export const OpenPhone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Change the drop time" }));
-		const panel = await screen.findByRole("dialog", { name: "Drop time" });
+		const panel = await layerOpened(() => screen.getByRole("dialog", { name: "Drop time" }));
 		await Promise.all(panel.getAnimations().map((animation) => animation.finished));
 		await expect(within(panel).getByLabelText("Leaves the bakehouse at")).toBeVisible();
 		await expect(panel.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);

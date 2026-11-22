@@ -1,22 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PageSkeleton } from "../../src/app";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
- * How many rows the skeleton's cards run to. A skeleton has no roles or
- * words to find a card by, so the cards are the last block's children.
+ * The busy region, reached from the words a reader hears in it. Its blocks
+ * have no role or words of their own (they are hidden from a reader), so the
+ * cards are found from there: the hidden blocks' last child holds them.
  */
-function rowsOf(canvasElement: HTMLElement) {
-	const cards = Array.from(canvasElement.firstElementChild?.lastElementChild?.children ?? []);
+function busyRegion(canvas: { getByText: (text: string) => HTMLElement }) {
+	return canvas.getByText("Loading").parentElement as HTMLElement;
+}
+
+/** How many rows the skeleton's cards run to. */
+function rowsOf(canvas: { getByText: (text: string) => HTMLElement }) {
+	const blocks = busyRegion(canvas).querySelector("[aria-hidden=true]");
+	const cards = Array.from(blocks?.lastElementChild?.children ?? []);
 	return new Set(cards.map((card) => Math.round(card.getBoundingClientRect().top))).size;
 }
 
 /**
  * The loading state a page shows while its data arrives: a header skeleton
  * (title, subtitle, an optional action) over a number of card skeletons in
- * one column, two columns, or a grid.
+ * one column, two columns, or a grid. It is busy, and a reader hears its
+ * words ("Loading", or its own `label`) in place of the blocks.
  */
 const meta = {
 	title: "App/PageSkeleton",
@@ -30,8 +37,8 @@ type Story = StoryObj<typeof meta>;
 
 /** Three cards in one column under the header. */
 export const Default: Story = {
-	play: async ({ canvasElement }) => {
-		await expect(rowsOf(canvasElement)).toBe(3);
+	play: async ({ canvas }) => {
+		await expect(rowsOf(canvas)).toBe(3);
 	},
 };
 
@@ -41,16 +48,16 @@ export const WithHeaderAction: Story = { args: { showHeaderAction: true } };
 /** Two columns on a desktop. */
 export const TwoColumn: Story = {
 	args: { cardLayout: "two-column", cardCount: 4 },
-	play: async ({ canvasElement }) => {
-		await expect(rowsOf(canvasElement)).toBe(2);
+	play: async ({ canvas }) => {
+		await expect(rowsOf(canvas)).toBe(2);
 	},
 };
 
 /** Three across on a desktop. */
 export const Grid: Story = {
 	args: { cardLayout: "grid", cardCount: 6 },
-	play: async ({ canvasElement }) => {
-		await expect(rowsOf(canvasElement)).toBe(2);
+	play: async ({ canvas }) => {
+		await expect(rowsOf(canvas)).toBe(2);
 	},
 };
 
@@ -58,8 +65,8 @@ export const Grid: Story = {
 export const GridPhone: Story = {
 	args: { cardLayout: "grid", cardCount: 3 },
 	globals: pin("phone"),
-	play: async ({ canvasElement }) => {
-		await expect(rowsOf(canvasElement)).toBe(3);
+	play: async ({ canvas }) => {
+		await expect(rowsOf(canvas)).toBe(3);
 		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
 	},
 };
@@ -68,16 +75,23 @@ export const GridPhone: Story = {
 export const NoHeader: Story = { args: { showHeader: false, cardCount: 1 } };
 
 /**
- * A screen reader hears nothing while the page loads: the skeleton is bare
- * blocks with no busy state and no words. It should say it is loading.
+ * A screen reader hears that the page is loading: the region is busy, its
+ * words are there for a reader though not drawn, and its blocks are hidden.
  */
 export const AnnouncesLoading: Story = {
-	tags: ["known-issue"],
-	play: async ({ canvas, canvasElement }) => {
-		await knownBug("skeleton-says-nothing", async () => {
-			const busy = canvasElement.querySelector("[aria-busy=true]");
-			const words = canvas.queryByText(/loading/i);
-			await expect(busy ?? words).not.toBeNull();
-		});
+	play: async ({ canvas }) => {
+		const words = canvas.getByText("Loading");
+		await expect(busyRegion(canvas)).toHaveAttribute("aria-busy", "true");
+		await expect(words.getBoundingClientRect().width).toBeLessThanOrEqual(1);
+		await expect(busyRegion(canvas).querySelector("[aria-hidden=true]")).not.toBeNull();
+	},
+};
+
+/** A page names what it is loading. */
+export const OwnWords: Story = {
+	args: { label: "Loading the orders" },
+	play: async ({ canvas }) => {
+		const words = canvas.getByText("Loading the orders");
+		await expect(words.parentElement).toHaveAttribute("aria-busy", "true");
 	},
 };

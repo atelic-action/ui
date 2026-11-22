@@ -1,19 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent } from "storybook/test";
 import { Label, Slider } from "../../../src/app/ui";
-import { knownIssues } from "../../support/known-issues";
 
 /**
- * A range on a track with one thumb, stepped by the keyboard. The wrapper
- * draws its own thumb and passes it nothing, so the thumb (the `slider` a
- * reader reaches) can never be named: neither a label nor an `aria-label` on
- * the slider reaches it. Every story carries the marker.
+ * A range on a track, a thumb per value, stepped by the keyboard. The thumb
+ * is the `slider` a reader reaches, and the slider's name (`aria-labelledby`
+ * or `aria-label`) lands on it; a range names each thumb with `thumbLabels`.
  */
 const meta = {
 	title: "App/UI/Slider",
 	component: Slider,
-	tags: ["known-issue"],
-	parameters: { layout: "padded", ...knownIssues("slider-thumb-unnamed") },
+	parameters: { layout: "padded" },
 	args: { defaultValue: [12], min: 0, max: 48, step: 1, onValueChange: fn() },
 	render: (args) => (
 		<div className="max-w-sm space-y-3">
@@ -29,7 +26,7 @@ type Story = StoryObj<typeof meta>;
 /** The keyboard: the arrows step by one, Page keys by a tenth, Home and End to the ends. */
 export const Keyboard: Story = {
 	play: async ({ canvas, args, step }) => {
-		const thumb = canvas.getByRole("slider");
+		const thumb = canvas.getByRole("slider", { name: "Trays" });
 		await step("it reports its range and value", async () => {
 			await expect(thumb).toHaveAttribute("aria-valuemin", "0");
 			await expect(thumb).toHaveAttribute("aria-valuemax", "48");
@@ -91,5 +88,39 @@ export const Disabled: Story = {
 		await userEvent.keyboard("{ArrowRight}");
 		await expect(thumb).toHaveAttribute("aria-valuenow", "12");
 		await expect(args.onValueChange).not.toHaveBeenCalled();
+	},
+};
+
+/** Named by an `aria-label` alone, with no visible label: the name reaches the thumb. */
+export const NamedByAriaLabel: Story = {
+	render: (args) => (
+		<div className="max-w-sm">
+			<Slider {...args} aria-label="Hydration" />
+		</div>
+	),
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("slider", { name: "Hydration" })).toHaveAttribute(
+			"aria-valuenow",
+			"12",
+		);
+	},
+};
+
+/** A range: two thumbs, each named for what it sets. */
+export const Range: Story = {
+	args: { defaultValue: [6, 30] },
+	render: (args) => (
+		<div className="max-w-sm">
+			<Slider {...args} thumbLabels={["Fewest trays", "Most trays"]} />
+		</div>
+	),
+	play: async ({ canvas, userEvent }) => {
+		const fewest = canvas.getByRole("slider", { name: "Fewest trays" });
+		const most = canvas.getByRole("slider", { name: "Most trays" });
+		await expect(fewest).toHaveAttribute("aria-valuenow", "6");
+		await expect(most).toHaveAttribute("aria-valuenow", "30");
+		most.focus();
+		await userEvent.keyboard("{ArrowLeft}");
+		await expect(most).toHaveAttribute("aria-valuenow", "29");
 	},
 };

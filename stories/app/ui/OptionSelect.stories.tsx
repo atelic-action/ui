@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, userEvent, within } from "storybook/test";
 import { OptionSelect } from "../../../src/app/ui";
-import { knownBug, knownIssues } from "../../support/known-issues";
+import { knownIssues } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft, until } from "../layers";
 
 const vans = [
 	{ value: "all", label: "Every van" },
@@ -49,7 +50,7 @@ export const ByClick: Story = {
 		});
 		await step("opens on the options, the current one selected", async () => {
 			await userEvent.click(select);
-			const list = within(await screen.findByRole("listbox"));
+			const list = within(await layerOpened(() => screen.getByRole("listbox")));
 			await expect(list.getByRole("option", { name: "Every van" })).toHaveAttribute(
 				"aria-selected",
 				"true",
@@ -57,9 +58,9 @@ export const ByClick: Story = {
 			await userEvent.click(list.getByRole("option", { name: "Late drop" }));
 		});
 		await step("the pick shows, is reported, and focus is back on the select", async () => {
-			await waitFor(() => expect(select).toHaveTextContent("Late drop"));
+			await until(() => expect(select).toHaveTextContent("Late drop"));
 			await expect(args.onValueChange).toHaveBeenCalledWith("late");
-			await waitFor(() => expect(select).toHaveFocus());
+			await until(() => expect(select).toHaveFocus());
 		});
 	},
 };
@@ -71,26 +72,26 @@ export const Keyboard: Story = {
 		await step("Enter opens it on the current option", async () => {
 			select.focus();
 			await userEvent.keyboard("{Enter}");
-			await waitFor(() => expect(screen.getByRole("option", { name: "Every van" })).toHaveFocus());
+			await until(() => expect(screen.getByRole("option", { name: "Every van" })).toHaveFocus());
 		});
 		await step("ArrowDown moves, and typing jumps to a match", async () => {
 			await userEvent.keyboard("{ArrowDown}");
 			await expect(screen.getByRole("option", { name: "North loop" })).toHaveFocus();
 			await userEvent.keyboard("h");
-			await waitFor(() =>
+			await until(() =>
 				expect(screen.getByRole("option", { name: "Harbor and the market" })).toHaveFocus(),
 			);
 		});
 		await step("Enter picks it", async () => {
 			await userEvent.keyboard("{Enter}");
-			await waitFor(() => expect(select).toHaveTextContent("Harbor and the market"));
+			await until(() => expect(select).toHaveTextContent("Harbor and the market"));
 			await expect(args.onValueChange).toHaveBeenCalledWith("harbor");
 		});
 		await step("Escape closes without a pick", async () => {
 			await userEvent.keyboard("{Enter}");
-			await screen.findByRole("listbox");
+			await layerOpened(() => screen.getByRole("listbox"));
 			await userEvent.keyboard("{ArrowDown}{Escape}");
-			await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
+			await noneLeft(() => screen.queryByRole("listbox"));
 			await expect(select).toHaveTextContent("Harbor and the market");
 			await expect(args.onValueChange).toHaveBeenCalledTimes(1);
 		});
@@ -106,9 +107,9 @@ export const Placeholder: Story = {
 };
 
 /**
- * On a phone at full width, the options should fit the screen. The list is
- * the trigger's width plus its own border and padding, so it runs past the
- * trigger's right edge and off the screen.
+ * On a phone with the trigger as wide as the screen, the open list keeps
+ * inside the screen: never wider than its trigger, its border and padding
+ * inside that width, and no wider than the room the popper leaves.
  */
 export const Phone: Story = {
 	tags: ["known-issue"],
@@ -116,11 +117,37 @@ export const Phone: Story = {
 	args: { className: "w-full" },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
-		await userEvent.click(canvas.getByRole("combobox", { name: "Van" }));
-		const list = await screen.findByRole("listbox");
-		await Promise.all(list.getAnimations().map((animation) => animation.finished));
-		await knownBug("select-list-wider-than-trigger", async () => {
-			await expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
-		});
+		const trigger = canvas.getByRole("combobox", { name: "Van" });
+		await userEvent.click(trigger);
+		// The list opens with an animation; wait on it, not on a clock.
+		const list = await layerOpened(() => screen.getByRole("listbox"));
+		const box = list.getBoundingClientRect();
+		await expect(box.left).toBeGreaterThanOrEqual(0);
+		await expect(box.right).toBeLessThanOrEqual(window.innerWidth);
+		await expect(box.width).toBeLessThanOrEqual(trigger.getBoundingClientRect().width);
+	},
+};
+
+/**
+ * With room to spare (the trigger set in from the screen's edge, past the
+ * popper's collision padding), the open list is exactly its trigger's width
+ * and starts where it does, its border inside it.
+ */
+export const MatchesItsTrigger: Story = {
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("checker-radix-hides-page") },
+	render: (args) => (
+		<div className="p-8">
+			<Held {...args} />
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const trigger = canvas.getByRole("combobox", { name: "Van" });
+		await userEvent.click(trigger);
+		const list = await layerOpened(() => screen.getByRole("listbox"));
+		const box = list.getBoundingClientRect();
+		const field = trigger.getBoundingClientRect();
+		await expect(Math.abs(box.width - field.width)).toBeLessThan(1);
+		await expect(Math.abs(box.left - field.left)).toBeLessThan(1);
 	},
 };

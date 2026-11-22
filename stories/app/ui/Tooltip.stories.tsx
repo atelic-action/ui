@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Printer } from "lucide-react";
-import { expect, screen, userEvent, waitFor } from "storybook/test";
+import { expect, screen, userEvent } from "storybook/test";
 import {
 	Button,
 	Tooltip,
@@ -8,6 +8,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "../../../src/app/ui";
+import { layerOpened, noneLeft, until } from "../layers";
 
 /**
  * A short line about a control, on hover or focus. It describes the control
@@ -43,7 +44,7 @@ export const Hover: Story = {
 		const button = canvas.getByRole("button", { name: "Print labels" });
 		await step("hover shows it, describing the button", async () => {
 			await userEvent.hover(button);
-			await waitFor(() =>
+			await until(() =>
 				expect(screen.getByRole("tooltip")).toHaveTextContent("One label per tray"),
 			);
 			await expect(button).toHaveAccessibleDescription("One label per tray, for tomorrow's drops.");
@@ -51,7 +52,7 @@ export const Hover: Story = {
 		});
 		await step("moving away hides it", async () => {
 			await userEvent.unhover(button);
-			await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
+			await noneLeft(() => screen.queryByRole("tooltip"));
 		});
 	},
 };
@@ -62,9 +63,9 @@ export const FocusAndEscape: Story = {
 		const button = canvas.getByRole("button", { name: "Print labels" });
 		await userEvent.tab();
 		await expect(button).toHaveFocus();
-		await waitFor(() => expect(screen.getByRole("tooltip")).toBeInTheDocument());
+		await until(() => expect(screen.getByRole("tooltip")).toBeInTheDocument());
 		await userEvent.keyboard("{Escape}");
-		await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
+		await noneLeft(() => screen.queryByRole("tooltip"));
 		await expect(button).toHaveFocus();
 	},
 };
@@ -73,7 +74,7 @@ export const FocusAndEscape: Story = {
 export const Showing: Story = {
 	args: { defaultOpen: true },
 	play: async () => {
-		const tip = await screen.findByRole("tooltip");
+		const tip = await layerOpened(() => screen.getByRole("tooltip"));
 		await expect(tip).toHaveTextContent("One label per tray");
 	},
 };

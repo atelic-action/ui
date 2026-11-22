@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useLocation } from "@tanstack/react-router";
-import { expect, waitFor } from "storybook/test";
+import { expect } from "storybook/test";
 import { AuthGuard } from "../../src/app";
 import { signIn, signOut } from "../fixtures/email-app";
 import { pin } from "../support/viewports";
+import { until } from "./layers";
 
 /** Where the memory router is, printed outside the guard so a story can read it after a redirect. */
 function Where() {
@@ -47,7 +48,7 @@ export const SignedIn: Story = {
 export const SignedOutRedirects: Story = {
 	beforeEach: signOut,
 	play: async ({ canvas }) => {
-		await waitFor(() => expect(canvas.getByText("Router at /")).toBeVisible());
+		await until(() => expect(canvas.getByText("Router at /")).toBeVisible());
 	},
 };
 
@@ -78,6 +79,6 @@ export const SignedOutPatternRoot: Story = {
 	beforeEach: signOut,
 	parameters: { app: { path: "/u" } },
 	play: async ({ canvas }) => {
-		await waitFor(() => expect(canvas.getByText("Router at /")).toBeVisible());
+		await until(() => expect(canvas.getByText("Router at /")).toBeVisible());
 	},
 };

@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useLocation } from "@tanstack/react-router";
-import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, within } from "storybook/test";
 import { AppLayout, AppPage, useAuthStore } from "../../src/app";
 import { longNameUser, signIn, signOut } from "../fixtures/email-app";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
+import { layerOpened, noneLeft, until } from "./layers";
 
 /** Where the memory router is, printed on the page so a story can read it. */
 function Where() {
@@ -30,15 +31,6 @@ async function tabStaysInside(dialog: HTMLElement, presses: number) {
 }
 
 /**
- * Every story with the rail open: the user menu's trigger shows the user's
- * name but is named "User menu" (stories/findings/email-app.md).
- */
-const onTheRail = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("user-menu-name-mismatch") },
-};
-
-/**
  * The app shell around every signed in page. At `lg` and up it is the
  * navigation rail on the left with the user menu at its foot; below that a
  * slim top bar with the hamburger menu sheet over the page, and the section
@@ -59,7 +51,6 @@ type Story = StoryObj<typeof meta>;
 
 /** On a desktop the rail holds the sections, the current section's pages nested under it. */
 export const DesktopRail: Story = {
-	...onTheRail,
 	play: async ({ canvas }) => {
 		const rail = within(canvas.getByRole("complementary", { name: "Main navigation" }));
 		const primary = within(rail.getByRole("navigation", { name: "Primary navigation" }));
@@ -89,79 +80,74 @@ export const DesktopRail: Story = {
 
 /** The rail collapses to icons and back; the page moves with it and the choice is kept. */
 export const CollapseTheRail: Story = {
-	...onTheRail,
 	play: async ({ canvas, userEvent, step }) => {
 		const rail = canvas.getByRole("complementary", { name: "Main navigation" });
 		const wide = rail.getBoundingClientRect().width;
 		await step("collapse narrows the rail and folds the sub pages away", async () => {
 			await userEvent.click(canvas.getByRole("button", { name: "Collapse sidebar" }));
-			await waitFor(() => expect(rail.getBoundingClientRect().width).toBeLessThan(wide));
+			await until(() => expect(rail.getBoundingClientRect().width).toBeLessThan(wide));
 			await expect(canvas.queryByRole("list", { name: "Orders pages" })).toBeNull();
 			await expect(canvas.getByRole("button", { name: "Expand sidebar" })).toBeVisible();
 		});
 		await step("a collapsed link keeps its name, and shows it in a tooltip on focus", async () => {
-			await knownBug("collapsed-rail-links-unnamed", async () => {
-				await expect(canvas.getByRole("link", { name: "Orders" })).toBeVisible();
-			});
-			// Nameless while collapsed, so it is reached by where it goes.
-			const orders = canvas.getAllByRole("link").find((a) => a.getAttribute("href") === "/orders");
-			orders?.focus();
-			await waitFor(() => expect(screen.getByRole("tooltip")).toHaveTextContent("Orders"));
+			const orders = canvas.getByRole("link", { name: "Orders" });
+			await expect(orders).toBeVisible();
+			await expect(orders).not.toHaveTextContent("Orders");
+			orders.focus();
+			await until(() => expect(screen.getByRole("tooltip")).toHaveTextContent("Orders"));
 		});
 		await step("expand brings the rail and its pages back", async () => {
 			await userEvent.click(canvas.getByRole("button", { name: "Expand sidebar" }));
-			await waitFor(() => expect(rail.getBoundingClientRect().width).toBe(wide));
+			await until(() => expect(rail.getBoundingClientRect().width).toBe(wide));
 			await expect(canvas.getByRole("list", { name: "Orders pages" })).toBeVisible();
 		});
 	},
 };
 
 /**
- * A rail the user left collapsed comes back collapsed: icons alone, the
- * avatar for the user menu. Its links have no accessible name, since the
- * label is dropped and the tooltip only describes.
+ * A rail the user left collapsed comes back collapsed: icons alone, each
+ * link named by its label, and the avatar's initials for the user menu,
+ * named by the initials it shows and the user's name.
  */
 export const CollapsedRail: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("collapsed-rail-links-unnamed", "user-menu-name-mismatch") },
 	beforeEach: () => {
 		localStorage.setItem("storybook-crumb-sidebarCollapsed", "true");
+		return () => localStorage.removeItem("storybook-crumb-sidebarCollapsed");
 	},
 	play: async ({ canvas }) => {
 		const rail = canvas.getByRole("complementary", { name: "Main navigation" });
-		await waitFor(() => expect(rail.getBoundingClientRect().width).toBe(80));
+		await until(() => expect(rail.getBoundingClientRect().width).toBe(80));
 		await expect(canvas.getByRole("button", { name: "Expand sidebar" })).toBeVisible();
-		await expect(canvas.getByRole("button", { name: "User menu" })).not.toHaveTextContent(
-			"Wren Okafor",
-		);
-		await knownBug("collapsed-rail-links-unnamed", async () => {
-			await expect(within(rail).getByRole("link", { name: "Bakes" })).toBeVisible();
-		});
+		const trigger = canvas.getByRole("button", { name: "WO Wren Okafor" });
+		await expect(trigger).not.toHaveAttribute("aria-label");
+		for (const name of ["Home", "Orders", "Bakes"]) {
+			await expect(within(rail).getByRole("link", { name })).toBeVisible();
+		}
 	},
 };
 
 /** The user menu at the rail's foot opens by click, closes on Escape, and hands focus back. */
 export const UserMenuByClick: Story = {
-	...onTheRail,
 	play: async ({ canvas, userEvent, step }) => {
-		const trigger = canvas.getByRole("button", { name: "User menu" });
-		await step("the trigger shows the user's name and starts closed", async () => {
+		const trigger = canvas.getByRole("button", { name: "Wren Okafor" });
+		await step("the trigger is named by the user's name it shows, and starts closed", async () => {
 			await expect(trigger).toHaveTextContent("Wren Okafor");
+			await expect(trigger).not.toHaveAttribute("aria-label");
 			await expect(trigger).toHaveAttribute("aria-expanded", "false");
 		});
 		await step("a click opens the menu with Profile and Log out", async () => {
 			await userEvent.click(trigger);
-			const menu = within(await screen.findByRole("menu"));
+			const menu = within(await layerOpened(() => screen.getByRole("menu")));
 			await expect(trigger).toHaveAttribute("aria-expanded", "true");
 			await expect(menu.getByRole("menuitem", { name: "Profile" })).toHaveAttribute(
 				"href",
 				"/profile",
 			);
-			await waitFor(() => expect(menu.getByRole("menuitem", { name: "Log out" })).toBeVisible());
+			await until(() => expect(menu.getByRole("menuitem", { name: "Log out" })).toBeVisible());
 		});
 		await step("Escape closes it and focus returns to the trigger", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+			await noneLeft(() => screen.queryByRole("menu"));
 			await expect(trigger).toHaveAttribute("aria-expanded", "false");
 			await expect(trigger).toHaveFocus();
 		});
@@ -171,23 +157,23 @@ export const UserMenuByClick: Story = {
 /** The user menu left open, so the check reads the open menu (the trigger is hidden behind it). */
 export const UserMenuOpen: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast", "checker-radix-hides-page") },
+	parameters: { ...knownIssues("checker-radix-hides-page") },
 	play: async ({ canvas, userEvent }) => {
-		await userEvent.click(canvas.getByRole("button", { name: "User menu" }));
-		const logOut = await screen.findByRole("menuitem", { name: "Log out" });
-		await waitFor(() => expect(logOut).toBeVisible());
+		await userEvent.click(canvas.getByRole("button", { name: "Wren Okafor" }));
+		const logOut = await layerOpened(() => screen.getByRole("menuitem", { name: "Log out" }));
+		await until(() => expect(logOut).toBeVisible());
 	},
 };
 
 /** The keyboard path: Enter opens with the first item focused, the arrows move, and Log out signs out. */
 export const UserMenuByKeyboard: Story = {
 	play: async ({ canvas, userEvent, step }) => {
-		const trigger = canvas.getByRole("button", { name: "User menu" });
+		const trigger = canvas.getByRole("button", { name: "Wren Okafor" });
 		await step("Enter opens the menu on its first item", async () => {
 			trigger.focus();
 			await userEvent.keyboard("{Enter}");
-			const menu = within(await screen.findByRole("menu"));
-			await waitFor(() => expect(menu.getByRole("menuitem", { name: "Profile" })).toHaveFocus());
+			const menu = within(await layerOpened(() => screen.getByRole("menu")));
+			await until(() => expect(menu.getByRole("menuitem", { name: "Profile" })).toHaveFocus());
 		});
 		await step("ArrowDown reaches Log out", async () => {
 			await userEvent.keyboard("{ArrowDown}");
@@ -195,8 +181,8 @@ export const UserMenuByKeyboard: Story = {
 		});
 		await step("Enter on Log out signs out and goes home", async () => {
 			await userEvent.keyboard("{Enter}");
-			await waitFor(() => expect(useAuthStore.getState().isAuthenticated).toBe(false));
-			await waitFor(() => expect(canvas.getByText("Router at /")).toBeVisible());
+			await until(() => expect(useAuthStore.getState().isAuthenticated).toBe(false));
+			await until(() => expect(canvas.getByText("Router at /")).toBeVisible());
 			await expect(canvas.queryByRole("complementary", { name: "Main navigation" })).toBeNull();
 		});
 	},
@@ -204,12 +190,12 @@ export const UserMenuByKeyboard: Story = {
 
 /** The longest realistic name truncates inside the rail rather than widening it. */
 export const LongUserName: Story = {
-	...onTheRail,
 	beforeEach: signIn(longNameUser),
 	play: async ({ canvas }) => {
 		const rail = canvas.getByRole("complementary", { name: "Main navigation" });
-		const trigger = canvas.getByRole("button", { name: "User menu" });
-		await expect(trigger).toHaveTextContent("Maximiliana Featherstonehaugh-Abernathy");
+		const trigger = canvas.getByRole("button", {
+			name: "Maximiliana Featherstonehaugh-Abernathy",
+		});
 		await expect(trigger.getBoundingClientRect().right).toBeLessThanOrEqual(
 			rail.getBoundingClientRect().right,
 		);
@@ -248,7 +234,7 @@ export const MobileMenuEscape: Story = {
 		let sheet!: HTMLElement;
 		await step("the button opens the sheet, named and described", async () => {
 			await userEvent.click(button);
-			sheet = await screen.findByRole("dialog", { name: "Menu" });
+			sheet = await layerOpened(() => screen.getByRole("dialog", { name: "Menu" }));
 			await expect(sheet).toHaveAccessibleDescription("Every page in the app, and your account.");
 			await expect(button).toHaveAttribute("aria-expanded", "true");
 			await expect(sheet.contains(document.activeElement)).toBe(true);
@@ -271,7 +257,7 @@ export const MobileMenuEscape: Story = {
 		});
 		await step("Escape closes it and focus returns to the menu button", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 4000 });
+			await noneLeft(() => screen.queryByRole("dialog"));
 			await expect(button).toHaveAttribute("aria-expanded", "false");
 			await expect(button).toHaveFocus();
 		});
@@ -281,13 +267,11 @@ export const MobileMenuEscape: Story = {
 /** The sheet left open, so the check reads the open sheet. */
 export const MobileMenuOpen: Story = {
 	globals: pin("phone"),
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
-		const sheet = await screen.findByRole("dialog", { name: "Menu" });
+		const sheet = await layerOpened(() => screen.getByRole("dialog", { name: "Menu" }));
 		const logOut = within(sheet).getByRole("button", { name: "Log out" });
-		await waitFor(() => expect(logOut).toBeVisible());
+		await until(() => expect(logOut).toBeVisible());
 	},
 };
 
@@ -297,9 +281,9 @@ export const MobileMenuCloseButton: Story = {
 	play: async ({ canvas, userEvent }) => {
 		const button = canvas.getByRole("button", { name: "Open menu" });
 		await userEvent.click(button);
-		const sheet = await screen.findByRole("dialog", { name: "Menu" });
+		const sheet = await layerOpened(() => screen.getByRole("dialog", { name: "Menu" }));
 		await userEvent.click(within(sheet).getByRole("button", { name: "Close" }));
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 4000 });
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(button).toHaveFocus();
 	},
 };
@@ -309,9 +293,9 @@ export const MobileMenuFollowsALink: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
-		const sheet = await screen.findByRole("dialog", { name: "Menu" });
+		const sheet = await layerOpened(() => screen.getByRole("dialog", { name: "Menu" }));
 		await userEvent.click(within(sheet).getByRole("link", { name: "Recipes" }));
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 4000 });
+		await noneLeft(() => screen.queryByRole("dialog"));
 	},
 };
 
@@ -320,10 +304,10 @@ export const MobileMenuLogOut: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
-		const sheet = await screen.findByRole("dialog", { name: "Menu" });
+		const sheet = await layerOpened(() => screen.getByRole("dialog", { name: "Menu" }));
 		await userEvent.click(within(sheet).getByRole("button", { name: "Log out" }));
-		await waitFor(() => expect(useAuthStore.getState().isAuthenticated).toBe(false));
-		await waitFor(() => expect(canvas.getByText("Router at /")).toBeVisible());
+		await until(() => expect(useAuthStore.getState().isAuthenticated).toBe(false));
+		await until(() => expect(canvas.getByText("Router at /")).toBeVisible());
 		await expect(screen.queryByRole("dialog")).toBeNull();
 	},
 };

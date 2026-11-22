@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, within } from "storybook/test";
 import {
 	Button,
 	Sheet,
@@ -12,6 +12,7 @@ import {
 	SheetTrigger,
 } from "../../../src/app/ui";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft } from "../layers";
 
 type Side = "top" | "right" | "bottom" | "left";
 
@@ -40,7 +41,9 @@ function OrderSheet({ side }: { side: Side }) {
 async function open() {
 	const trigger = screen.getByRole("button", { name: "Larkspur's order" });
 	await userEvent.click(trigger);
-	const sheet = await screen.findByRole("dialog", { name: "Larkspur Coffee Bar" });
+	const sheet = await layerOpened(() =>
+		screen.getByRole("dialog", { name: "Larkspur Coffee Bar" }),
+	);
 	await Promise.all(sheet.getAnimations().map((animation) => animation.finished));
 	return { trigger, sheet };
 }
@@ -84,7 +87,7 @@ export const RightEscape: Story = {
 		});
 		await step("Escape closes it and focus returns", async () => {
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+			await noneLeft(() => screen.queryByRole("dialog"));
 			await expect(trigger).toHaveFocus();
 		});
 	},
@@ -95,7 +98,7 @@ export const CloseButton: Story = {
 	play: async () => {
 		const { trigger, sheet } = await open();
 		await userEvent.click(within(sheet).getByRole("button", { name: "Close" }));
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };
@@ -105,7 +108,7 @@ export const OwnButton: Story = {
 	play: async () => {
 		const { trigger, sheet } = await open();
 		await userEvent.click(within(sheet).getByRole("button", { name: "Done" }));
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };
@@ -115,7 +118,7 @@ export const PressOutside: Story = {
 	play: async () => {
 		const { trigger } = await open();
 		await userEvent.click(document.elementFromPoint(4, 4) as Element);
-		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		await noneLeft(() => screen.queryByRole("dialog"));
 		await expect(trigger).toHaveFocus();
 	},
 };

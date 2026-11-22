@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, userEvent, within } from "storybook/test";
 import {
 	Label,
 	Select,
@@ -13,6 +13,7 @@ import {
 } from "../../../src/app/ui";
 import { knownIssues } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft, until } from "../layers";
 
 /**
  * The raw select parts, for what `OptionSelect` does not express: grouped
@@ -69,16 +70,16 @@ export const PickByClick: Story = {
 	play: async ({ canvas, args }) => {
 		const select = canvas.getByRole("combobox", { name: "Flour" });
 		await userEvent.click(select);
-		const list = within(await screen.findByRole("listbox"));
+		const list = within(await layerOpened(() => screen.getByRole("listbox")));
 		await expect(list.getByRole("group", { name: "Other grains" })).toBeInTheDocument();
 		await expect(list.getByRole("option", { name: "Spelt (out of stock)" })).toHaveAttribute(
 			"aria-disabled",
 			"true",
 		);
 		await userEvent.click(list.getByRole("option", { name: "Dark rye" }));
-		await waitFor(() => expect(select).toHaveTextContent("Dark rye"));
+		await until(() => expect(select).toHaveTextContent("Dark rye"));
 		await expect(args.onValueChange).toHaveBeenCalledWith("rye");
-		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
+		await noneLeft(() => screen.queryByRole("listbox"));
 	},
 };
 
@@ -89,15 +90,15 @@ export const Keyboard: Story = {
 		const select = canvas.getByRole("combobox", { name: "Flour" });
 		select.focus();
 		await userEvent.keyboard(" ");
-		await waitFor(() => expect(screen.getByRole("option", { name: "Whole wheat" })).toHaveFocus());
+		await until(() => expect(screen.getByRole("option", { name: "Whole wheat" })).toHaveFocus());
 		await userEvent.keyboard("{ArrowDown}");
 		await expect(screen.getByRole("option", { name: "Dark rye" })).toHaveFocus();
 		await userEvent.keyboard("{ArrowDown}");
 		await expect(screen.getByRole("option", { name: "Dark rye" })).toHaveFocus();
 		await userEvent.keyboard("{Enter}");
-		await waitFor(() => expect(select).toHaveTextContent("Dark rye"));
+		await until(() => expect(select).toHaveTextContent("Dark rye"));
 		await expect(args.onValueChange).toHaveBeenCalledWith("rye");
-		await waitFor(() => expect(select).toHaveFocus());
+		await until(() => expect(select).toHaveFocus());
 	},
 };
 
@@ -106,9 +107,9 @@ export const Escape: Story = {
 	play: async ({ canvas, args }) => {
 		const select = canvas.getByRole("combobox", { name: "Flour" });
 		await userEvent.click(select);
-		await screen.findByRole("listbox");
+		await layerOpened(() => screen.getByRole("listbox"));
 		await userEvent.keyboard("{Escape}");
-		await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 5000 });
+		await noneLeft(() => screen.queryByRole("listbox"));
 		await expect(args.onValueChange).not.toHaveBeenCalled();
 		await expect(select).toHaveFocus();
 	},
@@ -128,7 +129,7 @@ export const Open: Story = {
 	parameters: { ...knownIssues("checker-radix-hides-page") },
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("combobox", { name: "Flour" }));
-		const list = await screen.findByRole("listbox");
-		await waitFor(() => expect(list).toBeVisible());
+		const list = await layerOpened(() => screen.getByRole("listbox"));
+		await until(() => expect(list).toBeVisible());
 	},
 };

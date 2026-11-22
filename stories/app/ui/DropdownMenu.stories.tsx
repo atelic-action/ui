@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, userEvent, within } from "storybook/test";
 import {
 	Button,
 	DropdownMenu,
@@ -19,6 +19,7 @@ import {
 } from "../../../src/app/ui";
 import { knownIssues } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
+import { layerOpened, noneLeft, until } from "../layers";
 
 /** What an item reports, fresh for each story. */
 const chose = { spy: fn() };
@@ -91,13 +92,13 @@ export const ByClick: Story = {
 		});
 		await step("a click opens it", async () => {
 			await userEvent.click(trigger);
-			await expect(await screen.findByRole("menu")).toBeInTheDocument();
+			await expect(await layerOpened(() => screen.getByRole("menu"))).toBeInTheDocument();
 			await expect(trigger).toHaveAttribute("aria-expanded", "true");
 		});
 		await step("an item runs and the menu closes, focus back on the trigger", async () => {
 			await userEvent.click(screen.getByRole("menuitem", { name: /Duplicate/ }));
 			await expect(chose.spy).toHaveBeenCalledWith("duplicate");
-			await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+			await noneLeft(() => screen.queryByRole("menu"));
 			await expect(trigger).toHaveFocus();
 		});
 	},
@@ -110,9 +111,7 @@ export const Keyboard: Story = {
 		await step("Enter opens on the first item", async () => {
 			trigger.focus();
 			await userEvent.keyboard("{Enter}");
-			await waitFor(() =>
-				expect(screen.getByRole("menuitem", { name: /Duplicate/ })).toHaveFocus(),
-			);
+			await until(() => expect(screen.getByRole("menuitem", { name: /Duplicate/ })).toHaveFocus());
 		});
 		await step("ArrowDown skips the disabled item to the submenu", async () => {
 			await expect(screen.getByRole("menuitem", { name: "Send the invoice" })).toHaveAttribute(
@@ -125,12 +124,12 @@ export const Keyboard: Story = {
 		await step("ArrowRight opens the submenu on its first item, ArrowLeft closes it", async () => {
 			const sub = screen.getByRole("menuitem", { name: "Move to" });
 			await userEvent.keyboard("{ArrowRight}");
-			await waitFor(() =>
+			await until(() =>
 				expect(screen.getByRole("menuitem", { name: "Thursday's van" })).toHaveFocus(),
 			);
 			await expect(sub).toHaveAttribute("aria-expanded", "true");
 			await userEvent.keyboard("{ArrowLeft}");
-			await waitFor(() => expect(sub).toHaveFocus());
+			await until(() => expect(sub).toHaveFocus());
 			await expect(sub).toHaveAttribute("aria-expanded", "false");
 		});
 		await step("End and Home jump; Escape closes and focus returns", async () => {
@@ -139,7 +138,7 @@ export const Keyboard: Story = {
 			await userEvent.keyboard("{Home}");
 			await expect(screen.getByRole("menuitem", { name: /Duplicate/ })).toHaveFocus();
 			await userEvent.keyboard("{Escape}");
-			await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+			await noneLeft(() => screen.queryByRole("menu"));
 			await expect(trigger).toHaveFocus();
 		});
 	},
@@ -147,29 +146,42 @@ export const Keyboard: Story = {
 
 /** The checkbox item toggles and the radio items choose one, each saying so. */
 export const CheckAndChoose: Story = {
-	play: async ({ canvas }) => {
+	play: async ({ canvas, step }) => {
 		const trigger = canvas.getByRole("button", { name: "Order actions" });
-		await userEvent.click(trigger);
-		const labels = await screen.findByRole("menuitemcheckbox", { name: "Print labels" });
-		await expect(labels).toHaveAttribute("aria-checked", "true");
-		await userEvent.click(labels);
-		await userEvent.click(trigger);
-		await expect(
-			await screen.findByRole("menuitemcheckbox", { name: "Print labels" }),
-		).toHaveAttribute("aria-checked", "false");
-		await userEvent.click(await screen.findByRole("menuitemradio", { name: "By name" }));
-		await userEvent.click(trigger);
-		await expect(await screen.findByRole("menuitemradio", { name: "By name" })).toHaveAttribute(
-			"aria-checked",
-			"true",
-		);
-		await expect(screen.getByRole("menuitemradio", { name: "By drop time" })).toHaveAttribute(
-			"aria-checked",
-			"false",
-		);
+		/** Open the menu and wait for it to finish opening; the last one has gone first. */
+		const open = async () => {
+			await noneLeft(() => screen.queryByRole("menu"));
+			await userEvent.click(trigger);
+			return within(await layerOpened(() => screen.getByRole("menu")));
+		};
+		await step("the checkbox item starts checked and a press unchecks it", async () => {
+			const menu = await open();
+			const labels = menu.getByRole("menuitemcheckbox", { name: "Print labels" });
+			await expect(labels).toHaveAttribute("aria-checked", "true");
+			await userEvent.click(labels);
+		});
+		await step("reopened, it reads unchecked, and a radio item is chosen", async () => {
+			const menu = await open();
+			await expect(menu.getByRole("menuitemcheckbox", { name: "Print labels" })).toHaveAttribute(
+				"aria-checked",
+				"false",
+			);
+			await userEvent.click(menu.getByRole("menuitemradio", { name: "By name" }));
+		});
+		await step("reopened, the radio group holds the one chosen", async () => {
+			const menu = await open();
+			await expect(menu.getByRole("menuitemradio", { name: "By name" })).toHaveAttribute(
+				"aria-checked",
+				"true",
+			);
+			await expect(menu.getByRole("menuitemradio", { name: "By drop time" })).toHaveAttribute(
+				"aria-checked",
+				"false",
+			);
+		});
 		// Closed again, so the check reads the page rather than a menu mid animation.
 		await userEvent.keyboard("{Escape}");
-		await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+		await noneLeft(() => screen.queryByRole("menu"));
 	},
 };
 
@@ -177,15 +189,15 @@ export const CheckAndChoose: Story = {
 export const ClickOutside: Story = {
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Order actions" }));
-		const menu = await screen.findByRole("menu");
-		await waitFor(() => expect(menu).toBeVisible());
+		const menu = await layerOpened(() => screen.getByRole("menu"));
+		await until(() => expect(menu).toBeVisible());
 		// The open menu turns pointer events off on the page, as a modal does,
 		// so the press is made without user-event's check for them.
 		const user = userEvent.setup({ pointerEventsCheck: 0 });
 		await user.click(
 			document.elementFromPoint(window.innerWidth - 4, window.innerHeight - 4) as Element,
 		);
-		await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+		await noneLeft(() => screen.queryByRole("menu"));
 	},
 };
 
@@ -195,8 +207,8 @@ export const Open: Story = {
 	parameters: { ...knownIssues("checker-radix-hides-page") },
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Order actions" }));
-		const menu = await screen.findByRole("menu");
-		await waitFor(() => expect(menu).toBeVisible());
+		const menu = await layerOpened(() => screen.getByRole("menu"));
+		await until(() => expect(menu).toBeVisible());
 		await expect(within(menu).getByText("Larkspur Coffee Bar")).toBeVisible();
 	},
 };

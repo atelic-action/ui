@@ -2,10 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Link } from "@tanstack/react-router";
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { expect, fn, waitFor } from "storybook/test";
+import { expect, fn } from "storybook/test";
 import { ActionButton } from "../../src/app";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
+import { until } from "./layers";
 
 /**
  * The app's responsive action button: an icon alone on a phone, the icon and
@@ -38,10 +38,8 @@ export const Secondary: Story = { args: { variant: "secondary" } };
 
 export const Ghost: Story = { args: { variant: "ghost" } };
 
-/** The destructive variant, for a delete. Its white words on the kit's red fail contrast. */
+/** The destructive variant, for a delete: white words on red 600, 4.63 to 1. */
 export const Destructive: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-destructive-contrast") },
 	args: { variant: "destructive", icon: Trash2, label: "Delete order" },
 };
 
@@ -125,7 +123,7 @@ export const PendingWhileItRuns: Story = {
 		});
 		await step("when the request settles the button comes back", async () => {
 			sync.release();
-			await waitFor(() => expect(button).toBeEnabled());
+			await until(() => expect(button).toBeEnabled());
 		});
 	},
 };
