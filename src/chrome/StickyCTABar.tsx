@@ -66,11 +66,16 @@ export function StickyCTABar({
 		const bar = barRef.current;
 		if (!bar || !listening) return;
 		let last = -1;
+		// The listener last told a height, so the cleanup can hand it back its
+		// space even when the cleanup runs because that listener was taken
+		// away (spaceRef is already empty by then).
+		let heard: ((pixels: number) => void) | undefined;
 		const report = () => {
 			const next = show ? bar.offsetHeight : 0;
 			if (next === last) return;
 			last = next;
-			spaceRef.current?.(next);
+			heard = spaceRef.current;
+			heard?.(next);
 		};
 		report();
 		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(report);
@@ -79,7 +84,9 @@ export function StickyCTABar({
 		return () => {
 			sizes?.disconnect();
 			window.removeEventListener("resize", report);
-			spaceRef.current?.(0);
+			// A final 0 on unmount, on hiding, and when the listener goes, so no
+			// foot padding outlives the bar.
+			(spaceRef.current ?? heard)?.(0);
 		};
 	}, [show, listening]);
 
