@@ -137,8 +137,13 @@ export const FullPagePhone: Story = {
 		});
 		await step("once the sticky bar shows, the dock lifts above it", async () => {
 			window.scrollTo({ top: 900, behavior: "instant" });
-			await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight));
-			await waitFor(() => expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top));
+			// The bar slides in over a third of a second, longer on a loaded run.
+			await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight), {
+				timeout: 5000,
+			});
+			await waitFor(() => expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top), {
+				timeout: 5000,
+			});
 		});
 		await step("as the footer comes up the screen, the dock rides above it", async () => {
 			const footer = canvas.getByRole("contentinfo");

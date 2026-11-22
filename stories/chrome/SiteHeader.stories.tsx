@@ -763,7 +763,10 @@ export const WideMarkCrowdedBar: Story = {
 	play: async ({ canvas }) => {
 		const home = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
 		const mark = home.querySelector("img") as HTMLImageElement;
-		await waitFor(() => expect(mark.complete).toBe(true));
+		// The picture loads before it is measured; a loaded whole suite takes a while.
+		await waitFor(() => expect(mark.complete && mark.naturalWidth > 0).toBe(true), {
+			timeout: 5000,
+		});
 		const box = mark.getBoundingClientRect();
 		const height = Number.parseFloat(
 			getComputedStyle(home).getPropertyValue("--brand-mark-height"),

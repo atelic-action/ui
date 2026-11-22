@@ -305,9 +305,10 @@ export const ChildSharesParentHref: Story = {
 
 /**
  * A theme whose sheet is its primary (`--surface-dark` set to the brand's
- * deep green fill): a link's badge carries its own light fill and the primary's words,
- * so it reads there, where a primary filled pill vanished. The
- * accessibility check holds its contrast.
+ * deep green fill) sets `--menu-badge-bg` and `--menu-badge-ink`: a link's
+ * badge takes a light fill and the primary's words, so it reads there,
+ * where the default primary filled pill vanished. The accessibility check
+ * holds its contrast.
  */
 export const BadgeOnPrimarySheet: Story = {
 	args: { links: sectionedLinks },
@@ -324,6 +325,12 @@ export const BadgeOnPrimarySheet: Story = {
 						"--primary-ink": "#1e4d2b",
 						"--primary-bright": "#b8e0c0",
 						"--neutral-300": "#dcd6ca",
+						// The sheet's ground is the primary, so the badge and the call
+						// to action take the light fill and the primary's words.
+						"--menu-badge-bg": "var(--on-primary)",
+						"--menu-badge-ink": "var(--primary-ink)",
+						"--menu-cta-bg": "var(--on-primary)",
+						"--menu-cta-ink": "var(--primary-ink)",
 					} as CSSProperties
 				}
 			>
@@ -344,10 +351,10 @@ export const BadgeOnPrimarySheet: Story = {
 };
 
 /**
- * The menu's call to action on the same primary sheet: its own light fill
- * and the primary's words, as the badge, so it shows as a button there,
- * where a primary filled one vanished. The accessibility check holds its
- * contrast.
+ * The menu's call to action on the same primary sheet, with `--menu-cta-bg`
+ * and `--menu-cta-ink` set: a light fill and the primary's words, so it
+ * shows as a button there, where the default primary filled one vanished.
+ * The accessibility check holds its contrast.
  */
 export const CTAOnPrimarySheet: Story = {
 	...BadgeOnPrimarySheet,
@@ -360,5 +367,23 @@ export const CTAOnPrimarySheet: Story = {
 			getComputedStyle(sheet).backgroundColor,
 		);
 		await expect(getComputedStyle(action).color).toBe("rgb(30, 77, 43)");
+	},
+};
+
+/**
+ * The default, with no menu tokens set: the badge and the call to action
+ * are the primary filled pill and button they were in 8.0.0.
+ */
+export const BadgeAndCTADefaults: Story = {
+	args: { links: sectionedLinks, primaryCTA: cta },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const action = menu.getByRole("link", { name: cta.label });
+		await expect(getComputedStyle(action).backgroundColor).toBe("rgb(214, 58, 16)");
+		await expect(getComputedStyle(action).color).toBe("rgb(255, 255, 255)");
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		const badge = menu.getByText("Popular");
+		await expect(getComputedStyle(badge).backgroundColor).toBe("rgb(214, 58, 16)");
+		await expect(getComputedStyle(badge).color).toBe("rgb(255, 255, 255)");
 	},
 };
