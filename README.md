@@ -1053,6 +1053,9 @@ The sheets read a set of tokens beyond the theme's palette, type, radii, and lay
 | `--hero-kicker-weight`, `--hero-kicker-tracking`, `--hero-kicker-size` | the eyebrow primitive's own (`--weight-medium`, `0.18em`, `0.74rem`), read in place from its private properties | The hero's eyebrow line, both layouts (8.2.0) |
 | `--hero-lead-measure` | `52ch` | The hero's lead paragraph's measure, both layouts (8.2.0) |
 | `--hero-stack-gap` | none; unset, each gap keeps its own (18, 22, and 32px on the full hero, 12, 22, and 26px on the split hero), read in place | One gap between the hero's kicker and headline, headline and lead, and lead and actions, both layouts (8.2.0) |
+| `--hero-gap-kicker`, `--hero-gap-lead`, `--hero-gap-actions` | `--hero-stack-gap` when set, else the gap's own (kicker to headline 18px, 12px on the split hero; headline to lead 22px; lead to actions 32px, 26px on the split hero), read in place | Each of the hero's three gaps on its own, both layouts (8.2.1) |
+| `--hero-lead-leading` | `1.55` | The hero's lead paragraph's line height, both layouts (8.2.1) |
+| `--hero-split-pad-block` | `--section-space`, read in place | The split hero's copy column's top and bottom padding; over a transparent bar from 900px the bar's height is added above it, as before (8.2.1) |
 | `--hero-lead-size` | `clamp(1.05rem, 2.2vw, 1.35rem)` | The hero's lead paragraph (`subtitle`), both layouts; a split hero whose lead wraps too long sets it smaller (8.2.0) |
 | `--card-title-color` | `currentColor` (inherited) | A `FeatureGrid` card's title (8.1.0) |
 | `--callout-transform`, `--callout-sub-font` | `none`, inherited (read in place, since no custom property can hold `inherit`) | A `CalloutPanel` title's case and its line's face (8.1.0) |

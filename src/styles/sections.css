@@ -1074,12 +1074,14 @@
 		padding-top: calc(var(--nav-height) + 30px);
 	}
 	/* The room between the hero's kicker, headline, lead, and actions: each
-	   its own as it always was (18, 22, and 32px; 12, 22, and 26px on the
-	   split hero), or one --hero-stack-gap for all three when a theme sets
-	   it, so each read keeps its own default in place. */
+	   gap its own token (--hero-gap-kicker, --hero-gap-lead,
+	   --hero-gap-actions), then the one --hero-stack-gap when a theme sets
+	   it, then the value it always had (18, 22, and 32px; 12, 22, and 26px
+	   on the split hero). The defaults differ by layout and name another
+	   token, so each stays at its read. */
 	.atelic-ui .hero h1 {
 		color: var(--on-dark);
-		margin: var(--hero-stack-gap, 18px) 0 0;
+		margin: var(--hero-gap-kicker, var(--hero-stack-gap, 18px)) 0 0;
 		text-shadow: 0 2px 30px color-mix(in srgb, var(--shade) 25%, transparent);
 	}
 	.atelic-ui .hero h1 .serif {
@@ -1103,9 +1105,9 @@
 	.atelic-ui .hero-sub {
 		font-size: var(--hero-lead-size);
 		max-width: var(--hero-lead-measure);
-		margin-top: var(--hero-stack-gap, 22px);
+		margin-top: var(--hero-gap-lead, var(--hero-stack-gap, 22px));
 		color: color-mix(in srgb, var(--on-dark) 92%, transparent);
-		line-height: 1.55;
+		line-height: var(--hero-lead-leading);
 	}
 	.atelic-ui .hero-trust {
 		display: flex;
@@ -1196,30 +1198,34 @@
 		/* --hero-split-pad sets the copy's sides outright, for a design that
 		   wants them tighter than the wrap's edge. Its default is the edge
 		   computed on this element, so it stays at the read. */
-		padding: var(--section-space) var(--hero-split-pad, var(--hero-split-edge));
+		padding: var(--hero-split-pad-block, var(--section-space))
+			var(--hero-split-pad, var(--hero-split-edge));
 	}
 	/* From 900px the copy sits beside the photo under the transparent header;
 	   below it the photo stacks first and takes the header, so the copy needs
 	   no clearance. */
 	@media (min-width: 900px) {
 		.atelic-ui main:not(.clears-nav) .hero.is-split .hero-split-inner {
-			padding-top: calc(var(--nav-height, 72px) + var(--section-space));
+			padding-top: calc(
+				var(--nav-height, 72px) +
+				var(--hero-split-pad-block, var(--section-space))
+			);
 		}
 	}
 	.atelic-ui .hero.is-split h1 {
 		font-size: clamp(2.1rem, 4vw, 3.3rem);
 		line-height: 1.05;
-		margin-top: var(--hero-stack-gap, 12px);
+		margin-top: var(--hero-gap-kicker, var(--hero-stack-gap, 12px));
 		text-shadow: none;
 	}
 	.atelic-ui .hero.is-split .hero-sub {
 		color: var(--on-primary);
 	}
 	.atelic-ui .hero .cta-row {
-		margin-top: var(--hero-stack-gap, 32px);
+		margin-top: var(--hero-gap-actions, var(--hero-stack-gap, 32px));
 	}
 	.atelic-ui .hero.is-split .cta-row {
-		margin-top: var(--hero-stack-gap, 26px);
+		margin-top: var(--hero-gap-actions, var(--hero-stack-gap, 26px));
 	}
 	.atelic-ui .hero-split-media {
 		position: relative;

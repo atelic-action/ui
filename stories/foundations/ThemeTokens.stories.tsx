@@ -396,3 +396,63 @@ export const HeroMeasureAndGapSet: Story = {
 		await expect(getComputedStyle(actions).marginTop).toBe("16px");
 	},
 };
+
+/**
+ * Each of the split hero's gaps set on its own, as a design spaces them
+ * (12px kicker to headline, 14px headline to lead, 24px lead to actions),
+ * winning over `--hero-stack-gap`; the lead's leading and the copy column's
+ * top and bottom padding set too. Every gap lands at its value, measured
+ * between the boxes.
+ */
+export const HeroGapsEachSet: Story = {
+	...HeroMeasureAndGap,
+	parameters: {
+		tokens: {
+			"--hero-stack-gap": "40px",
+			"--hero-gap-kicker": "12px",
+			"--hero-gap-lead": "14px",
+			"--hero-gap-actions": "24px",
+			"--hero-lead-leading": "1.4",
+			"--hero-split-pad-block": "48px",
+		},
+	},
+	play: async ({ canvas }) => {
+		const kicker = canvas.getByText("Alder Street, since 2014");
+		const title = canvas.getByRole("heading", { name: "Bread worth the early line." });
+		const lead = canvas.getByText(/out of the oven by seven/);
+		const actions = canvas.getByRole("link", { name: /Order ahead/ }).parentElement as HTMLElement;
+		const box = (element: Element) => element.getBoundingClientRect();
+		// The kicker is inline in its line box, so its gap is read as the headline's margin.
+		await expect(getComputedStyle(title).marginTop).toBe("12px");
+		await expect(box(title).top).toBeGreaterThan(box(kicker).bottom);
+		await expect(Math.round(box(lead).top - box(title).bottom)).toBe(14);
+		await expect(Math.round(box(actions).top - box(lead).bottom)).toBe(24);
+		await expect(
+			Number.parseFloat(getComputedStyle(lead).lineHeight) /
+				Number.parseFloat(getComputedStyle(lead).fontSize),
+		).toBeCloseTo(1.4, 2);
+		// The copy column holds the stack; its padding is the column's own.
+		const column = title.parentElement as HTMLElement;
+		await expect(getComputedStyle(column).paddingTop).toBe("48px");
+		await expect(getComputedStyle(column).paddingBottom).toBe("48px");
+	},
+};
+
+/** Unset, the lead's leading is 1.55 and the column's padding the section's space, as before. */
+export const HeroLeadingAndPaddingDefaults: Story = {
+	...HeroMeasureAndGap,
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { name: "Bread worth the early line." });
+		const lead = canvas.getByText(/out of the oven by seven/);
+		await expect(
+			Number.parseFloat(getComputedStyle(lead).lineHeight) /
+				Number.parseFloat(getComputedStyle(lead).fontSize),
+		).toBeCloseTo(1.55, 2);
+		const column = title.parentElement as HTMLElement;
+		const probe = document.createElement("div");
+		probe.style.paddingTop = "var(--section-space)";
+		column.append(probe);
+		await expect(getComputedStyle(column).paddingTop).toBe(getComputedStyle(probe).paddingTop);
+		probe.remove();
+	},
+};

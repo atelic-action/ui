@@ -125,8 +125,10 @@
 		   --proof-star-fill (--primary); --footer-link (--neutral-200),
 		   --footer-link-hover (--on-dark), --closing-link (--neutral-300),
 		   and --closing-link-hover (--surface mixed with --on-dark);
-		   --menu-rule (--hairline), on the light sheet. --hero-stack-gap has
-		   no default of its own: unset, each gap in the hero keeps the value
+		   --menu-rule (--hairline), on the light sheet; --hero-split-pad-block
+		   (--section-space). --hero-stack-gap and the three gaps under it
+		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
+		   default of their own: unset, each gap in the hero keeps the value
 		   it always had, in place. */
 		/* The open group's pill's words on the bar. */
 		--nav-open-ink: currentColor;
@@ -142,6 +144,7 @@
 		/* The hero's lead paragraph: its size and its measure. */
 		--hero-lead-size: clamp(1.05rem, 2.2vw, 1.35rem);
 		--hero-lead-measure: 52ch;
+		--hero-lead-leading: 1.55;
 		/* A FeatureGrid card's title. */
 		--card-title-color: currentColor;
 		/* A CalloutPanel title's case, and its subtitle's case and tracking. */
