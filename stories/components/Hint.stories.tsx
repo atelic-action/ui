@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor } from "storybook/test";
+import { expect, waitFor, within } from "storybook/test";
 import { Hint } from "../../src/components";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -30,7 +31,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const bubble = () => document.querySelector("[role='tooltip']") as HTMLElement;
+const bubble = () => within(document.body).getByRole("tooltip", { hidden: true });
 
 /** Closed: the button is named, collapsed, and described by the bubble's text. */
 export const Closed: Story = {
@@ -150,6 +151,6 @@ export const NearTheEdgeOnPhone: Story = {
 		const box = bubble().getBoundingClientRect();
 		await expect(box.right).toBeLessThanOrEqual(document.documentElement.clientWidth);
 		await expect(box.left).toBeGreaterThanOrEqual(0);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

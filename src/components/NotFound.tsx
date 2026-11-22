@@ -74,7 +74,10 @@ export function NotFound({
 							{...newTabProps(primaryCTA.href, primaryCTA.external)}
 						>
 							{primaryCTA.label}
-							<span className="arrow">{"→"}</span>
+							{/* Decoration: the link is named by its label alone, as Button's is. */}
+							<span className="arrow" aria-hidden="true">
+								{"→"}
+							</span>
 						</a>
 						<a className="btn btn-ghost btn-lg" href={secondary.href}>
 							{secondary.label}

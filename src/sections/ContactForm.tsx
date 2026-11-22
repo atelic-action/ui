@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useId, useState } from "react";
 import { isHoneypotFilled } from "../lib/honeypot";
 import { trackEvent } from "../lib/trackEvent";
 import { Button } from "../primitives/Button";
@@ -62,6 +62,21 @@ export function ContactForm({
 	const withBase = useWithBase();
 	const [errors, setErrors] = useState<FieldErrors>({});
 	const [status, setStatus] = useState<Status>("idle");
+	// Ids from useId, so two forms on one page never share a label's target.
+	const uid = useId();
+	const ids = {
+		name: `${uid}-name`,
+		email: `${uid}-email`,
+		topic: `${uid}-topic`,
+		message: `${uid}-message`,
+		company: `${uid}-company`,
+	};
+	// A refused field says so and why: aria-invalid, and its message as its
+	// description, only while it is refused.
+	const refused = (field: keyof FieldErrors) =>
+		errors[field]
+			? { "aria-invalid": true as const, "aria-describedby": `${ids[field]}-error` }
+			: {};
 
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
@@ -80,8 +95,12 @@ export function ContactForm({
 			message: !message,
 		};
 		setErrors(nextErrors);
-		if (nextErrors.name || nextErrors.email || nextErrors.message) {
+		const firstRefused = (["name", "email", "message"] as const).find((field) => nextErrors[field]);
+		if (firstRefused) {
 			setStatus("idle");
+			// Focus goes to the first field to fix, where its message is read.
+			const field = form.elements.namedItem(firstRefused);
+			if (field instanceof HTMLElement) field.focus();
 			return;
 		}
 
@@ -119,36 +138,61 @@ export function ContactForm({
 
 	return (
 		<form onSubmit={handleSubmit} noValidate>
-			{status === "sent" && <div className="form-success">{successMessage}</div>}
-			{status === "failed" && <div className="form-error">{errorMessage}</div>}
+			{/* One shot status: the thanks or the failure is announced once when it
+			    appears (Component Rules 14). The region is always drawn, so a screen
+			    reader is already watching it when the words arrive. */}
+			<output className="form-status">
+				{status === "sent" && <span className="form-success">{successMessage}</span>}
+				{status === "failed" && <span className="form-error">{errorMessage}</span>}
+			</output>
 			<div className={["field", errors.name && "invalid"].filter(Boolean).join(" ")}>
-				<label htmlFor="contact-name">Your name</label>
-				<input id="contact-name" name="name" type="text" autoComplete="name" required />
-				<span className="err">Please enter your name.</span>
+				<label htmlFor={ids.name}>Your name</label>
+				<input
+					id={ids.name}
+					name="name"
+					type="text"
+					autoComplete="name"
+					required
+					{...refused("name")}
+				/>
+				<span className="err" id={`${ids.name}-error`}>
+					Please enter your name.
+				</span>
 			</div>
 			<div className={["field", errors.email && "invalid"].filter(Boolean).join(" ")}>
-				<label htmlFor="contact-email">Email</label>
-				<input id="contact-email" name="email" type="email" autoComplete="email" required />
-				<span className="err">Please enter a valid email.</span>
+				<label htmlFor={ids.email}>Email</label>
+				<input
+					id={ids.email}
+					name="email"
+					type="email"
+					autoComplete="email"
+					required
+					{...refused("email")}
+				/>
+				<span className="err" id={`${ids.email}-error`}>
+					Please enter a valid email.
+				</span>
 			</div>
 			<div className="field">
-				<label htmlFor="contact-topic">What can we help with?</label>
-				<select id="contact-topic" name="topic">
+				<label htmlFor={ids.topic}>What can we help with?</label>
+				<select id={ids.topic} name="topic">
 					{topics.map((topic) => (
 						<option key={topic}>{topic}</option>
 					))}
 				</select>
 			</div>
 			<div className={["field", errors.message && "invalid"].filter(Boolean).join(" ")}>
-				<label htmlFor="contact-message">Message</label>
-				<textarea id="contact-message" name="message" required />
-				<span className="err">Please add a short message.</span>
+				<label htmlFor={ids.message}>Message</label>
+				<textarea id={ids.message} name="message" required {...refused("message")} />
+				<span className="err" id={`${ids.message}-error`}>
+					Please add a short message.
+				</span>
 			</div>
 			{/* Honeypot: visually hidden and skipped by keyboard/screen readers;
 			    bots that fill it are quietly dropped by the backend. */}
 			<div className="hp-field" aria-hidden="true">
-				<label htmlFor="contact-company">Company</label>
-				<input id="contact-company" name="company" type="text" tabIndex={-1} autoComplete="off" />
+				<label htmlFor={ids.company}>Company</label>
+				<input id={ids.company} name="company" type="text" tabIndex={-1} autoComplete="off" />
 			</div>
 			<Button type="submit" size="lg" arrow style={{ width: "100%" }}>
 				{status === "sending" ? "Sending…" : "Send Message"}

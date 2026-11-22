@@ -1,5 +1,6 @@
 import { Navigation, Phone } from "lucide-react";
 import type { ReactNode } from "react";
+import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow, Lead } from "../primitives";
 import { MapEmbed, type MapEmbedSite } from "./MapEmbed";
 import type { Surface } from "./siteConfig";
@@ -47,7 +48,7 @@ export function Locations({
 			<div className="wrap">
 				<Eyebrow>{eyebrow}</Eyebrow>
 				<h2>{title}</h2>
-				{lead && <Lead style={{ maxWidth: "58ch" }}>{lead}</Lead>}
+				{lead && <Lead>{lead}</Lead>}
 				<div className="locs-layout">
 					<div className="locs-map">
 						<MapEmbed site={site} />
@@ -68,7 +69,7 @@ export function Locations({
 										<Phone size={14} aria-hidden />
 										{loc.phoneDisplay}
 									</a>
-									<a href={loc.mapLink} target="_blank" rel="noopener">
+									<a href={loc.mapLink} {...newTabProps(loc.mapLink, true)}>
 										<Navigation size={14} aria-hidden />
 										Directions
 									</a>

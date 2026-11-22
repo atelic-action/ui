@@ -115,6 +115,10 @@
 		font-weight: var(--weight-heavy);
 		letter-spacing: -0.02em;
 		font-size: 1.02rem;
+		/* The brand's name never breaks inside a word: the root's anywhere
+		   (base.css, Long words) would let a crowded bar squeeze the wordmark
+		   letter by letter. It still wraps at its spaces. */
+		overflow-wrap: normal;
 	}
 	/* The mark stands at the theme's mark height and runs as wide as its own
 	   ratio, so a wide wordmark reads at a height the theme picks. */
@@ -1253,14 +1257,19 @@
 	.atelic-ui .footer-brand {
 		grid-column: 1 / -1;
 	}
+	/* A column's heading is a div with the heading role (Footer.tsx says
+	   why), so it carries the whole of its look here, the line height and
+	   the balance an h2 took from base.css included. */
 	.atelic-ui .footer .footer-heading {
 		color: var(--on-dark);
 		font-family: var(--font-mono);
 		font-size: 0.84rem;
+		line-height: 1.04;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
+		text-wrap: balance;
 		font-weight: var(--weight-bold);
-		margin-bottom: 14px;
+		margin: 0 0 14px;
 	}
 	.atelic-ui .footer-brand img {
 		height: 38px;

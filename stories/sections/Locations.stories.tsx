@@ -3,7 +3,7 @@ import { expect, within } from "storybook/test";
 import { Locations } from "../../src/sections";
 import { site } from "../fixtures/bakery";
 import { locations, siteWithEmbed } from "../fixtures/sections";
-import { knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -63,15 +63,11 @@ export const OneLocation: Story = {
 	},
 };
 
-/** No screenshot: the flagship's click to load facade. */
+/** No screenshot: the flagship's click to load facade, named by its own words. */
 export const EmbedFacade: Story = {
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues("inset-soft-text-contrast", "map-facade-name-mismatch"),
-	},
 	args: { site: siteWithEmbed },
 	play: async ({ canvas }) => {
-		await expect(canvas.getByRole("button", { name: /Load the map/ })).toBeVisible();
+		await expect(canvas.getByRole("button", { name: /Tap to load the map$/ })).toBeVisible();
 	},
 };
 
@@ -107,6 +103,6 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

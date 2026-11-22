@@ -1,3 +1,4 @@
+import { selectorList } from "./selectors";
 import type { Issue } from "./types";
 
 /**
@@ -35,10 +36,15 @@ async function loadAxe() {
 }
 
 /**
- * Runs an issue's rule, as axe defines it, on the elements the issue names
- * and everything inside them, in the page as it stands. `violated` while the
- * bug stands, `fixed` once the rule finds nothing there, `absent` when the
- * page shows none of the elements.
+ * Runs an issue's rule, as axe defines it (its own selector, the `base` an
+ * issue names), over the whole page as it stands, and asks whether any
+ * violation falls on the elements the issue names or inside them. The page
+ * is the scope, never the elements alone: a page level rule judges an
+ * element against the rest of the page (`heading-order` reads the headings
+ * before it, `link-in-text-block` the words around the link), so run on the
+ * elements alone it would find a different answer. `violated` while the bug
+ * stands, `fixed` once none of its elements fails, `absent` when the page
+ * shows none of the elements.
  */
 export async function judgeIssue(issue: Issue, root: ParentNode = document): Promise<Verdict> {
 	const elements = [...root.querySelectorAll(issue.elements)].filter(
@@ -47,11 +53,21 @@ export async function judgeIssue(issue: Issue, root: ParentNode = document): Pro
 	if (elements.length === 0) return "absent";
 	const axe = await loadAxe();
 	try {
-		const result = await axe.run({ include: elements } as never, {
-			runOnly: { type: "rule", values: [issue.rule] },
-			resultTypes: ["violations"],
-		});
-		return result.violations.length > 0 ? "violated" : "fixed";
+		const result = await axe.run(
+			{ include: [root], exclude: STORYBOOK.map((selector) => [selector]) } as never,
+			{
+				runOnly: { type: "rule", values: [issue.rule] },
+				resultTypes: ["violations"],
+				elementRef: true,
+			},
+		);
+		const failing = result.violations.flatMap((violation) =>
+			violation.nodes.map((node) => (node as { element?: Element }).element),
+		);
+		const hit = failing.some(
+			(node) => node && elements.some((element) => element === node || element.contains(node)),
+		);
+		return hit ? "violated" : "fixed";
 	} catch (error) {
 		// A layer that was closing when it was found is gone by the time axe looks: the page shows none of it.
 		if (elements.every((element) => !element.isConnected)) return "absent";
@@ -90,6 +106,33 @@ export async function fullCheckViolations(a11y: {
 	}
 }
 
+/**
+ * The ids a story carries, in sets that can be judged apart. Two issues
+ * lifting one rule off one element cannot be: putting the rule back on the
+ * element gives one verdict for both. Such ids are judged together, as one
+ * set: stale only when the element passes, which ends every cause they name,
+ * and the message names them all and asks for them to be merged. The cost,
+ * stated plainly: while any one of them still fails, a sibling whose own
+ * cause is fixed cannot be told stale in that story, so a cause should be
+ * carried alone by at least one story, or the ids merged into one.
+ */
+export function judgedTogether(ids: string[], all: Record<string, Issue>): string[][] {
+	const sets: string[][] = [];
+	const keys = (id: string) => {
+		const issue = all[id];
+		return issue ? selectorList(issue.elements).map((element) => `${issue.rule} ${element}`) : [];
+	};
+	for (const id of ids) {
+		const mine = keys(id);
+		const set = sets.find((existing) =>
+			existing.some((other) => keys(other).some((key) => mine.includes(key))),
+		);
+		if (set) set.push(id);
+		else sets.push([id]);
+	}
+	return sets;
+}
+
 /** One file's tally: every id its stories carried, and whether any showed it violating. */
 const ledger = new Map<string, { violated: boolean; stories: string[] }>();
 
@@ -112,25 +155,32 @@ export async function judgeStoryMarkers(context: {
 	issues: Record<string, Issue>;
 }): Promise<void> {
 	if (context.viewMode && context.viewMode !== "story") return;
-	const ids = (context.parameters.knownIssueIds as string[] | undefined) ?? [];
+	const ids = ((context.parameters.knownIssueIds as string[] | undefined) ?? []).filter(
+		(id) => context.issues[id],
+	);
 	const fixed: string[] = [];
-	for (const id of ids) {
-		const issue = context.issues[id];
-		if (!issue) continue;
-		const verdict = await judgeIssue(issue);
-		const entry = ledger.get(id) ?? { violated: false, stories: [] };
-		entry.stories.push(context.name);
-		if (verdict === "violated") entry.violated = true;
-		ledger.set(id, entry);
-		if (verdict === "fixed") fixed.push(id);
-	}
-	if (fixed.length > 0) {
-		throw new Error(
-			fixed
-				.map((id) => staleMessage(id, `in "${context.name}": the elements are here and pass`))
-				.join("\n"),
+	for (const set of judgedTogether(ids, context.issues)) {
+		// A set's issues share their rule, and at least one element: one
+		// judgment over all their elements serves them all.
+		const first = context.issues[set[0] as string] as Issue;
+		const verdict = await judgeIssue({
+			...first,
+			elements: set.map((id) => (context.issues[id] as Issue).elements).join(", "),
+		});
+		for (const id of set) {
+			const entry = ledger.get(id) ?? { violated: false, stories: [] };
+			entry.stories.push(context.name);
+			if (verdict === "violated") entry.violated = true;
+			ledger.set(id, entry);
+		}
+		if (verdict !== "fixed") continue;
+		fixed.push(
+			set.length === 1
+				? staleMessage(set[0] as string, `in "${context.name}": the elements are here and pass`)
+				: `Known issues ${set.map((id) => `"${id}"`).join(", ")} no longer reproduce in "${context.name}": they lift one rule off one element, so they are judged together and the element now passes. Delete them, or merge any whose cause stands into one id for the shared cause.`,
 		);
 	}
+	if (fixed.length > 0) throw new Error(fixed.join("\n"));
 	const a11y = context.parameters.a11y as Parameters<typeof fullCheckViolations>[0] & {
 		test?: string;
 	};

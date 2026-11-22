@@ -181,3 +181,55 @@ describe("DataTable", () => {
 		expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
 	});
 });
+
+describe("DataTable, its own scrolling box", () => {
+	const wide = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollWidth");
+	const room = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientWidth");
+	/** Lays the box out as narrower than its table, by how many pixels it holds. */
+	function layOut(scrollWidth: number, clientWidth: number) {
+		Object.defineProperty(HTMLElement.prototype, "scrollWidth", {
+			configurable: true,
+			get(this: HTMLElement) {
+				return this.classList.contains("data-table-scroll") ? scrollWidth : 0;
+			},
+		});
+		Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+			configurable: true,
+			get(this: HTMLElement) {
+				return this.classList.contains("data-table-scroll") ? clientWidth : 0;
+			},
+		});
+	}
+	afterEach(() => {
+		if (wide) Object.defineProperty(HTMLElement.prototype, "scrollWidth", wide);
+		if (room) Object.defineProperty(HTMLElement.prototype, "clientWidth", room);
+	});
+
+	it("holds the table in a box of its own, the table's parent", () => {
+		layOut(600, 600);
+		render(<DataTable columns={columns} rows={rows} />);
+		expect(screen.getByRole("table").parentElement).toHaveClass("data-table-scroll");
+	});
+
+	it("takes no tab stop and no name while the table fits", () => {
+		layOut(600, 600);
+		render(<DataTable columns={columns} rows={rows} />);
+		const box = screen.getByRole("table").parentElement as HTMLElement;
+		expect(box).not.toHaveAttribute("tabindex");
+		expect(screen.queryByRole("region")).toBeNull();
+	});
+
+	it("is a focusable, named region while the table is wider than it", () => {
+		layOut(1422, 820);
+		render(<DataTable columns={columns} rows={rows} />);
+		const region = screen.getByRole("region", { name: "Table" });
+		expect(region).toHaveAttribute("tabindex", "0");
+		expect(region).toBe(screen.getByRole("table").parentElement);
+	});
+
+	it("takes its name from a prop", () => {
+		layOut(1422, 820);
+		render(<DataTable columns={columns} rows={rows} ariaLabel="Searches by month" />);
+		expect(screen.getByRole("region", { name: "Searches by month" })).toBeInTheDocument();
+	});
+});

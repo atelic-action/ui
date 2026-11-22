@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { ErrorFallback } from "../../src/artifact";
 import { longURL } from "../fixtures/primitives";
-import { expectNoSidewaysScroll } from "../primitives/support";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -44,24 +43,50 @@ export const NotAnError: Story = {
 };
 
 /**
- * The longest message, an address in it, on a phone. The message box should
- * scroll inside itself with the page still; in a development build, where
- * the message shows, the page scrolls sideways instead
- * (stories/findings/primitives.md, `error-fallback-phone-overflow`). The box
- * scrolls, but a keyboard cannot reach it (`error-fallback-message-unfocusable`).
+ * The longest message, an address in it, on a phone. In a development build,
+ * where the message shows, its words wrap to the box and the page stays
+ * still; the box scrolls when the message is long, and a keyboard can reach
+ * it to scroll it.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("error-fallback-message-unfocusable") },
 	globals: pin("phone"),
 	args: {
 		error: new Error(
 			`Failed to fetch dynamically imported module: ${longURL}/assets/the-read-section-chunk.js`,
 		),
 	},
-	play: async () => {
-		if (import.meta.env.DEV)
-			await knownBug("error-fallback-phone-overflow", expectNoSidewaysScroll);
-		else await expectNoSidewaysScroll();
+	play: async ({ canvasElement, userEvent, step }) => {
+		await step("the page stays still", async () => {
+			await expectNoSidewaysScroll();
+		});
+		// Production hides the message, so the rest is a development build's.
+		if (!import.meta.env.DEV) return;
+		await step("the message wraps to its box and a keyboard reaches it", async () => {
+			// Inline styled with no class and no role: the screen's one pre.
+			const box = canvasElement.querySelector("pre") as HTMLElement;
+			await expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth);
+			await userEvent.tab();
+			await expect(box).toHaveFocus();
+		});
+	},
+};
+
+/**
+ * A message long enough to scroll its box: the box takes focus, so a
+ * keyboard can scroll what it cannot see, and the accessibility check of a
+ * scrolling region passes on it.
+ */
+export const ScrollingMessage: Story = {
+	globals: pin("phone"),
+	args: {
+		error: new Error(
+			Array.from({ length: 24 }, (_, i) => `at render (chunk-${i + 1}.js:${i + 10}:4)`).join("\n"),
+		),
+	},
+	play: async ({ canvasElement }) => {
+		if (!import.meta.env.DEV) return;
+		const box = canvasElement.querySelector("pre") as HTMLElement;
+		await expect(box.scrollHeight).toBeGreaterThan(box.clientHeight);
+		await expect(box).toHaveAttribute("tabindex", "0");
 	},
 };

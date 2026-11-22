@@ -10,42 +10,48 @@ describe("describeStarRating", () => {
 });
 
 describe("StarRating", () => {
-	it("offers every half star from 0.5 to 5", () => {
-		render(<StarRating value={null} onChange={() => {}} />);
-		const labels = screen.getAllByRole("button").map((button) => button.getAttribute("aria-label"));
-		expect(labels).toEqual([
-			"0.5 stars",
-			"1 star",
-			"1.5 stars",
-			"2 stars",
-			"2.5 stars",
-			"3 stars",
-			"3.5 stars",
-			"4 stars",
-			"4.5 stars",
-			"5 stars",
-		]);
+	/** The half star area a pointer lands on, by the rating it stands for. */
+	const half = (container: HTMLElement, rating: number) =>
+		container.querySelector(`[data-rating="${rating}"]`) as HTMLElement;
+
+	it("offers every half star from 0.5 to 5, as plain areas inside the one slider", () => {
+		const { container } = render(<StarRating value={null} onChange={() => {}} />);
+		const slider = screen.getByRole("slider");
+		const ratings = [...slider.querySelectorAll("[data-rating]")].map((area) =>
+			area.getAttribute("data-rating"),
+		);
+		expect(ratings).toEqual(["0.5", "1", "1.5", "2", "2.5", "3", "3.5", "4", "4.5", "5"]);
+		// No control nests inside the slider, whose children are presentational.
+		expect(screen.queryAllByRole("button")).toHaveLength(0);
+		expect(container.querySelectorAll("button, [tabindex]:not([role='slider'])")).toHaveLength(0);
 	});
 
 	it("runs to as many stars as max says", () => {
 		const onChange = vi.fn();
-		render(<StarRating value={null} onChange={onChange} max={3} />);
-		expect(screen.getAllByRole("button")).toHaveLength(6);
+		const { container } = render(<StarRating value={null} onChange={onChange} max={3} />);
+		expect(container.querySelectorAll("[data-rating]")).toHaveLength(6);
 		fireEvent.keyDown(screen.getByRole("slider"), { key: "End" });
 		expect(onChange).toHaveBeenLastCalledWith(3);
 	});
 
 	it("rates in half stars on a click", () => {
 		const onChange = vi.fn();
-		render(<StarRating value={null} onChange={onChange} />);
-		fireEvent.click(screen.getByRole("button", { name: "4.5 stars" }));
+		const { container } = render(<StarRating value={null} onChange={onChange} />);
+		fireEvent.click(half(container, 4.5));
 		expect(onChange).toHaveBeenCalledWith(4.5);
+	});
+
+	it("ignores a click that lands between the stars", () => {
+		const onChange = vi.fn();
+		render(<StarRating value={2} onChange={onChange} />);
+		fireEvent.click(screen.getByRole("slider"));
+		expect(onChange).not.toHaveBeenCalled();
 	});
 
 	it("clears the rating when the current one is picked again", () => {
 		const onChange = vi.fn();
-		render(<StarRating value={4.5} onChange={onChange} />);
-		fireEvent.click(screen.getByRole("button", { name: "4.5 stars" }));
+		const { container } = render(<StarRating value={4.5} onChange={onChange} />);
+		fireEvent.click(half(container, 4.5));
 		expect(onChange).toHaveBeenCalledWith(null);
 	});
 
@@ -56,12 +62,17 @@ describe("StarRating", () => {
 				(fill) => fill.style.width,
 			);
 
-		fireEvent.mouseEnter(screen.getByRole("button", { name: "1.5 stars" }));
+		fireEvent.mouseMove(half(container, 1.5));
 		expect(widths()).toEqual(["100%", "50%", "0%", "0%", "0%"]);
 
 		// The value has not moved here, so the row falls back to it: the pick
 		// took the preview down even though the pointer never left.
-		fireEvent.click(screen.getByRole("button", { name: "1.5 stars" }));
+		fireEvent.click(half(container, 1.5));
+		expect(widths()).toEqual(["100%", "100%", "100%", "100%", "0%"]);
+
+		// And the pointer leaving the row drops a preview too.
+		fireEvent.mouseMove(half(container, 2));
+		fireEvent.mouseLeave(screen.getByRole("slider"));
 		expect(widths()).toEqual(["100%", "100%", "100%", "100%", "0%"]);
 	});
 

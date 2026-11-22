@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ReportCard } from "../../src/components";
 import { longWord, reportGroups, reportGroupsLater, reportLegend } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**

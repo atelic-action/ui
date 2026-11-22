@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, SiteHeader } from "../../src/chrome";
 import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** The default footer's four columns, as SiteShell derives them from the bakery's config. */
@@ -88,7 +89,7 @@ export const Phone: Story = {
 		await expect(box(footer.getByText("kestrel hollow")).bottom).toBeLessThanOrEqual(
 			box(company).top,
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -165,7 +166,7 @@ export const LongestContent: Story = {
 	},
 	play: async () => {
 		// A long address breaks rather than pushing the page sideways on a phone.
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -258,5 +259,53 @@ export const HeadingLevelThree: Story = {
 		const footer = within(canvas.getByRole("contentinfo"));
 		await expect(footer.getAllByRole("heading", { level: 3 })).toHaveLength(4);
 		await expect(footer.queryAllByRole("heading", { level: 2 })).toHaveLength(0);
+	},
+};
+
+/**
+ * A site's own bare `h2` rule, written for its page's section titles and
+ * unlayered, so it beats any rule in the package's layer whatever its
+ * weight: the footer's headings keep their look under it, since they are
+ * headings by role and match no element rule, while the page's own `h2`
+ * takes the site's rule.
+ */
+export const UnderASiteHeadingRule: Story = {
+	render: (args) => (
+		<>
+			<main>
+				<h1>The bakehouse</h1>
+				<h2>Wholesale</h2>
+			</main>
+			<Footer {...args} />
+		</>
+	),
+	beforeEach: () => () => document.querySelector("style[data-story='site-h2']")?.remove(),
+	play: async ({ canvas, step }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const heading = footer.getAllByRole("heading", { level: 2 })[0] as HTMLElement;
+		const look = (element: Element) => {
+			const style = getComputedStyle(element);
+			return [
+				style.fontSize,
+				style.fontFamily,
+				style.textTransform,
+				style.color,
+				style.marginBottom,
+			];
+		};
+		const before = look(heading);
+		await step("the site's rule lands", async () => {
+			const rule = document.createElement("style");
+			rule.dataset.story = "site-h2";
+			rule.textContent =
+				"h2 { font-size: 48px; font-family: Georgia, serif; text-transform: none; color: rgb(0, 0, 255); margin: 0 0 40px; }";
+			document.head.append(rule);
+			await expect(
+				getComputedStyle(canvas.getByRole("heading", { name: "Wholesale" })).fontSize,
+			).toBe("48px");
+		});
+		await step("the footer's headings look as they did", async () => {
+			await expect(look(heading)).toEqual(before);
+		});
 	},
 };

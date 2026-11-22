@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import { type CSSProperties, type KeyboardEvent, useState } from "react";
+import { type CSSProperties, type KeyboardEvent, type MouseEvent, useState } from "react";
 
 const STEP = 0.5;
 
@@ -29,15 +29,18 @@ export function describeStarRating(value: number | null): string {
 
 /**
  * A row of stars that shows a rating in half star steps and, given `onChange`,
- * takes one. Each star is two hit targets, its left half and its right, so a
+ * takes one. Each star is two hit areas, its left half and its right, so a
  * pointer lands on 3.5 or 4 without a second control. Picking the rating
  * already set clears it, which is the only way back to unrated and needs no
  * button of its own.
  *
- * To a keyboard and a screen reader an editable row is one slider: the arrows
- * move half a star, Home clears, End is the top of the scale. The halves stay
- * out of the tab order, so the row is one stop rather than ten. Without
- * `onChange` it is a picture with the rating as its name.
+ * An editable row is one slider, to a pointer, a keyboard, and a screen
+ * reader alike: the arrows move half a star, Home clears, End is the top of
+ * the scale, and the slider itself takes the pointer's press and hover. The
+ * halves are plain areas marked with the rating they stand for
+ * (`data-rating`), never controls of their own, since a slider's children
+ * are presentational and a control inside one is lost to a screen reader.
+ * Without `onChange` it is a picture with the rating as its name.
  *
  * The two colors are the `--star-fill` and `--star-outline` custom properties.
  * `fillColor` and `outlineColor` set them on this row; a site may also set
@@ -73,20 +76,11 @@ export function StarRating({
 				</span>
 				{onChange &&
 					[star - STEP, star].map((rating, half) => (
-						<button
+						<span
 							key={rating}
-							type="button"
-							tabIndex={-1}
-							aria-label={describeStarRating(rating)}
+							aria-hidden="true"
+							data-rating={rating}
 							className={`star-rating-hit ${half === 0 ? "is-left" : "is-right"}`}
-							onMouseEnter={() => setHover(rating)}
-							onClick={() => {
-								// Drop the preview with the pick: the pointer is still on this
-								// half, and a preview left up would hide a clear behind the
-								// very stars it just emptied.
-								setHover(null);
-								onChange(rating === value ? null : rating);
-							}}
 						/>
 					))}
 			</span>
@@ -108,6 +102,23 @@ export function StarRating({
 
 	const set = (next: number | null) => {
 		if (next !== value) onChange(next);
+	};
+
+	/** The rating of the half star under the pointer, or null between stars. */
+	const ratingAt = (event: MouseEvent) => {
+		const hit = (event.target as Element).closest?.("[data-rating]");
+		const rating = Number(hit?.getAttribute("data-rating"));
+		return hit && Number.isFinite(rating) ? rating : null;
+	};
+
+	const onClick = (event: MouseEvent) => {
+		const rating = ratingAt(event);
+		if (rating === null) return;
+		// Drop the preview with the pick: the pointer is still on this half,
+		// and a preview left up would hide a clear behind the very stars it
+		// just emptied.
+		setHover(null);
+		onChange(rating === value ? null : rating);
 	};
 
 	const onKeyDown = (event: KeyboardEvent) => {
@@ -145,6 +156,11 @@ export function StarRating({
 			className={`${classes} is-editable`}
 			style={style}
 			onKeyDown={onKeyDown}
+			onClick={onClick}
+			onMouseMove={(event) => {
+				const rating = ratingAt(event);
+				if (rating !== null) setHover(rating);
+			}}
 			onMouseLeave={() => setHover(null)}
 		>
 			{stars}

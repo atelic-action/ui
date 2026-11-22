@@ -3,21 +3,17 @@ import { expect } from "storybook/test";
 import { LocationSection } from "../../src/sections";
 import { site } from "../fixtures/bakery";
 import { siteWithEmbed, siteWithoutMap } from "../fixtures/sections";
-import { knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
  * The local section: where it is, who it serves, its hours, directions and a
- * call, beside the map. Its hours heading skips a level
- * (stories/findings/sections.md).
+ * call, beside the map. The hours heading sits one level under the
+ * section's title, whatever level the title takes (`headingLevel`).
  */
 const meta = {
 	title: "Sections/LocationSection",
 	component: LocationSection,
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues("location-hours-heading-order"),
-	},
 	args: {
 		site,
 		title: "On Alder Street, by the old mill",
@@ -39,7 +35,10 @@ export const Default: Story = {
 			).toBeVisible();
 		});
 		await step("the hours under their heading", async () => {
-			await expect(canvas.getByRole("heading", { level: 4, name: "Hours" })).toBeVisible();
+			await expect(canvas.getByRole("heading", { level: 2 })).toHaveTextContent(
+				"On Alder Street, by the old mill",
+			);
+			await expect(canvas.getByRole("heading", { level: 3, name: "Hours" })).toBeVisible();
 			await expect(canvas.getByText("7:00a to 3:00p")).toBeVisible();
 		});
 		await step("directions open a new tab, the call never does", async () => {
@@ -84,18 +83,30 @@ export const TwentyFourHour: Story = {
 	},
 };
 
-/** No map screenshot: the click to load facade beside the copy. */
+/** No map screenshot: the click to load facade beside the copy, named by its own words. */
 export const EmbedFacade: Story = {
-	parameters: {
-		...knownIssues(
-			"location-hours-heading-order",
-			"inset-soft-text-contrast",
-			"map-facade-name-mismatch",
-		),
-	},
 	args: { site: siteWithEmbed },
 	play: async ({ canvas }) => {
-		await expect(canvas.getByRole("button", { name: /Load the map/ })).toBeVisible();
+		await expect(canvas.getByRole("button", { name: /Tap to load the map$/ })).toBeVisible();
+	},
+};
+
+/**
+ * A section set inside a deeper outline takes its title's level, and the
+ * hours heading follows one below it, looking as it does at the default.
+ */
+export const HeadingLevel: Story = {
+	args: { headingLevel: 3 },
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByRole("heading", { level: 2 })).toBeNull();
+		await expect(canvas.getByRole("heading", { level: 3 })).toHaveTextContent(
+			"On Alder Street, by the old mill",
+		);
+		const hours = canvas.getByRole("heading", { level: 4, name: "Hours" });
+		const look = getComputedStyle(hours);
+		await expect(look.fontFamily).toMatch(/Mono/);
+		await expect(look.textTransform).toBe("uppercase");
+		await expect(Number.parseFloat(look.fontSize)).toBeLessThan(13);
 	},
 };
 
@@ -129,6 +140,6 @@ export const Phone: Story = {
 		const map = canvas.getByRole("img", { name: /^Map to/ }).getBoundingClientRect();
 		const call = canvas.getByRole("link", { name: "(555) 555-0142" }).getBoundingClientRect();
 		await expect(map.top).toBeGreaterThanOrEqual(call.bottom);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

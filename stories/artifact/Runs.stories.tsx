@@ -34,12 +34,12 @@ type Story = StoryObj<typeof meta>;
 
 /** Inside a list item, with no paragraph of its own around the words. */
 export const InAListItem: Story = {
-	play: async ({ canvas, canvasElement }) => {
+	play: async ({ canvas }) => {
 		const item = canvas.getByRole("listitem");
 		await expect(item).toHaveTextContent(
 			"Order by Friday noon, or order ahead online for “saturday pickup”.",
 		);
-		await expect(canvasElement.querySelector("p")).toBeNull();
+		await expect(canvas.queryByRole("paragraph")).toBeNull();
 		await expect(canvas.getByRole("link", { name: "order ahead online" })).toHaveAttribute(
 			"target",
 			"_blank",

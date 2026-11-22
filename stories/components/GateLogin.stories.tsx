@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, spyOn, waitFor } from "storybook/test";
 import { GateLogin } from "../../src/components";
-import { expectNoSidewaysScroll } from "../primitives/support";
-import { knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 const reader = "rosa@quillandfern.example.com";
@@ -54,17 +53,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/*
- * The screen's contrast failures (stories/findings/primitives.md), marked on
- * each story for what it shows: the fine print's link when the contact
- * address does.
- */
-const link = "gate-fine-link-distinct";
-
 /** The screen: the brand with its Preview tag, the headline, the field, and the fine print. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("heading", { level: 1 })).toHaveTextContent(
 			"A first look, by invitation.",
@@ -108,8 +98,6 @@ export const CustomWords: Story = {
  * and described by the alert, and focus goes back to it.
  */
 export const Invalid: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	play: async ({ canvas, userEvent }) => {
 		const field = canvas.getByRole("textbox", { name: "Your email" });
 		await userEvent.type(field, "rosa at the cafe");
@@ -129,8 +117,6 @@ export const Invalid: Story = {
  * "Start over" brings the form back with focus in the field.
  */
 export const Sent: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	play: async ({ canvas, userEvent, step }) => {
 		await step("the form posts the address and the next path", async () => {
 			await userEvent.type(canvas.getByRole("textbox", { name: "Your email" }), `  ${reader} `);
@@ -157,8 +143,6 @@ export const Sent: Story = {
 
 /** The function fails: the form stays, with an alert to try again. */
 export const Failed: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	beforeEach: answering(500),
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.type(canvas.getByRole("textbox", { name: "Your email" }), reader);
@@ -171,8 +155,6 @@ export const Failed: Story = {
 
 /** After a failure, a bad address clears the failure: only the new problem is shown. */
 export const FailedThenInvalid: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	beforeEach: answering(500),
 	play: async ({ canvas, userEvent }) => {
 		const field = canvas.getByRole("textbox", { name: "Your email" });
@@ -189,8 +171,6 @@ export const FailedThenInvalid: Story = {
 
 /** While the request is in flight the button says so and is disabled, and a second submit posts nothing. */
 export const Sending: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	beforeEach: answering(200, true),
 	play: async ({ canvas, canvasElement, userEvent }) => {
 		await userEvent.type(canvas.getByRole("textbox", { name: "Your email" }), reader);
@@ -218,8 +198,6 @@ export const EndpointAndNext: Story = {
 
 /** Arriving from an expired link: an alert says so; a fresh link clears it. */
 export const Expired: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	beforeEach: [answering(200), withQuery("e=expired")],
 	play: async ({ canvas }) => {
 		const alert = await canvas.findByRole("alert");
@@ -229,8 +207,6 @@ export const Expired: Story = {
 
 /** On a phone, with the fine print, nothing scrolls sideways. */
 export const Phone: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues(link) },
 	globals: pin("phone"),
 	play: async () => {
 		await expectNoSidewaysScroll();

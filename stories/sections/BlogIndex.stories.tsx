@@ -3,7 +3,7 @@ import { expect, within } from "storybook/test";
 import { BasePathProvider } from "../../src/routing";
 import { BlogIndex } from "../../src/sections";
 import { blogItems, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -94,21 +94,18 @@ export const LongestContent: Story = {
 	},
 	play: async ({ canvas }) => {
 		await expect(entries(canvas)).toHaveLength(8);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in an entry's title, on a phone. The heading never breaks inside a
- * word, so the page scrolls sideways.
+ * One unbroken word in an entry's title, on a phone: the heading breaks it
+ * where it must, and the page stays still.
  */
 export const UnbrokenWord: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ slug: "guild", title: `The ${unbroken}`, publishedAt: "2026-10-01" }] },
 	play: async () => {
-		await knownBug("heading-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

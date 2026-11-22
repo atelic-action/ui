@@ -42,9 +42,11 @@ export function StickyCTABar({
 	const [show, setShow] = useState(fromTop);
 	const barRef = useRef<HTMLDivElement>(null);
 	// The latest listener, so a caller passing a new function each render
-	// never restarts the measuring below.
+	// never restarts the measuring below. Whether there is one at all does:
+	// a listener supplied after mount starts the measuring then.
 	const spaceRef = useRef(onSpaceChange);
 	spaceRef.current = onSpaceChange;
+	const listening = onSpaceChange !== undefined;
 
 	useEffect(() => {
 		if (fromTop) {
@@ -62,7 +64,7 @@ export function StickyCTABar({
 	// Hidden by the stylesheet its height reads 0, so a desktop reserves nothing.
 	useEffect(() => {
 		const bar = barRef.current;
-		if (!bar || !spaceRef.current) return;
+		if (!bar || !listening) return;
 		let last = -1;
 		const report = () => {
 			const next = show ? bar.offsetHeight : 0;
@@ -79,7 +81,7 @@ export function StickyCTABar({
 			window.removeEventListener("resize", report);
 			spaceRef.current?.(0);
 		};
-	}, [show]);
+	}, [show, listening]);
 
 	return (
 		// Inert while offscreen, so its links take no keyboard focus before it slides in.

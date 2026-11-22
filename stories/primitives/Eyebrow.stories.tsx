@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Eyebrow } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll, onDarkBand } from "./support";
+import { onDarkBand } from "./support";
 
 /**
  * The small mono kicker above a heading, trailed by a bar that fades to the
@@ -61,15 +61,13 @@ export const DeprecatedRun: Story = {
 };
 
 /**
- * The longest kicker, on a phone. It should wrap inside the screen; the unbroken word runs
- * past it and the page scrolls sideways (stories/findings/primitives.md,
- * `long-word-overflow`).
+ * The longest kicker, on a phone: it wraps inside the screen, the unbroken
+ * word breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { children: `Wholesale for cafes, grocers, and ${longWord} lovers across Fairhaven` },
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

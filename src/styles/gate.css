@@ -26,7 +26,10 @@
 		font-size: 24px;
 		color: var(--primary-ink, var(--ui-primary, var(--primary)));
 	}
+	/* The label beside the name keeps its word whole, so a long name
+	   wraps at its spaces rather than squeezing the label mid word. */
 	.atelic-ui .gate-brand-sub {
+		overflow-wrap: normal;
 		font-family: var(--font-mono);
 		font-size: 11px;
 		letter-spacing: 0.22em;
@@ -104,12 +107,16 @@
 		font-size: 11.5px;
 		color: var(--neutral-500);
 	}
+	/* The link is told from the words around it by an underline, not by its
+	   color alone (WCAG 1.4.1); the hover thickens it. */
 	.atelic-ui .gate-fine a {
 		color: var(--primary-ink, var(--ui-primary, var(--primary)));
-		text-decoration: none;
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 2px;
 	}
 	.atelic-ui .gate-fine a:hover {
-		text-decoration: underline;
+		text-decoration-thickness: 2px;
 	}
 
 	.atelic-ui .gate-sent {

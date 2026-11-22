@@ -3,7 +3,7 @@ import { expect, type within } from "storybook/test";
 import { ImageFrame } from "../../src/primitives";
 import { SplitSection } from "../../src/sections";
 import { image, longEmail } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /*
@@ -127,17 +127,16 @@ export const Phone: Story = {
 	play: async ({ canvas }) => {
 		const { left, right } = columns(canvas);
 		await expect(right.top).toBeGreaterThanOrEqual(left.bottom);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
  * A long email address in the copy, on a phone, the way a wholesale page
- * writes one. Neither the column nor the paragraph breaks it, so the page
- * scrolls sideways.
+ * writes one: the paragraph breaks it where it must, and the page stays
+ * still.
  */
 export const LongAddressPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		right: (
@@ -150,8 +149,6 @@ export const LongAddressPhone: Story = {
 		),
 	},
 	play: async () => {
-		await knownBug("split-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

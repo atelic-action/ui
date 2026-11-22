@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { StarRow } from "../../src/primitives";
 
-/** A row of filled stars, read as one picture: "4 out of 5 stars". */
+/**
+ * A row of filled stars, read as one picture named by the rating as given:
+ * "4.5 out of 5 stars". It draws to the nearest half star.
+ */
 const meta = {
 	title: "Primitives/StarRow",
 	component: StarRow,
@@ -28,19 +31,36 @@ export const Three: Story = {
 	},
 };
 
-/** A fraction rounds: 4.4 draws four. */
+/** The stars a row draws, whole and half, read off their glyphs. */
+const drawn = (canvasElement: HTMLElement) => ({
+	whole: canvasElement.querySelectorAll(".lucide-star").length,
+	half: canvasElement.querySelectorAll(".lucide-star-half").length,
+});
+
+/** A fraction is said as given, to one decimal, and drawn to the nearest half: 4.2 draws four. */
 export const RoundsDown: Story = {
-	args: { rating: 4.4 },
-	play: async ({ canvas }) => {
-		await expect(canvas.getByRole("img", { name: "4 out of 5 stars" })).toBeVisible();
+	args: { rating: 4.2 },
+	play: async ({ canvas, canvasElement }) => {
+		await expect(canvas.getByRole("img", { name: "4.2 out of 5 stars" })).toBeVisible();
+		await expect(drawn(canvasElement)).toEqual({ whole: 4, half: 0 });
 	},
 };
 
-/** A half rounds up: 4.5 draws and reads as five. */
-export const HalfRoundsUp: Story = {
+/** A half rating is said and drawn as itself: four stars and a half, never five. */
+export const HalfStar: Story = {
 	args: { rating: 4.5 },
-	play: async ({ canvas }) => {
-		await expect(canvas.getByRole("img", { name: "5 out of 5 stars" })).toBeVisible();
+	play: async ({ canvas, canvasElement }) => {
+		await expect(canvas.getByRole("img", { name: "4.5 out of 5 stars" })).toBeVisible();
+		await expect(drawn(canvasElement)).toEqual({ whole: 4, half: 1 });
+	},
+};
+
+/** Near a half, it draws the half: 4.3 draws four and a half, said as 4.3. */
+export const NearAHalf: Story = {
+	args: { rating: 4.3 },
+	play: async ({ canvas, canvasElement }) => {
+		await expect(canvas.getByRole("img", { name: "4.3 out of 5 stars" })).toBeVisible();
+		await expect(drawn(canvasElement)).toEqual({ whole: 4, half: 1 });
 	},
 };
 

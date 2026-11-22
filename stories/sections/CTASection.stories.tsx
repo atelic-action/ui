@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { CTASection } from "../../src/sections";
 import { site } from "../fixtures/bakery";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -98,6 +99,6 @@ export const Phone: Story = {
 		secondary: { label: "See this week's whole menu", href: "/menu" },
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -1,6 +1,8 @@
 import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { expect, type MockInstance, spyOn, waitFor } from "storybook/test";
 import { FullBleedVideo } from "../../src/sections";
+import { reduceMotion } from "../support/motion";
+import { settled } from "../support/settle";
 import { pin } from "../support/viewports";
 
 /**
@@ -93,8 +95,15 @@ export const PlaysOnScreen: Story = {
 			await waitFor(() => expect(play).toHaveBeenCalledOnce());
 			const video = play.mock.contexts[0] as HTMLVideoElement;
 			await waitFor(() => expect(video.paused).toBe(false), { timeout: 3000 });
-			// Faded in over the poster once it is playing.
-			await waitFor(() => expect(getComputedStyle(video).opacity).toBe("1"));
+			// Faded in over the poster once it is playing: wait for the fade to
+			// begin (or to have ended already), then for it to finish.
+			await waitFor(() =>
+				expect(video.getAnimations().length > 0 || getComputedStyle(video).opacity === "1").toBe(
+					true,
+				),
+			);
+			await settled();
+			await expect(getComputedStyle(video).opacity).toBe("1");
 		});
 		await step("scrolled away, it pauses", async () => {
 			const video = play.mock.contexts[0] as HTMLVideoElement;
@@ -106,21 +115,16 @@ export const PlaysOnScreen: Story = {
 
 /**
  * Under `prefers-reduced-motion` the clip is never asked for and the poster
- * stays. Emulated by answering the component's `matchMedia` question, since
- * the test provider has no media emulation a story can reach; the component
- * decides in script, so this is the path a reader's setting takes.
+ * stays. The component decides in script, so the shared reduced motion
+ * helper's answer to `matchMedia` is the path a reader's setting takes; it
+ * turns the sheets' reduced motion rules on as well.
  */
 export const ReducedMotion: Story = {
 	beforeEach: () => {
 		const restorePlay = watchPlay();
-		const original = window.matchMedia;
-		window.matchMedia = ((query: string) => {
-			const list = original.call(window, query);
-			if (!query.includes("prefers-reduced-motion")) return list;
-			return { ...list, matches: true, media: query } as MediaQueryList;
-		}) as typeof window.matchMedia;
+		const restoreMotion = reduceMotion();
 		return () => {
-			window.matchMedia = original;
+			restoreMotion();
 			restorePlay();
 		};
 	},

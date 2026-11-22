@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { BlogPost } from "../../src/sections";
 import { blogPost, longEmail, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -136,21 +136,18 @@ export const Phone: Story = {
 		},
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in the headline, on a phone. The heading never breaks inside a
- * word, so the page scrolls sideways.
+ * One unbroken word in the headline, on a phone: the heading breaks it where
+ * it must, and the page stays still.
  */
 export const UnbrokenWord: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { doc: { ...blogPost, title: `The ${unbroken}` } },
 	play: async () => {
-		await knownBug("heading-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

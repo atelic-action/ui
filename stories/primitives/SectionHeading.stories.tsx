@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { SectionHeading } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll, inWrap, onDarkBand } from "./support";
+import { inWrap, onDarkBand } from "./support";
 
 /** The standard section opener: an eyebrow, the title, and a lead. */
 const meta = {
@@ -59,15 +59,23 @@ export const AsH3: Story = {
 };
 
 /**
- * On a dark band the eyebrow lifts, but the lead keeps the page's quiet ink
- * and all but vanishes (stories/findings/primitives.md,
- * `section-heading-on-dark-lead`).
+ * On a dark band the whole heading lifts: the eyebrow to the bright primary,
+ * the title to the band's own words, and the lead to its quiet words, each
+ * clearing 4.5 to 1 there.
  */
 export const OnDark: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("section-heading-on-dark-lead") },
 	args: { onDark: true },
 	decorators: [onDarkBand],
+	play: async ({ canvas }) => {
+		const ink = (element: HTMLElement) => getComputedStyle(element).color;
+		const title = canvas.getByRole("heading", { level: 2 });
+		const lead = title.nextElementSibling as HTMLElement;
+		// The title in the band's own words whatever color a site gives its
+		// headings, the lead in the band's quiet words; the page's own ink
+		// for them (--ink-soft) would all but vanish here.
+		await expect(ink(title)).toBe("rgb(255, 255, 255)");
+		await expect(ink(lead)).toBe("rgba(248, 244, 237, 0.74)");
+	},
 };
 
 /** A title with serif emphasis, the way a site sets one. */
@@ -82,12 +90,10 @@ export const EmphasizedTitle: Story = {
 };
 
 /**
- * The longest title and lead, with an unbroken word, on a phone. It should wrap inside the screen; the unbroken word runs
- * past it and the page scrolls sideways (stories/findings/primitives.md,
- * `long-word-overflow`).
+ * The longest title and lead, with an unbroken word, on a phone: both wrap
+ * inside the screen, the word breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		eyebrow: "Wholesale for cafes, grocers, and markets",
@@ -95,6 +101,6 @@ export const LongestOnPhone: Story = {
 		lead: "Delivered before six on weekdays and seven on Saturday, invoiced monthly, and changed by a message the afternoon before.",
 	},
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

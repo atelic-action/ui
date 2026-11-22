@@ -3,7 +3,7 @@ import { expect, waitFor } from "storybook/test";
 import { MapEmbed } from "../../src/sections";
 import { site } from "../fixtures/bakery";
 import { mapEmbedStandIn, siteWithEmbed, siteWithoutMap } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -26,6 +26,10 @@ const meta = {
 		),
 	],
 	globals: pin("desktop"),
+	// Each story counts only the fetches made since it began.
+	beforeEach: () => {
+		storyStart = performance.now();
+	},
 } satisfies Meta<typeof MapEmbed>;
 
 export default meta;
@@ -33,13 +37,22 @@ type Story = StoryObj<typeof meta>;
 
 const address = "418 Alder Street, Fairhaven CO 80000";
 
+/** The facade, named by the words it shows: the address, then the hint. */
+const facadeName = new RegExp(`^${address}\\s*Tap to load the map$`);
+
+/** When the running story began, so a fetch an earlier story made is not counted. */
+let storyStart = 0;
+
 /**
- * Every fetch the page has made for the embed (a prefetch, a script, an
- * image). A frame's own navigation is not in this list, so the frames are
- * counted apart.
+ * Every fetch this story has made for the embed (a prefetch, a script, an
+ * image): the page's resource timings are shared by every story the file
+ * runs, so only the ones since this story began count. A frame's own
+ * navigation is not in this list, so the frames are counted apart.
  */
 const embedRequests = () =>
-	performance.getEntriesByType("resource").filter((entry) => entry.name.includes(mapEmbedStandIn));
+	performance
+		.getEntriesByType("resource")
+		.filter((entry) => entry.startTime >= storyStart && entry.name.includes(mapEmbedStandIn));
 
 /** The pages loaded in frames inside the story, by path. */
 const framePaths = () =>
@@ -68,33 +81,29 @@ export const Static: Story = {
 };
 
 /**
- * A screenshot with no directions link. The picture is still wrapped in a
- * link that promises directions, to `#`, which goes nowhere but the top of
- * the page.
+ * A screenshot with no directions link: a plain picture, never a link that
+ * promises directions and goes nowhere.
  */
 export const StaticNoLink: Story = {
-	tags: ["known-issue"],
 	args: { site: { ...site, mapLinkURL: undefined } },
 	play: async ({ canvas }) => {
 		await expect(
 			canvas.getByRole("img", { name: `Map to Kestrel Hollow Bakehouse, ${address}` }),
 		).toBeInTheDocument();
-		await knownBug("map-static-dead-link", async () => {
-			await expect(canvas.queryByRole("link", { name: /Get directions/ })).toBeNull();
-		});
+		await expect(canvas.queryByRole("link")).toBeNull();
+		await expect(canvas.queryByText("Get Directions")).toBeNull();
 	},
 };
 
 /**
- * No screenshot: a facade naming the address, and no request for the embed
- * until the facade is pressed; then the live map loads in its place.
+ * No screenshot: a facade named by the words it shows, the address and the
+ * hint, so a reader who presses it by voice says what they see; no request
+ * for the embed until it is pressed; then the live map loads in its place.
  */
 export const ClickToLoad: Story = {
 	args: { site: siteWithEmbed },
 	play: async ({ canvas, userEvent, step }) => {
-		const facade = canvas.getByRole("button", {
-			name: `Load the map to Kestrel Hollow Bakehouse, ${address}`,
-		});
+		const facade = canvas.getByRole("button", { name: facadeName });
 		await step("before the press, nothing is fetched", async () => {
 			await expect(facade).toHaveTextContent(address);
 			await new Promise((resolve) => setTimeout(resolve, 300));
@@ -120,7 +129,7 @@ export const ClickToLoadByKeyboard: Story = {
 	args: { site: siteWithEmbed },
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.tab();
-		await expect(canvas.getByRole("button", { name: /Load the map/ })).toHaveFocus();
+		await expect(canvas.getByRole("button", { name: facadeName })).toHaveFocus();
 		await userEvent.keyboard("{Enter}");
 		await waitFor(() => expect(canvas.getByTitle(/Map to/)).toBeInTheDocument());
 	},
@@ -138,13 +147,11 @@ export const NoMap: Story = {
 
 /** On a phone the frame fills the column, inside the page. */
 export const Phone: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("inset-soft-text-contrast", "map-facade-name-mismatch") },
 	globals: pin("phone"),
 	args: { site: siteWithEmbed },
 	play: async ({ canvas }) => {
-		const facade = canvas.getByRole("button", { name: /Load the map/ }).getBoundingClientRect();
+		const facade = canvas.getByRole("button", { name: facadeName }).getBoundingClientRect();
 		await expect(facade.width).toBeGreaterThan(300);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

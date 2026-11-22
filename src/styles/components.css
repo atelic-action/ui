@@ -16,6 +16,16 @@
    `--primary` and `--card` hold something else (shadcn keeps bare HSL
    channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
+	/* Long words break rather than scroll a phone sideways; a table keeps
+	   break-word. The reasons are base.css's (Long words), repeated here
+	   for a consumer that loads this sheet alone. */
+	.atelic-ui {
+		overflow-wrap: anywhere;
+	}
+	.atelic-ui table {
+		overflow-wrap: break-word;
+	}
+
 	/* The opener's padding is a share of the section spacing (base.css), with
 	   the spacing it had before 8.0.0 where no base sheet sets the token. */
 	.atelic-ui .not-found-hero {
@@ -111,7 +121,9 @@
 		gap: 0.12em;
 		min-width: 0;
 		max-width: 100%;
-		overflow-wrap: break-word;
+		/* anywhere, not break-word: only anywhere lowers this inline flex
+		   item's minimum width, so a one word figure breaks in its column. */
+		overflow-wrap: anywhere;
 	}
 	.atelic-ui .stat-row.is-center .stat .num {
 		justify-content: center;
@@ -916,6 +928,15 @@
 		gap: 12px;
 		min-width: 0;
 	}
+	/* With no bars the plot says so in the quiet words of the chart's labels. */
+	.atelic-ui .column-chart-empty {
+		flex: 1 1 auto;
+		padding: 18px 0;
+		border-bottom: 1px solid var(--neutral-200);
+		font-size: 0.82rem;
+		color: var(--ink-soft);
+		text-align: center;
+	}
 	.atelic-ui .column-chart-group {
 		flex: 1 1 0;
 		min-width: 0;
@@ -1126,6 +1147,31 @@
 		display: block;
 		width: 100%;
 	}
+	/* Stacked, a row is a flex line: its cells shrink to the screen and a
+	   long word in one breaks (base.css, Long words), table or not. */
+	.atelic-ui .data-table {
+		min-width: 0;
+	}
+	.atelic-ui .data-table table {
+		overflow-wrap: anywhere;
+	}
+	.atelic-ui .data-table tbody th,
+	.atelic-ui .data-table td {
+		min-width: 0;
+	}
+	/* The table's own box. Wide, a table with more columns than the page
+	   has room for scrolls inside it and the page never does (Component
+	   Rules 5 and 6); the component makes it focusable and names it only
+	   while it scrolls, so a keyboard can scroll it. */
+	.atelic-ui .data-table-scroll {
+		min-width: 0;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+	.atelic-ui .data-table-scroll:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
 	.atelic-ui .data-table thead {
 		position: absolute;
 		width: 1px;
@@ -1217,6 +1263,9 @@
 		.atelic-ui .data-table table {
 			display: table;
 			border-collapse: collapse;
+			/* A cell keeps its longest word, so a table wider than the page
+			   scrolls in its box rather than breaking words to fit. */
+			overflow-wrap: break-word;
 		}
 		.atelic-ui .data-table tbody {
 			display: table-row-group;

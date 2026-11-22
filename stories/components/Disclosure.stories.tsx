@@ -3,7 +3,8 @@ import { type ComponentType, type ReactNode, useState } from "react";
 import { expect, fn } from "storybook/test";
 import { Disclosure, type DisclosureControlledProps } from "../../src/components";
 import { longWord } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -72,8 +73,8 @@ type Story = StoryObj<typeof meta>;
  * order. A click on the line opens it, a second click closes it.
  */
 export const NativeOpensAndCloses: Story = {
-	play: async ({ canvas, canvasElement, userEvent, step }) => {
-		const details = canvasElement.querySelector("details") as HTMLDetailsElement;
+	play: async ({ canvas, userEvent, step }) => {
+		const details = canvas.getByRole("group") as HTMLDetailsElement;
 		const line = canvas.getByText("How the Saturday order works");
 		await step("closed, the summary line shows and the detail is hidden", async () => {
 			await expect(details.open).toBe(false);
@@ -107,8 +108,8 @@ export const NativeOpensAndCloses: Story = {
 /** Open on first render. */
 export const NativeDefaultOpen: Story = {
 	args: { defaultOpen: true },
-	play: async ({ canvas, canvasElement }) => {
-		await expect((canvasElement.querySelector("details") as HTMLDetailsElement).open).toBe(true);
+	play: async ({ canvas }) => {
+		await expect((canvas.getByRole("group") as HTMLDetailsElement).open).toBe(true);
 		await expect(canvas.getByRole("link", { name: "order ahead" })).toBeVisible();
 	},
 };

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Gallery } from "../../src/sections";
 import { photos, unbroken } from "../fixtures/sections";
-import { knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -66,8 +66,6 @@ export const AltSurface: Story = { args: { surface: "alt" } };
 
 /** Before the photography exists: each tile its shot brief, the same shape as a photo. */
 export const Placeholders: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("inset-soft-text-contrast") },
 	args: {
 		photos: [
 			{ placeholder: "Photo: the levain at ten at night", caption: "The levain" },
@@ -116,7 +114,7 @@ export const Phone: Story = {
 	play: async ({ canvas }) => {
 		const rows = tops(canvas);
 		await expect(rows[1]).toBeGreaterThan(rows[0]);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -125,6 +123,6 @@ export const UnbrokenCaption: Story = {
 	globals: pin("phone"),
 	args: { photos: [{ ...photos[0], caption: unbroken }] },
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -3,6 +3,7 @@ import * as entry from "../../src/artifact";
 import {
 	ArtifactAnchor,
 	type ArtifactParagraph,
+	ErrorFallback,
 	GradeChip,
 	gradeLabel,
 	isEmpty,
@@ -283,5 +284,16 @@ describe("Paragraph and its runs", () => {
 		expect(isQuery({ query: "bakery near me" })).toBe(true);
 		expect(isQuery({ text: "the site", href: "#a" })).toBe(false);
 		expect(isQuery("words")).toBe(false);
+	});
+});
+
+describe("ErrorFallback, the message in a development build", () => {
+	it("lets a keyboard reach the scrolling message box, whose words wrap to it", () => {
+		render(<ErrorFallback error={new Error("x".repeat(400))} resetError={() => {}} />);
+		const box = document.querySelector("pre") as HTMLElement;
+		expect(box).toHaveAttribute("tabindex", "0");
+		expect(box.style.whiteSpace).toBe("pre-wrap");
+		expect(box.style.overflowWrap).toBe("anywhere");
+		expect(Number.parseFloat(box.parentElement?.style.minWidth ?? "")).toBe(0);
 	});
 });

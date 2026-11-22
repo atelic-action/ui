@@ -2,15 +2,20 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { DataTable, type DataTableColumn, type DataTableRow } from "../../src/components";
 import { longURL, queryColumns, queryRows } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
+
+/** The body's rows, by role: every row that a row header names (the heading row has none). */
+function bodyRows(canvasElement: HTMLElement) {
+	return within(canvasElement)
+		.getAllByRole("row")
+		.filter((row) => within(row).queryByRole("rowheader"));
+}
 
 /** The row names down the first column, top to bottom, as a reader sees them. */
 function order(canvasElement: HTMLElement) {
-	return Array.from(canvasElement.querySelectorAll("tbody tr")).map(
-		(row) => within(row as HTMLElement).getByRole("rowheader").textContent,
-	);
+	return bodyRows(canvasElement).map((row) => within(row).getByRole("rowheader").textContent);
 }
 
 /**
@@ -116,7 +121,7 @@ export const DefaultSort: Story = {
  */
 export const EmptyCells: Story = {
 	play: async ({ canvasElement }) => {
-		const rows = Array.from(canvasElement.querySelectorAll("tbody tr")) as HTMLElement[];
+		const rows = bodyRows(canvasElement);
 		const cake = rows.find((row) => row.textContent?.includes("birthday cake")) as HTMLElement;
 		const croissant = rows.find((row) => row.textContent?.includes("croissant")) as HTMLElement;
 		await expect(within(cake).getAllByRole("cell").at(-1)).toHaveTextContent("Not measured");
@@ -167,8 +172,8 @@ export const NotSortable: Story = {
 /** No rows: the headings over an empty body. */
 export const Empty: Story = {
 	args: { rows: [] },
-	play: async ({ canvasElement }) => {
-		await expect(canvasElement.querySelectorAll("tbody tr")).toHaveLength(0);
+	play: async ({ canvas }) => {
+		await expect(canvas.queryAllByRole("rowheader")).toHaveLength(0);
 	},
 };
 
@@ -214,32 +219,58 @@ const wideRows: DataTableRow[] = queryRows.map((row, r) => ({
 }));
 
 /**
- * The widest table a read carries, on a tablet: thirteen columns. It should
- * scroll inside its own box with the page still; the table has no box of its
- * own to scroll, so the page scrolls sideways (stories/findings/primitives.md,
- * `data-table-no-scroll-box`).
+ * The widest table a read carries, on a tablet: thirteen columns. It scrolls
+ * inside its own box with the page still, and the box, while it scrolls, is
+ * a named region a keyboard can reach.
  */
 export const WidestOnTablet: Story = {
-	tags: ["known-issue"],
 	globals: pin("tablet"),
 	args: { columns: wideColumns, rows: wideRows },
-	play: async ({ canvas }) => {
+	play: async ({ canvas, userEvent, step }) => {
 		const table = canvas.getByRole("table");
-		await knownBug("data-table-no-scroll-box", async () => {
+		await step("the page stays still, the table's own box scrolls", async () => {
 			await expectNoSidewaysScroll();
 			const box = table.parentElement as HTMLElement;
 			await expect(box.scrollWidth).toBeGreaterThan(box.clientWidth);
 		});
+		await step("while it scrolls, the box is a named region a keyboard reaches", async () => {
+			const region = canvas.getByRole("region", { name: "Table" });
+			await expect(region).toBe(table.parentElement);
+			// Reached by Tab; the browser scrolls a focused region by its arrow
+			// keys, which a synthetic key press does not do, so focus is the proof.
+			await userEvent.tab();
+			await expect(region).toHaveFocus();
+		});
+	},
+};
+
+/** The scrolling box takes the page's name for what the table holds. */
+export const WidestNamed: Story = {
+	globals: pin("tablet"),
+	args: { columns: wideColumns, rows: wideRows, ariaLabel: "Map place by month" },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("region", { name: "Map place by month" })).toHaveAttribute(
+			"tabindex",
+			"0",
+		);
+	},
+};
+
+/** A table that fits takes no tab stop and no region: its box only scrolls when it must. */
+export const FitsWithoutABox: Story = {
+	play: async ({ canvas }) => {
+		const box = canvas.getByRole("table").parentElement as HTMLElement;
+		await expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth);
+		await expect(canvas.queryByRole("region")).toBeNull();
+		await expect(box).not.toHaveAttribute("tabindex");
 	},
 };
 
 /**
- * The longest cells, a bare address among them, on a phone. The stacked rows
- * should wrap; the address runs past the screen (stories/findings/primitives.md,
- * `long-word-overflow`).
+ * The longest cells, a bare address among them, on a phone: the stacked rows
+ * wrap inside the screen, the address breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		rows: [
@@ -251,6 +282,6 @@ export const LongestOnPhone: Story = {
 		],
 	},
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

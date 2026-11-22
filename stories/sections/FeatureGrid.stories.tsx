@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, type within } from "storybook/test";
 import { FeatureGrid } from "../../src/sections";
 import { features, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -140,21 +140,18 @@ export const Phone: Story = {
 	play: async ({ canvas }) => {
 		const tops = cardTops(canvas);
 		await expect(tops[1]).toBeGreaterThan(tops[0]);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in a card's title, on a phone. The card's title never
- * breaks inside a word, so the card, and the page, scroll sideways.
+ * One unbroken word in a card's title, on a phone: the title breaks it where
+ * it must, and neither the card nor the page scrolls sideways.
  */
 export const UnbrokenWord: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ num: "01", title: unbroken, description: "The guild's prize loaf." }] },
 	play: async () => {
-		await knownBug("heading-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

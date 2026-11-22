@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { ColumnChart } from "../../src/components";
 import { columnGroups, columnLegend } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -83,9 +83,8 @@ export const TwelveMonths: Story = {
 
 /**
  * One bar marked in its own tone, keyed in the legend as the month the order
- * form was down. That meaning should reach a screen reader; the picture's
- * name carries the figures but not the tone, so the marked month is told by
- * color alone (stories/findings/primitives.md, `column-chart-tone-color-only`).
+ * form was down. The legend's words for that tone reach the picture's name
+ * beside the bar's figure, so the marked month is never told by color alone.
  */
 export const MarkedBar: Story = {
 	args: {
@@ -106,22 +105,28 @@ export const MarkedBar: Story = {
 		],
 	},
 	play: async ({ canvas }) => {
-		await knownBug("column-chart-tone-color-only", async () => {
-			await expect(plot(canvas)).toHaveAccessibleName(/order form was down/);
-		});
+		await expect(plot(canvas)).toHaveAccessibleName(/order form was down/);
 	},
 };
 
 /**
- * No bars at all: nothing is thrown, but the picture is left with an empty
- * name (stories/findings/primitives.md, `column-chart-empty-unnamed`).
+ * No bars at all: nothing is thrown, and the chart says so, shown and
+ * spoken, by `emptyLabel` ("No data to show").
  */
 export const Empty: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("column-chart-empty-unnamed") },
 	args: { legend: undefined, groups: [] },
 	play: async ({ canvas }) => {
-		await expect(plot(canvas)).toBeInTheDocument();
+		await expect(plot(canvas)).toHaveAccessibleName("No data to show");
+		await expect(canvas.getByText("No data to show")).toBeVisible();
+	},
+};
+
+/** The empty state in the page's own words. */
+export const EmptyLabel: Story = {
+	args: { legend: undefined, groups: [], emptyLabel: "No visits recorded yet" },
+	play: async ({ canvas }) => {
+		await expect(plot(canvas)).toHaveAccessibleName("No visits recorded yet");
+		await expect(canvas.getByText("No visits recorded yet")).toBeVisible();
 	},
 };
 

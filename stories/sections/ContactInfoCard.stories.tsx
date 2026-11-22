@@ -3,6 +3,7 @@ import { expect } from "storybook/test";
 import { ContactInfoCard } from "../../src/sections";
 import { site } from "../fixtures/bakery";
 import { longEmail } from "../fixtures/sections";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** A dark card of direct contact rows: call, email, visit, and the wholesale portal. */
@@ -86,6 +87,6 @@ export const LongestContent: Story = {
 	args: { site: { ...site, email: longEmail } },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("link", { name: longEmail })).toBeVisible();
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

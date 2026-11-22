@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { FeatureDetail } from "../../src/sections";
 import { image, unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -91,7 +91,7 @@ export const Phone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expect(photoBox(canvas).top).toBeGreaterThanOrEqual(titleBox(canvas).bottom);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
@@ -110,21 +110,18 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in a tag, on a phone. The chip never breaks inside a
- * word, and the copy column keeps its `min-width: auto`, so the page scrolls sideways.
+ * One unbroken word in a tag, on a phone: the chip wraps it inside the
+ * column, and the page stays still.
  */
 export const UnbrokenTag: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { tags: ["Two day ferment", unbroken] },
 	play: async () => {
-		await knownBug("feature-detail-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

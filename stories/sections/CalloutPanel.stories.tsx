@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { CalloutPanel } from "../../src/sections";
-import { lines } from "../support/geometry";
+import { expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -127,6 +127,6 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

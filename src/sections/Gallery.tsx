@@ -56,10 +56,11 @@ export function Gallery({
 			<div className="wrap">
 				{eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
 				<h2>{title}</h2>
-				{lead && <Lead style={{ maxWidth: "60ch" }}>{lead}</Lead>}
+				{lead && <Lead>{lead}</Lead>}
 				<ul className={`gallery-grid cols-${columns}`}>
-					{photos.map((photo) => (
-						<li className="gallery-item" key={photo.src ?? photo.placeholder ?? photo.caption}>
+					{photos.map((photo, index) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: two tiles may show one photo or share a brief, and a tile may have neither; the place keeps every key defined and unique, and the tiles never reorder
+						<li className="gallery-item" key={`${index} ${photo.src ?? photo.placeholder ?? ""}`}>
 							<figure>
 								{photo.src ? (
 									<div className="gallery-frame">

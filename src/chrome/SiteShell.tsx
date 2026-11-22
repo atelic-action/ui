@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useCallback, useRef } from "react";
 import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
 import { BasePathProvider } from "../routing/BasePathProvider";
@@ -128,8 +128,17 @@ export function SiteShell({
 	const footerRef = useRef<HTMLElement>(null);
 	const closingRef = useRef<HTMLDivElement>(null);
 	// The room the phone's sticky bar takes while it shows, which the closing
-	// bar pads its foot by (chrome.css), so the bar never covers the copyright.
-	const [barSpace, setBarSpace] = useState(0);
+	// bar pads its foot by. The bar reports it and the shell writes it straight
+	// onto its root as --sticky-cta-space, outside React's render, so a change
+	// in the bar's height never renders the whole shell again. The root's style
+	// is never a prop, so no render of the shell clears what this sets.
+	const rootRef = useRef<HTMLDivElement>(null);
+	const setBarSpace = useCallback((pixels: number) => {
+		const root = rootRef.current;
+		if (!root) return;
+		if (pixels > 0) root.style.setProperty("--sticky-cta-space", `${pixels}px`);
+		else root.style.removeProperty("--sticky-cta-space");
+	}, []);
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
 	// Every link and picture a panel section holds, based.
 	const section = (part: NavPanelSection): NavPanelSection => {
@@ -201,13 +210,9 @@ export function SiteShell({
 	return (
 		<BasePathProvider base={base}>
 			<div
+				ref={rootRef}
 				className="atelic-ui"
 				data-density={setting && setting !== "default" ? setting : undefined}
-				style={
-					stickyCTA && barSpace > 0
-						? ({ "--sticky-cta-space": `${barSpace}px` } as CSSProperties)
-						: undefined
-				}
 			>
 				<SkipLink />
 				<SiteHeader

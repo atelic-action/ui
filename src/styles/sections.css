@@ -55,7 +55,7 @@
 		margin: 0;
 		font-size: 0.98rem;
 		line-height: 1.65;
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	@media (max-width: 600px) {
@@ -116,7 +116,7 @@
 
 	.atelic-ui .bp-author {
 		font-weight: var(--weight-semibold);
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	.atelic-ui .bp-updated::before {
@@ -321,8 +321,10 @@
 		background-repeat: no-repeat;
 		background-position: right 16px center;
 	}
+	/* The error words read the primary's ink, which clears 4.5 to 1 on the
+	   surface and on the tint (--primary-deep, a fill, read 4.17 and 3.96). */
 	.atelic-ui .field .err {
-		color: var(--primary-deep);
+		color: var(--primary-ink, var(--primary));
 		font-size: 0.82rem;
 		display: none;
 	}
@@ -333,7 +335,11 @@
 	.atelic-ui .field.invalid textarea {
 		border-color: var(--primary-deep);
 	}
+	.atelic-ui .form-status {
+		display: block;
+	}
 	.atelic-ui .form-success {
+		display: block;
 		background: var(--secondary-tint);
 		border: 1.5px solid var(--secondary-soft);
 		color: var(--secondary);
@@ -343,9 +349,10 @@
 		margin-bottom: 18px;
 	}
 	.atelic-ui .form-error {
+		display: block;
 		background: var(--primary-tint);
 		border: 1.5px solid var(--primary);
-		color: var(--primary-deep);
+		color: var(--primary-ink, var(--primary));
 		padding: 20px 22px;
 		border-radius: var(--radius-md);
 		font-weight: var(--weight-semibold);
@@ -1313,7 +1320,7 @@
 	}
 	.atelic-ui .map-facade-hint {
 		font-size: 13px;
-		color: var(--neutral-600);
+		color: var(--ink-inset, var(--ink-soft));
 		border-bottom: 1px solid currentColor;
 		padding-bottom: 1px;
 	}
@@ -1388,7 +1395,8 @@
 			gap: 64px;
 		}
 	}
-	.atelic-ui .location-grid h2 {
+	.atelic-ui .location-grid h2,
+	.atelic-ui .location-grid .location-title {
 		margin: 10px 0 18px;
 	}
 	.atelic-ui .loc-areas {
@@ -1401,9 +1409,11 @@
 		margin: 30px 0;
 		max-width: 420px;
 	}
-	.atelic-ui .loc-block h4 {
+	/* The hours heading keeps one look at whatever level the section sets. */
+	.atelic-ui .loc-block .loc-heading {
 		font-family: var(--font-mono);
 		font-size: 0.74rem;
+		font-weight: var(--weight-bold);
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: var(--neutral-600);
@@ -1512,6 +1522,7 @@
 	/* ---- LogoMarquee (logo-marquee.css) ---- */
 	/* Dark credentials band with infinite marquee. */
 	.atelic-ui .creds {
+		position: relative;
 		background: var(--surface-dark);
 		padding-block: 22px;
 	}
@@ -1525,23 +1536,72 @@
 		-webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 	}
+	/* The row and its copy, each closing on the gap, so the -50% translate
+	   lands the copy exactly where the row began. */
 	.atelic-ui .marquee-track {
 		display: flex;
-		gap: 14px;
 		width: max-content;
 		animation: scroll-x 32s linear infinite;
+	}
+	.atelic-ui .marquee-group {
+		display: flex;
+		flex: none;
+		gap: 14px;
+		padding-right: 14px;
+	}
+	.atelic-ui .marquee[data-paused] .marquee-track {
+		animation-play-state: paused;
 	}
 	@keyframes scroll-x {
 		to {
 			transform: translateX(-50%);
 		}
 	}
+	/* The pause control: a small round button at the band's right edge, as
+	   quiet as the chips, over the row's faded end, with a collar of the
+	   band's own color so a chip slides under it whole. */
+	.atelic-ui .marquee-pause {
+		position: absolute;
+		top: 50%;
+		right: 10px;
+		transform: translateY(-50%);
+		display: grid;
+		place-items: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 50%;
+		color: var(--on-dark-chip);
+		/* Opaque, so the chips pass cleanly under it rather than through it. */
+		background: var(--surface-dark);
+		box-shadow:
+			inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 24%, transparent),
+			0 0 0 6px var(--surface-dark);
+	}
+	.atelic-ui .marquee-pause:hover {
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 50%, transparent);
+	}
+	.atelic-ui .marquee-pause:focus-visible {
+		outline: 2px solid var(--primary-bright);
+		outline-offset: 2px;
+	}
+	/* Under reduced motion nothing moves: the row stands still and wraps to
+	   a centered block, its copy is not drawn, and there is nothing to pause. */
 	@media (prefers-reduced-motion: reduce) {
 		.atelic-ui .marquee-track {
 			animation: none;
-			flex-wrap: wrap;
 			width: auto;
+		}
+		.atelic-ui .marquee-group {
+			flex: 1 1 auto;
+			flex-wrap: wrap;
 			justify-content: center;
+			padding-right: 0;
+		}
+		.atelic-ui .marquee-group[aria-hidden] {
+			display: none;
+		}
+		.atelic-ui .marquee-pause {
+			display: none;
 		}
 	}
 
@@ -1702,7 +1762,6 @@
 	}
 	.atelic-ui .price-band .price-lead {
 		color: var(--on-primary);
-		max-width: 48ch;
 	}
 	.atelic-ui .price-band .eyebrow.on-dark {
 		color: var(--on-primary);
@@ -1758,6 +1817,9 @@
 
 	/* ---- PricingCard (pricing-card.css) ---- */
 	/* Detailed pricing card. */
+	/* The card keeps its own width, the one cap rule 19 allows here: it is a
+	   card, not a column, and at the wrap's width its booking button ran
+	   900px wide across a nearly empty card (the gallery's capture, ATE-772). */
 	.atelic-ui .cost-card {
 		max-width: 520px;
 		margin-inline: auto;
@@ -1813,11 +1875,12 @@
 	}
 	/* A heading's serif accent reads --primary-ink on the page surface
 	   (base.css); on this dark band it keeps the plain primary it had. */
-	.atelic-ui .process :is(h1, h2) .serif,
+	.atelic-ui .process :is(h1, h2, .process-title) .serif,
 	.atelic-ui .process em.serif {
 		color: var(--primary);
 	}
-	.atelic-ui .process h2 {
+	.atelic-ui .process h2,
+	.atelic-ui .process .process-title {
 		color: var(--on-dark);
 	}
 	.atelic-ui .process-grid {
@@ -1857,10 +1920,14 @@
 		color: var(--primary-bright);
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-dark) 22%, transparent);
 	}
-	.atelic-ui .steps h4 {
+	/* A step's title keeps the look it had as an h4 at whatever level the
+	   band sets (an h3 under the default h2). */
+	.atelic-ui .steps .step-title {
 		color: var(--on-dark);
 		margin-bottom: 6px;
 		font-size: 1.25rem;
+		font-weight: var(--weight-bold);
+		letter-spacing: -0.01em;
 	}
 	.atelic-ui .steps p {
 		color: var(--on-dark-quiet);
@@ -1926,7 +1993,7 @@
 	.atelic-ui .profile-placeholder {
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
-		color: var(--neutral-500);
+		color: var(--ink-inset, var(--ink-soft));
 		text-align: center;
 		padding: 12px;
 		background: repeating-linear-gradient(
@@ -2041,7 +2108,7 @@
 		background:
 			repeating-linear-gradient(135deg, var(--hairline-strong) 0 10px, transparent 10px 20px),
 			var(--surface-inset);
-		color: var(--neutral-600);
+		color: var(--ink-inset, var(--ink-soft));
 	}
 	.atelic-ui .rslider-ph.is-after {
 		justify-items: end;
@@ -2049,7 +2116,7 @@
 		background:
 			repeating-linear-gradient(135deg, var(--primary-focus-ring) 0 10px, transparent 10px 20px),
 			var(--primary-tint);
-		color: var(--primary-deep);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .rslider-label {
 		position: absolute;
@@ -2357,7 +2424,10 @@
 	.atelic-ui .rvc-score-out {
 		font-size: clamp(1.2rem, 2vw, 1.7rem);
 		font-weight: var(--weight-medium);
-		color: var(--neutral-300);
+		/* The quiet gray, the faintest words the theme promises to read: the
+		   denominator is display size on a wide screen but body size on a
+		   phone, so it keeps the 4.5 to 1 floor (it read --neutral-300, 2.05). */
+		color: var(--neutral-500);
 	}
 	.atelic-ui .rvc-rating {
 		display: flex;
@@ -2466,7 +2536,8 @@
 		visibility: visible;
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .rvc-slide {
+		.atelic-ui .rvc-slide,
+		.atelic-ui .rvc-dot {
 			transition: none;
 		}
 	}

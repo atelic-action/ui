@@ -27,7 +27,9 @@ export function SectionHeading({
 	as: Heading = "h2",
 	className,
 }: SectionHeadingProps) {
-	const classes = ["section-head", center && "center", className].filter(Boolean).join(" ");
+	const classes = ["section-head", center && "center", onDark && "on-dark", className]
+		.filter(Boolean)
+		.join(" ");
 	return (
 		<div className={classes}>
 			{eyebrow && (

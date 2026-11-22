@@ -195,7 +195,6 @@ export function Footer({
 	const wordmark = logo?.wordmark === false ? name : (logo?.wordmark ?? name);
 	// The band is a dark surface, resolved by the order the header uses.
 	const mark = resolveMark(logo, "dark");
-	const Heading = `h${headingLevel}` as const;
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
 	const addressLines = address && (
 		<>
@@ -263,7 +262,15 @@ export function Footer({
 						</div>
 						{shown.map((column) => (
 							<nav key={column.heading} className="footer-column" aria-label={column.heading}>
-								<Heading className="footer-heading">{column.heading}</Heading>
+								{/* A heading by role rather than by element: a site's own bare
+								    h2 rule (unlayered, so it beats any rule in the package's
+								    layer whatever its weight) is written for a page's section
+								    titles and would restyle these small labels. A div that says
+								    it is a heading keeps the outline and matches no such rule. */}
+								{/* biome-ignore lint/a11y/useSemanticElements: an h2 element would take a site's bare h2 rules, see above */}
+								<div className="footer-heading" role="heading" aria-level={headingLevel}>
+									{column.heading}
+								</div>
 								{column.links.map((link) => (
 									<ColumnLink key={`${link.label} ${link.href}`} link={link} />
 								))}

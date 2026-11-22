@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Callout } from "../../src/components";
 import { longURL } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -89,11 +89,10 @@ export const TitleOnly: Story = {
 };
 
 /**
- * The longest finding, with a bare address in it, boxed on a phone. It should wrap inside the screen; the bare address runs past it
- * and the page scrolls sideways (stories/findings/primitives.md, `long-word-overflow`).
+ * The longest finding, with a bare address in it, boxed on a phone: it wraps
+ * inside the screen, the address breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		variant: "box",
@@ -102,6 +101,6 @@ export const LongestOnPhone: Story = {
 		children: `The form sends to ${longURL}, which answers with an error page; the shop never saw a single one of them.`,
 	},
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

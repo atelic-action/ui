@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { SignOff } from "../../src/artifact";
 import { person } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -49,12 +49,11 @@ export const RoleWithLink: Story = {
 };
 
 /**
- * The longest name, role, and address on a phone should stay inside the
- * screen. The address never wraps, so a long one runs past it
- * (stories/findings/primitives.md, `sign-off-address-nowrap`).
+ * The longest name, role, and address on a phone stay inside the screen:
+ * the address moves to a line of its own and breaks only when it is longer
+ * than the column.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		person: {
@@ -66,6 +65,6 @@ export const LongestOnPhone: Story = {
 		},
 	},
 	play: async () => {
-		await knownBug("sign-off-address-nowrap", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

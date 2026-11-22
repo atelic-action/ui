@@ -1,10 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { CSSProperties } from "react";
-import { expect, fireEvent, waitFor } from "storybook/test";
+import { expect, fireEvent, waitFor, within } from "storybook/test";
 import { ProseBlocks } from "../../src/primitives";
 import { longURL, proseFigures, prosePost, proseText } from "../fixtures/primitives";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll, inWrap } from "./support";
+import { inWrap } from "./support";
 
 /**
  * A document body carried as data: headings, paragraphs, lists, and figures,
@@ -25,7 +26,7 @@ type Story = StoryObj<typeof meta>;
 
 /** The open lightbox, once the tile has opened it. */
 function openDialog() {
-	return document.querySelector("dialog[open]") as HTMLDialogElement | null;
+	return within(document.body).queryByRole("dialog") as HTMLDialogElement | null;
 }
 
 /** The lightbox, waited for: the tile opens it in an effect after the click. */
@@ -131,9 +132,7 @@ export const LightboxClosesByButton: Story = {
 		const tile = canvas.getByRole("button", { name: tileName });
 		await userEvent.click(tile);
 		const dialog = await opened();
-		const close = Array.from(dialog.querySelectorAll("button")).find(
-			(b) => b.getAttribute("aria-label") === "Close",
-		) as HTMLButtonElement;
+		const close = within(dialog).getByRole("button", { name: "Close" });
 		await userEvent.click(close);
 		await closed();
 		await expect(tile).toHaveFocus();

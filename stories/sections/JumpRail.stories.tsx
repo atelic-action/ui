@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { JumpRail } from "../../src/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 const stops = [
@@ -64,7 +64,6 @@ const scrollToStop = (id: string) => {
  * page and back, and the rail sticks under the header the whole way.
  */
 export const FollowsScroll: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas, step }) => {
 		const tab = (name: string) => rail(canvas).getByRole("link", { name });
 		await step("a tab per stop, each an in page jump", async () => {
@@ -96,9 +95,7 @@ export const FollowsScroll: Story = {
 		});
 		// The mark is color alone: nothing tells a screen reader which tab is current.
 		await step("the marked tab says it is the current one", async () => {
-			await knownBug("jump-rail-no-current", async () => {
-				await expect(tab("Bread")).toHaveAttribute("aria-current", "location");
-			});
+			await expect(tab("Bread")).toHaveAttribute("aria-current", "location");
 		});
 	},
 };
@@ -125,6 +122,6 @@ export const ManyStopsPhone: Story = {
 		const links = rail(canvas).getAllByRole("link");
 		const last = links[links.length - 1].getBoundingClientRect();
 		await expect(last.right).toBeGreaterThan(window.innerWidth);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

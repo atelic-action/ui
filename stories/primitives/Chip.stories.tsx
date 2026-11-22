@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Chip } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll, onDarkBand } from "./support";
+import { onDarkBand } from "./support";
 
 /** A small mono tag, for a credential, a feature, or a service area. */
 const meta = {
@@ -55,15 +55,14 @@ export const Row: Story = {
 };
 
 /**
- * The longest label on a phone should stay inside the screen. A chip never
- * wraps its words, so a long one runs past it and the page scrolls sideways
- * (stories/findings/primitives.md, `chip-nowrap-overflow`).
+ * The longest label on a phone stays inside the screen: a chip moves whole
+ * to its own line, and only a label longer than the column wraps inside the
+ * pill, every word still shown.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { children: `Certified ${longWord} baker` },
 	play: async () => {
-		await knownBug("chip-nowrap-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, type within } from "storybook/test";
 import { ExpandList } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -146,21 +146,18 @@ export const LongestContent: Story = {
 	play: async ({ canvas, userEvent }) => {
 		await expect(row(canvas, /^11/)).toBeVisible();
 		await userEvent.click(row(canvas, /^01/));
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 
 /**
- * One unbroken word in a row's title, on a phone. The title never breaks
- * inside a word, so the row, and the page, scroll sideways.
+ * One unbroken word in a row's title, on a phone: the title breaks it where
+ * it must, and neither the row nor the page scrolls sideways.
  */
 export const UnbrokenWord: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ title: unbroken, body: <p>The guild's prize loaf.</p> }] },
 	play: async () => {
-		await knownBug("expand-long-word-overflow", async () => {
-			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-		});
+		await expectNoSidewaysScroll();
 	},
 };

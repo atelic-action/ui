@@ -102,6 +102,47 @@ describe("ColumnChart", () => {
 		const cols = [...container.querySelectorAll(".column-chart-col")];
 		expect(cols.map((col) => col.getAttribute("data-tone"))).toEqual(["muted", "muted", "info"]);
 	});
+
+	it("names a bar marked apart from its group by the legend's words for its tone", () => {
+		render(
+			<ColumnChart
+				legend={[
+					{ label: "A month the form worked", tone: "good" },
+					{ label: "The month the form was down", tone: "bad" },
+				]}
+				groups={[
+					{
+						label: "2026 Q3",
+						tone: "good",
+						bars: [
+							{ label: "Jul", value: 1210 },
+							{ label: "Aug", value: 640, tone: "bad" },
+							// Its own tone, but the group's: told by the group's label already.
+							{ label: "Sep", value: 1318, tone: "good" },
+						],
+					},
+				]}
+			/>,
+		);
+		expect(screen.getByRole("img")).toHaveAccessibleName(
+			"2026 Q3: Jul 1,210, Aug 640 (The month the form was down), Sep 1,318",
+		);
+	});
+
+	it("leaves a marked bar's name alone when the legend has no words for its tone", () => {
+		render(<ColumnChart groups={[{ bars: [{ label: "Aug", value: 640, tone: "bad" }] }]} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("Aug 640");
+	});
+
+	it("says it has nothing to show when it has no bars, shown and spoken", () => {
+		const { rerender } = render(<ColumnChart groups={[]} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("No data to show");
+		expect(screen.getByText("No data to show")).toBeInTheDocument();
+		rerender(
+			<ColumnChart groups={[{ label: "2026 Q3", bars: [] }]} emptyLabel="No searches yet" />,
+		);
+		expect(screen.getByRole("img")).toHaveAccessibleName("No searches yet");
+	});
 });
 
 describe("ThresholdScale", () => {
@@ -119,6 +160,31 @@ describe("ThresholdScale", () => {
 		const zones = [...container.querySelectorAll<HTMLElement>(".threshold-scale-zone")];
 		expect(zones.map((zone) => zone.style.width)).toEqual(["25%", "75%"]);
 		expect(container.querySelector<HTMLElement>(".threshold-scale-pin")?.style.left).toBe("75%");
-		expect(screen.getByRole("img")).toHaveAccessibleName("Phone: 6 s");
+		expect(screen.getByRole("img")).toHaveAccessibleName("Phone: 6 s, Poor");
+	});
+
+	it("speaks the zone each reading falls in, a line closing its zone and the far end the last", () => {
+		render(
+			<ThresholdScale
+				max={8}
+				zones={[
+					{ label: "Good", upTo: 2.5, tone: "good" },
+					{ label: "Slow", upTo: 4, tone: "warn" },
+					{ label: "Poor", tone: "bad" },
+				]}
+				readings={[
+					{ label: "Menu", value: 1.2, display: "1.2 s", tone: "good" },
+					{ label: "On the line", value: 2.5, display: "2.5 s", tone: "good" },
+					{ label: "Home", value: 3.1, display: "3.1 s", tone: "warn" },
+					{ label: "Gallery", value: 11.2, display: "11.2 s", tone: "bad" },
+				]}
+			/>,
+		);
+		expect(screen.getAllByRole("img").map((track) => track.getAttribute("aria-label"))).toEqual([
+			"Menu: 1.2 s, Good",
+			"On the line: 2.5 s, Good",
+			"Home: 3.1 s, Slow",
+			"Gallery: 11.2 s, Poor",
+		]);
 	});
 });
