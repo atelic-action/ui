@@ -26,8 +26,8 @@ export interface FullBleedVideoProps {
 /**
  * A silent, looping video band that runs edge to edge. The poster (the
  * first frame) shows at once as a plain picture, so the page never waits on
- * the video; the video loads in the background and starts once its metadata
- * has loaded (an iPhone buffers nothing until play is asked for), fading in over the picture, and only while it is on screen.
+ * the video; the video loads in the background and starts as soon as it
+ * is on screen (an iPhone buffers nothing until play is asked for), fading in over the picture, and only while it is on screen.
  * Under `prefers-reduced-motion` it never loads and stays on the poster.
  * Muted, looping, and inline, with no controls unless asked for.
  */
@@ -48,7 +48,6 @@ export function FullBleedVideo({
 	// Off until the effect has asked the reader's device: a reduced motion
 	// reader never gets the video's source at all.
 	const [load, setLoad] = useState(false);
-	const [ready, setReady] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [playing, setPlaying] = useState(false);
 	// A pause the reader asked for holds until they ask to play again.
@@ -80,7 +79,7 @@ export function FullBleedVideo({
 
 	useEffect(() => {
 		const video = ref.current;
-		if (!video || !ready) return;
+		if (!video) return;
 		if (visible && !held) {
 			video.play()?.catch((err: unknown) => {
 				// A pause that interrupts a pending play is the reader scrolling past.
@@ -91,7 +90,7 @@ export function FullBleedVideo({
 		} else if (!video.paused) {
 			video.pause();
 		}
-	}, [ready, visible, held]);
+	}, [visible, held]);
 
 	return (
 		<section className="fbv" id={id} style={{ height }}>
@@ -105,14 +104,13 @@ export function FullBleedVideo({
 			{load && (
 				<video
 					ref={ref}
-					className={["fbv-video", ready && playing && "is-on"].filter(Boolean).join(" ")}
+					className={["fbv-video", playing && "is-on"].filter(Boolean).join(" ")}
 					aria-hidden="true"
 					tabIndex={-1}
 					muted
 					loop
 					playsInline
 					preload="auto"
-					onLoadedMetadata={() => setReady(true)}
 					onPlaying={() => setPlaying(true)}
 					onPause={() => setPlaying(false)}
 				>
