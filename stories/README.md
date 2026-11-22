@@ -25,6 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 - Every component gets a docs page: `tags: ["autodocs"]` is set once in `.storybook/preview.tsx`, so a file never repeats it. A doc comment on the meta is the docs page's lead; one on a story is that story's caption. Write both as plain sentences saying what the reader sees.
 - Shared args go in the meta; a story sets only what it changes.
+- Decorators apply innermost first: the first in a story's `decorators` wraps the story directly, and each later one wraps the one before. A column or a frame the story sits in (a `.wrap`, a band, a page behind) goes last, so it is the outermost.
 - Story names say the state, not the test: `GroupedOpenByClick`, `NoAddress`, `LongestContent`.
 
 ## What Stories a Component Needs
@@ -40,15 +41,19 @@ A component with behavior gets a `play` function in each story that exercises it
 - **Every way to open and every way to close**: a click, a second click, the keyboard, Escape, a click outside, following a link inside, the close button.
 - **The keyboard paths**: Tab order, the arrows a widget answers to, and where focus lands after each (`toHaveFocus`).
 - **The `aria-*` state** at every stop: `aria-expanded`, `aria-current`, the accessible names (`toHaveAttribute`, `toHaveAccessibleName`).
-- **Layout that is the point**, as geometry: share a line (equal `getBoundingClientRect().top`), sit above or beside (`bottom <= top`), never overflow (`document.documentElement.scrollWidth <= window.innerWidth`).
+- **Layout that is the point**, as geometry: share a line (equal `getBoundingClientRect().top`), sit above or beside (`bottom <= top`), never overflow (`expectNoSidewaysScroll()` from `support/geometry.ts`, the one copy every group uses).
 
 Find things the way a reader does: `canvas.getByRole` with a name first, `getByText` for words. Never assert on a class name or the markup's shape; a `play` that passes only because a class is there tests nothing a reader sees. The one allowance is an element with no role to find it by (an `aria-hidden` video), reached from a neighbor that has one.
 
-Use `userEvent`, `expect`, `fn`, `spyOn`, and `waitFor` from `storybook/test`. Three things the test browser does not do for you:
+Use `userEvent`, `expect`, `fn`, `spyOn`, and `waitFor` from `storybook/test`. What the test browser does not do for you:
 
-- **A synthetic key never drives the platform.** Escape typed by `userEvent` reaches a component's own key handler but never closes a native `<dialog>`; call `dialog.requestClose()`, which runs the platform's Escape path.
+- **A synthetic key never drives the platform.** Escape typed by `userEvent` reaches a component's own key handler but never closes a native `<dialog>`; call `dialog.requestClose()`, which runs the platform's Escape path. Nor does an arrow key scroll a focused scrolling region: prove the region takes focus, not that it scrolls.
+- **A synthetic Tab ignores `inert` and a closed `<details>`.** `userEvent.tab()` moves focus onto a link the browser would never reach. Assert a refusal instead: call the link's `.focus()` and expect it not to have focus.
+- **Following a `#` link closes the test frame's connection.** A story that clicks one holds the jump with `support/fragments.ts`'s `holdFragmentJumps` as its `beforeEach`, which scrolls the target into view the way the browser does.
 - **A followed link stays in the story.** The preview cancels every click on a link that is not an in page `#` jump, after the component's handler runs, so a story can click a link and assert the panel closed.
 - **Scroll is instant only when asked.** The base sheet sets `scroll-behavior: smooth`; scroll with `window.scrollTo({ top, behavior: "instant" })` and wait for scroll driven state with `waitFor`.
+- **Reduced motion reaches only what the story turns on.** `support/motion.ts`'s `withReducedMotion`, as a story's `beforeEach`, answers `matchMedia` and copies the loaded sheets' reduced motion rules into the story's own document, so script and sheet both see the setting and no other file's stories do. It throws on a condition it cannot copy faithfully (a `no-preference` rule, an `or`, a `not`, a list), naming it.
+- **A short transition can finish before a check looks.** To show one runs, or does not, listen for `transitionrun` or `animationstart` from before the action rather than polling for a running animation afterward. To wait for an entrance to end, wait for it to begin (or to have ended), then `await settled()` (`support/settle.ts`), which waits for every finite animation on the page.
 
 ## The Frame a Story Gets
 
@@ -58,22 +63,24 @@ The first segment of the title decides it (`.storybook/decorators.tsx`):
 - **`App/`** renders inside `AppProvider` with the fixture app's config and nav, under a memory router at `parameters.app.path` (default `/`), with the app shell's Tailwind sheet mounted only while the story shows.
 - **`Email/`** renders rows inside the email theme provider and a 680 column table on the email's ground. No sheet loads.
 
-Fixed chrome needs a page behind it: `support/page.tsx`'s `PageBehind` (with `hero` or `tall`). `support/geometry.ts` measures where words start and how many lines they run to.
+Fixed chrome needs a page behind it: `support/page.tsx`'s `PageBehind` (with `hero` or `tall`). `support/geometry.ts` measures where words start (`textLeft`), how many lines they run to (`lines`), which words the browser broke inside themselves (`brokenWords`), and whether the page scrolls sideways (`expectNoSidewaysScroll`). Every group uses the helpers in `support/` rather than a copy of its own.
 
 ## Accessibility and Bugs
 
 Every story's test runs axe after its `play` function, and a violation fails it (`a11y: { test: "error" }` in the preview). Never weaken that globally, and never edit `src/` to make a story pass. When a story exposes a bug:
 
 1. **Add the story anyway**, written to what the component should do.
-2. **Mark the story** with `tags: ["known-issue"]` and the narrowest opt out:
-   - An accessibility rule: add an entry to your group's file in `support/known-issues/` naming the rule and the failing elements, and spread it into the story's parameters, always as an object literal: `parameters: { ...knownIssues("primary-button-contrast") }`. A bare `parameters: knownIssues(...)` is silently dropped whenever the meta or story has a doc comment. The rule is lifted off the named elements and everything inside them (a background that fails takes its children with it), and stays on for the rest of the page. Any group's ids may be used in any story; an id is declared once, by the group whose component the fix lands in, and the index throws on a second declaration.
+2. **Mark the story** with `tags: ["known-issue"]`, written as a literal on each marked story or meta (Storybook's indexer reads only a literal `tags`, so one inside a spread const is invisible to the sidebar and to `grep`), and the narrowest opt out:
+   - An accessibility rule: add an entry to your group's file in `support/known-issues/` naming the rule and the failing elements, and spread it into the story's parameters, always as an object literal: `parameters: { ...knownIssues("primary-button-contrast") }`. A bare `parameters: knownIssues(...)` is silently dropped whenever the meta or story has a doc comment. The rule is lifted off the named elements and everything inside them (a background that fails takes its children with it), and stays on for the rest of the page. Any group's ids may be used in any story; an id is declared once, by the group whose components show it, and the index throws on a second declaration. One cause shared across components is one id, whose entry's selector lists every element the cause reaches, so the fix that ends the cause ends its marker everywhere at once. An entry sets `base` to the rule's own selector whenever axe's definition of the rule selects something other than `*` (read it in axe-core's rule definition): the opt out replaces the rule's selector, so it has to start from the real one. A selector list is split on its top level commas only, so `:not(a, b)` and `:is(...)` may be written as they are.
    - A rule on elements no selector can single out (an inline styled email row): `parameters: { a11y: { test: "todo" } }`, which reports without failing.
    - A behavior: wrap the check in `await knownBug("<id>", async () => { ... })` from `support/known-issues`. It expects the check to fail. A crash on render is caught for the check by wrapping the story in `support/boundary.tsx`'s `CrashBoundary`.
 
-   Every marker fails the run the day its bug is gone, naming itself, so none can outlive the bug. A `knownBug` fails when its check passes. An accessibility entry is judged after each story that carries it, with its rule put back on its elements (`support/known-issues/stale.ts`, from the preview's `afterEach`): a story that shows the elements and passes the rule on them fails; a story that does not show them is not judged there, so a marker on a meta covers stories without the element; and an id that no story of a file ever shows violating fails the file once its last story has run. A story marked `todo` fails when its full check passes. `stories/foundations/StaleMarkers.stories.tsx` proves each direction. When one fails, delete the marker, the entry, and the findings line, and turn a `knownBug` into the plain assertion it wraps, so the story keeps testing the fix.
+   Every marker fails the run the day its bug is gone, naming itself, so none can outlive the bug. A `knownBug` fails when its check passes. An accessibility entry is judged after each story that carries it, with its rule put back on its elements (`support/known-issues/stale.ts`, from the preview's `afterEach`): a story that shows the elements and passes the rule on them fails; a story that does not show them is not judged there, so a marker on a meta covers stories without the element; and an id that no story of a file ever shows violating fails the file once its last story has run. A story marked `todo` fails when its full check passes. An entry is judged against the whole page, never its elements alone, since a rule that compares an element with the rest of the page (`landmark-unique`, `heading-order`) answers differently on a part; only violations falling on its elements count. Two entries a story carries that lift one rule off one element cannot be told apart, so they are judged together and named together when they go stale; carry each cause alone in at least one story, or merge them into one id. `stories/foundations/StaleMarkers.stories.tsx` proves each of these. When one fails, delete the marker, the entry, and the findings line, and turn a `knownBug` into the plain assertion it wraps, so the story keeps testing the fix.
 3. **Add a line to your group's findings file** in `stories/findings/`, under Accessibility or Behavior: the id, the component, the stories, what fails, and the rule id or the reproduction. A suspicion no story can show yet goes under Observed, Not Yet Marked; a limit of the test harness rather than the component goes under Checker Limits.
 
 Mark a whole file in its meta only when every story in it shows the issue. `grep -rn known-issue stories` lists every marked story; the files in `stories/findings/` are the list a later pass fixes.
+
+Never write a known bug's behavior as if it were correct outside a `knownBug`: an assertion that the broken thing happens (a name without its zone, a link to `#`) passes while the bug stands and has to be found and rewritten by hand the day it is fixed, where a `knownBug` names itself. Write the check the fixed component passes, and mark it.
 
 ## Who Writes Which Files
 
@@ -85,19 +92,11 @@ Three writers work in parallel, one per group, and each touches only its own fil
 | Primitives, components, artifact | `stories/primitives/`, `stories/components/`, `stories/artifact/` | `support/known-issues/primitives.ts` | `findings/primitives.md` | `fixtures/primitives.ts`, `public/images/primitives/` |
 | Email and app | `stories/email/`, `stories/app/` | `support/known-issues/email-app.ts` | `findings/email-app.md` | `fixtures/email-app.ts`, `public/images/email-app/` |
 
-The chrome (`stories/chrome/`, `support/known-issues/chrome.ts`, `findings/chrome.md`) and the foundations are done and belong to no writer in this pass. Everything else is shared and read only while the three work: `.storybook/`, `support/known-issues/index.ts` and `types.ts`, the other files in `support/`, `fixtures/bakery.ts` and `fixtures/app.ts`, this README, the root README and CLAUDE.md, `package.json`, and `bun.lock`. A writer who needs a change there (a helper, a fixture field, a package) names it in the handback instead of making it; a new group fixture spreads the shared one (`{ ...site, nav: ... }`) rather than editing it.
+The chrome (`stories/chrome/`, `support/known-issues/chrome.ts`, `findings/chrome.md`) and the foundations belong to no group. Everything else is shared: `.storybook/`, `support/` (the known issue machinery and the helpers), `fixtures/bakery.ts` and `fixtures/app.ts`, this README, the root README and CLAUDE.md, `package.json`, and `bun.lock`. A pass's brief names the one writer who may edit them; every other writer names a change it needs (a helper, a fixture field, a package) in the handback instead of making it, and a new group fixture spreads the shared one (`{ ...site, nav: ... }`) rather than editing it.
 
-## Components Still Owed
+## Every Component Has Stories
 
-Read from the source barrels; each still needs its stories. The chrome is complete, and the eleven components cut in 8.0.0 are gone and owe nothing.
-
-- **Sections** (`@atelic-action/ui/sections`): BlogIndex, BlogPost, CTASection, ComparisonTable, ContactForm, ContactInfoCard, CredentialList, ExpandList, FAQBrowser, FeatureDetail, FeatureGrid, Gallery, HoursTable, JumpRail, LegalPage, LocationSection, Locations, LogoMarquee, MapEmbed, PageHero, PricingBand, PricingCard, ProcessSteps, ProfileCards, RevealSlider, ReviewCarousel, ReviewWall, SplitSection. Done: CalloutPanel, FullBleedVideo, Hero, LinkColumns, ProofStrip.
-- **Primitives** (`@atelic-action/ui/primitives`): Bubble, Chip, Eyebrow, ImageFrame, Lead, ProseBlocks, QuoteCard, SectionHeading, StarRow, TickList. Done: Button, PrimaryButton, SecondaryButton.
-- **Components** (`@atelic-action/ui/components`): Callout, Checklist, ColumnChart, DataTable, Disclosure, GateLogin, Hint, IconList, NotFound, Rank, ReportCard, StackedBar, StarRating, StatRow, Tabs, ThresholdScale, Watermark.
-- **Artifact** (`@atelic-action/ui/artifact`): AppErrorBoundary, ArtifactAnchor, ArtifactShell, ErrorFallback, GradeChip, Paragraph, Runs, Shot, SignOff.
-- **Email** (`@atelic-action/ui/email`): Badge, Bar, BigFold, Card, DayStrip, EmptyRow, Eyebrow, FailurePage, Fold, FoldRow, Footer, GroupRow, Item, LeadRow, List, ListRow, Note, ReadBlock, RecordStack, RecordTimelineStrip, Records, Row, Scoreboard, Stat, StatsRow, SubEyebrow, TargetRow, TitleCard, TitleLine. Done: Masthead.
-- **App shell** (`@atelic-action/ui/app`): AuthGuard, ErrorFallback, GoogleGlyph, and the layout: ActionButton, AppLayout, AppPage, AppPageToolbar, FormActionButtons, PageError, PageSkeleton, SectionCards. Done: Breadcrumbs (AppPage appears only as its host).
-- **App kit** (`@atelic-action/ui/app/ui`), one file per module: accordion, alert, alert-dialog, avatar, badge, badge-list, button, callout, card, checkbox, clear-button, command, country-dropdown, dialog, dropdown-menu, form, input, label, option-select, pagination, popover, progress, search-input, select, separator, sheet, slider, switch, textarea, tooltip.
+Every export that draws has its stories as of ATE-772. A new component brings its own in the same change (the root CLAUDE.md).
 
 ## Fixtures
 
@@ -111,8 +110,8 @@ A static component:
 
 ```tsx
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
 import { ProofStrip } from "../../src/sections";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** One row of short proof facts under a hero. */
@@ -139,7 +138,7 @@ export const AltSurface: Story = { args: { surface: "alt" } };
 export const Phone: Story = {
 	globals: pin("phone"),
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 ```
