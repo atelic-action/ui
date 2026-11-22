@@ -131,7 +131,6 @@
 		"country-data-list": "^1.6.0",
 		"lucide-react": "^1.23.0",
 		"react": "^19.0.0",
-		"react-circle-flags": "^0.0.25",
 		"react-dom": "^19.0.0",
 		"react-hook-form": "^7.71.1",
 		"sonner": "^2.0.7",
@@ -211,9 +210,6 @@
 		"country-data-list": {
 			"optional": true
 		},
-		"react-circle-flags": {
-			"optional": true
-		},
 		"react-hook-form": {
 			"optional": true
 		},
@@ -279,7 +275,6 @@
 		"lucide-react": "^1.23.0",
 		"playwright": "^1.65.1",
 		"react": "^19.0.0",
-		"react-circle-flags": "^0.0.25",
 		"react-dom": "^19.0.0",
 		"react-hook-form": "^7.71.1",
 		"sonner": "^2.0.7",

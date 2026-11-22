@@ -1,10 +1,8 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { setAppConfig } from "../../src/app/config";
-import { AppConfigProvider } from "../../src/app/context/AppContext";
 import { ErrorFallback } from "../../src/app/ErrorFallback";
 import { PageError } from "../../src/app/layout/PageError";
 import { PageSkeleton } from "../../src/app/layout/PageSkeleton";
@@ -19,7 +17,6 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "../../src/app/ui/command";
-import { CountryDropdown, getCountryFlag } from "../../src/app/ui/country-dropdown";
 import {
 	Form,
 	FormControl,
@@ -34,45 +31,12 @@ import { Pagination } from "../../src/app/ui/pagination";
 import { Progress } from "../../src/app/ui/progress";
 import { SearchInput } from "../../src/app/ui/search-input";
 import { Slider } from "../../src/app/ui/slider";
-import { testConfig, testNav } from "./fixtures";
 
 /*
- * What a screen reader, a keyboard, and the network see of the kit: the
- * names and values the stories found missing, focus that survives a clear,
- * and a flag list that asks no outside host for anything.
+ * What a screen reader and a keyboard see of the kit: the
+ * names and values the stories found missing, and focus that survives a
+ * clear.
  */
-
-// The country list, cut to six (and the two the dropdown leaves out): cmdk
-// mounting all two hundred and fifty options takes jsdom about ten seconds.
-vi.mock("country-data-list", () => {
-	const country = (alpha2: string, alpha3: string, name: string, status = "assigned") => ({
-		alpha2,
-		alpha3,
-		countryCallingCodes: [],
-		currencies: [],
-		emoji: "x",
-		ioc: alpha3,
-		languages: [],
-		name,
-		status,
-	});
-	return {
-		countries: {
-			all: [
-				country("IS", "ISL", "Iceland"),
-				country("IT", "ITA", "Italy"),
-				country("KP", "PRK", "North Korea"),
-				country("NO", "NOR", "Norway"),
-				country("PT", "PRT", "Portugal"),
-				country("ES", "ESP", "Spain"),
-				country("SE", "SWE", "Sweden"),
-				country("YU", "YUG", "Yugoslavia", "deleted"),
-			],
-		},
-	};
-});
-
-const LISTED = 6;
 
 beforeAll(() => {
 	// cmdk measures its list and scrolls its highlight; jsdom has neither.
@@ -86,8 +50,6 @@ beforeAll(() => {
 
 afterEach(() => {
 	vi.unstubAllGlobals();
-	// A provider with a flag host records it as the app's config; put the fixture back.
-	setAppConfig(testConfig);
 });
 
 describe("Progress", () => {
@@ -215,149 +177,6 @@ describe("Command's list holds only options and groups", () => {
 		const empty = await screen.findByRole("option", { name: "No results." });
 		expect(empty).toHaveAttribute("aria-disabled", "true");
 		expect(within(screen.getByRole("listbox")).getAllByRole("option")).toEqual([empty]);
-	});
-});
-
-describe("CountryDropdown", () => {
-	function stubObserver() {
-		const observed: Element[] = [];
-		const instances: { callback: IntersectionObserverCallback; root: Element | null }[] = [];
-		vi.stubGlobal(
-			"IntersectionObserver",
-			class {
-				callback: IntersectionObserverCallback;
-				root: Element | null;
-				constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
-					this.callback = callback;
-					this.root = (options?.root as Element | null) ?? null;
-					instances.push(this);
-				}
-				observe(target: Element) {
-					observed.push(target);
-				}
-				disconnect() {}
-				unobserve() {}
-			},
-		);
-		return { observed, instances };
-	}
-
-	/** Open the list and hand back its parts. */
-	function openList() {
-		// The click opens the popover inside act, so the list is there at once;
-		// a waitFor here would sit out cmdk's pending work for seconds.
-		fireEvent.click(screen.getByRole("button"));
-		const list = document.querySelector<HTMLElement>("[cmdk-list]");
-		if (!list) throw new Error("the list did not open");
-		const dialog = list.closest<HTMLElement>("[role='dialog']");
-		const search = document.querySelector<HTMLElement>("[cmdk-input]");
-		return { list, dialog, search };
-	}
-
-	/** Close it again inside the test, so cleanup has no open popover to tear down. */
-	function closeList() {
-		fireEvent.click(screen.getByRole("button"));
-		expect(document.querySelector("[cmdk-list]")).toBeNull();
-	}
-
-	it("draws the code, fetching nothing, wherever the app names no flag host", () => {
-		render(<CountryDropdown value="PT" />);
-		expect(document.querySelector("img")).toBeNull();
-		// The fallback draws the code, hidden from a reader beside the name.
-		const fallback = document.querySelector("[data-flag-fallback]");
-		expect(fallback?.textContent).toBe("PT");
-		expect(fallback?.closest("[aria-hidden='true']")).not.toBeNull();
-	});
-
-	it("loads the trigger's flag from the app config's flag host", () => {
-		render(
-			<AppConfigProvider config={{ ...testConfig, flagsBaseURL: "/flags/" }} nav={testNav}>
-				<CountryDropdown value="PT" />
-			</AppConfigProvider>,
-		);
-		const flag = document.querySelector("img");
-		expect(flag).toHaveAttribute("src", "/flags/pt.svg");
-		expect(flag).toHaveAttribute("alt", "");
-	});
-
-	it("takes the host from a prop over the config", () => {
-		render(
-			<AppConfigProvider config={{ ...testConfig, flagsBaseURL: "/flags/" }} nav={testNav}>
-				<CountryDropdown value="PT" flagsBaseURL="https://cdn.example.com/f/" />
-			</AppConfigProvider>,
-		);
-		expect(document.querySelector("img")).toHaveAttribute(
-			"src",
-			"https://cdn.example.com/f/pt.svg",
-		);
-	});
-
-	it("draws the code instead when a flag fails to load", () => {
-		render(<CountryDropdown value="PT" flagsBaseURL="/flags/" />);
-		const flag = document.querySelector("img") as HTMLImageElement;
-		fireEvent.error(flag);
-		expect(document.querySelector("img")).toBeNull();
-		expect(document.querySelector("[data-flag-fallback]")?.textContent).toBe("PT");
-	});
-
-	// Popper and cmdk leave jsdom seconds of work after a popover opens, so the
-	// open list is checked in one test.
-	it("opens onto a named popover with the search outside the listbox, loading a flag only in view", async () => {
-		const { observed, instances } = stubObserver();
-		render(<CountryDropdown flagsBaseURL="/flags/" />);
-		const { list, dialog, search } = openList();
-		expect(dialog).toHaveAttribute("aria-label", "Countries");
-		expect(search).toHaveAttribute("role", "combobox");
-		expect(dialog?.contains(search)).toBe(true);
-		expect(list.getAttribute("role")).toBe("listbox");
-		expect(list.contains(search)).toBe(false);
-		// The two the dropdown leaves out, a deleted entry and North Korea, are not offered.
-		expect(list.textContent).not.toContain("Yugoslavia");
-		expect(list.textContent).not.toContain("North Korea");
-
-		// Nothing is asked for until a row is in view: every row draws its code.
-		expect(list.querySelectorAll("img")).toHaveLength(0);
-		expect(list.querySelectorAll("[data-flag-fallback]")).toHaveLength(LISTED);
-		expect(observed).toHaveLength(LISTED);
-		expect(instances[0].root).toBe(list);
-
-		// Bring the first three rows into view.
-		act(() => {
-			for (const instance of instances.slice(0, 3)) {
-				instance.callback(
-					[{ isIntersecting: true } as IntersectionObserverEntry],
-					instance as unknown as IntersectionObserver,
-				);
-			}
-		});
-		const shown = Array.from(list.querySelectorAll("img")).map((img) => img.getAttribute("src"));
-		expect(shown).toEqual(["/flags/is.svg", "/flags/it.svg", "/flags/no.svg"]);
-		closeList();
-		// Opening any Radix popover in jsdom stalls the next turn of the event
-		// loop for ten seconds or more (a bare Popover does it, so it is not
-		// the dropdown's). Take that turn here, where the stall is this test's
-		// own, rather than in whichever test runs next, which a slower machine
-		// would time out at five seconds for work it never did.
-		await act(async () => {
-			await new Promise((resolve) => setTimeout(resolve, 0));
-		});
-	}, 60_000);
-});
-
-describe("getCountryFlag", () => {
-	it("is an image named for the country, fetching nothing with no host", () => {
-		render(<div>{getCountryFlag("Portugal")}</div>);
-		expect(screen.getByRole("img", { name: "Portugal" })).toBeInTheDocument();
-		expect(document.querySelector("img")).toBeNull();
-	});
-
-	it("loads from the host it is given", () => {
-		render(<div>{getCountryFlag("Portugal", "/flags/")}</div>);
-		expect(document.querySelector("img")).toHaveAttribute("src", "/flags/pt.svg");
-	});
-
-	it("is null for a country the list does not know", () => {
-		expect(getCountryFlag("Atlantis")).toBeNull();
 	});
 });
 
