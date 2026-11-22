@@ -8,7 +8,7 @@ const ordinary =
 const token = "orders-and-wholesale-questions@kestrelhollowbakehouse.example.com";
 
 /**
- * The root's `overflow-wrap: anywhere` (base.css, Long words), proved on a
+ * The root's `overflow-wrap: anywhere` (defaults.css, Long words), proved on a
  * phone: a word longer than its line breaks where it must, and the page
  * stays still, while an ordinary sentence still wraps only at its spaces,
  * never inside a word.

@@ -4,16 +4,6 @@
    They sit in the package's layer like every sheet here, so any rule a site
    writes outside a layer still wins over them whatever its specificity. */
 @layer atelic-ui {
-	/* Long words break rather than scroll a phone sideways; a table keeps
-	   break-word. The reasons are base.css's (Long words), repeated here
-	   for a consumer that loads this sheet alone. */
-	.atelic-ui {
-		overflow-wrap: anywhere;
-	}
-	.atelic-ui table {
-		overflow-wrap: break-word;
-	}
-
 	/* CTA buttons: primary (brand), dark (ink), ghost (outline). */
 	.atelic-ui .btn {
 		display: inline-flex;
@@ -32,6 +22,12 @@
 			color 0.2s ease;
 		text-align: center;
 		line-height: 1;
+		/* A label keeps its words whole in a crowded row: break-word, unlike
+		   the root's anywhere (defaults.css, Long words), leaves the button's
+		   minimum width at its longest word, so a row of buttons wraps a
+		   button to the next line rather than squeezing one letter by letter.
+		   A button wider than its whole line still breaks. */
+		overflow-wrap: break-word;
 	}
 	.atelic-ui .btn:active {
 		transform: translateY(1px) scale(0.99);
@@ -547,7 +543,7 @@
 
 	/* Ported prose carries long unbroken strings (URLs, citations, defined terms
 	   in caps) that would otherwise push the column past the viewport on a phone.
-	   anywhere, as on the root (base.css, Long words), so a prose block set in a
+	   anywhere, as on the root (defaults.css, Long words), so a prose block set in a
 	   flex or grid track breaks them too. */
 	.atelic-ui .pb-body,
 	.atelic-ui .pb-list li {

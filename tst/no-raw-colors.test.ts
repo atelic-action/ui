@@ -34,6 +34,14 @@ const SHEETS = readdirSync(STYLES)
 const DEFAULTS = {
 	sheet: "defaults.css",
 	selectors: [":where(.atelic-ui) {", ":where(.atelic-ui) ::backdrop {"],
+	// The long word rules, the one thing beside the tokens that every sheet
+	// needs as it needs the defaults (defaults.css, Long words). They set
+	// inherited properties and no token, so no raw color may sit in them.
+	rules: [
+		":where(.atelic-ui) {",
+		":where(.atelic-ui table) {",
+		':where(.atelic-ui a[href^="tel:"]) {',
+	],
 };
 
 /** A line that may keep a raw color, by sheet and an exact piece of the line, with why. */
@@ -159,7 +167,18 @@ describe("raw colors in the layered sheets", () => {
 	it("keeps the defaults in the one sheet, holding nothing but them, imported by every layered sheet", () => {
 		const lines = codeLines(readFileSync(join(STYLES, DEFAULTS.sheet), "utf8"));
 		const rules = lines.map((line) => line.trim()).filter((line) => line.endsWith("{"));
-		expect(rules).toEqual(["@layer atelic-ui {", ...DEFAULTS.selectors]);
+		expect(rules).toEqual([
+			"@layer atelic-ui {",
+			DEFAULTS.selectors[0],
+			...DEFAULTS.rules,
+			DEFAULTS.selectors[1],
+		]);
+		// The long word rules carry no token of their own.
+		const css = readFileSync(join(STYLES, DEFAULTS.sheet), "utf8");
+		for (const rule of DEFAULTS.rules.slice(1)) {
+			const body = css.slice(css.indexOf(rule) + rule.length, css.indexOf("}", css.indexOf(rule)));
+			expect(body, rule).not.toMatch(/--[\w-]+:/);
+		}
 		for (const sheet of SHEETS.filter((name) => name !== DEFAULTS.sheet)) {
 			const css = readFileSync(join(STYLES, sheet), "utf8");
 			expect(codeLines(css).some((line) => line.trim().startsWith(":where(.atelic-ui)"))).toBe(

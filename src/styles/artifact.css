@@ -37,7 +37,7 @@
 	}
 	/* The words beside the photograph shrink to the page, and the address
 	   moves whole to its own line, breaking only when it is longer than the
-	   column (base.css, Long words); nowrap ran a phone sideways. */
+	   column (defaults.css, Long words); nowrap ran a phone sideways. */
 	.atelic-ui .op-who > div {
 		min-width: 0;
 	}

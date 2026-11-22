@@ -116,7 +116,7 @@
 		letter-spacing: -0.02em;
 		font-size: 1.02rem;
 		/* The brand's name never breaks inside a word: the root's anywhere
-		   (base.css, Long words) would let a crowded bar squeeze the wordmark
+		   (defaults.css, Long words) would let a crowded bar squeeze the wordmark
 		   letter by letter. It still wraps at its spaces. */
 		overflow-wrap: normal;
 	}

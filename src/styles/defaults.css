@@ -8,7 +8,9 @@
    sheet alone (an app with components.css, a page with primitives.css) has
    every default the sheet reads. This is the one place they are declared;
    README.md, Tokens, documents each. A raw color anywhere else in a layered
-   sheet fails tst/no-raw-colors.test.ts. */
+   sheet fails tst/no-raw-colors.test.ts. The one rule beside them that is
+   not a token, the long word break (below), sits here for the same reason:
+   every sheet needs it, so every sheet gets it from here. */
 @layer atelic-ui {
 	:where(.atelic-ui) {
 		/* Anything set on the primary fill (--primary-fill): a primary
@@ -97,6 +99,32 @@
 		--section-space: clamp(56px, 9vw, 120px);
 		--block-gap: 44px;
 		--card-min: 240px;
+	}
+
+	/* ---- Long words ----
+	   A word too long for its line (a bare URL, a long address, a handle)
+	   breaks where it must instead of scrolling a phone sideways. Ordinary
+	   words still wrap at spaces: the break happens only when a word alone
+	   overflows its line. It is anywhere and not break-word because only
+	   anywhere lowers a flex or grid item's minimum content width, so the
+	   tracks a word sits in can shrink to the screen (Component Rules 5).
+	   Set once on the root and inherited, so every text element under it has
+	   it, whichever sheets a consumer loads. A table keeps break-word:
+	   anywhere would collapse an auto table's columns below their longest
+	   ordinary word, and a wide table scrolls in its own box instead (rule
+	   6). Both weigh nothing, so any component rule that holds a run whole
+	   (the brand's name, a price, a phone number) wins without a fight.
+	   stories/foundations/LongWords.stories.tsx holds the crowded rows. */
+	:where(.atelic-ui) {
+		overflow-wrap: anywhere;
+	}
+	:where(.atelic-ui table) {
+		overflow-wrap: break-word;
+	}
+	/* A phone number is one thing to read and dial, so it never breaks, at
+	   its spaces or its hyphen, wherever it is set (Component Rules 17). */
+	:where(.atelic-ui a[href^="tel:"]) {
+		white-space: nowrap;
 	}
 
 	/* A ::backdrop inherits no custom property before Safari 17.4 and Chrome

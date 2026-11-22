@@ -1792,7 +1792,12 @@
 		align-items: center;
 		gap: 8px;
 	}
+	/* A price is one figure: it never breaks, so its column grows to hold
+	   it rather than the root's anywhere (defaults.css, Long words) letting
+	   the card's track shrink and cut "$1,480" in two. */
 	.atelic-ui .price-fig {
+		overflow-wrap: normal;
+		white-space: nowrap;
 		font-size: clamp(3.4rem, 9vw, 5rem);
 		font-weight: var(--weight-heavy);
 		letter-spacing: -0.03em;
