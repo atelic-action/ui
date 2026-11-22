@@ -44,7 +44,7 @@ export const RetryByKeyboard: Story = {
 /** While developing, the error's message shows under the apology, in muted grey on the muted well. */
 export const WithDetails: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-muted-well-contrast") },
+	parameters: { ...knownIssues("app-muted-on-grey-contrast") },
 	args: { showDetails: true },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByText("Cannot read the tray count of undefined")).toBeVisible();
@@ -54,7 +54,7 @@ export const WithDetails: Story = {
 /** A thrown value that is not an Error reads as an unknown error. */
 export const NotAnError: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-muted-well-contrast") },
+	parameters: { ...knownIssues("app-muted-on-grey-contrast") },
 	args: { error: "the oven timer", showDetails: true },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByText("Unknown error")).toBeVisible();
@@ -67,7 +67,7 @@ export const NotAnError: Story = {
  */
 export const LongDetailsPhone: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("app-muted-well-contrast", "error-details-not-focusable") },
+	parameters: { ...knownIssues("app-muted-on-grey-contrast", "error-details-not-focusable") },
 	args: {
 		showDetails: true,
 		error: new Error(

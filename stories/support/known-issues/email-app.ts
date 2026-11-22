@@ -12,10 +12,15 @@ export const issues = {
 		rule: "color-contrast",
 		elements: ".bg-destructive, .text-destructive",
 	},
-	/** Muted words on the muted well (`text-muted-foreground` on `bg-muted`): 4.39:1 at 12px. */
-	"app-muted-well-contrast": {
+	/**
+	 * Muted words (`--muted-foreground`, #71717a) on the kit's grey (`--muted`
+	 * and `--accent`, #f4f4f5): 4.39:1 at 12px. The error fallback's details,
+	 * a highlighted command item's shortcut.
+	 */
+	"app-muted-on-grey-contrast": {
 		rule: "color-contrast",
-		elements: ".bg-muted.text-muted-foreground",
+		elements:
+			".bg-muted.text-muted-foreground, [cmdk-item][data-selected=true] .text-muted-foreground",
 	},
 	/** The error fallback's details box scrolls but cannot take focus, so a keyboard cannot scroll it. */
 	"error-details-not-focusable": {
@@ -38,6 +43,41 @@ export const issues = {
 	"toolbar-action-time-name": {
 		rule: "label-content-name-mismatch",
 		elements: ".ap-actions .btn-ghost, .ap-actions .btn-solid",
+	},
+	/** `AlertTitle` is always an `h5`, so under a page's `h1` the levels skip. */
+	"alert-title-heading-level": {
+		rule: "heading-order",
+		elements: "[role=alert] h5",
+		base: "h1, h2, h3, h4, h5, h6, [role=heading]",
+	},
+	/** `CommandDialog` renders its dialog with no title and takes none, so the dialog has no name. */
+	"command-dialog-unnamed": {
+		rule: "aria-dialog-name",
+		elements: "[role=dialog]",
+		base: '[role="dialog"], [role="alertdialog"]',
+	},
+	/** A `CommandSeparator` is a `separator` inside the command's `listbox`, which may hold only options and groups. */
+	"command-separator-in-listbox": { rule: "aria-required-children", elements: "[cmdk-list]" },
+	/** With nothing matching, the command's `listbox` holds no option (the empty line sits beside them). */
+	"command-empty-listbox": { rule: "aria-required-children", elements: "[cmdk-list]" },
+	/** The country dropdown sets its search box inside its `listbox`, which may hold only options and groups. */
+	"country-list-holds-the-search": { rule: "aria-required-children", elements: "[cmdk-list]" },
+	/** The country dropdown's popover is a `dialog` with no name. */
+	"country-popover-unnamed": {
+		rule: "aria-dialog-name",
+		elements: "[data-radix-popper-content-wrapper] > [role=dialog]",
+		base: '[role="dialog"], [role="alertdialog"]',
+	},
+	/** Pagination's Prev shows "Prev" and is named "Previous page", which does not hold the word it shows. */
+	"pagination-prev-name": {
+		rule: "label-content-name-mismatch",
+		elements: 'button[aria-label="Previous page"]',
+	},
+	/** The slider's thumb is drawn by the wrapper with no props, so the `slider` a reader reaches has no name. */
+	"slider-thumb-unnamed": {
+		rule: "aria-input-field-name",
+		elements: "[role=slider]",
+		base: '[role="combobox"], [role="listbox"], [role="searchbox"], [role="slider"], [role="spinbutton"], [role="textbox"]',
 	},
 	/**
 	 * Not a bug: a limit of the checker. A modal Radix menu hides the rest of
