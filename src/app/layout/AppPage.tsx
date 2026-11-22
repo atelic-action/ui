@@ -171,7 +171,12 @@ interface AppPageToolbarProps {
 	search?: { value: string; onChange: (value: string) => void; placeholder?: string };
 	filters?: ToolbarFilter[];
 	actions?: ToolbarAction[];
-	/** Optional status line below the toolbar row (e.g. a sync-progress message). */
+	/**
+	 * Optional status line (a sync progress message). On a desktop it sits in
+	 * the toolbar's wrapping row, after the search and the actions and before
+	 * the filters; on a phone, where the row stacks, it sits under the search.
+	 * A plain block, never a live region, so a ticking line is not announced.
+	 */
 	notice?: ReactNode;
 }
 
