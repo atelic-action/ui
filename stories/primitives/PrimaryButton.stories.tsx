@@ -1,14 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PrimaryButton } from "../../src/primitives";
-import { knownIssues } from "../support/known-issues";
 
 /** A page's call to action: the large primary with the arrow, one fixed shape. */
 const meta = {
 	title: "Primitives/PrimaryButton",
 	component: PrimaryButton,
-	tags: ["known-issue"],
-	parameters: { layout: "padded", ...knownIssues("primary-button-contrast") },
+	parameters: { layout: "padded" },
 	args: { children: "Order ahead", href: "/order" },
 } satisfies Meta<typeof PrimaryButton>;
 

@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, waitFor, within } from "storybook/test";
 import { ContactDock } from "../../src/chrome";
 import { dock } from "../fixtures/bakery";
-import { knownIssues } from "../support/known-issues";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -14,8 +13,6 @@ import { pin } from "../support/viewports";
 const meta = {
 	title: "Chrome/ContactDock",
 	component: ContactDock,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("dock-on-primary-contrast") },
 	args: { ...dock, avoid: null },
 	decorators: [
 		(Story) => (
@@ -32,9 +29,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * The launcher, by its words: "Talk to us" closed, "Close" open. Open, the
- * panel's own close button shares the name, so the launcher is told apart by
- * the state it carries (stories/findings/chrome.md).
+ * The launcher, by its words: "Talk to us" closed, "Close" open. The panel's
+ * own close button is "Close panel", so the two never share a name.
  */
 const launcher = (canvas: ReturnType<typeof within>, name = "Talk to us") =>
 	canvas.getByRole("button", { name, expanded: name !== "Talk to us" });
@@ -58,12 +54,12 @@ export const OpensAndCloses: Story = {
 			await expect(panel()).toBeVisible();
 			await expect(launcher(canvas, "Close")).toHaveAttribute("aria-expanded", "true");
 			await waitFor(() =>
-				expect(within(panel()).getByRole("button", { name: "Close" })).toHaveFocus(),
+				expect(within(panel()).getByRole("button", { name: "Close panel" })).toHaveFocus(),
 			);
 			await expect(within(panel()).getAllByRole("listitem")).toHaveLength(4);
 		});
 		await step("the panel's close button closes it and focus returns to the launcher", async () => {
-			await userEvent.click(within(panel()).getByRole("button", { name: "Close" }));
+			await userEvent.click(within(panel()).getByRole("button", { name: "Close panel" }));
 			await expect(canvas.queryByRole("region", { name: "How can we help?" })).toBeNull();
 			await expect(launcher(canvas)).toHaveFocus();
 		});

@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { Button } from "../../src/primitives";
-import { knownIssues } from "../support/known-issues";
 
 const meta = {
 	title: "Primitives/Button",
@@ -13,15 +12,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** A primary button's white words fail contrast on this theme (stories/findings/primitives.md). */
-const primaryContrast = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast") },
-} satisfies Story;
-
 /** The default: a medium primary, rendered as a real button when it has no `href`. */
 export const Primary: Story = {
-	...primaryContrast,
 	args: { onClick: fn() },
 	play: async ({ canvas, userEvent, args }) => {
 		const button = canvas.getByRole("button", { name: "Order ahead" });
@@ -47,13 +39,11 @@ export const GhostOnDark: Story = {
 };
 
 export const Large: Story = {
-	...primaryContrast,
 	args: { size: "lg" },
 };
 
 /** The arrow is decoration: it is hidden from the accessible name. */
 export const WithArrow: Story = {
-	...primaryContrast,
 	args: { size: "lg", arrow: true },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("button", { name: "Order ahead" })).toBeVisible();
@@ -62,7 +52,6 @@ export const WithArrow: Story = {
 
 /** With an `href` it is a link, carrying the base path and never a new tab on a protocol link. */
 export const AsLink: Story = {
-	...primaryContrast,
 	args: { href: "/order" },
 	play: async ({ canvas }) => {
 		const link = canvas.getByRole("link", { name: "Order ahead" });
@@ -72,7 +61,6 @@ export const AsLink: Story = {
 };
 
 export const PhoneLinkIgnoresNewTab: Story = {
-	...primaryContrast,
 	args: { href: "tel:+15555550142", newTab: true, children: "Call (555) 555-0142" },
 	play: async ({ canvas }) => {
 		const link = canvas.getByRole("link", { name: "Call (555) 555-0142" });
@@ -81,7 +69,6 @@ export const PhoneLinkIgnoresNewTab: Story = {
 };
 
 export const ExternalNewTab: Story = {
-	...primaryContrast,
 	args: { href: "https://order.example.com", newTab: true },
 	play: async ({ canvas }) => {
 		const link = canvas.getByRole("link", { name: "Order ahead" });
@@ -92,7 +79,6 @@ export const ExternalNewTab: Story = {
 
 /** An icon only control names itself through `ariaLabel`. */
 export const NamedByAriaLabel: Story = {
-	...primaryContrast,
 	args: { ariaLabel: "Order a loaf ahead", children: "→" },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("button", { name: "Order a loaf ahead" })).toBeVisible();
@@ -101,6 +87,54 @@ export const NamedByAriaLabel: Story = {
 
 /** The longest label a page is likely to give it. */
 export const LongLabel: Story = {
-	...primaryContrast,
 	args: { size: "lg", arrow: true, children: "Order a cake for Saturday pickup at the counter" },
+};
+
+/** Every rule in the page's sheets, layers and media blocks opened. */
+function allRules(list: CSSRuleList): CSSStyleRule[] {
+	return [...list].flatMap((rule) =>
+		rule instanceof CSSStyleRule
+			? [rule]
+			: "cssRules" in rule
+				? allRules((rule as CSSGroupingRule).cssRules)
+				: [],
+	);
+}
+
+/**
+ * The fill behind a primary button's words is `--primary-fill`, which this
+ * theme sets to what was the hover shade. The hover and the press darken the
+ * fill itself, so each still reads apart from the rest state and from each
+ * other. The test browser's pointer is synthetic and never sets `:hover` or
+ * `:active`, so each state's own rule from the sheet is painted on a probe
+ * inside the button, where it resolves against the same theme.
+ */
+export const FillHoverAndPress: Story = {
+	play: async ({ canvas, step }) => {
+		const button = canvas.getByRole("button", { name: "Order ahead" });
+		const rules = [...document.styleSheets].flatMap((sheet) => allRules(sheet.cssRules));
+		const stateFill = (selector: string) => {
+			const rule = rules.find((candidate) => candidate.selectorText === selector);
+			if (!rule) throw new Error(`No rule for ${selector} in the page's sheets.`);
+			const probe = document.createElement("span");
+			probe.style.backgroundColor = rule.style.getPropertyValue("background");
+			button.append(probe);
+			const color = getComputedStyle(probe).backgroundColor;
+			probe.remove();
+			return color;
+		};
+		const rest = getComputedStyle(button).backgroundColor;
+		await step("at rest the button wears the theme's fill", async () => {
+			await expect(rest).toBe(stateFill(".atelic-ui .btn-primary"));
+		});
+		await step("the hover darkens the fill", async () => {
+			await expect(stateFill(".atelic-ui .btn-primary:hover")).not.toBe(rest);
+		});
+		await step("the press darkens it further", async () => {
+			const hover = stateFill(".atelic-ui .btn-primary:hover");
+			const press = stateFill(".atelic-ui .btn-primary:active");
+			await expect(press).not.toBe(hover);
+			await expect(press).not.toBe(rest);
+		});
+	},
 };

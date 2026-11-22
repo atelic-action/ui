@@ -4,7 +4,7 @@ import { SiteShell } from "../../src/chrome";
 import type { Density } from "../../src/sections";
 import { Hero, LinkColumns, ProofStrip } from "../../src/sections";
 import { groupedNav, phones, site } from "../fixtures/bakery";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** A home page's body: the hero, the proof strip, and enough sections to scroll past. */
@@ -62,11 +62,8 @@ const meta = {
 	tags: ["known-issue"],
 	parameters: {
 		root: false,
-		...knownIssues(
-			"primary-button-contrast",
-			"dock-on-primary-contrast",
-			"checker-transparent-header",
-		),
+		// A checker limit, not a bug (stories/findings/chrome.md, Checker Limits).
+		...knownIssues("checker-transparent-header"),
 	},
 	args: {
 		site: { ...site, nav: groupedNav, header: { phones } },
@@ -116,7 +113,6 @@ export const FullPage: Story = {
 };
 
 export const FullPagePhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	play: async ({ canvas, step }) => {
 		const launcher = canvas.getByRole("button", { name: "Talk to us" });
@@ -137,23 +133,23 @@ export const FullPagePhone: Story = {
 			await expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top);
 			await expect(box(launcher).top).toBeGreaterThanOrEqual(0);
 		});
-		await step(
-			"the closing bar scrolls clear of the sticky bar (stories/findings/chrome.md)",
-			async () => {
-				const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
-				await knownBug("sticky-bar-covers-closing-bar", async () => {
-					await expect(box(copyright).bottom).toBeLessThanOrEqual(box(call).top - 12);
-				});
-			},
-		);
+		await step("the closing bar scrolls clear of the sticky bar, its words in reach", async () => {
+			const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
+			await waitFor(() => expect(box(copyright).bottom).toBeLessThanOrEqual(box(call).top - 12));
+			// What a tap at the credit's middle lands on is the credit, not the bar.
+			const credit = canvas.getByRole("link", { name: "Atelic" });
+			const middle = box(credit);
+			const hit = document.elementFromPoint(
+				middle.left + middle.width / 2,
+				middle.top + middle.height / 2,
+			);
+			await expect(credit.contains(hit)).toBe(true);
+		});
 	},
 };
 
 /** An interior page: the bar is solid, `<main>` clears it, and the sticky bar is there from the top. */
 export const InteriorPagePhone: Story = {
-	parameters: {
-		...knownIssues("primary-button-contrast", "dock-on-primary-contrast", "footer-heading-order"),
-	},
 	args: {
 		heroNav: false,
 		currentPath: "/visit",

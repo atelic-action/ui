@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor } from "storybook/test";
 import { StickyCTABar } from "../../src/chrome";
 import { cta, phone } from "../fixtures/bakery";
-import { knownIssues } from "../support/known-issues";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -10,8 +9,6 @@ import { pin } from "../support/viewports";
 const meta = {
 	title: "Chrome/StickyCTABar",
 	component: StickyCTABar,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast") },
 	args: { primaryCTA: cta, phone },
 	decorators: [
 		(Story) => (
