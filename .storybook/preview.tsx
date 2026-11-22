@@ -37,8 +37,8 @@ const preview: Preview = {
 		// Sections and chrome are full bleed; a primitive's story asks for padding.
 		layout: "fullscreen",
 		// A violation fails the story's test. Never weaken this here: a story
-		// that exposes one sets `a11y: { test: "todo" }` for itself and logs it
-		// in stories/FINDINGS.md (stories/README.md, Findings).
+		// that exposes one is marked for itself and logged in its group's file
+		// in stories/findings/ (stories/README.md, Accessibility and Bugs).
 		a11y: { test: "error" },
 		viewport: { options: viewports },
 		controls: { matchers: { color: /(background|color)$/i, date: /Date$/i } },

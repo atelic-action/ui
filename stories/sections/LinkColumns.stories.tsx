@@ -7,13 +7,13 @@ import { pin } from "../support/viewports";
 
 /**
  * Columns of links under a section's heading: service areas by region, here
- * with counts. The heading's eyebrow fails contrast on this theme (FINDINGS.md).
+ * with counts. The heading's eyebrow fails contrast on this theme (stories/findings/primitives.md).
  */
 const meta = {
 	title: "Sections/LinkColumns",
 	component: LinkColumns,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-text-contrast") },
+	parameters: { ...knownIssues("eyebrow-contrast") },
 	args: {
 		columns: [
 			{

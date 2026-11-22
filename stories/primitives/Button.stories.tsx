@@ -13,10 +13,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** A primary button's white words fail contrast on this theme (FINDINGS.md). */
+/** A primary button's white words fail contrast on this theme (stories/findings/primitives.md). */
 const primaryContrast = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("white-on-primary") },
+	parameters: { ...knownIssues("primary-button-contrast") },
 } satisfies Story;
 
 /** The default: a medium primary, rendered as a real button when it has no `href`. */

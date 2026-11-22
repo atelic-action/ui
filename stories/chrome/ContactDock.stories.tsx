@@ -15,7 +15,7 @@ const meta = {
 	title: "Chrome/ContactDock",
 	component: ContactDock,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("white-on-primary") },
+	parameters: { ...knownIssues("dock-on-primary-contrast") },
 	args: { ...dock, avoid: null },
 	decorators: [
 		(Story) => (
@@ -34,7 +34,7 @@ type Story = StoryObj<typeof meta>;
 /**
  * The launcher, by its words: "Talk to us" closed, "Close" open. Open, the
  * panel's own close button shares the name, so the launcher is told apart by
- * the state it carries (FINDINGS.md).
+ * the state it carries (stories/findings/chrome.md).
  */
 const launcher = (canvas: ReturnType<typeof within>, name = "Talk to us") =>
 	canvas.getByRole("button", { name, expanded: name !== "Talk to us" });

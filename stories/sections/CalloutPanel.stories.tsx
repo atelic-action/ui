@@ -1,18 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { CalloutPanel } from "../../src/sections";
+import { lines } from "../support/geometry";
 import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * Short callouts on the primary field, set inside a section after its copy.
- * Its white words fail contrast on this theme's primary (FINDINGS.md).
+ * Its white words fail contrast on this theme's primary (stories/findings/sections.md).
  */
 const meta = {
 	title: "Sections/CalloutPanel",
 	component: CalloutPanel,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("on-primary-contrast") },
+	parameters: { ...knownIssues("on-primary-field-contrast") },
 	args: {
 		items: [
 			{ title: "Since 2014", subtitle: "One shop on Alder Street" },
@@ -53,13 +54,6 @@ function callouts(
 }
 
 const top = (element: Element) => Math.round(element.getBoundingClientRect().top);
-
-/** How many lines an element's words run to. */
-function lines(element: Element) {
-	const range = document.createRange();
-	range.selectNodeContents(element);
-	return new Set(Array.from(range.getClientRects()).map((rect) => Math.round(rect.top))).size;
-}
 
 /** Four across, and the titles and subtitles each on one line across the row. */
 export const Desktop: Story = {

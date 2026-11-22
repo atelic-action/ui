@@ -9,7 +9,7 @@ const meta = {
 	title: "Sections/Hero",
 	component: Hero,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("white-on-primary") },
+	parameters: { ...knownIssues("primary-button-contrast") },
 	args: {
 		eyebrow: "Alder Street, since 2014",
 		title: (
@@ -93,14 +93,14 @@ export const OverlayNoPhoto: Story = {
 /**
  * The copy and its actions on the primary field beside the photo, at the
  * height the copy needs. The field's white words and the primary button on
- * it both fail contrast on this theme (FINDINGS.md).
+ * it both fail contrast on this theme (stories/findings/sections.md).
  */
 export const Split: Story = {
 	args: {
 		layout: "split",
 		secondaryCTA: { label: "Call (555) 555-0142", href: "tel:+15555550142" },
 	},
-	parameters: { ...knownIssues("white-on-primary", "on-primary-contrast") },
+	parameters: { ...knownIssues("primary-button-contrast", "on-primary-field-contrast") },
 	play: async ({ canvas }) => {
 		const copy = canvas.getByRole("heading", { level: 1 }).getBoundingClientRect();
 		const photo = canvas
@@ -122,7 +122,7 @@ export const Split: Story = {
 /** On a phone the split stacks, the photo first. */
 export const SplitPhone: Story = {
 	args: { layout: "split" },
-	parameters: { ...knownIssues("white-on-primary", "on-primary-contrast") },
+	parameters: { ...knownIssues("primary-button-contrast", "on-primary-field-contrast") },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		const copy = canvas.getByRole("heading", { level: 1 }).getBoundingClientRect();
@@ -136,7 +136,7 @@ export const SplitPhone: Story = {
 
 export const SplitNoPhoto: Story = {
 	args: { layout: "split", image: undefined },
-	parameters: { ...knownIssues("white-on-primary", "on-primary-contrast") },
+	parameters: { ...knownIssues("primary-button-contrast", "on-primary-field-contrast") },
 };
 
 /** Only the headline: every other part is optional. */

@@ -42,17 +42,40 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The poster shows at once as a plain picture, edge to edge, before the clip is asked for. */
+/**
+ * The poster shows at once as a plain picture, edge to edge. The clip is not
+ * fetched until the band comes within a screen of the viewport, and is not
+ * shown or played until it is on screen.
+ */
 export const PosterFirst: Story = {
 	decorators: [BelowTheFold],
-	play: async ({ canvas }) => {
+	play: async ({ canvas, step }) => {
 		const poster = canvas.getByRole("img", { name: "The ovens warming before the first bake" });
-		await expect(poster).toBeVisible();
-		await expect(Math.round(poster.getBoundingClientRect().width)).toBe(window.innerWidth);
-		await expect(play).not.toHaveBeenCalled();
-		// The clip is in the page, loading behind the picture, and not yet shown.
-		const video = poster.parentElement?.querySelector("video") as HTMLVideoElement;
-		await expect(getComputedStyle(video).opacity).toBe("0");
+		// The video is aria-hidden, so it has no role to find it by; it is the poster's sibling.
+		const video = () => poster.parentElement?.querySelector("video") ?? null;
+		await step(
+			"far down the page, the poster stands alone and the clip is not fetched",
+			async () => {
+				await expect(Math.round(poster.getBoundingClientRect().width)).toBe(window.innerWidth);
+				await new Promise((resolve) => setTimeout(resolve, 200));
+				await expect(video()).toBeNull();
+				await expect(play).not.toHaveBeenCalled();
+			},
+		);
+		// The component fetches within a screen of the viewport, but a story
+		// runs in an iframe, which clips what lies past its own edge, so an
+		// observer's margin never reaches beyond it here: the clip arrives once
+		// the band is on screen.
+		await step("on screen the clip arrives", async () => {
+			poster.scrollIntoView({ behavior: "instant" });
+			const clip = await waitFor(() => {
+				const element = video();
+				if (!element) throw new Error("No video yet");
+				return element;
+			});
+			await expect(clip).toBeInTheDocument();
+			await expect(poster).toBeVisible();
+		});
 	},
 };
 

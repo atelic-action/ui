@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { Footer, type FooterColumn } from "../../src/chrome";
-import { address, brand, email, phone, site, wordmarkBrand } from "../fixtures/bakery";
+import { Footer, type FooterColumn, SiteHeader } from "../../src/chrome";
+import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** The default footer's four columns, as SiteShell derives them from the bakery's config. */
@@ -166,5 +167,55 @@ export const LongestContent: Story = {
 	play: async () => {
 		// A long address breaks rather than pushing the page sideways on a phone.
 		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+	},
+};
+
+/** The file a picture draws, by its path. */
+const file = (img: HTMLImageElement | undefined) => (img ? new URL(img.src).pathname : undefined);
+
+/** A brand cut per surface: the dark band draws the cut for a dark ground, named for the business. */
+export const MarkCutForTheDarkBand: Story = {
+	args: {
+		brand: {
+			...brand,
+			logo: { onLight: marks.wideOnLight, onDark: marks.wideOnDark, alt: "Kestrel Hollow" },
+		},
+	},
+	play: async ({ canvas }) => {
+		const mark = canvas.getByRole("img", { name: "Kestrel Hollow" }) as HTMLImageElement;
+		await expect(file(mark)).toBe(marks.wideOnDark);
+	},
+};
+
+/**
+ * One config, two surfaces that are both dark: the dark header draws the
+ * `onLight` cut as given (it never reads `src` once a cut is set), while the
+ * footer draws `src`, so the same site shows two different marks
+ * (stories/findings/chrome.md).
+ */
+export const SameConfigAsTheDarkHeader: Story = {
+	tags: ["known-issue"],
+	args: {
+		brand: {
+			...brand,
+			logo: { src: marks.glyphOnDark, onLight: marks.glyphOnLight, alt: "Kestrel Hollow" },
+		},
+	},
+	render: (args) => (
+		<>
+			<SiteHeader brand={args.brand} variant="dark" />
+			<div style={{ height: "40vh" }} />
+			<Footer {...args} />
+		</>
+	),
+	play: async ({ canvas }) => {
+		const header = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		const headerMark = Array.from(header.querySelectorAll("img")).find(
+			(img) => getComputedStyle(img).display !== "none",
+		);
+		const footerMark = canvas.getByRole("img", { name: "Kestrel Hollow" }) as HTMLImageElement;
+		await knownBug("header-footer-mark-disagree", async () => {
+			await expect(file(headerMark)).toBe(file(footerMark));
+		});
 	},
 };

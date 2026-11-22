@@ -12,9 +12,10 @@ const config: StorybookConfig = {
 	stories: ["../stories/**/*.stories.@(ts|tsx)"],
 	addons: ["@storybook/addon-docs", "@storybook/addon-a11y", "@storybook/addon-vitest"],
 	framework: { name: "@storybook/react-vite", options: {} },
-	// The gallery's fonts, pictures, and clip, served at the root as a site
-	// serves its public folder. The folder moves here when the gallery goes.
-	staticDirs: ["../gallery/public"],
+	// The gallery's fonts, pictures, and clip, and the stories' own pictures
+	// (the marks cut per surface), served at the root as a site serves its
+	// public folder. The gallery's folder moves here when the gallery goes.
+	staticDirs: ["../gallery/public", "../stories/public"],
 	core: { disableTelemetry: true },
 	async viteFinal(viteConfig) {
 		return mergeConfig(viteConfig, {

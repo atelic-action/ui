@@ -12,7 +12,7 @@ const meta = {
 	title: "Email/Masthead",
 	component: Masthead,
 	// The palette's faint ink fails contrast on the email's ground, and an
-	// inline styled row has no class to scope a rule by (FINDINGS.md).
+	// inline styled row has no class to scope a rule by (stories/findings/email-app.md).
 	tags: ["known-issue"],
 	parameters: { a11y: { test: "todo" } },
 	args: { title: "The week at the bakehouse" },

@@ -1,21 +1,32 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
+import type { NavLink, NavPanelSection } from "../../src/chrome";
 import { SiteHeader } from "../../src/chrome";
-import { brand, contact, cta, flatLinks, groupedLinks, phones } from "../fixtures/bakery";
+import {
+	brand,
+	contact,
+	cta,
+	flatLinks,
+	groupedLinks,
+	phones,
+	sectionedLinks,
+} from "../fixtures/bakery";
+import { CrashBoundary } from "../support/boundary";
+import { textLeft } from "../support/geometry";
 import { knownBug, knownIssues } from "../support/known-issues";
 import { PageBehind, type PageBehindProps } from "../support/page";
 import { pin } from "../support/viewports";
 
 /**
- * The fixed bar every page wears. Written against the mega menu as it is on
- * main at 8.0.0 (columns, a feature card, an all link); the panel kinds,
- * nested links, and badges join these stories when that change lands.
+ * The fixed bar every page wears. A nav group's panel holds sections left to
+ * right (link columns with badges and children, a picture, icon rows, small
+ * cards) and the feature card at the right.
  */
 const meta = {
 	title: "Chrome/SiteHeader",
 	component: SiteHeader,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("white-on-primary", "primary-text-contrast") },
+	parameters: { ...knownIssues("primary-button-contrast", "nav-current-contrast") },
 	args: { brand, links: flatLinks, primaryCTA: cta, contact, currentPath: "/menu" },
 	// The page under the bar; a story sets `parameters.page` for a hero or a long page.
 	decorators: [
@@ -321,5 +332,246 @@ export const LongestContent: Story = {
 		],
 		phones,
 		primaryCTA: { label: "Order for Saturday pickup", href: "/order" },
+	},
+};
+
+/** Opens a group's panel by its control and hands it back. */
+async function openGroup(
+	canvas: ReturnType<typeof within>,
+	userEvent: { click: (element: Element) => Promise<void> },
+	name: string,
+) {
+	const control = canvas.getByRole("button", { name });
+	await userEvent.click(control);
+	await expect(control).toHaveAttribute("aria-expanded", "true");
+	return control;
+}
+
+/** A link column with a linked heading, a badge, and children; a picture; the ticked feature card. */
+export const SectionedLinksAndPicture: Story = {
+	tags: ["known-issue"],
+	parameters: {
+		...knownIssues(
+			"primary-button-contrast",
+			"nav-current-contrast",
+			"nav-badge-contrast",
+			"nav-feature-eyebrow-contrast",
+			"nav-row-highlight-contrast",
+		),
+	},
+	args: { links: sectionedLinks, currentPath: "/" },
+	play: async ({ canvas, userEvent, step }) => {
+		await openGroup(canvas, userEvent, "Menu");
+		await step("the column heading is a link", async () => {
+			await expect(canvas.getByRole("link", { name: "Bread" })).toHaveAttribute(
+				"href",
+				"/menu/bread",
+			);
+		});
+		await step("a badge rides in its link's name", async () => {
+			await expect(canvas.getByRole("link", { name: /Country sourdough\s*Popular/ })).toBeVisible();
+		});
+		await step("children sit indented under their parent", async () => {
+			const parent = canvas.getByRole("link", { name: /Country sourdough/ });
+			const child = canvas.getByRole("link", { name: "Whole loaf" });
+			await expect(child.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+				parent.getBoundingClientRect().bottom - 1,
+			);
+			await expect(textLeft(child)).toBeGreaterThan(textLeft(parent));
+			await expect(canvas.getByRole("link", { name: /Half loaf\s*New/ })).toBeVisible();
+		});
+		await step("the picture is one link named by its caption", async () => {
+			await expect(canvas.getByRole("link", { name: "See the morning bake" })).toHaveAttribute(
+				"href",
+				"/menu/morning",
+			);
+		});
+		await step("the feature card ticks its points", async () => {
+			for (const point of ["Ready by eight", "Paid at pickup", "Two days for a cake"]) {
+				await expect(canvas.getByText(point)).toBeVisible();
+			}
+		});
+	},
+};
+
+/** Icon rows, one highlighted as the way most people should take, beside small cards. */
+export const SectionedRowsAndCards: Story = {
+	tags: ["known-issue"],
+	args: { links: sectionedLinks, currentPath: "/" },
+	parameters: {
+		...knownIssues(
+			"primary-button-contrast",
+			"nav-current-contrast",
+			"nav-badge-contrast",
+			"nav-feature-eyebrow-contrast",
+			"nav-row-highlight-contrast",
+		),
+	},
+	play: async ({ canvas, userEvent }) => {
+		await openGroup(canvas, userEvent, "Wholesale");
+		const start = canvas.getByRole("link", { name: /Start a standing order/ });
+		const prices = canvas.getByRole("link", { name: /Price sheet/ });
+		await expect(start).toHaveAttribute("href", "/wholesale/start");
+		await expect(getComputedStyle(start).backgroundColor).not.toBe(
+			getComputedStyle(prices).backgroundColor,
+		);
+		await expect(canvas.getByRole("link", { name: /Why our rye rests two days/ })).toHaveAttribute(
+			"href",
+			"/journal/rye",
+		);
+		await expect(canvas.getByRole("link", { name: /Morning baker/ })).toBeVisible();
+	},
+};
+
+/** The up and down arrows walk a panel's links in order, across every kind of section. */
+export const SectionedKeyboard: Story = {
+	tags: ["known-issue"],
+	args: { links: sectionedLinks, currentPath: "/" },
+	parameters: {
+		...knownIssues(
+			"primary-button-contrast",
+			"nav-current-contrast",
+			"nav-badge-contrast",
+			"nav-feature-eyebrow-contrast",
+			"nav-row-highlight-contrast",
+		),
+	},
+	play: async ({ canvas, userEvent, step }) => {
+		const menu = canvas.getByRole("button", { name: "Menu" });
+		const walk = async (names: (string | RegExp)[]) => {
+			for (const name of names) {
+				await userEvent.keyboard("{ArrowDown}");
+				await waitFor(() => expect(canvas.getByRole("link", { name })).toHaveFocus());
+			}
+		};
+		await step("a link column, its children, the picture, then the feature's button", async () => {
+			menu.focus();
+			await walk([
+				/The whole menu/,
+				"Bread",
+				/Country sourdough/,
+				"Whole loaf",
+				/Half loaf/,
+				/Seeded rye/,
+				"See the morning bake",
+				"Order for Saturday",
+			]);
+			await userEvent.keyboard("{ArrowDown}");
+			await expect(canvas.getByRole("link", { name: /The whole menu/ })).toHaveFocus();
+		});
+		await step("icon rows, then cards", async () => {
+			await userEvent.keyboard("{Escape}");
+			await expect(menu).toHaveFocus();
+			await userEvent.keyboard("{ArrowRight}");
+			await expect(canvas.getByRole("button", { name: "Wholesale" })).toHaveFocus();
+			await walk([
+				/Start a standing order/,
+				/Price sheet/,
+				/Talk to the bakers/,
+				/Why our rye rests two days/,
+				/Morning baker/,
+			]);
+		});
+	},
+};
+
+/**
+ * A page that a picture or a card leads to: its group marks itself current,
+ * but the picture and the card links never set `aria-current`, where a link
+ * column's links do (stories/findings/chrome.md).
+ */
+export const CurrentPictureAndCard: Story = {
+	parameters: {
+		...knownIssues(
+			"primary-button-contrast",
+			"nav-current-contrast",
+			"nav-badge-contrast",
+			"nav-feature-eyebrow-contrast",
+			"nav-row-highlight-contrast",
+		),
+	},
+	tags: ["known-issue"],
+	args: { links: sectionedLinks, currentPath: "/menu/morning" },
+	play: async ({ canvas, userEvent }) => {
+		await openGroup(canvas, userEvent, "Menu");
+		await knownBug("panel-picture-card-current", async () => {
+			await expect(canvas.getByRole("link", { name: "See the morning bake" })).toHaveAttribute(
+				"aria-current",
+				"page",
+			);
+		});
+	},
+};
+
+/** A section kind the panel does not know falls through to the cards' drawing and crashes the header. */
+export const UnknownSectionKind: Story = {
+	tags: ["known-issue"],
+	args: {
+		links: [
+			{
+				label: "Menu",
+				href: "/menu",
+				columns: [{ kind: "video", href: "/menu/video" } as unknown as NavPanelSection],
+			} satisfies NavLink,
+			{ label: "Visit", href: "/visit" },
+		],
+	},
+	decorators: [
+		(Story) => (
+			<CrashBoundary>
+				<Story />
+			</CrashBoundary>
+		),
+	],
+	play: async ({ canvas }) => {
+		await knownBug("unknown-section-kind-crashes", async () => {
+			await expect(canvas.queryByRole("alert")).toBeNull();
+			await expect(canvas.getByRole("banner")).toBeVisible();
+		});
+	},
+};
+
+/**
+ * The fullest panel at the narrowest desktop the bar shows its groups at:
+ * a link column, a picture, cards, and the feature card together. Every
+ * section stays inside the card.
+ */
+export const CrowdedPanel: Story = {
+	tags: ["known-issue"],
+	args: {
+		links: [
+			{
+				...sectionedLinks[0],
+				columns: [...(sectionedLinks[0]?.columns ?? []), ...(sectionedLinks[1]?.columns ?? [])],
+			} as NavLink,
+			{ label: "Visit", href: "/visit" },
+		],
+		currentPath: "/",
+	},
+	parameters: {
+		...knownIssues(
+			"primary-button-contrast",
+			"nav-current-contrast",
+			"nav-badge-contrast",
+			"nav-feature-eyebrow-contrast",
+			"nav-row-highlight-contrast",
+		),
+	},
+	play: async ({ canvas, userEvent }) => {
+		const control = await openGroup(canvas, userEvent, "Menu");
+		// The panel the control names; its one child is the card the sections sit in.
+		const region = document.getElementById(control.getAttribute("aria-controls") ?? "");
+		const card = region?.firstElementChild;
+		if (!card) throw new Error("The open group's panel holds no card.");
+		const panel = card.getBoundingClientRect();
+		for (const name of [
+			/Morning baker/,
+			"See the morning bake",
+			/Talk to the bakers/,
+			"Order for Saturday",
+		]) {
+			const box = canvas.getByRole("link", { name }).getBoundingClientRect();
+			await expect(box.right).toBeLessThanOrEqual(panel.right + 1);
+		}
 	},
 };

@@ -207,3 +207,113 @@ export const site: SiteConfig = {
 	legalLinks: [{ label: "Privacy", href: "/privacy" }],
 	contactDock: dock,
 };
+
+/**
+ * The nav with every kind of panel section: a link column with a linked
+ * heading, a badge, and children, a picture, the feature card with ticked
+ * points, icon rows with one highlighted, and small cards.
+ */
+export const sectionedLinks: NavLink[] = [
+	{
+		label: "Menu",
+		href: "/menu",
+		allLabel: "The whole menu",
+		columns: [
+			{
+				heading: "Bread",
+				href: "/menu/bread",
+				links: [
+					{
+						label: "Country sourdough",
+						href: "/menu/sourdough",
+						description: "The daily loaf",
+						badge: "Popular",
+						children: [
+							{ label: "Whole loaf", href: "/menu/sourdough/loaf" },
+							{ label: "Half loaf", href: "/menu/sourdough/half", badge: "New" },
+						],
+					},
+					{ label: "Seeded rye", href: "/menu/rye", description: "Thursdays and Saturdays" },
+				],
+			},
+			{
+				kind: "picture",
+				image: { src: "/images/bakery-loop-first-frame.jpg" },
+				caption: "See the morning bake",
+				href: "/menu/morning",
+			},
+		],
+		feature: {
+			eyebrow: "Order ahead",
+			title: "Skip the Saturday line.",
+			points: ["Ready by eight", "Paid at pickup", "Two days for a cake"],
+			cta: { label: "Order for Saturday", href: "/order" },
+		},
+	},
+	{
+		label: "Wholesale",
+		href: "/wholesale",
+		columns: [
+			{
+				kind: "rows",
+				heading: "For cafes and grocers",
+				rows: [
+					{
+						label: "Start a standing order",
+						description: "Delivered before you open",
+						icon: "truck",
+						href: "/wholesale/start",
+						highlight: true,
+					},
+					{
+						label: "Price sheet",
+						description: "This season's list",
+						icon: "document",
+						href: "/wholesale/prices",
+					},
+					{
+						label: "Talk to the bakers",
+						description: "Seven to three",
+						icon: "phone",
+						href: "/wholesale/contact",
+					},
+				],
+			},
+			{
+				kind: "cards",
+				heading: "Latest",
+				cards: [
+					{
+						kicker: "Journal",
+						title: "Why our rye rests two days",
+						meta: "Five minute read",
+						image: { src: "/images/bakery-loop-first-frame.jpg" },
+						href: "/journal/rye",
+					},
+					{ kicker: "Hiring", title: "Morning baker", meta: "Full time", href: "/jobs/baker" },
+				],
+			},
+		],
+	},
+	{
+		label: "The bake",
+		href: "/bake",
+		columns: [
+			{
+				kind: "picture",
+				image: { src: "/images/bakery-band.svg" },
+				caption: "Watch the morning bake",
+				href: "/bake",
+			},
+		],
+	},
+	{ label: "Visit", href: "/visit" },
+];
+
+/** A light mark (for a dark surface) and an ink mark (for a light one), each the bakery's own cut. */
+export const marks = {
+	glyphOnDark: "/images/kestrel-glyph-light.svg",
+	glyphOnLight: "/images/kestrel-glyph-ink.svg",
+	wideOnDark: "/images/kestrel-mark-light.svg",
+	wideOnLight: "/images/kestrel-mark-ink.svg",
+};

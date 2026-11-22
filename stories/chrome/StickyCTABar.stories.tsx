@@ -11,7 +11,7 @@ const meta = {
 	title: "Chrome/StickyCTABar",
 	component: StickyCTABar,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("white-on-primary") },
+	parameters: { ...knownIssues("primary-button-contrast") },
 	args: { primaryCTA: cta, phone },
 	decorators: [
 		(Story) => (

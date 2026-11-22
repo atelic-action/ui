@@ -58,7 +58,7 @@ The first segment of the title decides it (`.storybook/decorators.tsx`):
 - **`App/`** renders inside `AppProvider` with the fixture app's config and nav, under a memory router at `parameters.app.path` (default `/`), with the app shell's Tailwind sheet mounted only while the story shows.
 - **`Email/`** renders rows inside the email theme provider and a 680 column table on the email's ground. No sheet loads.
 
-Fixed chrome needs a page behind it: `support/page.tsx`'s `PageBehind` (with `hero` or `tall`).
+Fixed chrome needs a page behind it: `support/page.tsx`'s `PageBehind` (with `hero` or `tall`). `support/geometry.ts` measures where words start and how many lines they run to.
 
 ## Accessibility and Bugs
 
@@ -66,18 +66,42 @@ Every story's test runs axe after its `play` function, and a violation fails it 
 
 1. **Add the story anyway**, written to what the component should do.
 2. **Mark the story** with `tags: ["known-issue"]` and the narrowest opt out:
-   - An accessibility rule: add an entry to `support/known-issues.ts` naming the rule and the failing elements, and spread it into the story's parameters, always as an object literal: `parameters: { ...knownIssues("white-on-primary") }`. A bare `parameters: knownIssues(...)` is silently dropped whenever the meta or story has a doc comment. The rule stays on for everything else on the page.
+   - An accessibility rule: add an entry to your group's file in `support/known-issues/` naming the rule and the failing elements, and spread it into the story's parameters, always as an object literal: `parameters: { ...knownIssues("primary-button-contrast") }`. A bare `parameters: knownIssues(...)` is silently dropped whenever the meta or story has a doc comment. The rule stays on for everything else on the page. Any group's ids may be used in any story; an id is declared once, by the group whose component the fix lands in, and the index throws on a second declaration.
    - A rule on elements no selector can single out (an inline styled email row): `parameters: { a11y: { test: "todo" } }`, which reports without failing.
-   - A behavior: wrap the check in `await knownBug("<id>", async () => { ... })`. It expects the check to fail, so the run stays green while the bug stands and goes red, naming the marker, the day it is fixed.
-3. **Append a line to `stories/FINDINGS.md`**: the id, the component, the stories, what fails, and the rule id or the reproduction.
+   - A behavior: wrap the check in `await knownBug("<id>", async () => { ... })` from `support/known-issues`. It expects the check to fail, so the run stays green while the bug stands and goes red, naming the marker, the day it is fixed. A crash on render is caught for the check by wrapping the story in `support/boundary.tsx`'s `CrashBoundary`.
+3. **Add a line to your group's findings file** in `stories/findings/`, under Accessibility or Behavior: the id, the component, the stories, what fails, and the rule id or the reproduction. A suspicion no story can show yet goes under Observed, Not Yet Marked; a limit of the test harness rather than the component goes under Checker Limits.
 
-Mark a whole file in its meta only when every story in it shows the issue. `grep -rn known-issue stories` lists every marked story; FINDINGS.md is the list a later pass fixes.
+Mark a whole file in its meta only when every story in it shows the issue. `grep -rn known-issue stories` lists every marked story; the files in `stories/findings/` are the list a later pass fixes.
+
+## Who Writes Which Files
+
+Three writers work in parallel, one per group, and each touches only its own files, so their branches never conflict:
+
+| Group | Stories | Known issues | Findings | Fixtures and pictures |
+|---|---|---|---|---|
+| Sections | `stories/sections/` | `support/known-issues/sections.ts` | `findings/sections.md` | `fixtures/sections.ts`, `public/images/sections/` |
+| Primitives, components, artifact | `stories/primitives/`, `stories/components/`, `stories/artifact/` | `support/known-issues/primitives.ts` | `findings/primitives.md` | `fixtures/primitives.ts`, `public/images/primitives/` |
+| Email and app | `stories/email/`, `stories/app/` | `support/known-issues/email-app.ts` | `findings/email-app.md` | `fixtures/email-app.ts`, `public/images/email-app/` |
+
+The chrome (`stories/chrome/`, `support/known-issues/chrome.ts`, `findings/chrome.md`) and the foundations are done and belong to no writer in this pass. Everything else is shared and read only while the three work: `.storybook/`, `support/known-issues/index.ts` and `types.ts`, the other files in `support/`, `fixtures/bakery.ts` and `fixtures/app.ts`, this README, the root README and CLAUDE.md, `package.json`, and `bun.lock`. A writer who needs a change there (a helper, a fixture field, a package) names it in the handback instead of making it; a new group fixture spreads the shared one (`{ ...site, nav: ... }`) rather than editing it.
+
+## Components Still Owed
+
+Read from the source barrels; each still needs its stories. The chrome is complete, and the eleven components cut in 8.0.0 are gone and owe nothing.
+
+- **Sections** (`@atelic-action/ui/sections`): BlogIndex, BlogPost, CTASection, ComparisonTable, ContactForm, ContactInfoCard, CredentialList, ExpandList, FAQBrowser, FeatureDetail, FeatureGrid, Gallery, HoursTable, JumpRail, LegalPage, LocationSection, Locations, LogoMarquee, MapEmbed, PageHero, PricingBand, PricingCard, ProcessSteps, ProfileCards, RevealSlider, ReviewCarousel, ReviewWall, SplitSection. Done: CalloutPanel, FullBleedVideo, Hero, LinkColumns, ProofStrip.
+- **Primitives** (`@atelic-action/ui/primitives`): Bubble, Chip, Eyebrow, ImageFrame, Lead, ProseBlocks, QuoteCard, SectionHeading, StarRow, TickList. Done: Button, PrimaryButton, SecondaryButton.
+- **Components** (`@atelic-action/ui/components`): Callout, Checklist, ColumnChart, DataTable, Disclosure, GateLogin, Hint, IconList, NotFound, Rank, ReportCard, StackedBar, StarRating, StatRow, Tabs, ThresholdScale, Watermark.
+- **Artifact** (`@atelic-action/ui/artifact`): AppErrorBoundary, ArtifactAnchor, ArtifactShell, ErrorFallback, GradeChip, Paragraph, Runs, Shot, SignOff.
+- **Email** (`@atelic-action/ui/email`): Badge, Bar, BigFold, Card, DayStrip, EmptyRow, Eyebrow, FailurePage, Fold, FoldRow, Footer, GroupRow, Item, LeadRow, List, ListRow, Note, ReadBlock, RecordStack, RecordTimelineStrip, Records, Row, Scoreboard, Stat, StatsRow, SubEyebrow, TargetRow, TitleCard, TitleLine. Done: Masthead.
+- **App shell** (`@atelic-action/ui/app`): AuthGuard, ErrorFallback, GoogleGlyph, and the layout: ActionButton, AppLayout, AppPage, AppPageToolbar, FormActionButtons, PageError, PageSkeleton, SectionCards. Done: Breadcrumbs (AppPage appears only as its host).
+- **App kit** (`@atelic-action/ui/app/ui`), one file per module: accordion, alert, alert-dialog, avatar, badge, badge-list, button, callout, card, checkbox, clear-button, command, country-dropdown, dialog, dropdown-menu, form, input, label, option-select, pagination, popover, progress, search-input, select, separator, sheet, slider, switch, textarea, tooltip.
 
 ## Fixtures
 
-- Every story is set in the one fictional business, Kestrel Hollow Bakehouse (`fixtures/bakery.ts`), and the app stories in its ops app (`fixtures/app.ts`). Add to those files rather than inventing a second business; data only one story uses can sit in its file.
+- Every story is set in the one fictional business, Kestrel Hollow Bakehouse (`fixtures/bakery.ts`), and the app stories in its ops app (`fixtures/app.ts`). Build on those rather than inventing a second business: a group's own data goes in its fixture file above, and data only one story uses can sit in its story file.
 - Fictional only: a name, a number, or an address on the page is made up. Phone numbers are `555-01xx`; email addresses and hosts are on `example.com` or `example.test`; towns are invented (Fairhaven). The repo is public, so no real business, person, email, phone, or host, ever.
-- Pictures and the clip come from the static folder (`/images/...`, `/video/...`, `/fonts/...`), served at the root as a site serves its public folder.
+- Pictures and the clip come from the static folders, served at the root as a site serves its public folder: the gallery's (`/images/...`, `/video/...`, `/fonts/...`) and the stories' own (`stories/public/`, the marks cut per surface in `/images/`, a group's own pictures in `/images/<group>/`).
 
 ## Templates
 
@@ -125,12 +149,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ContactDock } from "../../src/chrome";
 import { dock } from "../fixtures/bakery";
+import { knownIssues } from "../support/known-issues";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
 const meta = {
 	title: "Chrome/ContactDock",
 	component: ContactDock,
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("dock-on-primary-contrast") },
 	args: { ...dock, avoid: null },
 	decorators: [
 		(Story) => (

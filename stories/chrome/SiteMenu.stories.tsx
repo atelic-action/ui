@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, waitFor, within } from "storybook/test";
+import { expect, fn, type MockInstance, spyOn, waitFor, within } from "storybook/test";
 import { SiteMenu } from "../../src/chrome";
-import { contact, cta, flatLinks, groupedLinks, phones } from "../fixtures/bakery";
+import { contact, cta, flatLinks, groupedLinks, phones, sectionedLinks } from "../fixtures/bakery";
+import { textLeft } from "../support/geometry";
 import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
@@ -20,7 +21,7 @@ const meta = {
 	title: "Chrome/SiteMenu",
 	component: SiteMenu,
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("white-on-primary") },
+	parameters: { ...knownIssues("primary-button-contrast") },
 	globals: pin("phone"),
 	args: { open: false, onClose: fn(), links: flatLinks, primaryCTA: cta, contact },
 	render: function Render(args) {
@@ -193,5 +194,112 @@ export const PageStops: Story = {
 		const menu = within(canvas.getByRole("dialog", { name: "Page sections" }));
 		await expect(menu.getByRole("link", { name: /Pastry/ })).toHaveAttribute("href", "#pastry");
 		await expect(menu.queryByRole("link", { name: "Order ahead" })).toBeNull();
+	},
+};
+
+/**
+ * A group's sections as the phone draws them: children indented under their
+ * parent, badges kept, and pictures, icon rows, and cards as plain links of
+ * their captions, labels, and titles.
+ */
+export const Sectioned: Story = {
+	args: { links: sectionedLinks },
+	play: async ({ canvas, userEvent, step }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await step("children sit indented under their parent, badges and all", async () => {
+			await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+			const parent = menu.getByRole("link", { name: /Country sourdough\s*Popular/ });
+			const child = menu.getByRole("link", { name: "Whole loaf" });
+			await expect(child.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+				parent.getBoundingClientRect().bottom - 1,
+			);
+			await expect(textLeft(child)).toBeGreaterThan(textLeft(parent));
+			await expect(menu.getByRole("link", { name: /Half loaf\s*New/ })).toBeVisible();
+			await expect(menu.getByRole("link", { name: "Bread" })).toHaveAttribute(
+				"href",
+				"/menu/bread",
+			);
+		});
+		await step("a picture is a plain link of its caption", async () => {
+			await expect(menu.getByRole("link", { name: "See the morning bake" })).toHaveAttribute(
+				"href",
+				"/menu/morning",
+			);
+			await expect(menu.queryByRole("img")).toBeNull();
+		});
+		await step("icon rows and cards are plain links of their labels and titles", async () => {
+			await userEvent.click(menu.getByRole("button", { name: "Wholesale" }));
+			await expect(menu.getByRole("link", { name: "Start a standing order" })).toHaveAttribute(
+				"href",
+				"/wholesale/start",
+			);
+			await expect(menu.getByRole("link", { name: "Why our rye rests two days" })).toHaveAttribute(
+				"href",
+				"/journal/rye",
+			);
+		});
+		await step("the plain entries keep their count, skipping the groups", async () => {
+			await expect(menu.getByRole("link", { name: /Visit/ })).toHaveTextContent("01");
+		});
+	},
+};
+
+/** A group made only of a picture opens onto a link to where the picture leads. */
+export const PictureOnlyGroup: Story = {
+	args: { links: sectionedLinks },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const group = menu.getByRole("button", { name: "The bake" });
+		await userEvent.click(group);
+		await expect(group).toHaveAttribute("aria-expanded", "true");
+		const link = menu.getByRole("link", { name: "Watch the morning bake" });
+		await expect(link).toBeVisible();
+		await expect(link).toHaveAttribute("href", "/bake");
+	},
+};
+
+let consoleError: MockInstance<typeof console.error>;
+
+/**
+ * A child that shares its parent's address (a "Whole loaf" that is the
+ * parent page itself) draws without a key clash: the parent and its
+ * children are not siblings in one list (stories/findings/chrome.md).
+ */
+export const ChildSharesParentHref: Story = {
+	args: {
+		links: [
+			{
+				label: "Menu",
+				href: "/menu",
+				columns: [
+					{
+						heading: "Bread",
+						links: [
+							{
+								label: "Country sourdough",
+								href: "/menu/sourdough",
+								children: [
+									{ label: "Whole loaf", href: "/menu/sourdough" },
+									{ label: "Half loaf", href: "/menu/sourdough/half" },
+								],
+							},
+						],
+					},
+				],
+			},
+		],
+	},
+	beforeEach: () => {
+		consoleError = spyOn(console, "error");
+		return () => consoleError.mockRestore();
+	},
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		await expect(menu.getByRole("link", { name: "Whole loaf" })).toBeVisible();
+		const keyWarnings = consoleError.mock.calls.filter((call) =>
+			String(call[0]).includes("same key"),
+		);
+		await expect(keyWarnings).toHaveLength(0);
 	},
 };

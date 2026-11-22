@@ -8,7 +8,7 @@ const meta = {
 	title: "Primitives/PrimaryButton",
 	component: PrimaryButton,
 	tags: ["known-issue"],
-	parameters: { layout: "padded", ...knownIssues("white-on-primary") },
+	parameters: { layout: "padded", ...knownIssues("primary-button-contrast") },
 	args: { children: "Order ahead", href: "/order" },
 } satisfies Meta<typeof PrimaryButton>;
 

@@ -60,7 +60,14 @@ const meta = {
 	title: "Chrome/SiteShell",
 	component: SiteShell,
 	tags: ["known-issue"],
-	parameters: { root: false, ...knownIssues("white-on-primary", "checker-transparent-header") },
+	parameters: {
+		root: false,
+		...knownIssues(
+			"primary-button-contrast",
+			"dock-on-primary-contrast",
+			"checker-transparent-header",
+		),
+	},
 	args: {
 		site: { ...site, nav: groupedNav, header: { phones } },
 		currentPath: "/",
@@ -130,18 +137,23 @@ export const FullPagePhone: Story = {
 			await expect(box(launcher).bottom).toBeLessThanOrEqual(box(call).top);
 			await expect(box(launcher).top).toBeGreaterThanOrEqual(0);
 		});
-		await step("the closing bar scrolls clear of the sticky bar (FINDINGS.md)", async () => {
-			const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
-			await knownBug("sticky-bar-covers-closing-bar", async () => {
-				await expect(box(copyright).bottom).toBeLessThanOrEqual(box(call).top - 12);
-			});
-		});
+		await step(
+			"the closing bar scrolls clear of the sticky bar (stories/findings/chrome.md)",
+			async () => {
+				const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
+				await knownBug("sticky-bar-covers-closing-bar", async () => {
+					await expect(box(copyright).bottom).toBeLessThanOrEqual(box(call).top - 12);
+				});
+			},
+		);
 	},
 };
 
 /** An interior page: the bar is solid, `<main>` clears it, and the sticky bar is there from the top. */
 export const InteriorPagePhone: Story = {
-	parameters: { ...knownIssues("white-on-primary", "footer-heading-order") },
+	parameters: {
+		...knownIssues("primary-button-contrast", "dock-on-primary-contrast", "footer-heading-order"),
+	},
 	args: {
 		heroNav: false,
 		currentPath: "/visit",
