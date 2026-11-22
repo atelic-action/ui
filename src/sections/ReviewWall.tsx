@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import { type ReactNode, useMemo, useState } from "react";
+import { newTabProps } from "../lib/newTabProps";
 import { SectionHeading } from "../primitives";
 import { StarRow } from "../primitives/StarRow";
 
@@ -77,8 +78,7 @@ function ReviewCard({ item, clampAt }: { item: ReviewItem; clampAt: number }) {
 							<a
 								className="rw-date"
 								href={item.sourceURL}
-								target="_blank"
-								rel="noopener"
+								{...newTabProps(item.sourceURL, true)}
 								aria-label={`Read the ${item.date} review from ${item.by} at its source`}
 							>
 								{item.date}

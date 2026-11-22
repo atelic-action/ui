@@ -1,5 +1,13 @@
 import { act, render, screen } from "@testing-library/react";
-import { Button, Chip, Eyebrow, Lead, ProseBlocks, SectionHeading } from "../../src/primitives";
+import {
+	Button,
+	Chip,
+	Eyebrow,
+	Lead,
+	ProseBlocks,
+	SectionHeading,
+	StarRow,
+} from "../../src/primitives";
 
 describe("Button, the arrow", () => {
 	it("keeps the arrow out of the name a screen reader hears", () => {
@@ -251,5 +259,95 @@ describe("ProseBlocks", () => {
 		} finally {
 			window.matchMedia = original;
 		}
+	});
+});
+
+describe("StarRow, the real rating", () => {
+	const stars = (container: HTMLElement) => ({
+		whole: container.querySelectorAll(".lucide-star").length,
+		half: container.querySelectorAll(".lucide-star-half").length,
+	});
+
+	it("says a half rating as it is and draws the half, never rounding up to the next star", () => {
+		const { container } = render(<StarRow rating={4.5} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("4.5 out of 5 stars");
+		expect(stars(container)).toEqual({ whole: 4, half: 1 });
+	});
+
+	it("says a rating to one decimal and draws it to the nearest half star", () => {
+		const { container, unmount } = render(<StarRow rating={4.27} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("4.3 out of 5 stars");
+		expect(stars(container)).toEqual({ whole: 4, half: 1 });
+		unmount();
+		const four = render(<StarRow rating={4.2} />);
+		expect(stars(four.container)).toEqual({ whole: 4, half: 0 });
+	});
+
+	it("draws a whole rating as it always has, and clamps out of range into 1 to 5", () => {
+		const { container, unmount } = render(<StarRow rating={5} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("5 out of 5 stars");
+		expect(stars(container)).toEqual({ whole: 5, half: 0 });
+		unmount();
+		render(<StarRow rating={9} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("5 out of 5 stars");
+	});
+});
+
+describe("SectionHeading on a dark band", () => {
+	it("marks the whole heading for the dark band, so the lead lifts with the eyebrow", () => {
+		const { container } = render(
+			<SectionHeading
+				eyebrow="The ovens"
+				title="Fired at four"
+				lead="Before the street wakes."
+				onDark
+			/>,
+		);
+		expect(container.querySelector(".section-head")).toHaveClass("on-dark");
+		expect(screen.getByText("The ovens")).toHaveClass("on-dark");
+	});
+
+	it("leaves a light band's heading unmarked", () => {
+		const { container } = render(
+			<SectionHeading title="Fired at four" lead="Before the street wakes." />,
+		);
+		expect(container.querySelector(".section-head")).not.toHaveClass("on-dark");
+	});
+});
+
+describe("ProseBlocks, the lightbox reopened at once", () => {
+	it("ignores the close event a shut dialog fires late, once the tile has opened it again", () => {
+		const { container } = render(
+			<ProseBlocks blocks={[{ type: "figure", src: "/images/rye.jpg", alt: "A rye loaf" }]} />,
+		);
+		const dialog = container.querySelector("dialog") as HTMLDialogElement;
+		const tile = screen.getByRole("button", { name: "Open larger: A rye loaf" });
+		act(() => tile.click());
+		act(() => screen.getByRole("button", { name: "Close" }).click());
+		expect(dialog.open).toBe(false);
+		act(() => tile.click());
+		expect(dialog.open).toBe(true);
+		// The close of the first shutting, landing a task late, after the reopen.
+		act(() => {
+			dialog.dispatchEvent(new Event("close"));
+		});
+		expect(dialog.open).toBe(true);
+		expect(dialog.querySelector("img")).toHaveAttribute("src", "/images/rye.jpg");
+	});
+
+	it("still closes on the platform's own close, Escape's, while it is shut", () => {
+		const { container } = render(
+			<ProseBlocks blocks={[{ type: "figure", src: "/images/rye.jpg", alt: "A rye loaf" }]} />,
+		);
+		const dialog = container.querySelector("dialog") as HTMLDialogElement;
+		act(() => screen.getByRole("button", { name: "Open larger: A rye loaf" }).click());
+		// Escape shuts the dialog natively, then fires close.
+		act(() => {
+			dialog.removeAttribute("open");
+			dialog.dispatchEvent(new Event("close"));
+		});
+		expect(dialog.querySelector("img")).toBeNull();
+		act(() => screen.getByRole("button", { name: "Open larger: A rye loaf" }).click());
+		expect(dialog.open).toBe(true);
 	});
 });

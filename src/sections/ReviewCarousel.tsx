@@ -144,9 +144,12 @@ export function ReviewCarousel({
 									<a
 										className="rvc-caption"
 										href={profileURL}
-										target="_blank"
-										rel="noopener"
-										aria-label={`${caption}, opens the review profile in a new tab`}
+										{...newTabProps(profileURL, true)}
+										aria-label={
+											newTabProps(profileURL, true).target
+												? `${caption}, opens the review profile in a new tab`
+												: caption
+										}
 									>
 										{caption}
 										<ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" />

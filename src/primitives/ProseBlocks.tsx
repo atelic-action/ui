@@ -162,7 +162,12 @@ function Figure({ block, withBase }: { block: ProseBlock; withBase: (path: strin
 				ref={dialogRef}
 				className="pb-lightbox"
 				aria-label={label}
-				onClose={() => setOpen(false)}
+				// The close event lands a task after the dialog shuts, so a tile
+				// pressed again inside that task has already reopened it: a close
+				// heard while the dialog is open again is that stale one, and ignored.
+				onClose={(event) => {
+					if (!event.currentTarget.open) setOpen(false);
+				}}
 				onClick={(event) => {
 					// A click that lands outside the panel's box is a click on the backdrop; the
 					// panel's own padding and blank areas also target the dialog, so test coordinates.

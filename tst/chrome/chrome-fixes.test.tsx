@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { Profiler } from "react";
 import { renderToString } from "react-dom/server";
 import {
 	ContactDock,
@@ -150,6 +151,24 @@ describe("the current page in the mega panel", () => {
 		expect(at("/services")).toEqual(["nav-mega-all"]);
 	});
 
+	it("marks one link current when the panel links the page several times, the first in reading order", () => {
+		const at = (path: string) => {
+			const { container, unmount } = render(
+				<SiteHeader brand={brand} links={[group]} currentPath={path} />,
+			);
+			const current = [...container.querySelectorAll(".nav-mega [aria-current]")].map(
+				(node) => node.textContent,
+			);
+			unmount();
+			return current;
+		};
+		// A parent, its own child, and a second link in the column all go to /services/roofs.
+		expect(at("/services/roofs")).toEqual(["Roofs"]);
+		// Two children share /services/shingle.
+		expect(at("/services/shingle")).toEqual(["Shingle"]);
+		expect(at("/nowhere")).toEqual([]);
+	});
+
 	it("styles a flat link on the current page as the bar marks a current group", () => {
 		const chrome = sheet("chrome.css");
 		expect(chrome).toMatch(
@@ -186,6 +205,22 @@ describe("the footer's headings", () => {
 		{ heading: "Company", links: [{ label: "About", href: "/about" }] },
 		{ heading: "Legal", links: [{ label: "Privacy", href: "/privacy" }] },
 	];
+
+	it("are headings by role, never by element, so a site's bare h2 rule cannot restyle them", () => {
+		const { container } = render(<Footer brand={brand} columns={columns} />);
+		expect(container.querySelectorAll(".footer h2, .footer h3, .footer h4")).toHaveLength(0);
+		const headings = [...container.querySelectorAll(".footer-heading")];
+		expect(
+			headings.map((h) => [h.tagName, h.getAttribute("role"), h.getAttribute("aria-level")]),
+		).toEqual([
+			["DIV", "heading", "2"],
+			["DIV", "heading", "2"],
+		]);
+		// The look an h2 took from the base sheet is the class's own now.
+		expect(sheet("chrome.css")).toMatch(
+			/\.footer \.footer-heading \{[^}]*line-height: 1\.04;[^}]*margin: 0 0 14px;/,
+		);
+	});
 
 	it("are h2 by default, whatever the page's outline ends on", () => {
 		render(<Footer brand={brand} columns={columns} />);
@@ -351,6 +386,37 @@ describe("the sticky bar's room at the foot of the page", () => {
 			window.dispatchEvent(new Event("scroll"));
 		});
 		expect(space).toHaveBeenLastCalledWith(0);
+	});
+
+	it("starts measuring for a listener supplied after the bar mounted", () => {
+		const space = vi.fn();
+		const { rerender } = render(<StickyCTABar primaryCTA={primaryCTA} fromTop />);
+		expect(space).not.toHaveBeenCalled();
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={space} />);
+		expect(space).toHaveBeenLastCalledWith(74);
+		// A new function in its place is heard without measuring again from scratch.
+		const next = vi.fn();
+		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={next} />);
+		expect(space).toHaveBeenCalledTimes(1);
+		expect(next).not.toHaveBeenCalled();
+	});
+
+	it("sets the shell's space without rendering the shell again", () => {
+		// Every commit under the shell after its first is a render the bar's
+		// height caused, the only thing that changes here.
+		const phases: string[] = [];
+		const { container } = render(
+			<Profiler id="shell" onRender={(_id, phase) => phases.push(phase)}>
+				<SiteShell site={testSite} currentPath="/about">
+					<p>Page</p>
+				</SiteShell>
+			</Profiler>,
+		);
+		const root = container.querySelector(".atelic-ui") as HTMLElement;
+		// An interior page's bar shows from the top and reports its height after
+		// mount; the shell writes it onto its root outside React's render.
+		expect(root.style.getPropertyValue("--sticky-cta-space")).toBe("74px");
+		expect(phases).toEqual(["mount"]);
 	});
 
 	it("pads the shell's closing bar by it, and by nothing with the bar off", () => {

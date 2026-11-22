@@ -37,21 +37,31 @@ function Badge({ text }: { text?: string }) {
 	return <NavBadge text={text} className="nav-mega-badge" />;
 }
 
-/** `aria-current` for a link to the page being read. */
-function current(href: string, currentPath?: string): "page" | undefined {
-	return currentPath === href ? "page" : undefined;
+/** Says whether a link is the panel's current item, as its `aria-current`. */
+type Current = (href: string | undefined) => "page" | undefined;
+
+/**
+ * The panel's one current item: the first link, in reading order, to the
+ * page being read. A panel may link one page several times (the group's own
+ * page as its "all" link and a column's head, a child sharing its parent's
+ * href), and a reader is told the page is here once. Made fresh each render,
+ * and called in the order the links render.
+ */
+function currentClaim(currentPath?: string): Current {
+	let claimed = false;
+	return (href) => {
+		if (claimed || currentPath === undefined || href !== currentPath) return undefined;
+		claimed = true;
+		return "page";
+	};
 }
 
 interface SectionProps {
-	currentPath?: string;
+	current: Current;
 	onNavigate?: () => void;
 }
 
-function LinkColumn({
-	column,
-	currentPath,
-	onNavigate,
-}: { column: NavGroupColumn } & SectionProps) {
+function LinkColumn({ column, current, onNavigate }: { column: NavGroupColumn } & SectionProps) {
 	// A child may share its parent's href, and two links may share one, so
 	// every key carries its place.
 	const child = (link: NavGroupChildLink, index: number) => (
@@ -60,7 +70,7 @@ function LinkColumn({
 				className="nav-mega-sub"
 				href={link.href}
 				onClick={onNavigate}
-				aria-current={current(link.href, currentPath)}
+				aria-current={current(link.href)}
 				{...newTabProps(link.href, link.external)}
 			>
 				{link.label}
@@ -75,7 +85,7 @@ function LinkColumn({
 					className="nav-mega-head"
 					href={column.href}
 					onClick={onNavigate}
-					aria-current={current(column.href, currentPath)}
+					aria-current={current(column.href)}
 				>
 					{column.heading}
 				</a>
@@ -90,7 +100,7 @@ function LinkColumn({
 							className="nav-mega-link"
 							href={link.href}
 							onClick={onNavigate}
-							aria-current={current(link.href, currentPath)}
+							aria-current={current(link.href)}
 							{...newTabProps(link.href, link.external)}
 						>
 							<span className="nav-mega-label">
@@ -111,7 +121,7 @@ function LinkColumn({
 
 function PictureSection({
 	section,
-	currentPath,
+	current,
 	onNavigate,
 }: { section: NavPictureSection } & SectionProps) {
 	return (
@@ -119,7 +129,7 @@ function PictureSection({
 			className="nav-mega-sec is-picture"
 			href={section.href}
 			onClick={onNavigate}
-			aria-current={current(section.href, currentPath)}
+			aria-current={current(section.href)}
 			{...newTabProps(section.href, section.external)}
 		>
 			<img
@@ -136,7 +146,7 @@ function PictureSection({
 
 function RowsSection({
 	section,
-	currentPath,
+	current,
 	onNavigate,
 }: { section: NavIconRowsSection } & SectionProps) {
 	return (
@@ -154,7 +164,7 @@ function RowsSection({
 									.join(" ")}
 								href={row.href}
 								onClick={onNavigate}
-								aria-current={current(row.href, currentPath)}
+								aria-current={current(row.href)}
 								{...newTabProps(row.href, row.external)}
 							>
 								<span className="nav-mega-row-icon">
@@ -176,7 +186,7 @@ function RowsSection({
 
 function CardsSection({
 	section,
-	currentPath,
+	current,
 	onNavigate,
 }: { section: NavCardsSection } & SectionProps) {
 	return (
@@ -190,7 +200,7 @@ function CardsSection({
 							className="nav-mega-card-link"
 							href={card.href}
 							onClick={onNavigate}
-							aria-current={current(card.href, currentPath)}
+							aria-current={current(card.href)}
 							{...newTabProps(card.href, card.external)}
 						>
 							{card.image ? (
@@ -229,6 +239,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 	const { feature, allLabel, href } = group;
 	// A section of a kind this version does not know is left out, never drawn as another kind.
 	const columns = panelSections(group);
+	const current = currentClaim(currentPath);
 	return (
 		<div
 			id={id}
@@ -242,7 +253,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 							className="nav-mega-all"
 							href={href}
 							onClick={onNavigate}
-							aria-current={current(href, currentPath)}
+							aria-current={current(href)}
 						>
 							{allLabel}
 						</a>
@@ -255,7 +266,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 									<LinkColumn
 										key={key}
 										column={section}
-										currentPath={currentPath}
+										current={current}
 										onNavigate={onNavigate}
 									/>
 								);
@@ -265,7 +276,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 									<PictureSection
 										key={key}
 										section={section}
-										currentPath={currentPath}
+										current={current}
 										onNavigate={onNavigate}
 									/>
 								);
@@ -275,7 +286,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 									<RowsSection
 										key={key}
 										section={section}
-										currentPath={currentPath}
+										current={current}
 										onNavigate={onNavigate}
 									/>
 								);
@@ -285,7 +296,7 @@ export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMe
 									<CardsSection
 										key={key}
 										section={section}
-										currentPath={currentPath}
+										current={current}
 										onNavigate={onNavigate}
 									/>
 								);

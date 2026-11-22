@@ -1762,7 +1762,6 @@
 	}
 	.atelic-ui .price-band .price-lead {
 		color: var(--on-primary);
-		max-width: 48ch;
 	}
 	.atelic-ui .price-band .eyebrow.on-dark {
 		color: var(--on-primary);
@@ -1818,6 +1817,9 @@
 
 	/* ---- PricingCard (pricing-card.css) ---- */
 	/* Detailed pricing card. */
+	/* The card keeps its own width, the one cap rule 19 allows here: it is a
+	   card, not a column, and at the wrap's width its booking button ran
+	   900px wide across a nearly empty card (the gallery's capture, ATE-772). */
 	.atelic-ui .cost-card {
 		max-width: 520px;
 		margin-inline: auto;
