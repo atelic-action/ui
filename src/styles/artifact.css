@@ -1,3 +1,4 @@
+@import "./defaults.css";
 /* The pieces the artifact documents are built from, under src/artifact: the
    sign off, the shot, and the shell's logo and print rules (the grade chip's
    rules sit in components.css, since ReportCard wears it there). The
@@ -62,12 +63,14 @@
 		}
 	}
 
-	/* The sender's logo is the outlined wordmark, an image wider than the square
-	   slot the shared header cuts for a mark, so it keeps its own width, and the
-	   empty text wordmark beside it takes no room. */
-	.atelic-ui .nav-logo .mark {
-		width: auto;
-		height: 20px;
+	/* The sender's logo is the outlined wordmark, an image wider than it is
+	   tall, which a document's header sets at 20px. The shell sets the token
+	   rather than the height, so a mark keeps its own ratio, a theme's own
+	   --brand-mark-height still wins, and a site that imports this sheet for
+	   its documents keeps its own header's mark size elsewhere. The empty text
+	   wordmark beside it takes no room. */
+	.atelic-ui[data-shell="artifact"] {
+		--brand-mark-height: 20px;
 	}
 	.atelic-ui .nav-logo .wordmark:empty {
 		display: none;

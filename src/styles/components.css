@@ -1,3 +1,4 @@
+@import "./defaults.css";
 @import "./star-rating.css";
 
 /* Layout defaults for the components under src/components. A site's own
@@ -15,73 +16,6 @@
    `--primary` and `--card` hold something else (shadcn keeps bare HSL
    channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
-	/* ---- Token defaults: every token the package's sheets read beyond the
-	   theme contract, each at the value the sheets used before it was a
-	   token, so a theme sets one only to change it. They sit on
-	   :where(.atelic-ui), which weighs nothing, so a theme's own .atelic-ui
-	   rule, base.css's density settings, and any band that restates one all
-	   win. Every consumer imports this sheet (an app imports it alone), so
-	   this is the one place they are declared; README.md, Tokens, documents
-	   each. A raw color anywhere else in a layered sheet fails
-	   tst/no-raw-colors.test.ts. ---- */
-	:where(.atelic-ui) {
-		/* Anything set on the primary color: a primary button's words, the
-		   dock's head, the split hero's copy, a badge. */
-		--on-primary: #fff;
-		/* Anything set on a dark band or over a photograph: the footer's
-		   headings, the transparent header, a hero's headline. */
-		--on-dark: #fff;
-		/* A chip's words on a dark band, a warm off white. */
-		--on-dark-chip: #efe7da;
-		/* Quiet body text on a dark band, such as a process step's line. */
-		--on-dark-quiet: rgb(248 244 237 / 0.74);
-		/* Pure shadow: a lightbox's backdrop, a caption's wash, a headline's
-		   text shadow, a darker press on a dark button. */
-		--shade: #000;
-		/* The warm wash a hero lays over its photograph. */
-		--scrim: #140f0b;
-		/* The hatching of a placeholder before photography exists. */
-		--placeholder-ink: #8a7c68;
-		/* The light bar's hover behind a nav entry. */
-		--hover-tint: rgb(33 28 23 / 0.06);
-		/* The footer rating's stars when the theme sets no --star-fill. */
-		--review-gold: #f5b301;
-		/* The four grades, A to D: green, yellow, orange, red, whatever the
-		   brand is, each as words, a rule, and a ground. */
-		--grade-a: #1b7f3b;
-		--grade-a-line: #1b7f3b;
-		--grade-a-bg: #eaf6ee;
-		--grade-b: #9a6b00;
-		--grade-b-line: #c99a1a;
-		--grade-b-bg: #fdf5dc;
-		--grade-c: #a84500;
-		--grade-c-line: #e8650a;
-		--grade-c-bg: #fff0e3;
-		--grade-d: #b3261e;
-		--grade-d-line: #b3261e;
-		--grade-d-bg: #fdecea;
-		/* The weights every sheet asks for, by name. A font kit with only 400
-		   and 700 maps each to one of those (medium to 400, semibold and
-		   heavy to 700, say), so the browser synthesizes nothing. Strong is
-		   the report components' in between weight for a label that has to
-		   stand out of semibold text; light is a stat row's large figure. */
-		--weight-light: 300;
-		--weight-regular: 400;
-		--weight-medium: 500;
-		--weight-semibold: 600;
-		--weight-strong: 650;
-		--weight-bold: 700;
-		--weight-heavy: 800;
-		/* The header mark's height; its width follows the image's ratio. */
-		--brand-mark-height: 30px;
-		/* The section spacing where no base sheet sets it (an app importing
-		   this sheet alone): the roomier rhythm sites had before 8.0.0.
-		   base.css's density settings outrank this. */
-		--section-space: clamp(56px, 9vw, 120px);
-		--block-gap: 44px;
-		--card-min: 240px;
-	}
-
 	/* The opener's padding is a share of the section spacing (base.css), with
 	   the spacing it had before 8.0.0 where no base sheet sets the token. */
 	.atelic-ui .not-found-hero {
@@ -106,21 +40,8 @@
 		margin-top: 22px;
 	}
 
-	/* ---- Tones: the one palette this package carries, because good, a
-	   warning, and broken read green, amber, and red whatever the brand is.
-	   A site's theme may restate any of these on .atelic-ui. A component sets
+	/* ---- Tones: the palette sits with the defaults above. A component sets
 	   data-tone, and --tone, --tone-fill, and --tone-bg follow. ---- */
-	.atelic-ui {
-		--tone-good: #1b7f3b;
-		--tone-good-fill: #37a35c;
-		--tone-good-bg: #eaf6ee;
-		--tone-warn: #a84500;
-		--tone-warn-fill: #e8a317;
-		--tone-warn-bg: #fff3df;
-		--tone-bad: #b3261e;
-		--tone-bad-fill: #d9483f;
-		--tone-bad-bg: #fdecea;
-	}
 	.atelic-ui [data-tone="good"] {
 		--tone: var(--tone-good);
 		--tone-fill: var(--tone-good-fill);
@@ -137,7 +58,7 @@
 		--tone-bg: var(--tone-bad-bg);
 	}
 	.atelic-ui [data-tone="info"] {
-		--tone: var(--ui-primary, var(--primary));
+		--tone: var(--primary-ink, var(--ui-primary, var(--primary)));
 		--tone-fill: var(--primary-bright);
 		--tone-bg: var(--primary-tint);
 	}
@@ -174,7 +95,7 @@
 		font-size: clamp(2.2rem, 5vw, 3rem);
 		font-weight: var(--weight-heavy);
 		letter-spacing: -0.03em;
-		color: var(--tone, var(--ui-primary, var(--primary)));
+		color: var(--tone, var(--primary-ink, var(--ui-primary, var(--primary))));
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
@@ -436,7 +357,7 @@
 		text-wrap: pretty;
 	}
 	.atelic-ui .is-native > .disclosure-head:hover .disclosure-label {
-		color: var(--ui-primary, var(--primary));
+		color: var(--primary-ink, var(--ui-primary, var(--primary)));
 	}
 	.atelic-ui .is-native > .disclosure-head .disclosure-chevron {
 		transition: transform 0.15s;
@@ -844,7 +765,7 @@
 	.atelic-ui .rc-line a {
 		position: relative;
 		z-index: 1;
-		color: var(--ui-primary, var(--primary));
+		color: var(--primary-ink, var(--ui-primary, var(--primary)));
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}
@@ -924,7 +845,7 @@
 	.atelic-ui .rc-row:has(.rc-name a):focus-within .rc-name,
 	.atelic-ui .rc-row:has(.rc-name a):hover .rc-go,
 	.atelic-ui .rc-row:has(.rc-name a):focus-within .rc-go {
-		color: var(--ui-primary, var(--primary));
+		color: var(--primary-ink, var(--ui-primary, var(--primary)));
 	}
 
 	/* ---- The charts' shared key: a swatch, a label, a figure ---- */
@@ -1371,7 +1292,7 @@
 		}
 		.atelic-ui .data-table thead th button:hover,
 		.atelic-ui .data-table thead th button[data-active] {
-			color: var(--ui-primary, var(--primary));
+			color: var(--primary-ink, var(--ui-primary, var(--primary)));
 		}
 		.atelic-ui .data-table thead th button svg {
 			flex: none;

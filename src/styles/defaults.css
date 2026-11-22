@@ -1,0 +1,95 @@
+/* The token defaults: every token the package's sheets read beyond the
+   theme contract, each at the value the sheets used before it was a token,
+   so a theme sets one only to change it. They sit on :where(.atelic-ui),
+   which weighs nothing, so a theme's own .atelic-ui rule, base.css's density
+   settings, and any band that restates one all win.
+
+   Every layered sheet imports this one first, so a consumer that loads any
+   sheet alone (an app with components.css, a page with primitives.css) has
+   every default the sheet reads. This is the one place they are declared;
+   README.md, Tokens, documents each. A raw color anywhere else in a layered
+   sheet fails tst/no-raw-colors.test.ts. */
+@layer atelic-ui {
+	:where(.atelic-ui) {
+		/* Anything set on the primary fill (--primary-fill): a primary
+		   button's words, the dock's head, the split hero's copy, a badge.
+		   The fill itself and --primary-ink, the primary's words on the page
+		   surface, are read in place with --primary as their fallback, so a
+		   band that restates --primary carries both with it. */
+		--on-primary: #fff;
+		/* Anything set on a dark band or over a photograph: the footer's
+		   headings, the transparent header, a hero's headline. */
+		--on-dark: #fff;
+		/* A chip's words on a dark band, a warm off white. */
+		--on-dark-chip: #efe7da;
+		/* Quiet body text on a dark band, such as a process step's line. */
+		--on-dark-quiet: rgb(248 244 237 / 0.74);
+		/* Pure shadow: a lightbox's backdrop, a caption's wash, a headline's
+		   text shadow, a darker press on a dark button. */
+		--shade: #000;
+		/* The warm wash a hero lays over its photograph. */
+		--scrim: #140f0b;
+		/* The hatching of a placeholder before photography exists. */
+		--placeholder-ink: #8a7c68;
+		/* The light bar's hover behind a nav entry. */
+		--hover-tint: rgb(33 28 23 / 0.06);
+		/* The footer rating's stars when the theme sets no --star-fill. */
+		--review-gold: #f5b301;
+		/* The tones: the one palette this package carries, because good, a
+		   warning, and broken read green, amber, and red whatever the brand
+		   is. A site's theme may restate any of them. A component sets
+		   data-tone, and --tone, --tone-fill, and --tone-bg follow (below). */
+		--tone-good: #1b7f3b;
+		--tone-good-fill: #37a35c;
+		--tone-good-bg: #eaf6ee;
+		--tone-warn: #a84500;
+		--tone-warn-fill: #e8a317;
+		--tone-warn-bg: #fff3df;
+		--tone-bad: #b3261e;
+		--tone-bad-fill: #d9483f;
+		--tone-bad-bg: #fdecea;
+		/* The four grades, A to D: green, yellow, orange, red, whatever the
+		   brand is, each as words, a rule, and a ground. A grade whose value is
+		   a tone's reads the tone, so a theme restating the tone moves both. */
+		--grade-a: var(--tone-good);
+		--grade-a-line: var(--tone-good);
+		--grade-a-bg: var(--tone-good-bg);
+		--grade-b: #9a6b00;
+		--grade-b-line: #c99a1a;
+		--grade-b-bg: #fdf5dc;
+		--grade-c: var(--tone-warn);
+		--grade-c-line: #e8650a;
+		--grade-c-bg: #fff0e3;
+		--grade-d: var(--tone-bad);
+		--grade-d-line: var(--tone-bad);
+		--grade-d-bg: var(--tone-bad-bg);
+		/* The weights every sheet asks for, by name. A font kit with only 400
+		   and 700 maps each to one of those (medium to 400, semibold and
+		   heavy to 700, say), so the browser synthesizes nothing. Strong is
+		   the report components' in between weight for a label that has to
+		   stand out of semibold text; light is a stat row's large figure. */
+		--weight-light: 300;
+		--weight-regular: 400;
+		--weight-medium: 500;
+		--weight-semibold: 600;
+		--weight-strong: 650;
+		--weight-bold: 700;
+		--weight-heavy: 800;
+		/* The header mark's height; its width follows the image's ratio. */
+		--brand-mark-height: 30px;
+		/* The section spacing where no base sheet sets it (an app importing
+		   this sheet alone): the roomier rhythm sites had before 8.0.0.
+		   base.css's density settings outrank this. */
+		--section-space: clamp(56px, 9vw, 120px);
+		--block-gap: 44px;
+		--card-min: 240px;
+	}
+
+	/* A ::backdrop inherits no custom property before Safari 17.4 and Chrome
+	   122, so a backdrop that reads --shade finds nothing there. The shade is
+	   given to the backdrop itself under its own name, which a backdrop reads
+	   as its fallback; where the backdrop inherits, the theme's --shade wins. */
+	:where(.atelic-ui) ::backdrop {
+		--backdrop-shade: #000;
+	}
+}
