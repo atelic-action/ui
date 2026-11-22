@@ -359,7 +359,7 @@ export function ChromePieces() {
 				<Example caption="Opens over the page; Escape or the close button shuts it">
 					<MenuDemo />
 				</Example>
-				<Example caption="Groups: each opens as an accordion, one at a time, and every group starts closed, even the one holding the current page. Children sit indented under their parent with the badges kept; icon rows and cards become plain links and the picture is left out; the plain entries are numbered, and the phone numbers sit at the foot">
+				<Example caption="Groups: each opens as an accordion, one at a time, and every group starts closed, even the one holding the current page. Children sit indented under their parent with the badges kept; icon rows and cards become plain links and the picture is a link of its caption; the plain entries are numbered, and the phone numbers sit at the foot">
 					<GroupedMenuDemo />
 				</Example>
 			</Piece>
