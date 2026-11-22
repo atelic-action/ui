@@ -78,11 +78,14 @@ type FormItemContextValue = {
 
 const FormItemContext = React.createContext<FormItemContextValue | null>(null);
 
+/** A layout effect in the browser, before the frame paints; a plain effect on the server, where none runs. */
+const useBeforePaint = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
 /** A describing part of a field, which tells its item whether it is on the page. */
 function useFormItemPart(part: keyof FormItemParts, present: boolean) {
 	const field = useFormField();
 	const setPart = React.useContext(FormItemContext)?.setPart;
-	React.useEffect(() => {
+	useBeforePaint(() => {
 		if (!setPart) return;
 		setPart(part, present);
 		return () => setPart(part, false);
@@ -137,8 +140,10 @@ const FormControl = React.forwardRef<
 	const { error, formItemId, formDescriptionId, formMessageId, parts } = useFormField();
 	// Only the parts on the page: a reference to a description or a message
 	// that never rendered points at nothing.
+	// A field in error names its message at once, as it always did, so a
+	// reader who lands on the field as it fails hears why.
 	const describedBy =
-		[parts.description && formDescriptionId, parts.message && formMessageId]
+		[parts.description && formDescriptionId, (error || parts.message) && formMessageId]
 			.filter(Boolean)
 			.join(" ") || undefined;
 
