@@ -23,6 +23,7 @@ import {
 	flatLinks,
 	groupedLinks,
 	phone,
+	phones,
 	site,
 } from "../fixtures/bakery";
 import { faqCategories, reviews } from "../fixtures/sections";
@@ -58,7 +59,7 @@ function Rows({ links }: { links: NavLink[] }) {
 					links={links}
 					primaryCTA={cta}
 					contact={contact}
-					phone={phone}
+					phones={phones}
 					currentPath="/menu"
 				/>
 			</Probe>
