@@ -49,9 +49,9 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `whoIsReading` | `@atelic-action/ui/artifact` and `@atelic-action/ui/artifact/readers` | Who opened a document, by the email they signed in with; the second entry is the same function, built, for what Node runs | none |
 | `Masthead`, `TitleCard`, `Footer`, `FailurePage` | `@atelic-action/ui/email` | An email's frame: the wordmark row, the title card, the foot, the failure page (plain, or structured by a step and a fix) | [#email](https://ui.atelic.me/#email) |
 | `Card`, `Row`, `FoldRow`, `Eyebrow`, `SubEyebrow`, `Fold`, `BigFold` | `@atelic-action/ui/email` | The containers and labels an email's sections sit in | [#email](https://ui.atelic.me/#email) |
-| `Item`, `TitleLine`, `Note`, `EmptyRow`, `Stat`, `StatsRow`, `List`, `ListRow`, `LeadRow`, `MonoTable`, `ReadBlock`, `Badge` | `@atelic-action/ui/email` | The rows inside a card | [#email](https://ui.atelic.me/#email) |
-| `Scoreboard`, `GroupRow`, `TargetRow`, `Bar`, `WhatMoved`, `DayStrip`, `StatStrip` | `@atelic-action/ui/email` | Targets against what was logged, what moved, and the week by day | [#email](https://ui.atelic.me/#email) |
-| `RecordStack`, `RecordTimelineStrip`, `RecordTimelineLegend`, `Records` | `@atelic-action/ui/email` | Records stacked for a phone, their timeline, and the fixed column table | [#email](https://ui.atelic.me/#email) |
+| `Item`, `TitleLine`, `Note`, `EmptyRow`, `Stat`, `StatsRow`, `List`, `ListRow`, `LeadRow`, `ReadBlock`, `Badge` | `@atelic-action/ui/email` | The rows inside a card | [#email](https://ui.atelic.me/#email) |
+| `Scoreboard`, `GroupRow`, `TargetRow`, `Bar`, `DayStrip` | `@atelic-action/ui/email` | Targets against what was logged, and the week by day | [#email](https://ui.atelic.me/#email) |
+| `RecordStack`, `RecordTimelineStrip`, `Records` | `@atelic-action/ui/email` | Records stacked for a phone, their timeline, and the fixed column table | [#email](https://ui.atelic.me/#email) |
 | `EmailThemeProvider`, `useEmailTheme`, `eyebrowStyle`, the plain text helpers (`recordStackText`, `wrap`, `textTable`, and the rest) | `@atelic-action/ui/email` | The palette context and the plain text twin (see [Email](#email)) | [#email](https://ui.atelic.me/#email) (the text twin) |
 | `renderEmail`, `renderFailureEmail` | `@atelic-action/ui/email/render` | The whole email document, and the failure page's | [#email](https://ui.atelic.me/#email) |
 | `atelicPalette`, `atelicFonts`, `toThemeCSS`, `themeTokenMap`, `Palette`, `Fonts` | `@atelic-action/ui/tokens` | The palette and font stacks, with no React | none |
@@ -67,13 +67,11 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `BlogIndex` | `@atelic-action/ui/sections` | The post listing as a readable stack | [#blog-index](https://ui.atelic.me/#blog-index) |
 | `BlogPost` | `@atelic-action/ui/sections` | One article: back link, title, byline and dateline, body | [#blog-post](https://ui.atelic.me/#blog-post) |
 | `CalloutPanel` | `@atelic-action/ui/sections` | Short callouts on the primary field, a heavy title over a subtitle each, four across and two by two below, titles and subtitles each on a shared line (8.0.0) | [#callout-panel](https://ui.atelic.me/#callout-panel) |
-| `CTABanner` | `@atelic-action/ui/sections` | A mid page banner behind a directional wash, with the token gradient before any photography | [#c-t-a-banner](https://ui.atelic.me/#c-t-a-banner) |
 | `CTASection` | `@atelic-action/ui/sections` | The standard closer: the site's own primary action and an optional ghost second | [#c-t-a-section](https://ui.atelic.me/#c-t-a-section) |
 | `ComparisonTable` | `@atelic-action/ui/sections` | A graded before and after that scrolls sideways on a phone rather than reflowing; a row's label can link to what explains it (`stageHref`, 3.14.0) | [#comparison-table](https://ui.atelic.me/#comparison-table) |
 | `ContactForm` | `@atelic-action/ui/sections` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event | [#contact-form](https://ui.atelic.me/#contact-form) |
 | `ContactInfoCard` | `@atelic-action/ui/sections` | A dark card of direct contact rows: call, email, visit, portal | [#contact-info-card](https://ui.atelic.me/#contact-info-card) |
 | `CredentialList` | `@atelic-action/ui/sections` | Credential cards with a mono code before each | [#credential-list](https://ui.atelic.me/#credential-list) |
-| `DeviceShowcase` | `@atelic-action/ui/sections` | A desktop browser frame with a phone overlapping it | [#device-showcase](https://ui.atelic.me/#device-showcase) |
 | `ExpandList` | `@atelic-action/ui/sections` | A light accordion of numbered rows whose bodies stay in the HTML while closed | [#expand-list](https://ui.atelic.me/#expand-list) |
 | `FAQBrowser` | `@atelic-action/ui/sections` | The help page: live search, a sticky `JumpRail` of categories with scroll spy, expand all, deep links; `contactHref` sets where the no match line points | [#f-a-q-browser](https://ui.atelic.me/#f-a-q-browser) |
 | `FeatureDetail` | `@atelic-action/ui/sections` | Alternating copy and media rows with tags and a tick list | [#feature-detail](https://ui.atelic.me/#feature-detail) |
@@ -89,11 +87,8 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `Locations` | `@atelic-action/ui/sections` | More than one address: the flagship's map beside a card for each location | [#locations](https://ui.atelic.me/#locations) |
 | `LogoMarquee` | `@atelic-action/ui/sections` | A dark band of chips scrolling without end: credentials, clients, or press | [#logo-marquee](https://ui.atelic.me/#logo-marquee) |
 | `MapEmbed` | `@atelic-action/ui/sections` | The map: a screenshot linking to directions, or a click to load facade over the live embed | [#map-embed](https://ui.atelic.me/#map-embed) |
-| `MediaBand` | `@atelic-action/ui/sections` | A plain full bleed image band, cropped from the center | [#media-band](https://ui.atelic.me/#media-band) |
-| `MenuList` | `@atelic-action/ui/sections` | A priced menu group of dotted rows, with fine print under it | [#menu-list](https://ui.atelic.me/#menu-list) |
 | `PageHero` | `@atelic-action/ui/sections` | The interior page opener on the alternate band; children sit under the lead | [#page-hero](https://ui.atelic.me/#page-hero) |
 | `ProofStrip` | `@atelic-action/ui/sections` | One row of short proof facts under a hero, a figure over its label each, wrapping to a grid on a phone (8.0.0) | [#proof-strip](https://ui.atelic.me/#proof-strip) |
-| `PressQuotes` | `@atelic-action/ui/sections` | Rows of press quotes and awards with source and year, newest first (`sortPress` beside it) | [#press-quotes](https://ui.atelic.me/#press-quotes) |
 | `PricingBand` | `@atelic-action/ui/sections` | A brand colored band with the price in a card beside it, informational by design | [#pricing-band](https://ui.atelic.me/#pricing-band) |
 | `PricingCard` | `@atelic-action/ui/sections` | A standalone price card with a tick list and its booking action | [#pricing-card](https://ui.atelic.me/#pricing-card) |
 | `ProcessSteps` | `@atelic-action/ui/sections` | A dark band of numbered steps beside a frame | [#process-steps](https://ui.atelic.me/#process-steps) |
@@ -101,7 +96,6 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `RevealSlider` | `@atelic-action/ui/sections` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography | [#reveal-slider](https://ui.atelic.me/#reveal-slider) |
 | `ReviewCarousel` | `@atelic-action/ui/sections` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source | [#review-carousel](https://ui.atelic.me/#review-carousel) |
 | `ReviewWall` | `@atelic-action/ui/sections` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more | [#review-wall](https://ui.atelic.me/#review-wall) |
-| `SocialStrip` | `@atelic-action/ui/sections` | A static grid of the business's social photos linking to the profile, never a live embed | [#social-strip](https://ui.atelic.me/#social-strip) |
 | `SplitSection` | `@atelic-action/ui/sections` | The two column band: copy beside copy, or media beside copy | [#split-section](https://ui.atelic.me/#split-section) |
 | `SiteConfig` and its member types (`Density` among them), `formatClock`, `formatHoursRange`, `isClosed`, `isHoneypotFilled`, `trackEvent` | `@atelic-action/ui/sections` | The site contract the sections read, and the hours, honeypot, and lead event helpers | none |
 | `Bubble`, `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a round tile holding an icon or a step number, a framed image, prose blocks (headings at two levels, paragraphs, lists, and figures: small captioned tiles in rows, an image or a silent looping clip played only while on screen, each opening large in a dialog), a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
@@ -112,7 +106,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
 | `AppProvider`, `AppConfigProvider`, `useAppConfig`, `useNav`, `useUser`, `configureApp`, `getAppConfig`, `AppConfig`, `NavItem`, `AppUser`, `Register` | `@atelic-action/ui/app` | The app shell's seam: the app hands in its config and nav, registers its user type, and reads them back | [app](https://ui.atelic.me/app.html) |
 | `AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `DesktopRail`, `MobileTabBar`, `MobileMenu`, `UserMenu`, `PageSkeleton`, `PageError`, `ActionButton`, `FormActionButtons`, `activeSection` | `@atelic-action/ui/app` | The app frame: the rails, the tab bar, the page scaffold with its toolbar and right rail | [app](https://ui.atelic.me/app.html) |
-| `AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph`, `useAuthStore`, `useUnitsStore`, `apiFetch`, `publicFetch`, `session`, the hooks and the wire types | `@atelic-action/ui/app` | Auth, transport, the two shell stores, and the helpers the shell runs on | [app](https://ui.atelic.me/app.html) |
+| `AuthGuard`, `ErrorFallback`, `GoogleGlyph`, `useAuthStore`, `useUnitsStore`, `apiFetch`, `publicFetch`, `session`, the hooks and the wire types | `@atelic-action/ui/app` | Auth, transport, the two shell stores, and the helpers the shell runs on | [app](https://ui.atelic.me/app.html) |
 | The shadcn kit (`Button`, `Dialog`, `Select`, `OptionSelect`, `SearchInput`, `BadgeList`, `Callout`, and the rest) | `@atelic-action/ui/app/ui` | The kit the shell is set in; a new kit component lands here, never in an app | [app](https://ui.atelic.me/app.html) |
 | `app.css` | `@atelic-action/ui/styles/app.css` | The shell's Tailwind sheet: the token mapping, the default tokens, the base layer, the `ap-*` scaffold, and the `@source` that points Tailwind at the shell | none |
 | The eleven `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, and contact canary | none |
@@ -554,13 +548,14 @@ The space a section leaves above and below itself is one token, `--section-space
 | `comfortable` | `clamp(56px, 9vw, 120px)` | 44px | 240px |
 | `compact` | `clamp(24px, 3.2vw, 44px)` | 20px | 0 |
 
-`.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `CTABanner` 0.92, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
+`.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
 
 ### Moving to 8.0.0
 
 - **The spacing default tightened.** Every section pads by the table above, so a site's pages run shorter. A site that wants its old look sets `density: "comfortable"` in its config. Check any section a site padded by hand in its own sheet against the new rhythm.
 - **`.nav-links a` became `.nav-links > a`** so a panel's links keep their own styling. A site rule written against the old selector should be checked against the bar.
 - **Surfaces:** `BlogIndex`, `BlogPost`, `LegalPage`, `LocationSection`, `Locations`, `ProfileCards`, and `ReviewCarousel` take `surface` like the sections that had it, and `PageHero` takes it defaulting to `alt`. Nothing alternates on its own except the `FAQBrowser`'s subject bands, every second one now on the alternate surface.
+- **Eleven components are gone**, none of them used by any site, app, or runner: the sections `DeviceShowcase`, `MediaBand`, `CTABanner`, `PressQuotes` (with `sortPress` and the `PressItem` type), `SocialStrip`, and `MenuList`; the app shell's `CardErrorBoundary`; and the email pieces `MonoTable`, `StatStrip`, `WhatMoved`, and `RecordTimelineLegend`. Their props types and their styles (`.cta-banner`, `.device-*`, `.media-band`, `.menu-list`, `.press-quotes`, `.social-strip`) went with them. A page that still imports one fails to build: a banner moves to `CTASection` or a site's own `SplitSection`, a press row to `ReviewCarousel` or `LogoMarquee`, a photo strip to `Gallery`. The template's example pages that use `CTABanner`, `PressQuotes`, and `SocialStrip` are repointed in the template.
 - **Fixes the package now owns:** a primary button or an eyebrow inside `.on-primary` (the split hero, the callout panel, the menu's feature card, or a site band wearing the class) turns light, and the footer's stars read `--star-fill`.
 
 ### Every Section
@@ -576,25 +571,19 @@ The space a section leaves above and below itself is one token, `--section-space
 | `LogoMarquee` | A dark band of chips scrolling without end: credentials, clients, or press |
 | `SplitSection` | The two column band: copy beside copy, or media beside copy. `ratio` is `even`, `narrow-first`, or `media`, a fixed 420px shot column and the gap a card row uses, so a photo beside copy lines up with a case study entry above it; `even` and `narrow-first` stack below 920px, `media` below 761px |
 | `PricingBand` | A brand colored band with the price in a card beside it, informational by design |
-| `MediaBand` | A plain full bleed image band, cropped from the center |
-| `CTABanner` | A mid page banner behind a directional wash, with the token gradient before any photography |
 | `CTASection` | The standard closer: the site's own primary action and an optional ghost second |
 | `FeatureGrid` | Numbered cards with a hover lift; a card is a link or holds one, never both |
 | `FeatureDetail` | Alternating copy and media rows with tags and a tick list |
 | `ProcessSteps` | A dark band of numbered steps beside a frame |
 | `PricingCard` | A standalone price card with a tick list and its booking action |
-| `MenuList` | A priced menu group of dotted rows, with fine print under it |
 | `ExpandList` | A light accordion of numbered rows whose bodies stay in the HTML while closed |
 | `ComparisonTable` | A graded before and after that scrolls sideways on a phone rather than reflowing |
 | `RevealSlider` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography |
-| `DeviceShowcase` | A desktop browser frame with a phone overlapping it |
 | `ReviewCarousel` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source |
 | `ReviewWall` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more |
-| `PressQuotes` | Rows of press quotes and awards with source and year, newest first (`sortPress` beside it) |
 | `ProfileCards` | Equal weight cards of media beside a short bio |
 | `Gallery` | A captioned wall of the business's own work, a shot brief where a photo is missing |
 | `CredentialList` | Credential cards with a mono code before each |
-| `SocialStrip` | A static grid of the business's social photos linking to the profile, never a live embed |
 | `LocationSection` | The local search section: service areas as prose, hours, directions, and the map |
 | `Locations` | More than one address: the flagship's map beside a card for each location |
 | `MapEmbed` | The map: a screenshot linking to directions, or a click to load facade over the live embed |
@@ -706,9 +695,7 @@ Runner emails are mobile first. A layout that squashes on a phone is fixed here,
 
 `RecordStack` takes `records`, each a `RecordStackItem` (`title`, `url`, `meta`, `note`, `badge`, `callout`), and renders one table row per record: the title on its own line at 15px, bold and wrapping freely, linked when `url` is set; a mono meta line beneath it with the items joined by middle dots (empty items drop); an optional note beneath that; a hairline between records and none after the last. No cell carries a width, so a name of any length wraps at 320 pixels instead of squashing. An optional `badge` (a stage word such as `"Contacted"`) sits on the title line in a small mono uppercase pill on a `line` hairline, in its own right aligned unbroken cell, so the title keeps wrapping beside it and the badge stays on the title's first line. An optional `callout` (`{ eyebrow, text }`) sets a short task under the meta and the note in the accented `Note` idiom: the eyebrow in the accent, the text at 13px, and a 2px accent rule down its left edge. A record with neither renders exactly as it did before. `recordStackText(records)` is its plain text twin: each title on its own line under a two space indent with any badge after it in square brackets (`Blue Heron Plumbing [Contacted]`), the meta and the note wrapped under a four space indent, any callout as its eyebrow in upper case over its text under that same indent, a blank line between records, and no line past `textWidth` (68 columns, indent included).
 
-The Company Cards additions (0.7.0, from the `Company Cards IA` design, 2026-09-29) ride on the same item and change nothing for a record without them. `badges` is a list of further pills after `badge`, each with a `tone`: `faint` is the quiet stage word, `ink` a bold pill in ink on a 1.5px border (the next touch), `accent` the same in the accent (New). `timeline` (`{ days, touches, opens }`, each day count back from today) draws the record's recent days between the title and the meta line as one table cell per marked day and one per run of empty days between them (seven cells for three marks, never thirty, since Gmail clips a message past about 100 KB), an 8px ink square on each send day and a 5px accent dot on each known open day, the two stacked when they share a day, all standing on a `line` hairline with a 1.5px ink tick at today's edge and an axis row beneath (`30d` on the left, `today` on the right); nothing is positioned, so it survives Gmail. `RecordTimelineStrip` renders one on its own and `RecordTimelineLegend` names the marks once above a list. `aside` (`{ text, strong, tone }`) sets a fact right on the meta line with its number in bold and colored by tone: `up` fresh, `warm` cooling, `accent` cold. In the text twin every pill follows the title in brackets, the timeline is one character per day (`10d [#······@·o|]`: `#` a send, `o` an open, `@` both, `·` nothing, `|` today), and the aside ends the meta line; `recordTimelineText` and `recordBadges` are the helpers it uses.
-
-`StatStrip` lays its stats out as inline block cells with an 88 pixel floor inside one centered cell, so six or seven stats flow onto a second row on a phone rather than shrinking. Each stat takes an optional `delta` (`"+3 (12%)"`), set small under its label and colored by its sign: one that opens on `+` wears the palette's `up`, one that opens on `-` its `down`, and anything else stays muted.
+The Company Cards additions (0.7.0, from the `Company Cards IA` design, 2026-09-29) ride on the same item and change nothing for a record without them. `badges` is a list of further pills after `badge`, each with a `tone`: `faint` is the quiet stage word, `ink` a bold pill in ink on a 1.5px border (the next touch), `accent` the same in the accent (New). `timeline` (`{ days, touches, opens }`, each day count back from today) draws the record's recent days between the title and the meta line as one table cell per marked day and one per run of empty days between them (seven cells for three marks, never thirty, since Gmail clips a message past about 100 KB), an 8px ink square on each send day and a 5px accent dot on each known open day, the two stacked when they share a day, all standing on a `line` hairline with a 1.5px ink tick at today's edge and an axis row beneath (`30d` on the left, `today` on the right); nothing is positioned, so it survives Gmail. `RecordTimelineStrip` renders one on its own. `aside` (`{ text, strong, tone }`) sets a fact right on the meta line with its number in bold and colored by tone: `up` fresh, `warm` cooling, `accent` cold. In the text twin every pill follows the title in brackets, the timeline is one character per day (`10d [#······@·o|]`: `#` a send, `o` an open, `@` both, `·` nothing, `|` today), and the aside ends the meta line; `recordTimelineText` and `recordBadges` are the helpers it uses.
 
 `Masthead` takes an optional `meta` (`"Week 39 · 09/21 to 09/27"`) set in the eyebrow style at the right end of the row, so the title card no longer carries the week. It is a right aligned, unbroken block floated after the wordmark and title: on the same line while the row has room, and dropped under the title on its own line, still right aligned, when it does not (checked at 320 pixels). `Eyebrow` takes `strong`, which sets the label at 15px and weight 700 in ink rather than faint, with a slightly tighter tracking, so a section such as `MQL · 15` reads as a heading on a phone.
 
@@ -728,9 +715,6 @@ const records = [
 <Eyebrow text="MQL · 15" strong />;
 
 <Card>
-	<Row last={false}>
-		<StatStrip stats={[{ n: 6, label: "Lead", delta: "+3 (12%)" }, { n: 2, label: "MQL", delta: "-1 (4%)" }]} />
-	</Row>
 	<Row last>
 		<RecordStack records={records} />
 	</Row>
@@ -775,17 +759,14 @@ Where the jq takes a pre rendered html string (`$rows`, `$body_html`, `$cells_ht
 | `lead_row` | `LeadRow` | `lead`, `rest` |
 | `row` | `Row` | `last`, `children` |
 | `fold_row` | `FoldRow` | `last`, `children` |
-| `mono_table` | `MonoTable` | `headers`, `rows` |
 | `bar` | `Bar` | `logged`, `target` |
 | `group_row` | `GroupRow` | `text`, `first` |
 | `target_row` | `TargetRow` | `text`, `logged`, `target` (null is a count with nothing to measure it against), `note`, `last` |
 | `scoreboard` | `Scoreboard` | `children`, the `GroupRow` and `TargetRow` rows |
-| `what_moved` | `WhatMoved` | `items`, `note` |
 | `read_block` | `ReadBlock` | `text`, `divider` |
 | `sub_eyebrow` | `SubEyebrow` | `text` |
 | `badge` | `Badge` | `letter` |
 | `day_strip` | `DayStrip` | `days`, `last` |
-| `stat_strip` | `StatStrip` | `stats`, each with an optional `delta` colored by its sign (the component wraps where the jq does not) |
 | none | `RecordStack` | `records`, each with an optional `badge`, `callout`, and since 0.7.0 `badges`, `timeline` and `aside` (born here on 2026-09-24, with no jq counterpart) |
 | `records` | `Records` | `columns`, `rows`; a cell's `html` is a `ReactNode` |
 | `masthead` | `Masthead` | `title`, `wordmark` (defaults to `atelic`), `meta` (added 0.5.0, no jq counterpart) |
@@ -804,7 +785,7 @@ The sheets read a few optional tokens beyond the palette, each with a fallback, 
 
 `@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
 
-The palette carries three optional keys beyond the jq's eight: `up` (`#2F7A4B`, a calm green) and `down` (`#B23A2E`, a calm red, kept well apart from the orange accent), the colors a `StatStrip` delta wears by its sign, and `warm` (`#B7791F`, an amber between `up` and the accent) for a record's aside that is cooling but not cold. All three read on the cream card. They are optional so a client palette written before 0.5.0 still compiles, and a palette without them borrows the Atelic values. None maps to a site token.
+The palette carries three optional keys beyond the jq's eight: `up` (`#2F7A4B`, a calm green) and `down` (`#B23A2E`, a calm red, kept well apart from the orange accent), the colors a record's aside or a change wears by its direction, and `warm` (`#B7791F`, an amber between `up` and the accent) for a record's aside that is cooling but not cold. All three read on the cream card. They are optional so a client palette written before 0.5.0 still compiles, and a palette without them borrows the Atelic values. None maps to a site token.
 
 ## Page Components
 
@@ -958,7 +939,7 @@ Proven on a copy of pinole-app thinned onto a packed tarball: with the line or t
 
 ### The Kit
 
-`@atelic-action/ui/app/ui` exports the shadcn components the template carried: `Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `BadgeList`, `Button`, `Callout`, `Card`, `Checkbox`, `ClearButton`, `Command`, `CountryDropdown`, `Dialog`, `DropdownMenu`, `Form`, `Input`, `Label`, `OptionSelect`, `Pagination`, `Popover`, `Progress`, `SearchInput`, `Select`, `Separator`, `Sheet`, `Slider`, `Switch`, `Textarea`, and `Tooltip`, each with its parts. A new kit component lands here, not in an app, and it is written by hand into `src/app/ui/` and exported from its `index.ts`: the package carries no `components.json`, because `bunx shadcn add` writes its imports through the `@/` aliases the package never uses (consumers resolve none of ours), so a component taken from the shadcn registry has its imports made relative before it lands. The main entry adds the frame and its pieces (`AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `ActionButton`, `FormActionButtons`, `PageSkeleton`, `PageError`, `AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph`).
+`@atelic-action/ui/app/ui` exports the shadcn components the template carried: `Accordion`, `Alert`, `AlertDialog`, `Avatar`, `Badge`, `BadgeList`, `Button`, `Callout`, `Card`, `Checkbox`, `ClearButton`, `Command`, `CountryDropdown`, `Dialog`, `DropdownMenu`, `Form`, `Input`, `Label`, `OptionSelect`, `Pagination`, `Popover`, `Progress`, `SearchInput`, `Select`, `Separator`, `Sheet`, `Slider`, `Switch`, `Textarea`, and `Tooltip`, each with its parts. A new kit component lands here, not in an app, and it is written by hand into `src/app/ui/` and exported from its `index.ts`: the package carries no `components.json`, because `bunx shadcn add` writes its imports through the `@/` aliases the package never uses (consumers resolve none of ours), so a component taken from the shadcn registry has its imports made relative before it lands. The main entry adds the frame and its pieces (`AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `ActionButton`, `FormActionButtons`, `PageSkeleton`, `PageError`, `AuthGuard`, `ErrorFallback`, `GoogleGlyph`).
 
 The app's stack is optional peer dependencies, so a marketing site installs none of it: TanStack Router and Query, Tailwind, `sonner`, `zustand`, `zod`, `react-hook-form`, `class-variance-authority`, `clsx`, `tailwind-merge`, `cmdk`, the Radix primitives the kit uses, `country-data-list`, and `react-circle-flags`, at the ranges `template-application` already pins. An app that imports the shell has them all already.
 

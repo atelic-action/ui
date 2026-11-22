@@ -16,7 +16,6 @@ import {
 	AppPage,
 	AppPageToolbar,
 	Breadcrumbs,
-	CardErrorBoundary,
 	GoogleGlyph,
 	matchesSearch,
 	PageError,
@@ -265,10 +264,6 @@ export function RecipesPage() {
 	);
 }
 
-function Unbaked(): never {
-	throw new Error("This card was asked for a recipe that does not exist.");
-}
-
 export function StatesPage() {
 	const navigate = useNavigate();
 	return (
@@ -311,12 +306,6 @@ export function StatesPage() {
 				<section>
 					<p className="kit-label">PageError</p>
 					<PageError title="Orders did not load" message="The api answered 503. Try again." />
-				</section>
-				<section>
-					<p className="kit-label">CardErrorBoundary</p>
-					<CardErrorBoundary>
-						<Unbaked />
-					</CardErrorBoundary>
 				</section>
 				<section>
 					<p className="kit-label">PageSkeleton</p>

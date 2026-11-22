@@ -14,19 +14,16 @@ import {
 	LeadRow,
 	List,
 	Masthead,
-	MonoTable,
 	Note,
 	ReadBlock,
 	Records,
 	Row,
 	Scoreboard,
 	Stat,
-	StatStrip,
 	StatsRow,
 	SubEyebrow,
 	TargetRow,
 	TitleCard,
-	WhatMoved,
 } from "../../src/email";
 import { renderEmail, renderFailureEmail } from "../../src/email/render";
 import { normalize } from "./normalize";
@@ -67,10 +64,6 @@ const page = renderEmail({
 					<TargetRow text="Lift" logged={2} target={3} note="One short" last={false} />
 					<TargetRow text="Takeout" logged={1} target={null} note="Mon · Curry Cart" last />
 				</Scoreboard>
-				<WhatMoved
-					items={[{ subject: "Pinewood Cabinetry", event: "replied to the audit." }]}
-					note="Nothing else changed."
-				/>
 			</Card>
 			<Eyebrow text="Movement" />
 			<Card>
@@ -126,28 +119,7 @@ const page = renderEmail({
 			</Card>
 			<Eyebrow text="The queue" />
 			<Card>
-				<Row last={false}>
-					<MonoTable
-						headers={["Type", "Complete", "Target"]}
-						rows={[
-							["Bumps", "0", "4"],
-							["Intros", "0", "6"],
-						]}
-					/>
-				</Row>
 				<Note eyebrowText="Hottest reader" text="Pinewood Cabinetry, 5 opens" accented last />
-			</Card>
-			<Eyebrow text="At a glance" />
-			<Card>
-				<Row last>
-					<StatStrip
-						stats={[
-							{ n: 6, label: "Lead" },
-							{ n: 2, label: "MQL" },
-							{ n: 1, label: "Closed" },
-						]}
-					/>
-				</Row>
 			</Card>
 			<Footer meta="Run 2026-10-05 · 41s" />
 		</>

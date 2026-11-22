@@ -10,20 +10,16 @@ import {
 	LeadRow,
 	List,
 	Masthead,
-	MonoTable,
 	Note,
 	RecordStack,
 	type RecordStackItem,
-	RecordTimelineLegend,
 	Row,
 	recordStackText,
 	Scoreboard,
 	Stat,
-	StatStrip,
 	StatsRow,
 	TargetRow,
 	TitleCard,
-	WhatMoved,
 } from "../src/email";
 import { renderEmail, renderFailureEmail } from "../src/email/render";
 import { Example, Piece } from "./parts";
@@ -77,17 +73,8 @@ function weekEmail(): string {
 						</StatsRow>
 					}
 				/>
-				<Eyebrow text="Wholesale · 2" strong aside={<RecordTimelineLegend days={30} />} />
+				<Eyebrow text="Wholesale · 2" strong />
 				<Card>
-					<Row last={false}>
-						<StatStrip
-							stats={[
-								{ n: 11, label: "Cafes", delta: "+1 (10%)" },
-								{ n: 2, label: "Grocers" },
-								{ n: 148, label: "Loaves a day", delta: "-6 (4%)" },
-							]}
-						/>
-					</Row>
 					<Row last>
 						<RecordStack records={records} />
 					</Row>
@@ -118,13 +105,6 @@ function weekEmail(): string {
 							last
 						/>
 					</Scoreboard>
-					<WhatMoved
-						items={[
-							{ subject: "The map listing", event: "now says open on Sunday." },
-							{ subject: "The menu page", event: "is text, and loads in 2.2 seconds." },
-						]}
-						note="Nothing else changed."
-					/>
 				</Card>
 				<Eyebrow text="Catering" />
 				<Card>
@@ -139,16 +119,6 @@ function weekEmail(): string {
 						url="https://example.test/orders/5521"
 						last={false}
 					/>
-					<Row last={false}>
-						<MonoTable
-							headers={["Day", "Orders", "Taken"]}
-							rows={[
-								["Fri", "9", "$1,240"],
-								["Sat", "14", "$1,980"],
-								["Sun", "8", "$960"],
-							]}
-						/>
-					</Row>
 					<FoldRow last={false}>
 						<BigFold summary="Asked and declined" count="2">
 							<List fontSize="13px">

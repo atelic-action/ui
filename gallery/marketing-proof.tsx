@@ -2,11 +2,9 @@ import {
 	CalloutPanel,
 	CredentialList,
 	Gallery as PhotoGallery,
-	PressQuotes,
 	ProfileCards,
 	ReviewCarousel,
 	ReviewWall,
-	SocialStrip,
 } from "../src/sections";
 import { reviews } from "./marketing-data";
 import { Band, MarketingGroup, Specimen } from "./marketing-parts";
@@ -69,31 +67,6 @@ export function MarketingProof() {
 						title="Twelve years of Saturday mornings."
 						items={reviews}
 						clampAt={4}
-					/>
-				</Band>
-			</Specimen>
-
-			<Specimen
-				id="press-quotes"
-				name="PressQuotes"
-				lead="Rows of press quotes and awards, each citing its source and year, newest first."
-			>
-				<Band>
-					<PressQuotes
-						items={[
-							{
-								quote: "The best morning bun in the county, and it is not close.",
-								source: "Fairhaven Weekly",
-								year: 2025,
-								href: "https://press.example.com/1",
-							},
-							{ quote: "Best Bakery, readers' choice.", source: "Front Range Eats", year: 2023 },
-							{
-								quote: "A bakery that still closes when it sells out.",
-								source: "The Mill Review",
-								year: 2019,
-							},
-						]}
 					/>
 				</Band>
 			</Specimen>
@@ -166,26 +139,6 @@ export function MarketingProof() {
 						]}
 					/>
 				</Band>
-			</Specimen>
-
-			<Specimen
-				id="social-strip"
-				name="SocialStrip"
-				lead="A static grid of the business's own social photos, every tile linking to the profile; never a live embed."
-			>
-				<SocialStrip
-					eyebrow="Follow along"
-					title="The bake, every morning."
-					handle="@kestrelhollow"
-					profileURL="https://social.example.com/kestrelhollow"
-					photos={[
-						{ placeholder: "The morning shelf" },
-						{ placeholder: "Scoring" },
-						{ placeholder: "The line at 08:00" },
-						{ placeholder: "Galette" },
-						{ placeholder: "The walk in" },
-					]}
-				/>
 			</Specimen>
 		</MarketingGroup>
 	);

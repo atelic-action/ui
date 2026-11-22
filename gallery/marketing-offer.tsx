@@ -1,10 +1,8 @@
 import {
 	ComparisonTable,
-	DeviceShowcase,
 	ExpandList,
 	FeatureDetail,
 	FeatureGrid,
-	MenuList,
 	PricingCard,
 	ProcessSteps,
 	RevealSlider,
@@ -109,34 +107,6 @@ export function MarketingOffer() {
 			</Specimen>
 
 			<Specimen
-				id="menu-list"
-				name="MenuList"
-				lead="A priced menu group: dotted rows of name, note, and price, with fine print under it."
-			>
-				<Band>
-					<div className="mg-two">
-						<MenuList
-							heading="Bread"
-							items={[
-								{ name: "Country sourdough", note: "Our daily loaf", price: "$9" },
-								{ name: "Seeded rye", price: "$10" },
-								{ name: "Baguette", note: "From 11:00", price: "$4" },
-							]}
-							foot="Half loaves on request."
-						/>
-						<MenuList
-							heading="Pastry"
-							items={[
-								{ name: "Morning bun", note: "Orange sugar", price: "$5" },
-								{ name: "Croissant", price: "$4.50" },
-								{ name: "Seasonal galette", price: "$6 to $8" },
-							]}
-						/>
-					</div>
-				</Band>
-			</Specimen>
-
-			<Specimen
 				id="expand-list"
 				name="ExpandList"
 				lead="A light accordion of numbered rows, for add ons that do not need the full FAQ browser."
@@ -208,19 +178,6 @@ export function MarketingOffer() {
 						}}
 						after={{ label: "After", placeholder: "The menu as text, in two columns" }}
 						startAt={50}
-					/>
-				</Band>
-			</Specimen>
-
-			<Specimen
-				id="device-showcase"
-				name="DeviceShowcase"
-				lead="A desktop browser frame with a phone overlapping it, for showing a rebuilt site."
-			>
-				<Band alt>
-					<DeviceShowcase
-						desktop={{ src: "/images/bakery-desktop.svg", alt: "The home page on a laptop" }}
-						phone={{ src: "/images/bakery-phone.svg", alt: "The home page on a phone" }}
 					/>
 				</Band>
 			</Specimen>
