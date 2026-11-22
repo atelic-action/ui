@@ -98,9 +98,44 @@ describe("StickyCTABar", () => {
 			);
 		}
 		const { unmount } = render(<Page />);
-		expect(screen.getByText("64")).toBeInTheDocument();
-		expect(renders).toBeLessThanOrEqual(6);
+		// Cut off at the cap, the space it held is handed back rather than
+		// left standing; it never loops.
+		expect(screen.getByText("0")).toBeInTheDocument();
+		expect(renders).toBeLessThanOrEqual(7);
 		unmount();
+		height.mockRestore();
+	});
+
+	it("past the cap, tells the outgoing listener 0 and makes the arrival wait for the next measure", () => {
+		const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(64);
+		const chain = [vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn()];
+		const bar = (listener: (pixels: number) => void) => (
+			<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={listener} />
+		);
+		const { rerender, unmount } = render(bar(chain[0] as (pixels: number) => void));
+		// Three swaps in a row, each told; the fourth trips the cap.
+		for (const listener of chain.slice(1)) rerender(bar(listener));
+		const [a, b, c, d, e, f] = chain as [
+			ReturnType<typeof vi.fn>,
+			ReturnType<typeof vi.fn>,
+			ReturnType<typeof vi.fn>,
+			ReturnType<typeof vi.fn>,
+			ReturnType<typeof vi.fn>,
+			ReturnType<typeof vi.fn>,
+		];
+		for (const told of [a, b, c]) expect(told.mock.calls).toEqual([[64], [0]]);
+		// D held the space when E arrived past the cap: it gives it back.
+		expect(d.mock.calls).toEqual([[64], [0]]);
+		// E was never told a height, so its leaving tells it nothing.
+		expect(e).not.toHaveBeenCalled();
+		expect(f).not.toHaveBeenCalled();
+		// The next measure tells the listener now in place.
+		act(() => {
+			window.dispatchEvent(new Event("resize"));
+		});
+		expect(f.mock.calls).toEqual([[64]]);
+		unmount();
+		expect(f).toHaveBeenLastCalledWith(0);
 		height.mockRestore();
 	});
 

@@ -29,7 +29,10 @@ export interface StickyCTABarProps {
 	 * current height at once and the one it replaced gets 0; no listener
 	 * hears one value twice. A listener made anew each render that sets state
 	 * should store a plain number (or be memoized): each new function hears
-	 * the height once, and a state equal to it stops the renders.
+	 * the height once, and a state equal to it stops the renders. One that
+	 * stores an object is cut off after three arrivals with nothing measured
+	 * between: the listener leaving still hears 0, and the one arriving
+	 * waits for the next measure.
 	 */
 	onSpaceChange?: (pixels: number) => void;
 }
@@ -114,7 +117,14 @@ export function StickyCTABar({
 		const previous = previousRef.current;
 		previousRef.current = onSpaceChange;
 		if (previous === onSpaceChange) return;
-		if (onSpaceChange && arrivalsRef.current >= 3) return;
+		if (onSpaceChange && arrivalsRef.current >= 3) {
+			// Past the cap the outgoing one still gives back any space it holds;
+			// only the arrival waits. Only a listener told a height is told 0, so
+			// a looping listener hears it once: the function its 0 makes was
+			// never told anything, and the next swap tells no one.
+			if (previous && (toldRef.current.get(previous) ?? 0) > 0) tell(previous, 0);
+			return;
+		}
 		arrivalsRef.current += 1;
 		// The outgoing one gives its space back, the bar measured or not (a
 		// listener taken away leaves the measuring off by now).
