@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useContext, useMemo, useRef } from "react";
-import { type AppConfig, getAppConfig } from "../config";
+import { type AppConfig, getAppConfig, peekAppConfig } from "../config";
 import { configureApp } from "../configure";
 import type { NavItem } from "../layout/nav";
 
@@ -40,6 +40,15 @@ export function AppConfigProvider({ config, nav, children }: AppConfigProviderPr
 /** The app's config, from the nearest provider, or as configured with `configureApp`. */
 export function useAppConfig(): AppConfig {
 	return useContext(AppContext)?.config ?? getAppConfig();
+}
+
+/**
+ * The app's config when there is one, or null: for a kit component that also
+ * renders outside the shell (a story, a page with no provider), which falls
+ * back to its own default rather than throwing.
+ */
+export function useOptionalAppConfig(): AppConfig | null {
+	return useContext(AppContext)?.config ?? peekAppConfig();
 }
 
 /** The app's nav items. Throws outside an `AppProvider` or `AppConfigProvider`. */
