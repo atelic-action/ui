@@ -10,8 +10,17 @@ export const issues = {
 	"serif-accent-contrast": { rule: "color-contrast", elements: "em.serif" },
 	/** A credential's mono code, `--primary` on `--card`: 3.31:1 at 12.5px. The primary as small text again. */
 	"credential-code-contrast": { rule: "color-contrast", elements: ".cert-list .ci" },
-	/** A closed day's row dims to `--neutral-500` on `--surface`: 3.38:1 at 13.6 and 15.2px. */
-	"hours-closed-contrast": { rule: "color-contrast", elements: ".hours-row.closed" },
+	/**
+	 * Small muted text set in `--neutral-500`: 3.38:1 on `--surface` and 3.12:1
+	 * on `--surface-alt`, at 11.5 to 15.2px. A closed day's hours, the journal's
+	 * dates and reading times, a post's way back and byline, the comparison's
+	 * heads, ungraded notes, and footnote, and a legal page's dateline.
+	 */
+	"muted-text-contrast": {
+		rule: "color-contrast",
+		elements:
+			".hours-row.closed, .bi-meta, .bp-back, .bp-meta, .cmp-table thead th, .cmp-grade.is-note, .cmp-footnote, .legal-updated",
+	},
 	/**
 	 * A feature's mono index and a linked card's label read `--primary` as
 	 * small text: 3.04:1 on `--surface`, 3.31:1 on `--card`. The primary as small text.

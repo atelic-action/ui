@@ -155,7 +155,7 @@ export const UnbrokenWord: Story = {
 	globals: pin("phone"),
 	args: { items: [{ num: "01", title: unbroken, description: "The guild's prize loaf." }] },
 	play: async () => {
-		await knownBug("feature-grid-long-word-overflow", async () => {
+		await knownBug("heading-long-word-overflow", async () => {
 			await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
 		});
 	},
