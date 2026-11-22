@@ -124,6 +124,43 @@ export const Pause: Story = {
 	},
 };
 
+/** Every style rule in a list, inside its layers and media blocks. */
+function styleRules(list: CSSRuleList): CSSStyleRule[] {
+	return [...list].flatMap((rule) =>
+		rule instanceof CSSStyleRule
+			? [rule]
+			: "cssRules" in rule
+				? styleRules((rule as CSSGroupingRule).cssRules)
+				: [],
+	);
+}
+
+/**
+ * Hovered, the toggle's ring brightens and its collar stays, so a chip
+ * still slides under it whole rather than showing beside its edge. The test
+ * browser's pointer never sets `:hover`, so the sheet's hover rule is
+ * painted on the toggle itself, where it resolves against the same theme.
+ */
+export const PauseHovered: Story = {
+	play: async ({ canvas }) => {
+		const toggle = within(band(canvas)).getByRole("button", { name: "Pause" });
+		const rules = [...document.styleSheets].flatMap((sheet) => styleRules(sheet.cssRules));
+		const hover = rules.find((rule) => rule.selectorText === ".atelic-ui .marquee-pause:hover");
+		if (!hover) throw new Error("No hover rule for the pause toggle in the page's sheets.");
+		const collar = "0px 0px 0px 6px";
+		const resting = getComputedStyle(toggle).boxShadow;
+		await expect(resting).toContain(collar);
+		toggle.style.boxShadow = hover.style.getPropertyValue("box-shadow");
+		try {
+			const hovered = getComputedStyle(toggle).boxShadow;
+			await expect(hovered).not.toBe(resting);
+			await expect(hovered).toContain(collar);
+		} finally {
+			toggle.style.boxShadow = "";
+		}
+	},
+};
+
 /** The toggle's default name, when a page names none. */
 export const PauseDefaultName: Story = {
 	play: async ({ canvas }) => {
