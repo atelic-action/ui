@@ -1647,14 +1647,18 @@
 		margin: 0;
 		color: var(--neutral-200);
 	}
-	/* Two across (a phone), a column of hours beside a taller link column left
-	   a hole under the hours, so the hours take the row's whole width, their
-	   rows laid two across, and the link columns pair up under them. */
+	/* Two across (a phone), the cells under the brand column pair up with none
+	   left alone. Beside an even count of link columns the hours take the
+	   row's whole width, their rows laid two across, and the link columns pair
+	   under them; beside an odd count the hours stay a column of their own,
+	   rows stacked, paired with the first link column, so the count of cells
+	   is even either way. Footer.tsx marks the even count from the columns it
+	   draws. */
 	@media (max-width: 759px) {
-		.atelic-ui .footer-grid > .footer-hours {
+		.atelic-ui .footer-grid.has-even-columns > .footer-hours {
 			grid-column: 1 / -1;
 		}
-		.atelic-ui .footer-hours dl {
+		.atelic-ui .footer-grid.has-even-columns .footer-hours dl {
 			display: grid;
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: 8px 32px;

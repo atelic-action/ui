@@ -845,3 +845,61 @@ export const HoursInBrandOneRowWide: Story = {
 		await expectBrandRows(canvas, "one row");
 	},
 };
+
+/**
+ * Checks the phone's cells under the brand column pair up: every row holds
+ * two cells, but for the hours spanning the whole row; the hours span it
+ * beside an even count of link columns and stand as a half cell beside the
+ * first link column beside an odd count.
+ */
+async function expectNoCellAlone(canvas: ReturnType<typeof within>, linkColumns: number) {
+	const footer = within(canvas.getByRole("contentinfo"));
+	const box = (element: Element) => element.getBoundingClientRect();
+	const hoursCell = footer.getByRole("heading", { name: "Hours" }).parentElement as HTMLElement;
+	const columns = footer.getAllByRole("navigation");
+	await expect(columns).toHaveLength(linkColumns);
+	const grid = hoursCell.parentElement as HTMLElement;
+	const spans = box(hoursCell).width > box(grid).width * 0.9;
+	await expect(spans).toBe(linkColumns % 2 === 0);
+	if (!spans) {
+		await expect(Math.round(box(hoursCell).top)).toBe(Math.round(box(columns[0] as Element).top));
+	}
+	const cells = spans ? columns : [hoursCell, ...columns];
+	const rows = new Map<number, number>();
+	for (const cell of cells) {
+		const top = Math.round(box(cell).top);
+		rows.set(top, (rows.get(top) ?? 0) + 1);
+	}
+	await expect([...rows.values()].every((count) => count === 2)).toBe(true);
+	await expectNoSidewaysScroll();
+}
+
+/** Two link columns on a phone: the hours span the row, the two columns pair under them. */
+export const HoursPhoneTwoColumns: Story = {
+	args: { hours, columns: columns.slice(0, 2) },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expectNoCellAlone(canvas, 2);
+	},
+};
+
+/**
+ * Three link columns on a phone: the hours stay a half cell beside the first
+ * link column, as in 8.1.0, so the other two pair and none hangs alone.
+ */
+export const HoursPhoneThreeColumns: Story = {
+	args: { hours, columns: [columns[0], columns[1], columns[3]] as FooterColumn[] },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expectNoCellAlone(canvas, 3);
+	},
+};
+
+/** Four link columns on a phone: the hours span the row, the four columns two by two under them. */
+export const HoursPhoneFourColumns: Story = {
+	args: { hours, columns },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expectNoCellAlone(canvas, 4);
+	},
+};

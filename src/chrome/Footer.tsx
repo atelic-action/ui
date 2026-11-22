@@ -280,7 +280,14 @@ export function Footer({
 			<footer ref={ref} className="footer">
 				<div className="wrap">
 					<div
-						className={["footer-grid", hoursShown && "has-hours", hoursInBrand && "has-brand-hours"]
+						className={[
+							"footer-grid",
+							hoursShown && "has-hours",
+							// Two across, the hours span the row only beside an even count of
+							// link columns, so no cell is left alone (chrome.css, the footer).
+							hoursShown && shown.length % 2 === 0 && "has-even-columns",
+							hoursInBrand && "has-brand-hours",
+						]
 							.filter(Boolean)
 							.join(" ")}
 					>
