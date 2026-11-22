@@ -1,5 +1,5 @@
 import { getClient } from "@sentry/browser";
-import { DENY_URLS, IGNORE_ERRORS, initSentry } from "../../src/monitoring/sdk";
+import { DENY_URLS, IGNORE_ERRORS, initSentry, scrubRequest } from "../../src/monitoring/sdk";
 
 describe("the browser SDK, set up for errors alone", () => {
 	it("starts a client with the error integrations and no tracing, replay, or breadcrumbs", () => {
@@ -43,5 +43,22 @@ describe("the browser SDK, set up for errors alone", () => {
 			true,
 		);
 		expect(IGNORE_ERRORS.some((pattern) => pattern.test("TypeError: x is undefined"))).toBe(false);
+	});
+
+	it("cuts an event's request to the URL without query or fragment, and the user agent alone", () => {
+		const event = scrubRequest({
+			request: {
+				url: "https://example.com/menu?token=abc&email=a@b.c#frag",
+				headers: { Referer: "https://other.example/?x=1", "User-Agent": "Agent/1" },
+			},
+		});
+		expect(event.request).toEqual({
+			url: "https://example.com/menu",
+			headers: { "User-Agent": "Agent/1" },
+		});
+		expect(
+			scrubRequest({ request: { headers: { Referer: "https://o.example/?x=1" } } }).request,
+		).toEqual({});
+		expect(getClient()?.getOptions().beforeSend).toBe(scrubRequest);
 	});
 });

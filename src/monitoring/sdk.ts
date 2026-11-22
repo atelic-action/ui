@@ -38,6 +38,32 @@ export const DENY_URLS = [
 ];
 export const IGNORE_ERRORS = [/Java object is gone/, /Error invoking postMessage/];
 
+/**
+ * What an event may carry of its request, matching the server reporter: the
+ * URL with no query string or fragment, and the user agent. The SDK's own
+ * request integration attaches the full URL and the referrer, and a link can
+ * carry a reader's personal parameters in either, so they are cut here, the
+ * last step before an event leaves the page.
+ */
+export function scrubRequest<
+	T extends { request?: { url?: string; headers?: Record<string, string> } },
+>(event: T): T {
+	const request = event.request;
+	if (!request) return event;
+	if (request.url) {
+		try {
+			const parsed = new URL(request.url);
+			request.url = `${parsed.origin}${parsed.pathname}`;
+		} catch {
+			delete request.url;
+		}
+	}
+	const agent = request.headers?.["User-Agent"];
+	if (agent) request.headers = { "User-Agent": agent };
+	else delete request.headers;
+	return event;
+}
+
 export interface SDKOptions {
 	dsn: string;
 	release?: string;
@@ -54,6 +80,7 @@ export function initSentry({ dsn, release, environment }: SDKOptions) {
 		stackParser: defaultStackParser,
 		denyUrls: DENY_URLS,
 		ignoreErrors: IGNORE_ERRORS,
+		beforeSend: scrubRequest,
 		integrations: [
 			eventFiltersIntegration(),
 			functionToStringIntegration(),
