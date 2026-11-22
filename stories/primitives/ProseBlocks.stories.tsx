@@ -3,7 +3,6 @@ import type { CSSProperties } from "react";
 import { expect, fireEvent, waitFor } from "storybook/test";
 import { ProseBlocks } from "../../src/primitives";
 import { longURL, proseFigures, prosePost, proseText } from "../fixtures/primitives";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 import { expectNoSidewaysScroll, inWrap } from "./support";
 
@@ -35,15 +34,9 @@ async function opened() {
 	return openDialog() as HTMLDialogElement;
 }
 
-/**
- * Closed, and settled: the dialog drops `open` at once but fires its close
- * event a task later, and the component's handler for it closes whatever is
- * open then. Reopening inside that task (only a test is that fast) would be
- * closed again, so the story waits it out.
- */
+/** Closed: no dialog left open. Each way out is its own story, so none reopens. */
 async function closed() {
 	await waitFor(() => expect(openDialog()).toBeNull(), { timeout: 4000 });
-	await new Promise((resolve) => setTimeout(resolve, 50));
 }
 
 /** Whether a computed color paints anything. */
@@ -110,61 +103,71 @@ export const Figures: Story = {
 /** The whole post: text, the row of figures, and more text. */
 export const Post: Story = { args: { blocks: prosePost } };
 
-/**
- * The tile opens its picture large in a modal dialog with focus inside it,
- * and every way out (the close button, Escape, the backdrop) closes it and
- * hands focus back to the tile.
- */
-export const LightboxOpensAndCloses: Story = {
+const tileName = "Open larger: The ovens at dawn, the first trays going in";
+
+/** The tile opens its picture large in a modal dialog, named by the picture, with focus inside. */
+export const LightboxOpens: Story = {
 	args: { blocks: proseFigures.slice(0, 1) },
 	play: async ({ canvas, userEvent, step }) => {
-		const tile = canvas.getByRole("button", {
-			name: "Open larger: The ovens at dawn, the first trays going in",
-		});
 		await step("nothing large is loaded until a reader asks", async () => {
 			await expect(document.querySelectorAll("img")).toHaveLength(1);
 		});
-		await step("the tile opens the dialog, named by the picture, with focus inside", async () => {
-			await userEvent.click(tile);
+		await step("the tile opens the dialog with focus inside it", async () => {
+			await userEvent.click(canvas.getByRole("button", { name: tileName }));
 			const dialog = await opened();
-			await expect(dialog).toBeTruthy();
 			await expect(dialog).toHaveAccessibleName("The ovens at dawn, the first trays going in");
 			await expect(dialog.contains(document.activeElement)).toBe(true);
 			await expect(dialog.querySelector("img")).toBeVisible();
 			await expect(dialog).toHaveTextContent("The first trays, at five");
 		});
-		await step("the close button closes it and focus returns to the tile", async () => {
-			const dialog = await opened();
-			const close = Array.from(dialog.querySelectorAll("button")).find(
-				(b) => b.getAttribute("aria-label") === "Close",
-			) as HTMLButtonElement;
-			await userEvent.click(close);
-			await closed();
-			await expect(tile).toHaveFocus();
+	},
+};
+
+/** The close button closes it, and focus returns to the tile. */
+export const LightboxClosesByButton: Story = {
+	args: { blocks: proseFigures.slice(0, 1) },
+	play: async ({ canvas, userEvent }) => {
+		const tile = canvas.getByRole("button", { name: tileName });
+		await userEvent.click(tile);
+		const dialog = await opened();
+		const close = Array.from(dialog.querySelectorAll("button")).find(
+			(b) => b.getAttribute("aria-label") === "Close",
+		) as HTMLButtonElement;
+		await userEvent.click(close);
+		await closed();
+		await expect(tile).toHaveFocus();
+	},
+};
+
+/** Escape closes it, and focus returns to the tile. */
+export const LightboxClosesByEscape: Story = {
+	args: { blocks: proseFigures.slice(0, 1) },
+	play: async ({ canvas, userEvent }) => {
+		const tile = canvas.getByRole("button", { name: tileName });
+		await userEvent.click(tile);
+		(await opened()).requestClose();
+		await closed();
+		await expect(tile).toHaveFocus();
+	},
+};
+
+/** A click on the backdrop closes it; a click on the panel's own padding does not. */
+export const LightboxClosesByBackdrop: Story = {
+	args: { blocks: proseFigures.slice(0, 1) },
+	play: async ({ canvas, userEvent, step }) => {
+		const tile = canvas.getByRole("button", { name: tileName });
+		await userEvent.click(tile);
+		const dialog = await opened();
+		await step("a click on the panel's own padding keeps it open", async () => {
+			const box = dialog.getBoundingClientRect();
+			fireEvent.click(dialog, { clientX: box.left + 4, clientY: box.bottom - 4 });
+			await expect(openDialog()).toBe(dialog);
 		});
-		await step("Escape closes it and focus returns to the tile", async () => {
-			await userEvent.click(tile);
-			const dialog = await opened();
-			dialog.requestClose();
-			await closed();
-			await expect(tile).toHaveFocus();
-		});
-		await step("a click on the backdrop closes it", async () => {
-			await userEvent.click(tile);
-			const dialog = await opened();
+		await step("a click on the backdrop closes it, focus back on the tile", async () => {
 			const box = dialog.getBoundingClientRect();
 			fireEvent.click(dialog, { clientX: box.left - 10, clientY: box.top - 10 });
 			await closed();
 			await expect(tile).toHaveFocus();
-		});
-		await step("a click on the panel's own padding does not", async () => {
-			await userEvent.click(tile);
-			const dialog = await opened();
-			const box = dialog.getBoundingClientRect();
-			fireEvent.click(dialog, { clientX: box.left + 4, clientY: box.bottom - 4 });
-			await expect(openDialog()).toBe(dialog);
-			dialog.requestClose();
-			await closed();
 		});
 	},
 };
@@ -182,14 +185,11 @@ export const LightboxBackdrop: Story = {
 };
 
 /**
- * The backdrop where `--shade` is undefined, as it is for an app or a site
- * that loads `primitives.css` without `components.css`, the one sheet that
- * declares the token's default. Simulated by unsetting the token on a wrapper.
- * The backdrop should still dim the page; it paints nothing
- * (stories/findings/primitives.md, `lightbox-backdrop-needs-shade`).
+ * The backdrop where `--shade` is undefined: it still dims the page, from
+ * `--backdrop-shade`, the default every sheet with the lightbox carries.
+ * Simulated by unsetting `--shade` on a wrapper.
  */
 export const LightboxBackdropWithoutShadeToken: Story = {
-	tags: ["known-issue"],
 	args: { blocks: proseFigures.slice(0, 1) },
 	decorators: [
 		(Story) => (
@@ -201,9 +201,7 @@ export const LightboxBackdropWithoutShadeToken: Story = {
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: /Open larger/ }));
 		const dialog = await opened();
-		await knownBug("lightbox-backdrop-needs-shade", async () => {
-			await expect(paints(getComputedStyle(dialog, "::backdrop").backgroundColor)).toBe(true);
-		});
+		await expect(paints(getComputedStyle(dialog, "::backdrop").backgroundColor)).toBe(true);
 		dialog.requestClose();
 	},
 };

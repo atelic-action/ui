@@ -4,7 +4,6 @@ import { ArtifactShell, Paragraph } from "../../src/artifact";
 import { ReportCard } from "../../src/components";
 import { artifactSite, reportGroups } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** A document page: two sections the header's stops point at, then the sign off line. */
@@ -44,6 +43,12 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+/** The sender's mark the header shows: the lockup draws one per surface and hides the other. */
+function shownMark(lockup: HTMLElement) {
+	const marks = Array.from(lockup.querySelectorAll("img.mark")) as HTMLImageElement[];
+	return marks.find((img) => getComputedStyle(img).display !== "none") as HTMLImageElement;
+}
 
 /** The `--section-space` a root at a given density resolves, read off a probe beside the story. */
 function sectionSpace(density: string) {
@@ -103,13 +108,19 @@ export const DensityPinnedComfortable: Story = {
 	},
 };
 
-/**
- * The header mark's height. A theme sets `--brand-mark-height` (here 40px)
- * and the mark should follow it; the artifact sheet pins it at 20px instead
- * (stories/findings/chrome.md, `artifact-sheet-mark-height`).
- */
+/** The header mark's height: 20px by the shell's own default. */
 export const MarkHeight: Story = {
-	tags: ["known-issue"],
+	play: async ({ canvas }) => {
+		const lockup = within(canvas.getByRole("banner")).getByRole("link", { name: /home$/ });
+		// One image per bar surface; the dark header shows one of them.
+		const mark = shownMark(lockup);
+		await waitFor(() => expect(mark.complete).toBe(true), { timeout: 5000 });
+		await expect(Math.round(mark.getBoundingClientRect().height)).toBe(20);
+	},
+};
+
+/** A theme's own `--brand-mark-height` (here 40px) wins over the shell's default. */
+export const ThemeMarkHeight: Story = {
 	decorators: [
 		(Story) => (
 			<>
@@ -119,13 +130,11 @@ export const MarkHeight: Story = {
 		),
 	],
 	play: async ({ canvas }) => {
-		// The sender's mark is decoration inside the named lockup, reached from it.
 		const lockup = within(canvas.getByRole("banner")).getByRole("link", { name: /home$/ });
-		const mark = lockup.querySelector("img") as HTMLImageElement;
+		// One image per bar surface; the dark header shows one of them.
+		const mark = shownMark(lockup);
 		await waitFor(() => expect(mark.complete).toBe(true), { timeout: 5000 });
-		await knownBug("artifact-sheet-mark-height", async () => {
-			await expect(Math.round(mark.getBoundingClientRect().height)).toBe(40);
-		});
+		await expect(Math.round(mark.getBoundingClientRect().height)).toBe(40);
 	},
 };
 

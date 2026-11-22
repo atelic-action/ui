@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Eyebrow } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 import { expectNoSidewaysScroll, onDarkBand } from "./support";
 
@@ -20,15 +20,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The primary on the page surface fails contrast (stories/findings/primitives.md). */
-const eyebrowContrast = {
-	parameters: { ...knownIssues("eyebrow-contrast") },
-} satisfies Story;
-
 /** A paragraph, so it never adds a heading to the outline. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	play: async ({ canvas }) => {
 		const eyebrow = canvas.getByText("Baked daily");
 		await expect(eyebrow.tagName).toBe("P");
@@ -38,8 +31,6 @@ export const Default: Story = {
 
 /** Centered, the trailing fade included. */
 export const Center: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	args: { center: true },
 	decorators: [
 		(Story) => (
@@ -53,17 +44,11 @@ export const Center: Story = {
 /** On a dark band the color lifts to the bright primary. */
 export const OnDark: Story = { args: { onDark: true }, decorators: [onDarkBand] };
 
-/**
- * On the primary field it turns to the words' color, softened, which fails
- * contrast like every word on that field (stories/findings/sections.md,
- * `on-primary-field-contrast`).
- */
+/** On the primary field (`--primary-fill`, as a section paints it) it turns to the words' color. */
 export const OnPrimaryField: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("on-primary-field-contrast") },
 	decorators: [
 		(Story) => (
-			<div className="on-primary" style={{ background: "var(--primary)", padding: 24 }}>
+			<div className="on-primary" style={{ background: "var(--primary-fill)", padding: 24 }}>
 				<Story />
 			</div>
 		),
@@ -72,8 +57,6 @@ export const OnPrimaryField: Story = {
 
 /** The deprecated `run` prop changes nothing: the fade is the only rendering. */
 export const DeprecatedRun: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	args: { run: true },
 };
 

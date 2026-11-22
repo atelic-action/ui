@@ -71,7 +71,7 @@ export const LinkedRows: Story = {
 /** A link inside a row's line still goes where it points. */
 export const LinkInTheLine: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast", "report-card-line-link-contrast") },
+	parameters: { ...knownIssues("muted-text-contrast") },
 	args: {
 		groups: [
 			{

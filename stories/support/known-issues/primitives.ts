@@ -5,17 +5,13 @@ import type { Issue } from "./types";
  * pieces. Written only by that group's writer; see stories/findings/primitives.md.
  */
 export const issues = {
-	/** `.btn-primary` sets `--on-primary` (white) on `--primary`: 3.42:1 on the theme. */
-	"primary-button-contrast": { rule: "color-contrast", elements: ".btn-primary" },
-	/** The eyebrow colored `--primary` on `--surface-alt`: 2.8:1 on the theme. */
-	"eyebrow-contrast": { rule: "color-contrast", elements: ".eyebrow" },
-	/** A bubble's number, `--primary` on `--card`: 3.31:1 on the theme. */
-	"bubble-number-contrast": { rule: "color-contrast", elements: ".bubble-num" },
-	/** A bubble's badge, `--on-primary` (white) on `--primary`: 3.42:1 at 10 to 11.5px bold. */
-	"bubble-badge-contrast": { rule: "color-contrast", elements: ".bubble-badge" },
 	/** `SectionHeading` with `onDark` keeps its lead in `--ink-soft` on the dark band: 2.26:1. */
 	"section-heading-on-dark-lead": { rule: "color-contrast", elements: ".section-head-lead" },
-	/** Quiet text in `--neutral-500` on the page surface: 3.38:1 on the theme. */
+	/**
+	 * Quiet text in `--neutral-500` on the page surface: 3.38:1 on the theme
+	 * (3.68:1 on the card). A theme change to a darker quiet gray is pending
+	 * on another branch; the stale ones go once both are on main.
+	 */
 	"muted-text-contrast": {
 		rule: "color-contrast",
 		elements:
@@ -27,8 +23,6 @@ export const issues = {
 		elements:
 			".stat-change[data-tone='good'], .stat-delta-change[data-tone='good'], .threshold-scale-value[data-tone='good'], .threshold-scale-axis [data-tone='good']",
 	},
-	/** A link inside a report card row's line, `--primary` on `--card`: 3.31:1. */
-	"report-card-line-link-contrast": { rule: "color-contrast", elements: ".rc-line a" },
 	/**
 	 * The error fallback's message box (development builds only) scrolls but
 	 * cannot be focused, so a keyboard cannot scroll it. It is inline styled
@@ -45,16 +39,6 @@ export const issues = {
 		elements: ".column-chart-plot",
 		// axe's own selector, written without commas inside :not() since the index splits on them.
 		base: "[role='img']:not(img):not(area):not(input):not(object), [role='image']:not(img):not(area):not(input):not(object)",
-	},
-	/** The gate's small words in `--primary` on the surface (its eyebrow, its links): 3.04:1. */
-	"gate-primary-text-contrast": {
-		rule: "color-contrast",
-		elements: ".gate-eyebrow, .gate-fine a, .gate-link-button",
-	},
-	/** The sorted column's heading in `--primary` on the surface: 3.04:1 at 11.5px. */
-	"data-table-active-sort-contrast": {
-		rule: "color-contrast",
-		elements: ".data-table thead th button[data-active]",
 	},
 	/** The gate's fine print link differs from the words around it by color alone, 1.11:1, with no underline. */
 	"gate-fine-link-distinct": {

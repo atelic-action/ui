@@ -21,15 +21,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The eyebrow fails contrast on the page surface (stories/findings/primitives.md). */
-const eyebrowContrast = {
-	parameters: { ...knownIssues("eyebrow-contrast") },
-} satisfies Story;
-
 /** An `h2` by default, with the eyebrow and the lead outside it. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	play: async ({ canvas }) => {
 		const heading = canvas.getByRole("heading", { level: 2 });
 		await expect(heading).toHaveAccessibleName("Bread for your counter, before you open.");
@@ -48,12 +41,10 @@ export const TitleOnly: Story = {
 	},
 };
 
-export const Center: Story = { tags: ["known-issue"], ...eyebrowContrast, args: { center: true } };
+export const Center: Story = { args: { center: true } };
 
 /** A page's opener: an `h1`. */
 export const AsH1: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	args: { as: "h1" },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("heading", { level: 1 })).toBeVisible();
@@ -61,8 +52,6 @@ export const AsH1: Story = {
 };
 
 export const AsH3: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	args: { as: "h3" },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("heading", { level: 3 })).toBeVisible();
@@ -83,8 +72,6 @@ export const OnDark: Story = {
 
 /** A title with serif emphasis, the way a site sets one. */
 export const EmphasizedTitle: Story = {
-	tags: ["known-issue"],
-	...eyebrowContrast,
 	args: {
 		title: (
 			<>
@@ -101,7 +88,6 @@ export const EmphasizedTitle: Story = {
  */
 export const LongestOnPhone: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast") },
 	globals: pin("phone"),
 	args: {
 		eyebrow: "Wholesale for cafes, grocers, and markets",

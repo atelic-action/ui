@@ -3,7 +3,7 @@ import { expect, within } from "storybook/test";
 import { NotFound } from "../../src/components";
 import { cta, flatLinks } from "../fixtures/bakery";
 import { expectNoSidewaysScroll } from "../primitives/support";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -14,9 +14,6 @@ import { pin } from "../support/viewports";
 const meta = {
 	title: "Components/NotFound",
 	component: NotFound,
-	tags: ["known-issue"],
-	// Its kickers are eyebrows on the page surface, and its first action a primary button.
-	parameters: { ...knownIssues("primary-button-contrast", "eyebrow-contrast") },
 	decorators: [
 		(Story) => (
 			<main className="clears-nav">
@@ -103,6 +100,7 @@ export const PhoneAction: Story = {
  * `not-found-arrow-in-name`).
  */
 export const ArrowIsDecoration: Story = {
+	tags: ["known-issue"],
 	play: async ({ canvas }) => {
 		await knownBug("not-found-arrow-in-name", async () => {
 			await expect(canvas.getByRole("link", { name: "Order ahead" })).toBeVisible();
