@@ -982,15 +982,8 @@
 		border-top: 1px solid var(--neutral-200);
 		scroll-margin-top: calc(var(--nav-height) + 20px);
 	}
-	/* The section around a run of rows pads it already, so the first row
-	   starts and the last row ends flush with the section's own padding,
-	   and a lone row inside a section never doubles it. */
 	.atelic-ui .feature-detail:first-of-type {
 		border-top: none;
-		padding-top: 0;
-	}
-	.atelic-ui .feature-detail:last-of-type {
-		padding-bottom: 0;
 	}
 	@media (min-width: 900px) {
 		.atelic-ui .feature-detail {

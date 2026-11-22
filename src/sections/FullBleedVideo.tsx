@@ -112,7 +112,8 @@ export function FullBleedVideo({
 					loop
 					playsInline
 					preload="auto"
-					onCanPlayThrough={() => setReady(true)}
+					onLoadedMetadata={() => setReady(true)}
+					onCanPlay={() => setReady(true)}
 					onPlaying={() => setPlaying(true)}
 					onPause={() => setPlaying(false)}
 				>

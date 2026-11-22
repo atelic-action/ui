@@ -46,6 +46,9 @@ const icons: Record<ContactDockIcon, LucideIcon> = {
 /** Where the phone layout starts, the sticky bar's own breakpoint. */
 const PHONE_MAX = 899;
 
+/** The launcher's height, matching `.cd-launch`. */
+const LAUNCHER_HEIGHT = 52;
+
 /**
  * The corner the dock sits in: the same inset from the right and the bottom
  * edge (16 on a phone, 24 above), lifted over the phone's sticky bar once
@@ -71,7 +74,10 @@ export function dockPlacement({
 	const overBar = phone && barHeight > 0 ? barHeight + inset : inset;
 	const covered = avoidTop === null ? 0 : Math.max(0, viewportHeight - avoidTop);
 	const overFooter = covered > 0 ? covered + inset : 0;
-	return { inset, bottom: Math.round(Math.max(overBar, overFooter)) };
+	// Never past the top of the screen: a footer taller than the viewport
+	// leaves the launcher at the top edge, still reachable.
+	const ceiling = Math.max(inset, viewportHeight - LAUNCHER_HEIGHT - inset);
+	return { inset, bottom: Math.round(Math.min(ceiling, Math.max(overBar, overFooter))) };
 }
 
 /**
@@ -164,7 +170,12 @@ export function ContactDock({
 		<div
 			ref={rootRef}
 			className={["contact-dock", open && "is-open"].filter(Boolean).join(" ")}
-			style={{ right: place.inset, bottom: place.bottom }}
+			// The phone's open panel is a sheet at the screen's foot that reserves room
+			// for the launcher there, so the launcher drops to the corner while open.
+			style={{
+				right: place.inset,
+				bottom: open && place.inset === 16 ? place.inset : place.bottom,
+			}}
 		>
 			<section
 				id={panelId}

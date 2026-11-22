@@ -269,6 +269,8 @@
 		top: 100%;
 		padding: 10px var(--gutter) 0;
 		color: var(--ink);
+		max-height: calc(100vh - var(--nav-height));
+		overflow-y: auto;
 	}
 	.atelic-ui .nav-mega.is-open {
 		display: block;

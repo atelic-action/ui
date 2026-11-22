@@ -7,6 +7,8 @@ export interface NavMegaPanelProps {
 	group: NavLink;
 	open: boolean;
 	currentPath?: string;
+	/** Called when a link in the panel is followed, so the header can close it. */
+	onNavigate?: () => void;
 }
 
 /**
@@ -16,7 +18,7 @@ export interface NavMegaPanelProps {
  * the static HTML and leave the tab order until it opens. The header owns
  * the open state; this draws it.
  */
-export function NavMegaPanel({ id, group, open, currentPath }: NavMegaPanelProps) {
+export function NavMegaPanel({ id, group, open, currentPath, onNavigate }: NavMegaPanelProps) {
 	const { columns = [], feature, allLabel, href } = group;
 	return (
 		<div
@@ -27,14 +29,14 @@ export function NavMegaPanel({ id, group, open, currentPath }: NavMegaPanelProps
 			<div className="nav-mega-card">
 				<div className="nav-mega-cols">
 					{allLabel && (
-						<a className="nav-mega-all" href={href}>
+						<a className="nav-mega-all" href={href} onClick={onNavigate}>
 							{allLabel} <span aria-hidden="true">→</span>
 						</a>
 					)}
 					{columns.map((column) => (
 						<div className="nav-mega-col" key={column.heading}>
 							{column.href ? (
-								<a className="nav-mega-head" href={column.href}>
+								<a className="nav-mega-head" href={column.href} onClick={onNavigate}>
 									{column.heading}
 								</a>
 							) : (
@@ -46,6 +48,7 @@ export function NavMegaPanel({ id, group, open, currentPath }: NavMegaPanelProps
 										<a
 											className="nav-mega-link"
 											href={link.href}
+											onClick={onNavigate}
 											aria-current={currentPath === link.href ? "page" : undefined}
 											{...newTabProps(link.href, link.external)}
 										>
@@ -78,6 +81,7 @@ export function NavMegaPanel({ id, group, open, currentPath }: NavMegaPanelProps
 							<a
 								className="btn btn-primary nav-feature-cta"
 								href={feature.cta.href}
+								onClick={onNavigate}
 								{...newTabProps(feature.cta.href, feature.cta.external)}
 							>
 								{feature.cta.label}

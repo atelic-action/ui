@@ -301,6 +301,7 @@ export function SiteHeader({
 													group={link}
 													open={openGroup === index}
 													currentPath={currentPath}
+													onNavigate={close}
 												/>
 											</div>
 										) : (

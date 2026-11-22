@@ -57,7 +57,7 @@ describe("FullBleedVideo", () => {
 		expect(container.querySelector("video")).toBeNull();
 	});
 
-	it("plays only once it can play through and is on screen, and pauses when it leaves", () => {
+	it("plays only once its metadata has loaded and is on screen, and pauses when it leaves", () => {
 		stubMotion(false);
 		const { container } = render(
 			<FullBleedVideo src="/clip.mp4" poster="/first-frame.jpg" label="Crews at work" />,
@@ -72,7 +72,7 @@ describe("FullBleedVideo", () => {
 		act(() => observe?.([{ isIntersecting: true }]));
 		expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
 
-		fireEvent(video, new Event("canplaythrough"));
+		fireEvent(video, new Event("loadedmetadata"));
 		expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1);
 		expect(video).toHaveClass("is-on");
 
@@ -102,7 +102,7 @@ describe("FullBleedVideo", () => {
 		rerender(<FullBleedVideo src="/clip.mp4" poster="/f.jpg" label="Crews at work" controls />);
 		const video = container.querySelector("video") as HTMLVideoElement;
 		act(() => observe?.([{ isIntersecting: true }]));
-		fireEvent(video, new Event("canplaythrough"));
+		fireEvent(video, new Event("loadedmetadata"));
 		Object.defineProperty(video, "paused", { configurable: true, value: false });
 		fireEvent.click(screen.getByRole("button", { name: "Pause the video" }));
 		expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
