@@ -1333,13 +1333,13 @@
 	/* The line that closes every page, below the footer or after a document's
 	   sign off: its own full width band, small and muted, the copyright on the
 	   left and the credit on the right, or the one side centered when it stands
-	   alone. Purely token themed (the hairline and hover lift derive
-	   from --surface through color-mix), so it rebrands with theme.css on any
-	   page it renders under, light or dark. */
+	   alone. Token themed: the hairline and hover lift derive from --surface
+	   through color-mix and the words read --on-dark-faint, so it rebrands
+	   with theme.css on any page it renders under, light or dark. */
 	.atelic-ui .closing-bar {
 		background: var(--surface-dark);
 		border-top: 1px solid color-mix(in srgb, var(--surface) 10%, transparent);
-		color: var(--neutral-500);
+		color: var(--on-dark-faint);
 		font-size: 0.82rem;
 		padding-block: 18px;
 		/* While the phone's sticky bar shows, SiteShell sets its measured

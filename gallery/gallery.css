@@ -35,7 +35,7 @@
 	--neutral-100: #e5dcc8;
 	--neutral-200: #d4c8b0;
 	--neutral-300: #b6a98f;
-	--neutral-500: #8a8272;
+	--neutral-500: #6e6757;
 	--neutral-600: #6b6559;
 
 	/* The primary does three jobs, each its own token (README, Tokens): the
@@ -59,7 +59,7 @@
 	--secondary: #55503f;
 	--secondary-soft: #6b6559;
 	--secondary-tint: #ece5d6;
-	--tertiary: #8a8272;
+	--tertiary: #6e6757;
 
 	--font-sans: "Geist", system-ui, -apple-system, sans-serif;
 	--font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;

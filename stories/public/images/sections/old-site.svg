@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" role="img" aria-label="The bakery's old home page on a laptop">
+  <rect width="1280" height="800" fill="#d4d4d4"/>
+  <rect width="1280" height="110" fill="#3b4a6b"/>
+  <rect x="40" y="30" width="360" height="50" fill="#e5e5e5"/>
+  <rect x="40" y="140" width="820" height="40" fill="#8a8a8a"/>
+  <rect x="40" y="200" width="820" height="16" fill="#a5a5a5"/>
+  <rect x="40" y="226" width="760" height="16" fill="#a5a5a5"/>
+  <rect x="40" y="252" width="790" height="16" fill="#a5a5a5"/>
+  <rect x="40" y="300" width="380" height="300" fill="#9a9a9a"/>
+  <rect x="460" y="300" width="400" height="300" fill="#b5b5b5"/>
+  <rect x="900" y="140" width="340" height="620" fill="#c2c2c2"/>
+</svg>

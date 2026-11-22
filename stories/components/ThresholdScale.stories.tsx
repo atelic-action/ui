@@ -22,15 +22,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The quiet labels fail contrast on the surface (stories/findings/primitives.md). */
-const quietLabels = {
-	parameters: { ...knownIssues("muted-text-contrast", "tone-good-text-contrast") },
+/** The good tone's words fail contrast on the surface (stories/findings/primitives.md). */
+const goodWords = {
+	parameters: { ...knownIssues("tone-good-text-contrast") },
 } satisfies Story;
 
 /** Each reading's track is named by its label and figure; the pin sits at its share of the scale. */
 export const Default: Story = {
 	tags: ["known-issue"],
-	...quietLabels,
+	...goodWords,
 	play: async ({ canvas }) => {
 		const home = canvas.getByRole("img", { name: "Home page: 4.1 s" });
 		await expect(canvas.getByRole("img", { name: "Menu: 3.2 s" })).toBeInTheDocument();
@@ -50,7 +50,7 @@ export const Default: Story = {
  */
 export const ZoneIsSpoken: Story = {
 	tags: ["known-issue"],
-	...quietLabels,
+	...goodWords,
 	play: async ({ canvas }) => {
 		await knownBug("threshold-zone-not-spoken", async () => {
 			await expect(canvas.getByRole("img", { name: /Home page: 4\.1 s/ })).toHaveAccessibleName(
@@ -63,7 +63,7 @@ export const ZoneIsSpoken: Story = {
 /** A reading past the far end pins at the end of the track, never beyond it. */
 export const PastTheEnd: Story = {
 	tags: ["known-issue"],
-	...quietLabels,
+	...goodWords,
 	args: { readings: [{ label: "Gallery", value: 11.2, display: "11.2 s", tone: "bad" }] },
 	play: async ({ canvas }) => {
 		const track = canvas.getByRole("img", { name: "Gallery: 11.2 s" });
@@ -84,14 +84,14 @@ export const NoTicks: Story = {
 /** One reading. */
 export const Single: Story = {
 	tags: ["known-issue"],
-	...quietLabels,
+	...goodWords,
 	args: { readings: thresholdReadings.slice(0, 1) },
 };
 
 /** No readings: the axis alone. */
 export const NoReadings: Story = {
 	tags: ["known-issue"],
-	...quietLabels,
+	...goodWords,
 	args: { readings: [] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryAllByRole("img")).toHaveLength(0);
@@ -101,7 +101,7 @@ export const NoReadings: Story = {
 /** On a phone with long reading labels, nothing scrolls sideways. */
 export const LongestOnPhone: Story = {
 	tags: ["known-issue"],
-	...quietLabels,
+	...goodWords,
 	globals: pin("phone"),
 	args: {
 		readings: [

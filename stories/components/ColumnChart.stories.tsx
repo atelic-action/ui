@@ -21,17 +21,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The quiet labels fail contrast on the surface (stories/findings/primitives.md). */
-const quietLabels = {
-	parameters: { ...knownIssues("muted-text-contrast") },
-} satisfies Story;
-
 const plot = (canvas: { getByRole: (role: string) => HTMLElement }) => canvas.getByRole("img");
 
 /** Two quarters a year apart: the picture's name reads every group, total, and month. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	...quietLabels,
 	play: async ({ canvas }) => {
 		await expect(plot(canvas)).toHaveAccessibleName(
 			"2025 Q3, 3,210: Jul 1,040, Aug 1,120, Sep 1,050; 2026 Q3, 3,948: Jul 1,210, Aug 1,420, Sep 1,318",
@@ -42,8 +35,6 @@ export const Default: Story = {
 
 /** The tallest bar draws at `height`, the rest in proportion. */
 export const Height: Story = {
-	tags: ["known-issue"],
-	...quietLabels,
 	args: { height: 200 },
 	play: async ({ canvasElement }) => {
 		const bars = Array.from(canvasElement.querySelectorAll("[style*='height']")) as HTMLElement[];
@@ -65,8 +56,6 @@ export const SingleGroup: Story = {
 
 /** A year of months, no legend. */
 export const TwelveMonths: Story = {
-	tags: ["known-issue"],
-	...quietLabels,
 	args: {
 		legend: undefined,
 		groups: [
@@ -99,8 +88,6 @@ export const TwelveMonths: Story = {
  * color alone (stories/findings/primitives.md, `column-chart-tone-color-only`).
  */
 export const MarkedBar: Story = {
-	tags: ["known-issue"],
-	...quietLabels,
 	args: {
 		legend: [
 			{ label: "A month the form worked", tone: "good" },
@@ -140,8 +127,6 @@ export const Empty: Story = {
 
 /** Two quarters of months on a phone stay inside the screen. */
 export const Phone: Story = {
-	tags: ["known-issue"],
-	...quietLabels,
 	globals: pin("phone"),
 	play: async () => {
 		await expectNoSidewaysScroll();
@@ -150,8 +135,6 @@ export const Phone: Story = {
 
 /** The widest a chart gets, two years of months, on a phone. */
 export const WidestOnPhone: Story = {
-	tags: ["known-issue"],
-	...quietLabels,
 	globals: pin("phone"),
 	args: {
 		legend: undefined,

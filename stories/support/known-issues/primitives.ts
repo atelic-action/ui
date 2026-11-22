@@ -7,16 +7,6 @@ import type { Issue } from "./types";
 export const issues = {
 	/** `SectionHeading` with `onDark` keeps its lead in `--ink-soft` on the dark band: 2.26:1. */
 	"section-heading-on-dark-lead": { rule: "color-contrast", elements: ".section-head-lead" },
-	/**
-	 * Quiet text in `--neutral-500` on the page surface: 3.38:1 on the theme
-	 * (3.68:1 on the card). A theme change to a darker quiet gray is pending
-	 * on another branch; the stale ones go once both are on main.
-	 */
-	"muted-text-contrast": {
-		rule: "color-contrast",
-		elements:
-			".stat-delta-was, .stat-delta-basis, .stat-delta-change[data-tone='muted'], .stat-change[data-tone='muted'], .stat-period, .stat-out-of, .stat-unit, .stat .note, .stat-row.is-quiet .lbl, .disclosure-meta, .gate-fine, .column-chart-group-label span, .threshold-scale-axis i, .rc-title, .op-shot figcaption",
-	},
 	/** Words in the package's own `--tone-good` (#1b7f3b) on the page surface: 4.49:1. */
 	"tone-good-text-contrast": {
 		rule: "color-contrast",
@@ -40,7 +30,7 @@ export const issues = {
 		// axe's own selector, written without commas inside :not() since the index splits on them.
 		base: "[role='img']:not(img):not(area):not(input):not(object), [role='image']:not(img):not(area):not(input):not(object)",
 	},
-	/** The gate's fine print link differs from the words around it by color alone, 1.11:1, with no underline. */
+	/** The gate's fine print link differs from the words around it by color alone, 1.08:1, with no underline. */
 	"gate-fine-link-distinct": {
 		rule: "link-in-text-block",
 		elements: ".gate-fine a",

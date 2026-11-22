@@ -4,7 +4,6 @@ import { expect, fn } from "storybook/test";
 import { Disclosure, type DisclosureControlledProps } from "../../src/components";
 import { longWord } from "../fixtures/primitives";
 import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -168,8 +167,6 @@ export const HeldOpensAndCloses: Story = {
  * folds the section: the toggle's hit area covers the whole header row.
  */
 export const HeldWithMeta: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	render: (args) => (
 		<Held label="Produce" meta={<span>10 items</span>} headingLevel={3}>
 			{args.children}
@@ -200,8 +197,6 @@ export const HeldOpen: Story = {
 
 /** A held card with the longest label and an unbroken word, on a phone. */
 export const HeldLongestOnPhone: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	globals: pin("phone"),
 	render: (args) => (
 		<Held
