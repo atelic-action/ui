@@ -196,7 +196,9 @@ describe("SiteHeader", () => {
 			const lockup = screen.getByRole("link", { name: "Atelic home" });
 
 			expect(lockup).toHaveAttribute("href", "https://atelic.me");
-			expect(lockup.querySelector(".logo-tile")).toHaveTextContent("a");
+			// The letter is drawn by the stylesheet, never text in the link.
+			expect(lockup.querySelector(".logo-tile")).toHaveAttribute("data-glyph", "a");
+			expect(lockup.querySelector(".logo-tile")).toBeEmptyDOMElement();
 			expect(lockup.querySelector(".wordmark-run")).toBeInTheDocument();
 			expect(container.querySelector("img")).toBeNull();
 		});

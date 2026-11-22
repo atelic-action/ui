@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, SiteHeader } from "../../src/chrome";
 import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
-import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** The default footer's four columns, as SiteShell derives them from the bakery's config. */
@@ -188,13 +187,10 @@ export const MarkCutForTheDarkBand: Story = {
 };
 
 /**
- * One config, two surfaces that are both dark: the dark header draws the
- * `onLight` cut as given (it never reads `src` once a cut is set), while the
- * footer draws `src`, so the same site shows two different marks
- * (stories/findings/chrome.md).
+ * One config, two surfaces that are both dark: the dark header and the
+ * footer resolve the logo by the same order, so both draw `src`.
  */
 export const SameConfigAsTheDarkHeader: Story = {
-	tags: ["known-issue"],
 	args: {
 		brand: {
 			...brand,
@@ -214,8 +210,53 @@ export const SameConfigAsTheDarkHeader: Story = {
 			(img) => getComputedStyle(img).display !== "none",
 		);
 		const footerMark = canvas.getByRole("img", { name: "Kestrel Hollow" }) as HTMLImageElement;
-		await knownBug("header-footer-mark-disagree", async () => {
-			await expect(file(headerMark)).toBe(file(footerMark));
-		});
+		await expect(file(headerMark)).toBe(file(footerMark));
+		await expect(file(footerMark)).toBe(marks.glyphOnDark);
+	},
+};
+
+/**
+ * The column headings are `h2` by default: the footer sits beside the page's
+ * main content, so a page whose outline ends on its `h1` never skips a level
+ * into it. Each heading names its column's nav.
+ */
+export const HeadingsAfterAPageTitle: Story = {
+	render: (args) => (
+		<>
+			<main>
+				<h1>Visit the shop</h1>
+			</main>
+			<Footer {...args} />
+		</>
+	),
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const headings = footer.getAllByRole("heading", { level: 2 });
+		await expect(headings.map((heading) => heading.textContent)).toEqual([
+			"Company",
+			"Resources",
+			"Social",
+			"Legal",
+		]);
+		await expect(footer.queryAllByRole("heading", { level: 4 })).toHaveLength(0);
+	},
+};
+
+/** A footer set inside a deeper outline takes its own level, `headingLevel` 2 to 6. */
+export const HeadingLevelThree: Story = {
+	args: { headingLevel: 3 },
+	render: (args) => (
+		<>
+			<main>
+				<h1>The bakehouse</h1>
+				<h2>Wholesale</h2>
+			</main>
+			<Footer {...args} />
+		</>
+	),
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		await expect(footer.getAllByRole("heading", { level: 3 })).toHaveLength(4);
+		await expect(footer.queryAllByRole("heading", { level: 2 })).toHaveLength(0);
 	},
 };

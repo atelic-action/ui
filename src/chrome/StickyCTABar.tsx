@@ -1,5 +1,5 @@
 import { Phone as PhoneIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import type { CallToAction, Phone } from "../types";
 
@@ -20,6 +20,14 @@ export interface StickyCTABarProps {
 	fromTop?: boolean;
 	/** The call shortcut's accessible name. Defaults to "Call us". */
 	callLabel?: string;
+	/**
+	 * Hears the room the bar takes at the foot of the screen, in pixels: its
+	 * measured height while it shows, and 0 while it is hidden (scrolled
+	 * above its threshold, or on a desktop, where the stylesheet hides it).
+	 * `SiteShell` pads the page's closing bar by it, so the copyright and the
+	 * credit are never under the bar.
+	 */
+	onSpaceChange?: (pixels: number) => void;
 }
 
 /** The phone only bottom bar: the primary CTA and a call shortcut, sliding in once scrolled, or there from the top. */
@@ -29,8 +37,14 @@ export function StickyCTABar({
 	threshold = 520,
 	fromTop = false,
 	callLabel = "Call us",
+	onSpaceChange,
 }: StickyCTABarProps) {
 	const [show, setShow] = useState(fromTop);
+	const barRef = useRef<HTMLDivElement>(null);
+	// The latest listener, so a caller passing a new function each render
+	// never restarts the measuring below.
+	const spaceRef = useRef(onSpaceChange);
+	spaceRef.current = onSpaceChange;
 
 	useEffect(() => {
 		if (fromTop) {
@@ -43,10 +57,35 @@ export function StickyCTABar({
 		return () => window.removeEventListener("scroll", onScroll);
 	}, [threshold, fromTop]);
 
+	// The bar's real height while it shows, measured again whenever it changes
+	// size (a phone turned, a font loading, a label wrapping), never assumed.
+	// Hidden by the stylesheet its height reads 0, so a desktop reserves nothing.
+	useEffect(() => {
+		const bar = barRef.current;
+		if (!bar || !spaceRef.current) return;
+		let last = -1;
+		const report = () => {
+			const next = show ? bar.offsetHeight : 0;
+			if (next === last) return;
+			last = next;
+			spaceRef.current?.(next);
+		};
+		report();
+		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(report);
+		sizes?.observe(bar);
+		window.addEventListener("resize", report);
+		return () => {
+			sizes?.disconnect();
+			window.removeEventListener("resize", report);
+			spaceRef.current?.(0);
+		};
+	}, [show]);
+
 	return (
 		// Inert while offscreen, so its links take no keyboard focus before it slides in.
 		// data-dock-lift and data-showing tell the contact dock to ride above it.
 		<div
+			ref={barRef}
 			className={show ? "sticky-cta show" : "sticky-cta"}
 			inert={!show}
 			data-dock-lift=""

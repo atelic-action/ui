@@ -1,8 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor } from "storybook/test";
-import { type Brand, BrandLockup, SiteHeader, type SiteHeaderVariant } from "../../src/chrome";
+import { expect, waitFor, within } from "storybook/test";
+import {
+	type Brand,
+	BrandLockup,
+	Footer,
+	SiteHeader,
+	type SiteHeaderVariant,
+} from "../../src/chrome";
 import { brand, marks, wordmarkBrand } from "../fixtures/bakery";
-import { knownBug, knownIssues } from "../support/known-issues";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -37,15 +42,16 @@ export const WordmarkWithRun: Story = {
 };
 
 /**
- * A glyph tile in place of a picture. The tile's letter runs into the
- * wordmark's in the visible text ("KKestrel Hollow"), which the link's name
- * does not contain (stories/findings/chrome.md).
+ * A glyph tile in place of a picture. The stylesheet draws the tile's letter,
+ * so the link's visible text is the wordmark alone, which its name holds.
  */
 export const Tile: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("tile-lockup-name") },
 	args: {
 		brand: { name: "Kestrel Hollow Bakehouse", logo: { tile: "K", wordmark: "Kestrel Hollow" } },
+	},
+	play: async ({ canvas }) => {
+		const link = canvas.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		await expect(link.textContent).toBe("Kestrel Hollow");
 	},
 };
 
@@ -158,54 +164,189 @@ export const CutsOverAHero: Story = {
  * its own ratio.
  */
 export const WideWordmarkImage: Story = {
-	tags: ["known-issue"],
 	render: inBar("solid", { onLight: marks.wideOnLight, onDark: marks.wideOnDark, wordmark: false }),
 	globals: pin("desktop"),
 	play: async ({ canvas }) => {
 		const link = lockup(canvas);
 		const [mark] = shownMarks(link);
 		await expect(mark?.file).toBe(marks.wideOnLight);
-		await waitFor(() => expect(mark?.img.naturalWidth).toBeGreaterThan(0));
+		// The picture's load waits on the run's other files; give it time.
+		await waitFor(() => expect(mark?.img.naturalWidth).toBeGreaterThan(0), { timeout: 5000 });
 		const box = mark?.img.getBoundingClientRect() as DOMRect;
 		// As wide as its own ratio (168 by 30), never squeezed into a square.
 		await expect(box.width / box.height).toBeCloseTo(168 / 30, 1);
 		await expect(link).toHaveTextContent(/^$/);
-		// artifact.css pins every header mark at 20px, so a site that hosts the
-		// documents loses the theme's mark height (stories/findings/chrome.md).
-		await knownBug("artifact-sheet-mark-height", async () => {
-			await expect(Math.round(box.height)).toBe(30);
-		});
+		// The theme's mark height stands, though the artifact sheet is loaded too.
+		await expect(Math.round(box.height)).toBe(30);
 	},
 };
 
 /**
- * A mark cut for one surface alone is drawn as given on every surface: the
- * ink cut stands untinted on the dark bar (stories/findings/chrome.md).
+ * A mark cut for the light bar alone, on the dark bar: drawn as a white
+ * silhouette, never ink on near black.
  */
 export const OneCutOnTheDarkBar: Story = {
-	tags: ["known-issue"],
 	render: inBar("dark", { onLight: marks.glyphOnLight, wordmark: "Kestrel Hollow" }),
 	globals: pin("desktop"),
 	play: async ({ canvas }) => {
-		const [mark] = shownMarks(lockup(canvas));
-		await knownBug("one-cut-mark-untinted", async () => {
-			const inkAsGiven = mark?.file === marks.glyphOnLight && mark?.filter === "none";
-			await expect(inkAsGiven).toBe(false);
-		});
+		const [mark, ...rest] = shownMarks(lockup(canvas));
+		await expect(rest).toHaveLength(0);
+		await expect(mark?.file).toBe(marks.glyphOnLight);
+		await expect(mark?.filter).toContain("invert(1)");
 	},
 };
 
 /**
- * `wordmark: false` with no mark leaves the header's link with nothing to
- * see: a named link, empty (stories/findings/chrome.md).
+ * `wordmark: false` with no mark to stand in keeps the name, so the home link
+ * is never empty.
  */
 export const NoWordmarkAndNoMark: Story = {
-	tags: ["known-issue"],
 	args: { brand: { name: "Kestrel Hollow Bakehouse", logo: { wordmark: false } } },
 	play: async ({ canvas }) => {
 		const link = lockup(canvas);
-		await knownBug("empty-lockup", async () => {
-			await expect(link.textContent?.trim() || shownMarks(link).length > 0).toBeTruthy();
-		});
+		await expect(link).toHaveTextContent("Kestrel Hollow Bakehouse");
+	},
+};
+
+/*
+ * The mark each surface draws for every mix of the three fields (README,
+ * Rendering From Props): the surface's own cut as given; failing that `src`,
+ * as given on a dark surface and tinted to ink on the light bar; failing that
+ * the other surface's cut, flattened to the surface's silhouette. One story
+ * per surface, a row per mix, each bar or footer in its own frame.
+ */
+const INK = "brightness(0) saturate(1)";
+const WHITE = "brightness(0) invert(1)";
+const files = { src: marks.glyphOnDark, onLight: marks.glyphOnLight, onDark: marks.wideOnDark };
+type Drawn = { file: string; filter: string } | null;
+const table: { label: string; logo: Brand["logo"]; light: Drawn; dark: Drawn }[] = [
+	{
+		label: "Both cuts and src",
+		logo: { src: files.src, onLight: files.onLight, onDark: files.onDark },
+		light: { file: files.onLight, filter: "none" },
+		dark: { file: files.onDark, filter: "none" },
+	},
+	{
+		label: "Light cut and src",
+		logo: { src: files.src, onLight: files.onLight },
+		light: { file: files.onLight, filter: "none" },
+		dark: { file: files.src, filter: "none" },
+	},
+	{
+		label: "Light cut alone",
+		logo: { onLight: files.onLight },
+		light: { file: files.onLight, filter: "none" },
+		dark: { file: files.onLight, filter: WHITE },
+	},
+	{
+		label: "Dark cut and src",
+		logo: { src: files.src, onDark: files.onDark },
+		light: { file: files.src, filter: INK },
+		dark: { file: files.onDark, filter: "none" },
+	},
+	{
+		label: "Dark cut alone",
+		logo: { onDark: files.onDark },
+		light: { file: files.onDark, filter: INK },
+		dark: { file: files.onDark, filter: "none" },
+	},
+	{
+		label: "Src alone",
+		logo: { src: files.src },
+		light: { file: files.src, filter: INK },
+		dark: { file: files.src, filter: "none" },
+	},
+	{ label: "No mark", logo: {}, light: null, dark: null },
+];
+
+/** A frame that holds a fixed bar to itself, as the top of a page holds it. */
+const frame = (dark: boolean) => ({
+	position: "relative" as const,
+	transform: "translateZ(0)",
+	height: 72,
+	overflow: "hidden",
+	marginBottom: 8,
+	background: dark ? "var(--surface-dark)" : "var(--surface)",
+});
+
+function barTable(variant: SiteHeaderVariant) {
+	return () => (
+		<div>
+			{table.map((row) => (
+				<section key={row.label} aria-label={row.label} style={frame(variant !== "solid")}>
+					<SiteHeader
+						brand={{ name: row.label, logo: { ...row.logo, wordmark: false } }}
+						variant={variant}
+					/>
+				</section>
+			))}
+		</div>
+	);
+}
+
+async function expectBarTable(
+	canvas: { getByRole: (role: string, options: object) => HTMLElement },
+	surface: "light" | "dark",
+) {
+	for (const row of table) {
+		const link = canvas.getByRole("link", { name: `${row.label} home` });
+		const shown = shownMarks(link);
+		const want = row[surface];
+		if (want === null) {
+			await expect(shown).toHaveLength(0);
+			await expect(link).toHaveTextContent(row.label);
+			continue;
+		}
+		await expect(shown, row.label).toHaveLength(1);
+		await expect(shown[0]?.file, row.label).toBe(want.file);
+		await expect(shown[0]?.filter, row.label).toBe(want.filter);
+	}
+}
+
+/** The light bar: a light cut as given, anything else flattened to ink. */
+export const MarkTableLightBar: Story = {
+	render: barTable("solid"),
+	globals: pin("desktop"),
+	play: async ({ canvas }) => expectBarTable(canvas, "light"),
+};
+
+/** The dark bar: a dark cut or `src` as given, a light cut alone as a white silhouette. */
+export const MarkTableDarkBar: Story = {
+	render: barTable("dark"),
+	globals: pin("desktop"),
+	play: async ({ canvas }) => expectBarTable(canvas, "dark"),
+};
+
+/** Over a hero, the clear bar is a dark surface too. */
+export const MarkTableOverAHero: Story = {
+	render: barTable("transparent"),
+	globals: pin("desktop"),
+	play: async ({ canvas }) => expectBarTable(canvas, "dark"),
+};
+
+/** The footer band resolves by the dark bar's own order, so the two always agree. */
+export const MarkTableFooter: Story = {
+	render: () => (
+		<div>
+			{table.map((row) => (
+				<section key={row.label} aria-label={row.label}>
+					<Footer brand={{ name: row.label, logo: { ...row.logo, alt: row.label } }} />
+				</section>
+			))}
+		</div>
+	),
+	globals: pin("desktop"),
+	play: async ({ canvas }) => {
+		for (const row of table) {
+			const region = within(canvas.getByRole("region", { name: row.label }));
+			if (row.dark === null) {
+				await expect(region.queryByRole("img")).toBeNull();
+				await expect(region.getByText(row.label)).toBeVisible();
+				continue;
+			}
+			const img = region.getByRole("img", { name: row.label }) as HTMLImageElement;
+			await expect(new URL(img.src).pathname, row.label).toBe(row.dark.file);
+			await expect(getComputedStyle(img).filter, row.label).toBe(row.dark.filter);
+		}
 	},
 };

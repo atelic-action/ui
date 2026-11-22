@@ -4,8 +4,6 @@ The bugs the sections' stories exposed (`stories/sections/`), each fixed in `src
 
 ## Accessibility
 
-- `on-primary-field-contrast`: `CalloutPanel` (every story), `Hero` (`Split`, `SplitPhone`, `SplitNoPhoto`). Rule `color-contrast`. Words on the primary field (`.on-primary`), now `--on-primary` and mixes of it: the callout titles (3.1:1 at 21.6px) and subtitles (2.93:1), the split hero's eyebrow (2.87:1), subtitle (3.1:1), and ghost button (3.42:1). Worst: the title's `em.serif` accent reads `--primary-bright` on the primary field, 1.38:1, nearly invisible, and no token a theme sets reaches it. The rest a theme can now lift by setting `--on-primary`.
-
 ## Behavior
 
 None yet.

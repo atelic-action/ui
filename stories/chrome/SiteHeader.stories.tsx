@@ -13,7 +13,6 @@ import {
 } from "../fixtures/bakery";
 import { CrashBoundary } from "../support/boundary";
 import { textLeft } from "../support/geometry";
-import { knownBug, knownIssues } from "../support/known-issues";
 import { PageBehind, type PageBehindProps } from "../support/page";
 import { pin } from "../support/viewports";
 
@@ -25,8 +24,6 @@ import { pin } from "../support/viewports";
 const meta = {
 	title: "Chrome/SiteHeader",
 	component: SiteHeader,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast", "nav-current-contrast") },
 	args: { brand, links: flatLinks, primaryCTA: cta, contact, currentPath: "/menu" },
 	// The page under the bar; a story sets `parameters.page` for a hero or a long page.
 	decorators: [
@@ -48,17 +45,14 @@ const primaryNav = (canvas: ReturnType<typeof within>) =>
 	canvas.getByRole("navigation", { name: "Primary" });
 
 export const FlatNav: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas }) => {
 		const nav = within(primaryNav(canvas));
 		await expect(nav.getAllByRole("link")).toHaveLength(4);
 		await expect(nav.getByRole("link", { name: "Menu" })).toHaveAttribute("aria-current", "page");
 		await expect(nav.getByRole("link", { name: "Cakes" })).not.toHaveAttribute("aria-current");
-		// A group holding the current page turns primary; a flat link on it shows nothing.
-		await knownBug("flat-current-link-unmarked", async () => {
-			const color = (name: string) => getComputedStyle(nav.getByRole("link", { name })).color;
-			await expect(color("Menu")).not.toBe(color("Cakes"));
-		});
+		// A flat link on the current page is marked, as a group holding it is.
+		const color = (name: string) => getComputedStyle(nav.getByRole("link", { name })).color;
+		await expect(color("Menu")).not.toBe(color("Cakes"));
 		await expect(canvas.getByRole("link", { name: "Order ahead" })).toBeVisible();
 		// The burger steps aside on a desktop.
 		await expect(canvas.queryByRole("button", { name: "Open menu" })).toBeNull();
@@ -349,16 +343,6 @@ async function openGroup(
 
 /** A link column with a linked heading, a badge, and children; a picture; the ticked feature card. */
 export const SectionedLinksAndPicture: Story = {
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues(
-			"primary-button-contrast",
-			"nav-current-contrast",
-			"nav-badge-contrast",
-			"nav-feature-eyebrow-contrast",
-			"nav-row-highlight-contrast",
-		),
-	},
 	args: { links: sectionedLinks, currentPath: "/" },
 	play: async ({ canvas, userEvent, step }) => {
 		await openGroup(canvas, userEvent, "Menu");
@@ -396,17 +380,7 @@ export const SectionedLinksAndPicture: Story = {
 
 /** Icon rows, one highlighted as the way most people should take, beside small cards. */
 export const SectionedRowsAndCards: Story = {
-	tags: ["known-issue"],
 	args: { links: sectionedLinks, currentPath: "/" },
-	parameters: {
-		...knownIssues(
-			"primary-button-contrast",
-			"nav-current-contrast",
-			"nav-badge-contrast",
-			"nav-feature-eyebrow-contrast",
-			"nav-row-highlight-contrast",
-		),
-	},
 	play: async ({ canvas, userEvent }) => {
 		await openGroup(canvas, userEvent, "Wholesale");
 		const start = canvas.getByRole("link", { name: /Start a standing order/ });
@@ -425,17 +399,7 @@ export const SectionedRowsAndCards: Story = {
 
 /** The up and down arrows walk a panel's links in order, across every kind of section. */
 export const SectionedKeyboard: Story = {
-	tags: ["known-issue"],
 	args: { links: sectionedLinks, currentPath: "/" },
-	parameters: {
-		...knownIssues(
-			"primary-button-contrast",
-			"nav-current-contrast",
-			"nav-badge-contrast",
-			"nav-feature-eyebrow-contrast",
-			"nav-row-highlight-contrast",
-		),
-	},
 	play: async ({ canvas, userEvent, step }) => {
 		const menu = canvas.getByRole("button", { name: "Menu" });
 		const walk = async (names: (string | RegExp)[]) => {
@@ -477,35 +441,22 @@ export const SectionedKeyboard: Story = {
 
 /**
  * A page that a picture or a card leads to: its group marks itself current,
- * but the picture and the card links never set `aria-current`, where a link
- * column's links do (stories/findings/chrome.md).
+ * and the picture or the card link sets `aria-current`, as a link column's
+ * links do.
  */
 export const CurrentPictureAndCard: Story = {
-	parameters: {
-		...knownIssues(
-			"primary-button-contrast",
-			"nav-current-contrast",
-			"nav-badge-contrast",
-			"nav-feature-eyebrow-contrast",
-			"nav-row-highlight-contrast",
-		),
-	},
-	tags: ["known-issue"],
 	args: { links: sectionedLinks, currentPath: "/menu/morning" },
 	play: async ({ canvas, userEvent }) => {
 		await openGroup(canvas, userEvent, "Menu");
-		await knownBug("panel-picture-card-current", async () => {
-			await expect(canvas.getByRole("link", { name: "See the morning bake" })).toHaveAttribute(
-				"aria-current",
-				"page",
-			);
-		});
+		await expect(canvas.getByRole("link", { name: "See the morning bake" })).toHaveAttribute(
+			"aria-current",
+			"page",
+		);
 	},
 };
 
-/** A section kind the panel does not know falls through to the cards' drawing and crashes the header. */
+/** A section kind the panel does not know is left out; the header draws, and the group with nothing it can draw is a plain link. */
 export const UnknownSectionKind: Story = {
-	tags: ["known-issue"],
 	args: {
 		links: [
 			{
@@ -524,10 +475,13 @@ export const UnknownSectionKind: Story = {
 		),
 	],
 	play: async ({ canvas }) => {
-		await knownBug("unknown-section-kind-crashes", async () => {
-			await expect(canvas.queryByRole("alert")).toBeNull();
-			await expect(canvas.getByRole("banner")).toBeVisible();
-		});
+		await expect(canvas.queryByRole("alert")).toBeNull();
+		await expect(canvas.getByRole("banner")).toBeVisible();
+		await expect(
+			within(canvas.getByRole("navigation", { name: "Primary" })).getByRole("link", {
+				name: "Menu",
+			}),
+		).toHaveAttribute("href", "/menu");
 	},
 };
 
@@ -537,7 +491,6 @@ export const UnknownSectionKind: Story = {
  * section stays inside the card.
  */
 export const CrowdedPanel: Story = {
-	tags: ["known-issue"],
 	args: {
 		links: [
 			{
@@ -547,15 +500,6 @@ export const CrowdedPanel: Story = {
 			{ label: "Visit", href: "/visit" },
 		],
 		currentPath: "/",
-	},
-	parameters: {
-		...knownIssues(
-			"primary-button-contrast",
-			"nav-current-contrast",
-			"nav-badge-contrast",
-			"nav-feature-eyebrow-contrast",
-			"nav-row-highlight-contrast",
-		),
 	},
 	play: async ({ canvas, userEvent }) => {
 		const control = await openGroup(canvas, userEvent, "Menu");
@@ -573,5 +517,41 @@ export const CrowdedPanel: Story = {
 			const box = canvas.getByRole("link", { name }).getBoundingClientRect();
 			await expect(box.right).toBeLessThanOrEqual(panel.right + 1);
 		}
+	},
+};
+
+/**
+ * The same panel at the narrowest desktop the bar shows its groups at, on
+ * the theme's 1040 wrap: the picture, the icon rows, and the cards cannot
+ * share one row beside the feature card, so they wrap to a second rather
+ * than squeeze a row past reading or run under the feature card.
+ */
+export const CrowdedPanelNarrowDesktop: Story = {
+	...CrowdedPanel,
+	globals: pin("narrowDesktop"),
+	play: async ({ canvas, userEvent }) => {
+		await expect(window.innerWidth).toBe(1180);
+		await openGroup(canvas, userEvent, "Menu");
+		const feature = canvas
+			.getByRole("link", { name: "Order for Saturday" })
+			.getBoundingClientRect();
+		const picture = canvas
+			.getByRole("link", { name: "See the morning bake" })
+			.getBoundingClientRect();
+		for (const name of [
+			/Morning baker/,
+			"See the morning bake",
+			/Talk to the bakers/,
+			/Start a standing order/,
+		]) {
+			const box = canvas.getByRole("link", { name }).getBoundingClientRect();
+			// Never under the feature card, and never squeezed past reading.
+			await expect(box.right).toBeLessThanOrEqual(feature.left);
+			await expect(box.width).toBeGreaterThanOrEqual(150);
+		}
+		// The cards wrapped below the picture.
+		const card = canvas.getByRole("link", { name: /Morning baker/ }).getBoundingClientRect();
+		await expect(card.top).toBeGreaterThanOrEqual(picture.bottom);
+		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
 	},
 };

@@ -1,19 +1,9 @@
-import {
-	Calculator,
-	CalendarDays,
-	ChevronRight,
-	ClipboardList,
-	type LucideIcon,
-	Mail,
-	MapPin,
-	MessageCircle,
-	Phone as PhoneIcon,
-	X,
-} from "lucide-react";
+import { ChevronRight, MessageCircle, X } from "lucide-react";
 import { type RefObject, useEffect, useId, useRef, useState } from "react";
 import { useDismiss } from "../hooks/useDismiss";
 import { newTabProps } from "../lib/newTabProps";
-import type { ContactDockConfig, ContactDockIcon } from "../types";
+import type { ContactDockConfig } from "../types";
+import { dockIcons } from "./icons";
 
 export interface ContactDockProps extends ContactDockConfig {
 	/**
@@ -24,9 +14,11 @@ export interface ContactDockProps extends ContactDockConfig {
 	avoid?: string | RefObject<Element | null> | null;
 	/**
 	 * A selector for the bar the dock lifts over while that bar shows. The
-	 * bar says it is showing with `data-showing="true"`; `StickyCTABar` wears
-	 * `data-dock-lift` and keeps `data-showing` current, which is the
-	 * default. `null` lifts over nothing.
+	 * bar says it is showing with `data-showing="true"`, or, for a bar that
+	 * sets no `data-showing`, with the `show` class the sticky bar wore before
+	 * 8.0.0. `StickyCTABar` wears `data-dock-lift` and keeps `data-showing`
+	 * current; the default finds it, or failing that a site's own
+	 * `.sticky-cta`. `null` lifts over nothing.
 	 */
 	lift?: string | null;
 	/**
@@ -37,19 +29,30 @@ export interface ContactDockProps extends ContactDockConfig {
 	track?: boolean;
 	/** The launcher's words while the panel is open. Defaults to "Close". */
 	closeLabel?: string;
+	/**
+	 * The accessible name of the close button in the panel's head, kept apart
+	 * from the launcher's so the two controls never share a name. Defaults to
+	 * "Close panel".
+	 */
+	panelCloseLabel?: string;
 	/** Start with the panel open (a preview of the open state). */
 	defaultOpen?: boolean;
 }
 
-const icons: Record<ContactDockIcon, LucideIcon> = {
-	chat: MessageCircle,
-	phone: PhoneIcon,
-	calendar: CalendarDays,
-	mail: Mail,
-	form: ClipboardList,
-	calculator: Calculator,
-	map: MapPin,
-};
+/** The default lift: the package's own bar, or a site's bar of the old class. */
+const DEFAULT_LIFT = "[data-dock-lift], .sticky-cta";
+
+/**
+ * Whether the bar the dock lifts over is showing: its `data-showing` when it
+ * keeps one, else the `show` class, and never while the stylesheet hides it
+ * (a desktop). Exported for the tests; a site never calls it.
+ */
+export function barShowing(bar: HTMLElement | null): boolean {
+	if (!bar) return false;
+	const flag = bar.dataset.showing;
+	const shown = flag === undefined ? bar.classList.contains("show") : flag === "true";
+	return shown && getComputedStyle(bar).display !== "none";
+}
 
 /** Where the phone layout starts, the sticky bar's own breakpoint. */
 const PHONE_MAX = 899;
@@ -104,9 +107,10 @@ export function ContactDock({
 	items,
 	footnote,
 	avoid = "footer",
-	lift = "[data-dock-lift]",
+	lift = DEFAULT_LIFT,
 	track = true,
 	closeLabel = "Close",
+	panelCloseLabel = "Close panel",
 	defaultOpen = false,
 }: ContactDockProps) {
 	const [open, setOpen] = useState(defaultOpen);
@@ -132,8 +136,7 @@ export function ContactDock({
 		let bar: HTMLElement | null = null;
 		let footer: Element | null = null;
 		const measure = () => {
-			const showing =
-				bar !== null && bar.dataset.showing === "true" && getComputedStyle(bar).display !== "none";
+			const showing = barShowing(bar);
 			const next = dockPlacement({
 				viewportWidth: window.innerWidth,
 				viewportHeight: window.innerHeight,
@@ -154,14 +157,16 @@ export function ContactDock({
 		// shown from the top), so its own element is watched as well.
 		const shows =
 			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(schedule);
+		const findBar = () => (lift ? document.querySelector<HTMLElement>(lift) : null);
+		const findFooter = () =>
+			avoid === null
+				? null
+				: typeof avoid === "string"
+					? document.querySelector(avoid)
+					: avoid.current;
 		const bind = () => {
-			bar = lift ? document.querySelector<HTMLElement>(lift) : null;
-			footer =
-				avoid === null
-					? null
-					: typeof avoid === "string"
-						? document.querySelector(avoid)
-						: avoid.current;
+			bar = findBar();
+			footer = findFooter();
 			sizes?.disconnect();
 			shows?.disconnect();
 			// The page's own height moves the footer (a late image, an opened
@@ -175,10 +180,21 @@ export function ContactDock({
 			measure();
 		};
 		// A route change swaps the footer, and a bar can mount after the dock:
-		// either is an element added or removed, so the dock binds again then.
-		const rebind = () => {
+		// either is an element added or removed. The page's other changes (a
+		// carousel stepping, a form's message) add elements too, so a frame's
+		// worth of them is gathered into one look, and that look only asks the
+		// two selectors again: the dock rebinds, observing and measuring anew,
+		// only when the bar or the footer it finds is not the one it holds.
+		const check = () => {
+			if (findBar() !== bar || findFooter() !== footer) bind();
+		};
+		// The dock's own changes (its icon swapping as it opens) never move the bar
+		// or the footer, so they are not looked at.
+		const rebind = (records: MutationRecord[]) => {
+			const own = rootRef.current;
+			if (own && records.every((record) => own.contains(record.target))) return;
 			cancelAnimationFrame(bound);
-			bound = requestAnimationFrame(bind);
+			bound = requestAnimationFrame(check);
 		};
 		const added =
 			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(rebind);
@@ -242,7 +258,7 @@ export function ContactDock({
 					<button
 						type="button"
 						className="cd-close"
-						aria-label={closeLabel}
+						aria-label={panelCloseLabel}
 						onClick={() => {
 							setOpen(false);
 							launchRef.current?.focus();
@@ -253,7 +269,7 @@ export function ContactDock({
 				</div>
 				<ul className="cd-items">
 					{items.map((item) => {
-						const Icon = icons[item.icon ?? "chat"];
+						const Icon = dockIcons[item.icon ?? "chat"];
 						const inner = (
 							<>
 								<span className="cd-item-icon">

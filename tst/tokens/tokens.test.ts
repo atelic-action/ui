@@ -2,13 +2,13 @@
 import { atelicFonts, atelicPalette, themeTokenMap, toThemeCSS } from "../../src/tokens";
 
 describe("the email palette", () => {
-	it("carries the hex values the jq library defines, casing included", () => {
+	it("carries the hex values the jq library defines, casing included, faint darkened for contrast", () => {
 		expect(atelicPalette).toEqual({
 			ground: "#F6F1E7",
 			paper: "#FDFBF6",
 			ink: "#151515",
 			dim: "#55503f",
-			faint: "#8a8272",
+			faint: "#736c5f",
 			accent: "#FC4A1A",
 			line: "#E6DFD2",
 			hair: "#F0EAE0",

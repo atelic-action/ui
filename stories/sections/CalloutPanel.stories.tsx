@@ -2,18 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { CalloutPanel } from "../../src/sections";
 import { lines } from "../support/geometry";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * Short callouts on the primary field, set inside a section after its copy.
- * Its white words fail contrast on this theme's primary (stories/findings/sections.md).
  */
 const meta = {
 	title: "Sections/CalloutPanel",
 	component: CalloutPanel,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("on-primary-field-contrast") },
 	args: {
 		items: [
 			{ title: "Since 2014", subtitle: "One shop on Alder Street" },

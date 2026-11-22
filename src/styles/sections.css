@@ -1,3 +1,4 @@
+@import "./defaults.css";
 /* The marketing sections under src/sections, one block each, the sheets that
    lived beside each component in template-marketing until 0.19.0 (ATE-643).
    A section that composes another comes after it, the order the template's
@@ -93,7 +94,7 @@
 
 	.atelic-ui .bp-back:hover,
 	.atelic-ui .bp-back:focus-visible {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	.atelic-ui .bp-title {
@@ -240,7 +241,7 @@
 		font-weight: var(--weight-medium);
 	}
 	.atelic-ui .cmp-grade.is-moved {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	/* Points sit flush with single-point cells, so every row starts on the same
@@ -432,7 +433,7 @@
 		flex: 0 0 auto;
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		font-weight: var(--weight-semibold);
 		padding-top: 2px;
 	}
@@ -470,7 +471,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
 		font-weight: var(--weight-medium);
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		letter-spacing: 0.08em;
 	}
 	.atelic-ui .xl-title {
@@ -548,7 +549,7 @@
 		color: var(--ink);
 	}
 	.atelic-ui .jump-rail a.active {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		border-bottom-color: var(--primary);
 	}
 
@@ -644,7 +645,7 @@
 		margin-top: 16px;
 		font-weight: var(--weight-bold);
 		font-size: 0.95rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	/* ---- Sticky category tabs ---- */
@@ -772,7 +773,7 @@
 		background: color-mix(in srgb, var(--ink) 8%, transparent);
 	}
 	.atelic-ui .faq-link-btn {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .faq-link-btn.copied {
 		color: var(--secondary);
@@ -797,7 +798,7 @@
 		margin-top: 14px;
 		font-weight: var(--weight-bold);
 		font-size: 0.95rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	/* ---- Per-category CTA line ---- */
@@ -808,7 +809,7 @@
 		margin-top: 20px;
 		font-weight: var(--weight-bold);
 		font-size: 0.95rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .faq-cat-cta .arrow,
 	.atelic-ui .faq-answer-cta .arrow {
@@ -826,7 +827,7 @@
 		color: var(--ink-soft);
 	}
 	.atelic-ui .faq-empty a {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		font-weight: var(--weight-bold);
 	}
 
@@ -856,7 +857,7 @@
 		display: block;
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		letter-spacing: 0.1em;
 		margin-bottom: 10px;
 	}
@@ -911,7 +912,7 @@
 	.atelic-ui .feature-num {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		letter-spacing: 0.1em;
 	}
 	.atelic-ui .feature-card h3 {
@@ -925,7 +926,7 @@
 	.atelic-ui .feature-link {
 		margin-top: 18px;
 		font-weight: var(--weight-bold);
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		font-size: 0.95rem;
 		display: inline-flex;
 		align-items: center;
@@ -1062,6 +1063,13 @@
 	.atelic-ui .hero h1 .serif {
 		color: var(--primary-bright);
 	}
+	/* On the split hero the headline sits on the primary field, where the
+	   bright primary all but vanishes (1.38 to 1 on the gallery's palette):
+	   the accent keeps its italic and takes the field's own words. */
+	.atelic-ui .hero.is-split h1,
+	.atelic-ui .hero.is-split h1 .serif {
+		color: var(--on-primary);
+	}
 	.atelic-ui .hero-sub {
 		font-size: clamp(1.05rem, 2.2vw, 1.35rem);
 		max-width: 52ch;
@@ -1136,12 +1144,12 @@
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
 		align-items: stretch;
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 	}
 	.atelic-ui .hero-split-copy {
 		display: flex;
 		align-items: center;
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 	}
 	.atelic-ui .hero-split-inner {
@@ -1164,7 +1172,7 @@
 		text-shadow: none;
 	}
 	.atelic-ui .hero.is-split .hero-sub {
-		color: color-mix(in srgb, var(--on-primary) 92%, transparent);
+		color: var(--on-primary);
 	}
 	.atelic-ui .hero.is-split .cta-row {
 		margin-top: 26px;
@@ -1311,7 +1319,7 @@
 	}
 	.atelic-ui .map-facade:hover .map-facade-hint,
 	.atelic-ui .map-facade:focus-visible .map-facade-hint {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .map-facade:focus-visible {
 		outline: 2px solid var(--primary);
@@ -1353,14 +1361,14 @@
 		font-weight: var(--weight-semibold);
 		line-height: 1;
 		color: var(--on-primary);
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		padding: 9px 14px;
 		border-radius: var(--radius-pill);
 		box-shadow: var(--shadow-md);
 	}
 	.atelic-ui .map-static:hover .map-directions,
 	.atelic-ui .map-static:focus-visible .map-directions {
-		background: var(--primary-deep);
+		background: color-mix(in srgb, var(--primary-fill, var(--primary)) 84%, var(--shade));
 	}
 	.atelic-ui .map-static:focus-visible {
 		outline: 3px solid var(--primary);
@@ -1464,7 +1472,7 @@
 		font-size: 0.72rem;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .loc-addr {
 		margin: 10px 0 0;
@@ -1495,7 +1503,7 @@
 		color: var(--ink);
 	}
 	.atelic-ui .loc-links a:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .loc-links svg {
 		color: var(--primary);
@@ -1611,7 +1619,7 @@
 		border-bottom: 2px solid var(--primary);
 	}
 	.atelic-ui .lc-head a:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .lc-link {
 		display: flex;
@@ -1622,7 +1630,7 @@
 		color: var(--ink-soft);
 	}
 	.atelic-ui .lc-link:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .lc-label {
 		min-width: 0;
@@ -1648,7 +1656,7 @@
 		gap: 22px 24px;
 		padding: clamp(20px, 3vw, 36px);
 		border-radius: var(--radius-lg);
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 	}
 	.atelic-ui * + .callout-panel {
@@ -1672,7 +1680,7 @@
 	.atelic-ui .callout-panel-sub {
 		font-size: clamp(0.85rem, 1.1vw, 1rem);
 		line-height: 1.3;
-		color: color-mix(in srgb, var(--on-primary) 88%, transparent);
+		color: var(--on-primary);
 	}
 	@media (min-width: 1000px) {
 		.atelic-ui .callout-panel {
@@ -1684,7 +1692,7 @@
 	/* ---- PricingBand (pricing-band.css) ---- */
 	/* Brand-colored pricing band. */
 	.atelic-ui .price-band {
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 		/* Under the section spacing, as it always sat (100 of 120). */
 		padding-block: calc(var(--section-space) * 0.84);
@@ -1693,7 +1701,7 @@
 		color: var(--on-primary);
 	}
 	.atelic-ui .price-band .price-lead {
-		color: color-mix(in srgb, var(--on-primary) 82%, transparent);
+		color: var(--on-primary);
 		max-width: 48ch;
 	}
 	.atelic-ui .price-band .eyebrow.on-dark {
@@ -1710,8 +1718,11 @@
 			gap: 64px;
 		}
 	}
+	/* The card sets itself off from the band by a shade, never a wash of the
+	   words' color, which would lift the ground under them and pull white
+	   words below 4.5 to 1 on a fill cut close to it. */
 	.atelic-ui .price-card {
-		background: color-mix(in srgb, var(--on-primary) 10%, transparent);
+		background: color-mix(in srgb, var(--shade) 12%, transparent);
 		border: 1px solid color-mix(in srgb, var(--on-primary) 22%, transparent);
 		border-radius: var(--radius-xl);
 		padding: 38px 32px;
@@ -1731,7 +1742,7 @@
 	.atelic-ui .price-unit {
 		font-family: var(--font-mono);
 		font-size: 0.9rem;
-		color: color-mix(in srgb, var(--on-primary) 80%, transparent);
+		color: var(--on-primary);
 		letter-spacing: 0.06em;
 		margin-bottom: 20px;
 	}
@@ -1740,7 +1751,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
 		letter-spacing: 0.04em;
-		color: color-mix(in srgb, var(--on-primary) 85%, transparent);
+		color: var(--on-primary);
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}
@@ -1763,7 +1774,7 @@
 		font-size: 0.72rem;
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .cost-card .big {
 		font-size: clamp(4rem, 12vw, 6rem);
@@ -1799,6 +1810,12 @@
 	.atelic-ui .process {
 		background: var(--surface-dark);
 		color: var(--surface);
+	}
+	/* A heading's serif accent reads --primary-ink on the page surface
+	   (base.css); on this dark band it keeps the plain primary it had. */
+	.atelic-ui .process :is(h1, h2) .serif,
+	.atelic-ui .process em.serif {
+		color: var(--primary);
 	}
 	.atelic-ui .process h2 {
 		color: var(--on-dark);
@@ -1935,7 +1952,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.75rem;
 		letter-spacing: 0.04em;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		margin-top: 4px;
 	}
 	.atelic-ui .profile-body p {
@@ -1948,7 +1965,7 @@
 		padding-top: 14px;
 		font-weight: var(--weight-bold);
 		font-size: 0.92rem;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	/* ---- RevealSlider (reveal-slider.css) ---- */
@@ -2054,7 +2071,7 @@
 	}
 	.atelic-ui .rslider-label-after {
 		right: 14px;
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 	}
 	.atelic-ui .rslider-line {
@@ -2214,7 +2231,7 @@
 		color: var(--neutral-500);
 	}
 	.atelic-ui a.rw-date:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	.atelic-ui .rw-quote {
@@ -2236,7 +2253,7 @@
 		font-size: 0.74rem;
 		letter-spacing: 0.06em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		text-decoration: underline;
 		text-underline-offset: 3px;
 		padding: 2px 0;
@@ -2280,7 +2297,7 @@
 		display: grid;
 		place-items: center;
 		background: var(--primary-tint);
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
 		font-weight: var(--weight-bold);
@@ -2368,7 +2385,7 @@
 			text-decoration-color 0.2s ease;
 	}
 	.atelic-ui a.rvc-caption:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		text-decoration-color: currentColor;
 	}
 	.atelic-ui a.rvc-caption:focus-visible {
@@ -2580,7 +2597,7 @@
 			text-decoration-color 0.2s ease;
 	}
 	.atelic-ui .rvc-source:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		text-decoration-color: currentColor;
 	}
 	.atelic-ui .rvc-arrow:focus-visible,

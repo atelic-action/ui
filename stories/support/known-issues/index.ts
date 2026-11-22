@@ -21,12 +21,16 @@ import type { Issue } from "./types";
  * rewrites `parameters` to add a doc comment's text, and a bare call there
  * is silently dropped whenever the meta or the story carries a doc comment.
  *
- * Grep `known-issue` to find every story still carrying one. When the fix
- * lands, delete the entry and TypeScript names every story to clean up.
+ * Grep `known-issue` to find every story still carrying one. A marker
+ * cannot outlive its bug: after each story the preview puts the rule back on
+ * the marked elements and fails the story, naming the id, when it finds
+ * nothing there (stale.ts). Delete the entry and TypeScript names every story
+ * to clean up.
  */
 const groups = { chrome, sections, primitives, emailApp };
 
-const issues: Record<string, Issue> = {};
+/** Every group's issues by id, for the preview's stale marker check. */
+export const issues: Record<string, Issue> = {};
 for (const [group, entries] of Object.entries(groups)) {
 	for (const [id, issue] of Object.entries(entries)) {
 		if (id in issues) throw new Error(`Known issue "${id}" is declared twice (again in ${group}).`);
@@ -53,7 +57,8 @@ function andInside(elements: string): string {
  * The parameters that scope each named issue's rule away from its elements.
  * Issues sharing a rule are folded into one selector, since axe takes one
  * selector per rule, and they all go in one call, since Storybook replaces an
- * array parameter rather than merging it.
+ * array parameter rather than merging it. The ids ride along as
+ * `knownIssueIds`, which the preview judges after the story (stale.ts).
  */
 export function knownIssues(...names: KnownIssue[]) {
 	const byRule = new Map<string, { base: string; lists: string[] }>();
@@ -73,7 +78,7 @@ export function knownIssues(...names: KnownIssue[]) {
 				.join(", "),
 		};
 	});
-	return { a11y: { config: { rules } } };
+	return { a11y: { config: { rules } }, knownIssueIds: names };
 }
 
 /**

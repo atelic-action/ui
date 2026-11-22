@@ -9,7 +9,8 @@ import type {
 	NavLink,
 	NavPanelSection,
 } from "../types";
-import { isLinkColumn } from "./navSections";
+import { NavBadge } from "./NavBadge";
+import { isGroup, isLinkColumn, panelSections } from "./navSections";
 
 export interface SiteMenuProps {
 	/** Whether the menu is showing. The owner holds this state. */
@@ -76,7 +77,7 @@ export function SiteMenu({
 	// run 01, 02, 03 down the menu whatever groups sit between them.
 	const numbers: number[] = [];
 	let counted = 0;
-	for (const link of links) numbers.push(link.columns && link.columns.length > 0 ? 0 : ++counted);
+	for (const link of links) numbers.push(isGroup(link) ? 0 : ++counted);
 
 	useEffect(() => {
 		const dialog = dialogRef.current;
@@ -117,7 +118,7 @@ export function SiteMenu({
 				<span />
 			</button>
 			{links.map((link, i) =>
-				link.columns && link.columns.length > 0 ? (
+				isGroup(link) ? (
 					<div className="mm-group" key={link.href}>
 						<button
 							type="button"
@@ -139,7 +140,7 @@ export function SiteMenu({
 									{link.allLabel}
 								</a>
 							)}
-							{link.columns.map((section, index) => (
+							{panelSections(link).map((section, index) => (
 								<MenuSection
 									// biome-ignore lint/suspicious/noArrayIndexKey: a group's sections never reorder while the menu is open
 									key={index}
@@ -180,7 +181,7 @@ export function SiteMenu({
 
 /** A short word in a pill after a link's label, as on the desktop panel. */
 function Badge({ text }: { text?: string }) {
-	return text ? <span className="mm-badge">{text}</span> : null;
+	return <NavBadge text={text} className="mm-badge" />;
 }
 
 /**
@@ -198,12 +199,15 @@ function MenuSection({
 	currentPath?: string;
 	onNavigate: () => void;
 }) {
+	// A child may share its parent's href, and two rows may share one, so a
+	// link is keyed by its place, never its href alone.
 	const link = (
 		item: { label: string; href: string; external?: boolean; badge?: string },
 		className: string,
+		key: string,
 	) => (
 		<a
-			key={item.href}
+			key={key}
 			className={className}
 			href={item.href}
 			onClick={onNavigate}
@@ -222,6 +226,7 @@ function MenuSection({
 				{link(
 					{ label: section.caption, href: section.href, external: section.external },
 					"mm-group-link",
+					"picture",
 				)}
 			</div>
 		);
@@ -237,18 +242,22 @@ function MenuSection({
 					<p className="mm-group-head">{heading}</p>
 				))}
 			{isLinkColumn(section)
-				? section.links.map((item) => (
-						<div className="mm-group-item" key={item.href}>
-							{link(item, "mm-group-link")}
-							{item.children?.map((child: NavGroupChildLink) => link(child, "mm-group-sub"))}
+				? section.links.map((item, index) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: two links may share an href, so the place keeps the key unique; a group's links never reorder
+						<div className="mm-group-item" key={`${index} ${item.href}`}>
+							{link(item, "mm-group-link", "self")}
+							{item.children?.map((child: NavGroupChildLink, childIndex) =>
+								link(child, "mm-group-sub", `child ${childIndex}`),
+							)}
 						</div>
 					))
 				: section.kind === "rows"
-					? section.rows.map((row) => link(row, "mm-group-link"))
-					: section.cards.map((card) =>
+					? section.rows.map((row, index) => link(row, "mm-group-link", `row ${index}`))
+					: section.cards.map((card, index) =>
 							link(
 								{ label: card.title, href: card.href, external: card.external },
 								"mm-group-link",
+								`card ${index}`,
 							),
 						)}
 		</div>

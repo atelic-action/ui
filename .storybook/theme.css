@@ -38,7 +38,13 @@
 	--neutral-500: #8a8272;
 	--neutral-600: #6b6559;
 
+	/* The primary's three jobs (README, Tokens), as the gallery sets them: the
+	   brand orange for marks, lines, and focus rings, a deeper fill behind
+	   white words (the package's default `--on-primary`, 4.70 to 1), and a deeper still ink for orange words on the
+	   cream surfaces (5.38 to 1 on --surface, 4.97 on --surface-alt). */
 	--primary: #fc4a1a;
+	--primary-fill: #d63a10;
+	--primary-ink: #b8300b;
 	--primary-deep: #d63a10;
 	--primary-bright: #ff8059;
 	--primary-tint: #fee7df;

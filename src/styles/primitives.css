@@ -1,3 +1,4 @@
+@import "./defaults.css";
 /* The primitives under src/primitives: the button, the chip, the bubble, the
    eyebrow, the lead paragraph, and the section heading. Every value is a theme token.
    They sit in the package's layer like every sheet here, so any rule a site
@@ -25,15 +26,21 @@
 	.atelic-ui .btn:active {
 		transform: translateY(1px) scale(0.99);
 	}
+	/* The fill behind the words is --primary-fill, and the hover and the
+	   press darken whatever the fill is, so they stay apart from the rest
+	   state even on a theme whose fill is its old hover shade. */
 	.atelic-ui .btn-primary {
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 		box-shadow: var(--primary-shadow);
 	}
 	.atelic-ui .btn-primary:hover {
-		background: var(--primary-deep);
+		background: color-mix(in srgb, var(--primary-fill, var(--primary)) 84%, var(--shade));
 		box-shadow: var(--primary-shadow-hover);
 		transform: translateY(-1px);
+	}
+	.atelic-ui .btn-primary:active {
+		background: color-mix(in srgb, var(--primary-fill, var(--primary)) 74%, var(--shade));
 	}
 	/* On the primary field (a split hero's copy, a callout panel, a menu's
 	   feature card) the primary button would vanish into the band, so it
@@ -41,7 +48,7 @@
 	   so a site's own band takes the same fix by wearing it. */
 	.atelic-ui .on-primary .btn-primary {
 		background: var(--surface);
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		box-shadow: none;
 	}
 	.atelic-ui .on-primary .btn-primary:hover {
@@ -145,7 +152,7 @@
 		   the number optically centered in the circle. */
 		padding-left: 0.1em;
 		line-height: 1;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	/* The badge: a small filled pill on the lower right rim, ringed in the
 	   card color so it sits clean over the circle's edge. */
@@ -160,7 +167,7 @@
 		height: 1.9em;
 		padding: 0 0.4em;
 		border-radius: var(--radius-pill);
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 		box-shadow: 0 0 0 2px var(--card);
 		font-family: var(--font-mono);
@@ -216,7 +223,7 @@
 		font-weight: var(--weight-medium);
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		display: inline-flex;
 		align-items: center;
 		gap: 0.6em;
@@ -227,9 +234,16 @@
 	.atelic-ui .eyebrow.center {
 		justify-content: center;
 	}
-	/* On the primary field the primary colored kicker would vanish. */
+	/* On the primary field the primary colored kicker would vanish, and so
+	   would a serif accent in a heading. Words on the fill take --on-primary
+	   whole: the fill leaves too little room over 4.5 to 1 for a softened
+	   mix of it to stay readable. */
 	.atelic-ui .on-primary .eyebrow {
-		color: color-mix(in srgb, var(--on-primary) 86%, transparent);
+		color: var(--on-primary);
+	}
+	.atelic-ui .on-primary :is(h1, h2) .serif,
+	.atelic-ui .on-primary em.serif {
+		color: var(--on-primary);
 	}
 	.atelic-ui .eyebrow::after {
 		content: "";
@@ -441,8 +455,11 @@
 		overflow: hidden;
 	}
 
+	/* A ::backdrop inherits no custom property before Safari 17.4 and Chrome
+	   122, so the shade falls back to the one defaults.css gives the backdrop
+	   itself, and the page behind is shaded either way. */
 	.atelic-ui .pb-lightbox::backdrop {
-		background: color-mix(in srgb, var(--shade) 72%, transparent);
+		background: color-mix(in srgb, var(--shade, var(--backdrop-shade)) 72%, transparent);
 	}
 
 	.atelic-ui .pb-lightbox img,

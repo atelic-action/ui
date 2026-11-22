@@ -1,3 +1,4 @@
+@import "./defaults.css";
 /* =================================================================
    @atelic-action/ui CHROME: the skip link, the brand lockup, the
    header, the menu, the sticky CTA bar, the footer, and the closing
@@ -53,6 +54,14 @@
 		line-height: 1;
 		position: relative;
 		flex: none;
+	}
+	/* The letter is drawn here from data-glyph, so it is never text in the
+	   lockup's link (BrandLockup, LogoTile), with empty alternative text where
+	   the browser supports it. */
+	.atelic-ui .logo-tile::before {
+		content: attr(data-glyph);
+		/* biome-ignore lint/suspicious/noDuplicateProperties: the first is the fallback for a browser without alternative text */
+		content: attr(data-glyph) / "";
 	}
 	.atelic-ui .logo-tile::after {
 		content: "";
@@ -166,9 +175,18 @@
 	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
 		background: var(--hover-tint);
 	}
-	/* A page's own stops: the scroll spied active one. */
+	/* The entry for where the reader is: a page's scroll spied stop, the
+	   page being read, or the group holding it. Words on the bar's surface,
+	   so they read --primary-ink; over a hero the transparent bar keeps the
+	   plain primary, since no surface sits behind it. */
 	.atelic-ui .nav-links > a.active,
+	.atelic-ui .nav-links > a[aria-current="page"],
 	.atelic-ui .nav-links .nav-group-btn.is-current {
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .nav.is-transparent .nav-links > a.active,
+	.atelic-ui .nav.is-transparent .nav-links > a[aria-current="page"],
+	.atelic-ui .nav.is-transparent .nav-links .nav-group-btn.is-current {
 		color: var(--primary);
 	}
 	/* Desktop only, and hidden until the bar is solid: on small screens the
@@ -195,10 +213,18 @@
 			transform 0.25s,
 			opacity 0.2s;
 	}
-	/* A single light mark (logo.src) is tinted to ink when the bar is solid
-	   on light. A mark cut per surface is never touched. */
-	.atelic-ui .nav.is-solid .nav-logo .mark.is-tinted {
+	/* A mark drawn on a surface it was not cut for is flattened to that
+	   surface's silhouette (resolveMark): to ink on the light bar (a single
+	   light mark, logo.src, as before, or a dark only cut), and to white on a
+	   dark one (a light only cut). A cut drawn on its own surface is never
+	   touched. The tint follows the bar's own state, so a lockup drawn outside
+	   a header (a gallery row, a page's own band) shows its artwork as given. */
+	.atelic-ui .nav.is-solid:not(.nav-dark) .nav-logo .mark.is-tinted {
 		filter: brightness(0) saturate(1);
+	}
+	.atelic-ui :is(.nav.is-transparent, .nav.nav-dark) .nav-logo .mark.is-tinted-light,
+	.atelic-ui .footer-brand img.is-tinted-light {
+		filter: brightness(0) invert(1);
 	}
 	.atelic-ui .nav.is-transparent {
 		color: var(--on-dark);
@@ -221,15 +247,13 @@
 		box-shadow: 0 1px 0 color-mix(in srgb, var(--surface) 12%, transparent);
 		color: color-mix(in srgb, var(--surface) 96%, var(--on-dark));
 	}
-	.atelic-ui .nav.nav-dark .nav-logo .mark.is-tinted {
-		filter: none;
-	}
 	.atelic-ui .nav.nav-dark .nav-links > a:hover,
 	.atelic-ui .nav.nav-dark .nav-links .nav-group-btn:hover,
 	.atelic-ui .nav.nav-dark .nav-links .nav-group-btn[aria-expanded="true"] {
 		background: color-mix(in srgb, var(--on-dark) 8%, transparent);
 	}
 	.atelic-ui .nav.nav-dark .nav-links > a.active,
+	.atelic-ui .nav.nav-dark .nav-links > a[aria-current="page"],
 	.atelic-ui .nav.nav-dark .nav-links .nav-group-btn.is-current {
 		color: var(--primary-bright);
 	}
@@ -330,14 +354,20 @@
 		color: var(--ink);
 	}
 	.atelic-ui .nav-mega-all:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	/* Every panel opens to the same height, the feature card's, so moving
 	   along the bar never makes the panel jump. */
+	/* The sections share the row, and wrap to a second one when their least
+	   widths outrun it (a picture, icon rows, and cards beside a feature card
+	   at a narrow desktop), so none is squeezed past reading or pushed out of
+	   the card. A section's least width matters only once the row is full, so
+	   a wide panel lays out exactly as before. */
 	.atelic-ui .nav-mega-sections {
 		flex: 1;
 		display: flex;
-		gap: 32px;
+		flex-wrap: wrap;
+		gap: 28px 32px;
 		align-items: stretch;
 		min-height: 440px;
 	}
@@ -348,9 +378,11 @@
 	}
 	.atelic-ui .nav-mega-sec.is-links {
 		flex: 1 1 0;
+		min-width: 120px;
 	}
 	.atelic-ui .nav-mega-sec.is-rows {
 		flex: 2.4 1 0;
+		min-width: min(320px, 100%);
 	}
 	.atelic-ui .nav-mega-head {
 		display: block;
@@ -363,7 +395,7 @@
 		color: var(--neutral-600);
 	}
 	.atelic-ui a.nav-mega-head:hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .nav-mega-link {
 		display: flex;
@@ -386,8 +418,10 @@
 		color: var(--ink-soft);
 	}
 	.atelic-ui .nav-mega-link:hover .nav-mega-label,
-	.atelic-ui .nav-mega-link[aria-current="page"] .nav-mega-label {
-		color: var(--primary);
+	.atelic-ui .nav-mega-link[aria-current="page"] .nav-mega-label,
+	.atelic-ui a.nav-mega-head[aria-current="page"],
+	.atelic-ui .nav-mega-all[aria-current="page"] {
+		color: var(--primary-ink, var(--primary));
 	}
 	/* A link's children sit indented under it, each joined to the parent's
 	   line by an elbow. */
@@ -414,13 +448,13 @@
 	}
 	.atelic-ui .nav-mega-sub:hover,
 	.atelic-ui .nav-mega-sub[aria-current="page"] {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .nav-mega-badge {
 		flex: none;
 		padding: 3px 9px;
 		border-radius: var(--radius-pill);
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
@@ -434,7 +468,7 @@
 	.atelic-ui .nav-mega-sec.is-picture {
 		position: relative;
 		flex: 0.85 1 0;
-		min-width: 220px;
+		min-width: min(220px, 100%);
 		justify-content: flex-end;
 		overflow: hidden;
 		border-radius: var(--radius-md);
@@ -505,9 +539,17 @@
 		flex: none;
 		color: var(--neutral-500);
 	}
-	.atelic-ui .nav-mega-row.is-highlight,
+	.atelic-ui .nav-mega-row[aria-current="page"] .nav-mega-row-label {
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .nav-mega-row.is-highlight {
+		background: var(--primary-fill, var(--primary));
+		color: var(--on-primary);
+	}
 	.atelic-ui .nav-mega-row.is-highlight:hover {
-		background: var(--primary);
+		background: color-mix(in srgb, var(--primary-fill, var(--primary)) 84%, var(--shade));
+	}
+	.atelic-ui .nav-mega-row.is-highlight .nav-mega-row-label {
 		color: var(--on-primary);
 	}
 	.atelic-ui .nav-mega-row.is-highlight .nav-mega-row-icon {
@@ -521,7 +563,7 @@
 	/* Small cards, set off from the sections before them by a rule. */
 	.atelic-ui .nav-mega-sec.is-cards {
 		flex: 1 1 0;
-		min-width: 240px;
+		min-width: min(240px, 100%);
 		padding-left: 32px;
 		border-left: 1px solid var(--neutral-100);
 	}
@@ -574,6 +616,14 @@
 		font-size: 0.84rem;
 		color: var(--ink-soft);
 	}
+	/* A card leading to the page being read: its rule in the primary, its
+	   title in the primary's ink. */
+	.atelic-ui .nav-mega-card-link[aria-current="page"] {
+		border-color: var(--primary);
+	}
+	.atelic-ui .nav-mega-card-link[aria-current="page"] .nav-mega-card-title {
+		color: var(--primary-ink, var(--primary));
+	}
 	/* The feature card: one size in every group, the picture taking the
 	   height the words leave, so the button lands in the same place each
 	   time. */
@@ -608,7 +658,8 @@
 		font-weight: var(--weight-medium);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
-		color: var(--primary-bright);
+		/* The bright primary on the card's deep primary is under 2 to 1. */
+		color: var(--on-primary);
 	}
 	.atelic-ui .nav-feature-title {
 		font-size: 1.3rem;
@@ -620,10 +671,11 @@
 	.atelic-ui .nav-feature-text {
 		font-size: 0.95rem;
 		line-height: 1.45;
-		color: color-mix(in srgb, var(--on-primary) 88%, transparent);
+		color: var(--on-primary);
 	}
-	/* The ticked points: the tick bare in the bright primary, the words on
-	   the card's own color. */
+	/* The ticked points: the tick bare and the words both in the card's own
+	   words color, since the bright primary all but vanishes on the deep
+	   primary. */
 	.atelic-ui .nav-feature .nav-feature-points {
 		gap: 7px;
 		margin-top: 2px;
@@ -640,7 +692,7 @@
 		margin-top: 3px;
 		background: none;
 		box-shadow: none;
-		color: var(--primary-bright);
+		color: var(--on-primary);
 	}
 	.atelic-ui .nav-feature-cta {
 		margin-top: 8px;
@@ -936,7 +988,7 @@
 		flex: none;
 		padding: 3px 9px;
 		border-radius: var(--radius-pill);
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
@@ -1002,7 +1054,7 @@
 		height: 52px;
 		padding: 0 20px 0 16px;
 		border-radius: var(--radius-pill);
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 		font-weight: var(--weight-semibold);
 		/* A ring of the page surface keeps the button apart from a band of its
@@ -1013,7 +1065,10 @@
 		transition: background 0.2s ease;
 	}
 	.atelic-ui .cd-launch:hover {
-		background: var(--primary-deep);
+		background: color-mix(in srgb, var(--primary-fill, var(--primary)) 84%, var(--shade));
+	}
+	.atelic-ui .cd-launch:active {
+		background: color-mix(in srgb, var(--primary-fill, var(--primary)) 74%, var(--shade));
 	}
 	.atelic-ui .cd-launch:focus-visible,
 	.atelic-ui .cd-item:focus-visible {
@@ -1040,7 +1095,7 @@
 		align-items: flex-start;
 		gap: 8px;
 		padding: 16px 12px 16px 18px;
-		background: var(--primary);
+		background: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 	}
 	.atelic-ui .cd-head-text {
@@ -1075,7 +1130,7 @@
 		margin-top: 2px;
 		font-size: 0.92rem;
 		line-height: 1.35;
-		color: color-mix(in srgb, var(--on-primary) 90%, transparent);
+		color: var(--on-primary);
 	}
 	.atelic-ui .cd-items {
 		display: flex;
@@ -1110,8 +1165,8 @@
 		border: 1px solid var(--hairline-strong);
 	}
 	.atelic-ui .cd-item.is-lead .cd-item-icon {
-		background: var(--primary);
-		border-color: var(--primary);
+		background: var(--primary-fill, var(--primary));
+		border-color: var(--primary-fill, var(--primary));
 		color: var(--on-primary);
 	}
 	.atelic-ui .cd-item-text {
@@ -1198,7 +1253,7 @@
 	.atelic-ui .footer-brand {
 		grid-column: 1 / -1;
 	}
-	.atelic-ui .footer h4 {
+	.atelic-ui .footer .footer-heading {
 		color: var(--on-dark);
 		font-family: var(--font-mono);
 		font-size: 0.84rem;
@@ -1287,6 +1342,10 @@
 		color: var(--neutral-500);
 		font-size: 0.82rem;
 		padding-block: 18px;
+		/* While the phone's sticky bar shows, SiteShell sets its measured
+		   height here, so the copyright and the credit clear it. The room sits
+		   below everything, so nothing on screen moves when it appears. */
+		padding-bottom: calc(18px + var(--sticky-cta-space, 0px));
 	}
 	.atelic-ui .closing-bar-line {
 		display: flex;

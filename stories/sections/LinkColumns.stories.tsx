@@ -2,18 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { SectionHeading } from "../../src/primitives";
 import { LinkColumns } from "../../src/sections";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * Columns of links under a section's heading: service areas by region, here
- * with counts. The heading's eyebrow fails contrast on this theme (stories/findings/primitives.md).
+ * with counts.
  */
 const meta = {
 	title: "Sections/LinkColumns",
 	component: LinkColumns,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast") },
 	args: {
 		columns: [
 			{

@@ -79,7 +79,7 @@ describe("Footer", () => {
 		const { container } = render(<Footer {...props} />);
 
 		const headings = Array.from(
-			container.querySelectorAll(".footer-column h4"),
+			container.querySelectorAll(".footer-column .footer-heading"),
 			(h) => h.textContent,
 		);
 		expect(headings).toEqual(["Company", "Resources", "Social", "Legal"]);

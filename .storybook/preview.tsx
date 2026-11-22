@@ -9,6 +9,8 @@ import "../src/styles/sections.css";
 import "../src/styles/gate.css";
 import "../src/styles/artifact.css";
 import "./theme.css";
+import { issues } from "../stories/support/known-issues";
+import { judgeFileMarkers, judgeStoryMarkers } from "../stories/support/known-issues/stale";
 import { viewports } from "../stories/support/viewports";
 import { withApp, withEmail, withSiteRoot } from "./decorators";
 
@@ -27,6 +29,13 @@ const preview: Preview = {
 	// Every component gets its docs page: the stories in one column and the props table.
 	tags: ["autodocs"],
 	decorators: [withSiteRoot, withEmail, withApp],
+	// A test file's last story run judges every marker its stories carried:
+	// one never seen violating fails the file (stale.ts).
+	beforeAll: () => () => judgeFileMarkers(),
+	// After each story's play and check, a marker whose bug is gone fails it.
+	afterEach: async ({ id, name, parameters, viewMode }) => {
+		await judgeStoryMarkers({ id, name, parameters, viewMode, issues });
+	},
 	beforeEach: () => {
 		document.addEventListener("click", holdLinks);
 		// The page scrolls between stories in the browser; every story starts at the top.

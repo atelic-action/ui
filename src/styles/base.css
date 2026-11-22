@@ -1,3 +1,4 @@
+@import "./defaults.css";
 /* =================================================================
    @atelic-action/ui BASE: the few unscoped resets, then the canvas,
    typography, and layout helpers, scoped to .atelic-ui. The class is the
@@ -132,14 +133,15 @@
 		font-style: italic;
 		font-weight: var(--weight-regular);
 		letter-spacing: -0.01em;
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 	/* Serif accent words in headings carry the brand accent color (the
 	   wordmark's signature), so the italic word reads as the highlight it is.
-	   A page on a dark surface lifts its own to the bright primary. */
+	   They are words on the page surface, so they read --primary-ink. A page
+	   on a dark surface lifts its own to the bright primary. */
 	.atelic-ui h1 .serif,
 	.atelic-ui h2 .serif {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 	}
 
 	/* ---- Layout helpers ---- */
@@ -242,7 +244,7 @@
 		padding-bottom: 1px;
 	}
 	.atelic-ui .prose p a:not(.btn):hover {
-		color: var(--primary);
+		color: var(--primary-ink, var(--primary));
 		border-color: var(--primary);
 	}
 }

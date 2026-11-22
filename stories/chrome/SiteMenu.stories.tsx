@@ -4,7 +4,6 @@ import { expect, fn, type MockInstance, spyOn, waitFor, within } from "storybook
 import { SiteMenu } from "../../src/chrome";
 import { contact, cta, flatLinks, groupedLinks, phones, sectionedLinks } from "../fixtures/bakery";
 import { textLeft } from "../support/geometry";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -20,8 +19,6 @@ import { pin } from "../support/viewports";
 const meta = {
 	title: "Chrome/SiteMenu",
 	component: SiteMenu,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast") },
 	globals: pin("phone"),
 	args: { open: false, onClose: fn(), links: flatLinks, primaryCTA: cta, contact },
 	render: function Render(args) {
@@ -261,9 +258,9 @@ export const PictureOnlyGroup: Story = {
 let consoleError: MockInstance<typeof console.error>;
 
 /**
- * A child that shares its parent's address (a "Whole loaf" that is the
- * parent page itself) draws without a key clash: the parent and its
- * children are not siblings in one list (stories/findings/chrome.md).
+ * Links that share an address draw without a key clash: a child that is the
+ * parent page itself ("Whole loaf"), two children on one page, and two links
+ * in one column on one page.
  */
 export const ChildSharesParentHref: Story = {
 	args: {
@@ -281,8 +278,10 @@ export const ChildSharesParentHref: Story = {
 								children: [
 									{ label: "Whole loaf", href: "/menu/sourdough" },
 									{ label: "Half loaf", href: "/menu/sourdough/half" },
+									{ label: "Half loaf, sliced", href: "/menu/sourdough/half" },
 								],
 							},
+							{ label: "Sourdough, by the loaf", href: "/menu/sourdough" },
 						],
 					},
 				],

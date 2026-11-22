@@ -38,7 +38,17 @@
 	--neutral-500: #8a8272;
 	--neutral-600: #6b6559;
 
+	/* The primary does three jobs, each its own token (README, Tokens): the
+	   bright brand orange for marks, lines, and focus rings; a deeper fill
+	   behind white words (4.70 to 1, where the brand orange gives 3.42); and
+	   a deeper still ink for orange words on the cream surfaces (5.38 to 1 on
+	   --surface, 4.97 on --surface-alt, 5.86 on --card, and 4.80 under the
+	   bar's hover tint, where the brand orange gives 3.04, 2.81, 3.31, and
+	   2.71). */
 	--primary: #fc4a1a;
+	--primary-fill: #d63a10;
+	--primary-ink: #b8300b;
+	--on-primary: #fff;
 	--primary-deep: #d63a10;
 	--primary-bright: #ff8059;
 	--primary-tint: #fee7df;
@@ -207,6 +217,10 @@ body {
 	--neutral-500: #a39d90;
 	--surface-alt: #24221f;
 	--ui-primary: #ff7a3d;
+	/* The page's fill and ink are cut for the cream surface; the app's dark
+	   ground reads its own primary for both. */
+	--primary-fill: var(--ui-primary);
+	--primary-ink: var(--ui-primary);
 	--primary-bright: #ff9a6b;
 	--primary-tint: #3a2418;
 	--ui-card: #201e1b;

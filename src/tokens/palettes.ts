@@ -44,7 +44,10 @@ export const atelicPalette: Palette = {
 	paper: "#FDFBF6",
 	ink: "#151515",
 	dim: "#55503f",
-	faint: "#8a8272",
+	// Darkened from the jq's #8a8272 (3.38 to 1 on the ground, 3.68 on paper)
+	// to pass text contrast at the 11px a masthead's title and meta are set
+	// in: 4.62 to 1 on the ground, 5.03 on paper (8.0.0).
+	faint: "#736c5f",
 	accent: "#FC4A1A",
 	line: "#E6DFD2",
 	hair: "#F0EAE0",
