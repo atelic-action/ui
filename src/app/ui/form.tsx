@@ -140,10 +140,8 @@ const FormControl = React.forwardRef<
 	const { error, formItemId, formDescriptionId, formMessageId, parts } = useFormField();
 	// Only the parts on the page: a reference to a description or a message
 	// that never rendered points at nothing.
-	// A field in error names its message at once, as it always did, so a
-	// reader who lands on the field as it fails hears why.
 	const describedBy =
-		[parts.description && formDescriptionId, (error || parts.message) && formMessageId]
+		[parts.description && formDescriptionId, parts.message && formMessageId]
 			.filter(Boolean)
 			.join(" ") || undefined;
 

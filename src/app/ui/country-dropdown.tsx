@@ -101,8 +101,11 @@ function CountryFlag({ country, size, flagsBaseURL, lazy = false }: CountryFlagP
 	const configured = useOptionalAppConfig()?.flagsBaseURL;
 	const base = flagsBaseURL ?? configured;
 	const [ref, seen] = useSeen<HTMLSpanElement>(lazy);
-	const [failed, setFailed] = useState(false);
 	const code = country.alpha2.toLowerCase();
+	// A failure belongs to one flag at one host, so it is forgotten when either changes.
+	const attempt = `${code}:${base ?? ""}`;
+	const [failedAttempt, setFailedAttempt] = useState<string | null>(null);
+	const failed = failedAttempt === attempt;
 	const drawImage = Boolean(base) && seen && !failed;
 	return (
 		<span
@@ -114,13 +117,13 @@ function CountryFlag({ country, size, flagsBaseURL, lazy = false }: CountryFlagP
 			{drawImage ? (
 				<CircleFlag
 					countryCode={code}
-					cdnUrl={base}
+					cdnUrl={base && !base.endsWith("/") ? `${base}/` : base}
 					height={size}
 					width={size}
 					alt=""
 					title={country.name}
 					decoding="async"
-					onError={() => setFailed(true)}
+					onError={() => setFailedAttempt(attempt)}
 				/>
 			) : (
 				<span
