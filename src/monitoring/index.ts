@@ -15,7 +15,7 @@ export {
 	readCatcher,
 	reportError,
 } from "./catcher";
-export { ErrorCatcherScript } from "./ErrorCatcherScript";
+export { ErrorCatcherScript, type ErrorCatcherScriptProps } from "./ErrorCatcherScript";
 export {
 	afterFirstPaint,
 	type ErrorReportingOptions,

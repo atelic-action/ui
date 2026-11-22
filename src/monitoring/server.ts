@@ -5,7 +5,7 @@
  * shipped, so this file imports nothing and touches only what a function and
  * the middleware runtime both have (fetch, `AbortController`, `crypto`).
  *
- *   import { reportServerError, withErrorReporting } from "@atelic-action/ui/monitoring/server";
+ *   import { reportServerError, reportServerErrorLater, withErrorReporting } from "@atelic-action/ui/monitoring/server";
  *
  * Privacy: a report carries the request's method and path, and its user
  * agent, never its body, its query string, or any other header. A contact
@@ -221,6 +221,60 @@ export async function reportServerError(
 		}
 	} catch {
 		return false;
+	}
+}
+
+/**
+ * What a handler's context offers to keep work running after the answer has
+ * gone: the second argument of an edge middleware or a Vercel function
+ * (`context.waitUntil`), or any object holding a `waitUntil` like it.
+ */
+export interface WaitUntilContext {
+	waitUntil(promise: Promise<unknown>): void;
+}
+
+/**
+ * The platform's own `waitUntil`, read the way `@vercel/functions` reads it,
+ * from the request context Vercel keeps on a global symbol, so this file
+ * needs no dependency for it. Undefined anywhere else.
+ */
+function platformWaitUntil(): ((promise: Promise<unknown>) => void) | undefined {
+	try {
+		const store = (globalThis as Record<symbol, unknown>)[Symbol.for("@vercel/request-context")] as
+			| { get?: () => { waitUntil?: (promise: Promise<unknown>) => void } | undefined }
+			| undefined;
+		const context = store?.get?.();
+		const waitUntil = context?.waitUntil;
+		return typeof waitUntil === "function" ? waitUntil.bind(context) : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Reports an error without making the caller wait for it. The send starts
+ * at once and is handed to the platform's `waitUntil` (the `context` given,
+ * else Vercel's request context), which keeps the function alive until it
+ * finishes after the answer has gone. With neither, the send still runs,
+ * never blocking the answer, and may be cut short if the runtime freezes
+ * once the answer is out. Never throws, and returns nothing to wait on.
+ *
+ * Use `reportServerError`, awaited, where the report must land before the
+ * handler goes on (before a throw, in a handler that already waits); use
+ * this one where the answer should leave at once (a refusal the person is
+ * waiting to read).
+ */
+export function reportServerErrorLater(
+	error: unknown,
+	options: ServerReportOptions & { context?: WaitUntilContext } = {},
+): void {
+	try {
+		const { context, ...report } = options;
+		const sending = reportServerError(error, report);
+		const waitUntil = context ? context.waitUntil.bind(context) : platformWaitUntil();
+		waitUntil?.(sending);
+	} catch {
+		// A context whose waitUntil throws leaves the send running on its own.
 	}
 }
 

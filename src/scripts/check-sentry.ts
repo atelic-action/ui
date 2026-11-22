@@ -33,7 +33,18 @@ export interface SentryCheckResult {
 /** The check, kept pure so it can be tested without a build. */
 export function checkSentry({ env, args }: SentryCheckInput): SentryCheckResult {
 	const production = env.VERCEL_ENV === "production";
-	const dsn = (env.VITE_SENTRY_DSN ?? "").trim();
+	const raw = env.VITE_SENTRY_DSN ?? "";
+	const dsn = raw.trim();
+	// The build ships the value as it is set, untrimmed, so a DSN with a
+	// space or a line break around it is checked as shipped, not as it reads
+	// once trimmed: it fails here, on any environment, waiver or not.
+	if (dsn && raw !== dsn) {
+		return {
+			code: 1,
+			message:
+				"[sentry] VITE_SENTRY_DSN has a space or a line break around it, which the build would ship as it is. Set it again with nothing around the DSN.",
+		};
+	}
 	// A DSN that is set but cannot be read sends nothing, whatever the build:
 	// it fails here, on any environment, waiver or not.
 	if (dsn && !parseDSN(dsn)) {

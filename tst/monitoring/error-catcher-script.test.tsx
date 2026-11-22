@@ -15,4 +15,14 @@ describe("ErrorCatcherScript", () => {
 		expect(html.split(inline)).toHaveLength(2);
 		expect(html.indexOf(inline)).toBeLessThan(html.indexOf('src="/assets/app.js"'));
 	});
+
+	it("renders nothing when it is not enabled, so a build with no DSN ships no catcher", () => {
+		const html = renderToString(
+			<head>
+				<ErrorCatcherScript enabled={false} />
+			</head>,
+		);
+		expect(html).toBe("<head></head>");
+		expect(renderToString(<ErrorCatcherScript enabled />)).toContain(errorCatcherScript);
+	});
 });

@@ -32,6 +32,19 @@ describe("checkSentry", () => {
 		expect(checkSentry({ env: {}, args: [] }).message).toContain("this local build");
 	});
 
+	it("fails any build whose DSN carries whitespace around it, waiver or not", () => {
+		for (const VERCEL_ENV of ["production", "preview", undefined]) {
+			for (const VITE_SENTRY_DSN of [` ${DSN}`, `${DSN}\n`, `\t${DSN} `]) {
+				const result = checkSentry({
+					env: { VERCEL_ENV, VITE_SENTRY_DSN },
+					args: ["--allow-missing"],
+				});
+				expect(result.code, `${VERCEL_ENV} ${JSON.stringify(VITE_SENTRY_DSN)}`).toBe(1);
+				expect(result.message).toContain("a space or a line break around it");
+			}
+		}
+	});
+
 	it("fails any build whose DSN is set but malformed, waiver or not", () => {
 		for (const VERCEL_ENV of ["production", "preview", undefined]) {
 			for (const VITE_SENTRY_DSN of [

@@ -4,6 +4,7 @@ import {
 	parseDSN,
 	parseStack,
 	reportServerError,
+	reportServerErrorLater,
 	withErrorReporting,
 } from "../../src/monitoring/server";
 
@@ -228,6 +229,51 @@ describe("reportServerError", () => {
 		await expect(reportServerError(new Error("x"), { dsn: DSN, timeoutMs: 20 })).resolves.toBe(
 			false,
 		);
+	});
+});
+
+describe("reportServerErrorLater", () => {
+	const VERCEL_CONTEXT = Symbol.for("@vercel/request-context");
+	afterEach(() => {
+		delete (globalThis as Record<symbol, unknown>)[VERCEL_CONTEXT];
+	});
+
+	it("returns at once, before the send has answered, and hands the send to the context's waitUntil", async () => {
+		let answer: (response: Response) => void = () => {};
+		const fetch = vi.fn(() => new Promise<Response>((resolve) => (answer = resolve)));
+		vi.stubGlobal("fetch", fetch);
+		const held: Promise<unknown>[] = [];
+		const context = { waitUntil: vi.fn((promise: Promise<unknown>) => held.push(promise)) };
+		expect(reportServerErrorLater(new Error("x"), { dsn: DSN, context })).toBeUndefined();
+		expect(fetch).toHaveBeenCalledOnce();
+		expect(context.waitUntil).toHaveBeenCalledOnce();
+		answer(new Response("{}"));
+		await expect(held[0]).resolves.toBe(true);
+	});
+
+	it("finds Vercel's own waitUntil on the request context when no context is given", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => new Response("{}")),
+		);
+		const waitUntil = vi.fn();
+		(globalThis as Record<symbol, unknown>)[VERCEL_CONTEXT] = { get: () => ({ waitUntil }) };
+		reportServerErrorLater(new Error("x"), { dsn: DSN });
+		expect(waitUntil).toHaveBeenCalledOnce();
+		await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBe(true);
+	});
+
+	it("still sends with no waitUntil anywhere, and never throws, a throwing context included", async () => {
+		const fetch = vi.fn(async () => new Response("{}"));
+		vi.stubGlobal("fetch", fetch);
+		expect(() => reportServerErrorLater(new Error("x"), { dsn: DSN })).not.toThrow();
+		const context = {
+			waitUntil: () => {
+				throw new Error("no");
+			},
+		};
+		expect(() => reportServerErrorLater(new Error("x"), { dsn: DSN, context })).not.toThrow();
+		await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
 	});
 });
 
