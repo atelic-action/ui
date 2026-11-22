@@ -93,4 +93,13 @@ export const issues = {
 	"review-avatar-contrast": { rule: "color-contrast", elements: ".rw-avatar" },
 	/** Read more, `--primary` on `--card`: 3.31:1 at 11.8px. The primary as small text. */
 	"review-more-contrast": { rule: "color-contrast", elements: ".rw-more" },
+	/**
+	 * The FAQ's text links in `--primary`: browse all 2.8:1 on `--surface-alt`,
+	 * a category's link and the no match link 3.04:1 on `--surface`, an
+	 * answer's link 3.31:1 on `--card`, at 15 to 17px. The primary as small text.
+	 */
+	"faq-link-contrast": {
+		rule: "color-contrast",
+		elements: ".faq-browse-all, .faq-cat-cta, .faq-answer-cta, .faq-empty a",
+	},
 } satisfies Record<string, Issue>;
