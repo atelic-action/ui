@@ -35,7 +35,6 @@ export function ProcessSteps({
 	headingLevel = 2,
 }: ProcessStepsProps) {
 	const Title = `h${headingLevel}` as const;
-	const StepTitle = `h${(headingLevel + 1) as 3 | 4 | 5 | 6}` as const;
 	return (
 		<section className="section process" id={id}>
 			<div className="wrap process-grid">
@@ -47,7 +46,13 @@ export function ProcessSteps({
 							<li key={step.title}>
 								<span className="step-n">{i + 1}</span>
 								<div>
-									<StepTitle className="step-title">{step.title}</StepTitle>
+									{/* A heading by role, as the footer's column labels are
+									    (Footer.tsx): a site's own bare heading rules would
+									    restyle a small label set inside the band. */}
+									{/* biome-ignore lint/a11y/useSemanticElements: a heading element would take a site's bare heading rules, see above */}
+									<div className="step-title" role="heading" aria-level={headingLevel + 1}>
+										{step.title}
+									</div>
 									<p>{step.description}</p>
 								</div>
 							</li>

@@ -1410,7 +1410,11 @@
 		max-width: 420px;
 	}
 	/* The hours heading keeps one look at whatever level the section sets. */
+	/* A div with the heading role (LocationSection.tsx says why), so it
+	   carries the whole of its look here, the line height an h3 took from
+	   base.css included. */
 	.atelic-ui .loc-block .loc-heading {
+		line-height: 1.04;
 		font-family: var(--font-mono);
 		font-size: 0.74rem;
 		font-weight: var(--weight-bold);
@@ -1927,7 +1931,13 @@
 	}
 	/* A step's title keeps the look it had as an h4 at whatever level the
 	   band sets (an h3 under the default h2). */
+	/* A div with the heading role (ProcessSteps.tsx says why), so it
+	   carries the whole of its look here: the face, the line height, and
+	   the balance an h3 took from base.css included. */
 	.atelic-ui .steps .step-title {
+		font-family: var(--font-heading, var(--font-sans));
+		line-height: 1.04;
+		text-wrap: balance;
 		color: var(--on-dark);
 		margin-bottom: 6px;
 		font-size: 1.25rem;
