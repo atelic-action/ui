@@ -197,6 +197,12 @@
 	.atelic-ui .nav-links > a[aria-current="page"],
 	.atelic-ui .nav-links .nav-group-btn.is-current {
 		color: var(--primary-ink, var(--primary));
+		/* Marked by more than its hue: a deep primary can sit within 2 to 1 of
+		   the bar's other words, so the entry carries the underline the
+		   transparent bar gives it too. */
+		text-decoration-line: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 6px;
 	}
 	/* Over a hero no surface sits behind the transparent bar, and a primary
 	   cut for light grounds can read under 2 to 1 on a dark photograph, so
@@ -438,7 +444,7 @@
 		flex: 1 1 0;
 	}
 	.atelic-ui .nav-mega-sec.is-links > ul {
-		min-width: 120px;
+		min-width: min(120px, 100%);
 	}
 	.atelic-ui .nav-mega-sec.is-rows {
 		flex: 2.4 1 0;
@@ -463,16 +469,6 @@
 		padding: 9px 0;
 		color: var(--ink);
 	}
-	/* A quiet link (a long list, such as the towns under a region): the
-	   softer words and the regular weight, a little closer together. */
-	.atelic-ui .nav-mega-link.is-quiet {
-		color: var(--ink-soft);
-		padding: 5px 0;
-	}
-	.atelic-ui .nav-mega-link.is-quiet .nav-mega-label {
-		font-weight: var(--weight-regular);
-		font-size: 1rem;
-	}
 	.atelic-ui .nav-mega-label {
 		display: flex;
 		align-items: center;
@@ -485,6 +481,16 @@
 		font-size: 0.86rem;
 		line-height: 1.35;
 		color: var(--ink-soft);
+	}
+	/* A quiet link (a long list, such as the towns under a region): the
+	   softer words and the regular weight, a little closer together. */
+	.atelic-ui .nav-mega-link.is-quiet {
+		color: var(--ink-soft);
+		padding: 5px 0;
+	}
+	.atelic-ui .nav-mega-link.is-quiet .nav-mega-label {
+		font-weight: var(--weight-regular);
+		font-size: 1rem;
 	}
 	.atelic-ui .nav-mega-link:hover .nav-mega-label,
 	.atelic-ui .nav-mega-link[aria-current="page"] .nav-mega-label,
@@ -564,7 +570,7 @@
 	.atelic-ui .nav-mega-rows {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(min-content, 1fr));
-		min-width: 320px;
+		min-width: min(320px, 100%);
 		gap: 4px 16px;
 		align-content: start;
 	}
@@ -641,7 +647,7 @@
 		flex-direction: column;
 		gap: 12px;
 		/* The section's 240px floor, less its rule's padding. */
-		min-width: 208px;
+		min-width: min(208px, 100%);
 	}
 	.atelic-ui .nav-mega-card-link {
 		display: flex;
@@ -1425,38 +1431,45 @@
 	.atelic-ui .footer .nap span.nap-address {
 		font-weight: var(--footer-nap-weight, inherit);
 	}
+	/* A word in a column breaks only as a last resort, never to make the
+	   column narrower: each column's least width is its longest word (an
+	   icon and a one word label together), so a crowded row wraps a column
+	   to the next row before a label breaks inside a word. An email address
+	   offers its own breaks, after the @ and before each dot (Footer.tsx). */
 	.atelic-ui .footer-grid > * {
-		overflow-wrap: anywhere;
+		overflow-wrap: break-word;
 	}
 	.atelic-ui .footer .nap-address {
 		display: flex;
 		flex-direction: column;
 	}
+	/* From 760px one row that wraps: the brand column at 1.4 shares, each
+	   other column at one, as the grid laid them out, but a column never
+	   narrows past its longest word; when the row cannot hold every column
+	   at that, the last wraps to a second row rather than squeeze. */
 	@media (min-width: 760px) {
 		.atelic-ui .footer-grid {
-			grid-template-columns: minmax(0, 1.4fr) repeat(var(--footer-columns, 4), minmax(0, 1fr));
+			display: flex;
+			flex-wrap: wrap;
 			gap: 48px 32px;
 		}
-		.atelic-ui .footer-brand {
-			grid-column: auto;
+		.atelic-ui .footer-grid > * {
+			flex: 1 1 0;
+		}
+		.atelic-ui .footer-grid > .footer-brand {
+			flex-grow: 1.4;
 		}
 		/* With the hours beside the four link columns a tablet has no room for
 		   the brand column too, so it keeps the row above them until 1100px. */
-		.atelic-ui .footer-grid.has-hours {
-			grid-template-columns: repeat(var(--footer-columns, 5), minmax(0, 1fr));
-		}
-		.atelic-ui .footer-grid.has-hours .footer-brand {
-			grid-column: 1 / -1;
+		.atelic-ui .footer-grid.has-hours > .footer-brand {
+			flex-basis: 100%;
 		}
 	}
 	/* One row from 1100px, the brand column a little wider than without the
 	   hours, so the lockup and the rating keep a line each. */
 	@media (min-width: 1100px) {
-		.atelic-ui .footer-grid.has-hours {
-			grid-template-columns: minmax(0, 2fr) repeat(var(--footer-columns, 5), minmax(0, 1fr));
-		}
-		.atelic-ui .footer-grid.has-hours .footer-brand {
-			grid-column: auto;
+		.atelic-ui .footer-grid.has-hours > .footer-brand {
+			flex: 2 1 0;
 		}
 	}
 	/* Text wordmark for a site with no mark image. */

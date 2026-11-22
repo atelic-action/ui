@@ -245,7 +245,9 @@ describe("SiteShell", () => {
 		);
 		expect(headings).toEqual(["Company"]);
 		expect(footer.querySelector("address.nap")?.textContent).not.toContain("123 Main St");
-		expect(within(footer).getByRole("link", { name: testSite.email })).toBeInTheDocument();
+		expect(footer.querySelector(`a[href="mailto:${testSite.email}"]`)?.textContent).toBe(
+			testSite.email,
+		);
 	});
 
 	it("takes the columns a site names outright in place of the derived four", () => {

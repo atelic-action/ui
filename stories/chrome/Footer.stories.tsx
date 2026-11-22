@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, type HoursRow, SiteHeader } from "../../src/chrome";
 import { formatHoursRange } from "../../src/sections";
@@ -26,12 +27,11 @@ const hours: HoursRow[] = site.hours.map((row) => ({
 const profile = "https://maps.example.com/?q=418+Alder+Street";
 
 /**
- * The words the browser broke inside themselves, an email address aside: an
- * address is one long word that breaks by design rather than push a column
- * wider (defaults.css, Long words).
+ * The words the browser broke inside themselves. An email address counts
+ * too: it offers breaks after its @ and before each dot (each part its own
+ * run of text), so a part broken inside itself is a word broken.
  */
-const brokenLabels = (element: HTMLElement) =>
-	brokenWords(element).filter((word) => !word.includes("@"));
+const brokenLabels = (element: HTMLElement) => brokenWords(element);
 
 /** The one footer shape every site wears (README, The Default Footer). */
 const meta = {
@@ -489,4 +489,67 @@ export const Full: Story = {
 export const FullPhone: Story = {
 	...Full,
 	globals: pin("phone"),
+};
+
+/**
+ * The full footer under wider type than the stories' font: a wide fallback
+ * face and a little letter spacing, the kind of difference another
+ * machine's font metrics make. No label breaks inside a word, an icon stays
+ * with its label, the email breaks only at its @ or a dot, and when the row
+ * cannot hold every column at its longest word, a column wraps to the next
+ * row rather than squeeze.
+ */
+export const FullWiderMetrics: Story = {
+	...Full,
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--font-sans": 'Verdana, "DejaVu Sans", sans-serif',
+						fontFamily: 'Verdana, "DejaVu Sans", sans-serif',
+						letterSpacing: "0.04em",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		await expect(brokenLabels(footer)).toEqual([]);
+		// The icon and its one word label share a line: the word in one line
+		// box, its middle level with the icon's.
+		const instagram = within(footer).getByRole("link", { name: "Instagram" });
+		const word = document.createRange();
+		word.selectNodeContents(instagram.lastChild as Node);
+		const boxes = Array.from(word.getClientRects());
+		await expect(new Set(boxes.map((box) => Math.round(box.top))).size).toBe(1);
+		const icon = (instagram.querySelector("svg") as SVGElement).getBoundingClientRect();
+		const text = boxes[0] as DOMRect;
+		await expect(icon.right).toBeLessThanOrEqual(text.left);
+		await expect(Math.abs(icon.top + icon.height / 2 - (text.top + text.height / 2))).toBeLessThan(
+			4,
+		);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** The same at the narrowest desktop with the hours on one row. */
+export const FullWiderMetricsNarrow: Story = {
+	...FullWiderMetrics,
+	globals: pin("narrowDesktop"),
+};
+
+/** A long email address in the brand column at 1280 breaks at its @ or a dot, never inside a word. */
+export const LongEmailDesktop: Story = {
+	args: { email: "wholesale.orders.and.catering@kestrelhollowbakehouse.example.com", hours },
+	play: async ({ canvas }) => {
+		const mail = within(canvas.getByRole("contentinfo")).getByRole("link", {
+			name: "wholesale.orders.and.catering@kestrelhollowbakehouse.example.com",
+		});
+		await expect(brokenWords(mail)).toEqual([]);
+		await expectNoSidewaysScroll();
+	},
 };

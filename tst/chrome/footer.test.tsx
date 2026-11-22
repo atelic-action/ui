@@ -147,7 +147,12 @@ describe("Footer", () => {
 			"href",
 			`tel:${phone.e164}`,
 		);
-		expect(screen.getByRole("link", { name: email })).toHaveAttribute("href", `mailto:${email}`);
+		// The address carries <wbr> break points, which jsdom (no UA sheet) reads
+		// as blocks when it names the link, so it is found by its href here; the
+		// stories name it in a real browser.
+		const mail = document.querySelector(`a[href="mailto:${email}"]`);
+		expect(mail?.textContent).toBe(email);
+		expect(mail?.querySelectorAll("wbr")).toHaveLength(2);
 	});
 
 	it("prints the address as text when it has no profile to link, and drops it when none is given", () => {
