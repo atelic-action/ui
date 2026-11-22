@@ -42,6 +42,38 @@ import { testConfig, testNav } from "./fixtures";
  * and a flag list that asks no outside host for anything.
  */
 
+// The country list, cut to six (and the two the dropdown leaves out): cmdk
+// mounting all two hundred and fifty options takes jsdom about ten seconds.
+vi.mock("country-data-list", () => {
+	const country = (alpha2: string, alpha3: string, name: string, status = "assigned") => ({
+		alpha2,
+		alpha3,
+		countryCallingCodes: [],
+		currencies: [],
+		emoji: "x",
+		ioc: alpha3,
+		languages: [],
+		name,
+		status,
+	});
+	return {
+		countries: {
+			all: [
+				country("IS", "ISL", "Iceland"),
+				country("IT", "ITA", "Italy"),
+				country("KP", "PRK", "North Korea"),
+				country("NO", "NOR", "Norway"),
+				country("PT", "PRT", "Portugal"),
+				country("ES", "ESP", "Spain"),
+				country("SE", "SWE", "Sweden"),
+				country("YU", "YUG", "Yugoslavia", "deleted"),
+			],
+		},
+	};
+});
+
+const LISTED = 6;
+
 beforeAll(() => {
 	// cmdk measures its list and scrolls its highlight; jsdom has neither.
 	globalThis.ResizeObserver ??= class {
@@ -187,8 +219,6 @@ describe("Command's list holds only options and groups", () => {
 });
 
 describe("CountryDropdown", () => {
-	const OPEN_TIMEOUT = 60_000;
-
 	function stubObserver() {
 		const observed: Element[] = [];
 		const instances: { callback: IntersectionObserverCallback; root: Element | null }[] = [];
@@ -212,20 +242,22 @@ describe("CountryDropdown", () => {
 		return { observed, instances };
 	}
 
-	/**
-	 * Open the list and hand back its parts by selector: a role query over two
-	 * hundred and fifty options takes seconds in jsdom.
-	 */
-	async function openList() {
+	/** Open the list and hand back its parts. */
+	function openList() {
+		// The click opens the popover inside act, so the list is there at once;
+		// a waitFor here would sit out cmdk's pending work for seconds.
 		fireEvent.click(screen.getByRole("button"));
-		const list = await waitFor(() => {
-			const found = document.querySelector<HTMLElement>("[cmdk-list]");
-			if (!found) throw new Error("the list has not opened");
-			return found;
-		});
+		const list = document.querySelector<HTMLElement>("[cmdk-list]");
+		if (!list) throw new Error("the list did not open");
 		const dialog = list.closest<HTMLElement>("[role='dialog']");
 		const search = document.querySelector<HTMLElement>("[cmdk-input]");
 		return { list, dialog, search };
+	}
+
+	/** Close it again inside the test, so cleanup has no open popover to tear down. */
+	function closeList() {
+		fireEvent.click(screen.getByRole("button"));
+		expect(document.querySelector("[cmdk-list]")).toBeNull();
 	}
 
 	it("draws the code, fetching nothing, wherever the app names no flag host", () => {
@@ -260,33 +292,6 @@ describe("CountryDropdown", () => {
 		);
 	});
 
-	it(
-		"loads a listed flag only once its row scrolls into the list's view",
-		async () => {
-			const { observed, instances } = stubObserver();
-			render(<CountryDropdown flagsBaseURL="/flags/" />);
-			const { list } = await openList();
-			expect(list.getAttribute("role")).toBe("listbox");
-			expect(list.querySelectorAll("img")).toHaveLength(0);
-			expect(observed.length).toBeGreaterThan(200);
-			expect(instances[0].root).toBe(list);
-
-			// Bring the first three rows into view.
-			act(() => {
-				for (const instance of instances.slice(0, 3)) {
-					instance.callback(
-						[{ isIntersecting: true } as IntersectionObserverEntry],
-						instance as unknown as IntersectionObserver,
-					);
-				}
-			});
-			const shown = Array.from(list.querySelectorAll("img")).map((img) => img.getAttribute("src"));
-			expect(shown).toHaveLength(3);
-			for (const src of shown) expect(src).toMatch(/^\/flags\/[a-z]{2}\.svg$/);
-		},
-		OPEN_TIMEOUT,
-	);
-
 	it("draws the code instead when a flag fails to load", () => {
 		render(<CountryDropdown value="PT" flagsBaseURL="/flags/" />);
 		const flag = document.querySelector("img") as HTMLImageElement;
@@ -295,22 +300,40 @@ describe("CountryDropdown", () => {
 		expect(document.querySelector("[data-flag-fallback]")?.textContent).toBe("PT");
 	});
 
-	// Opening the list mounts two hundred and fifty cmdk options, which takes
-	// jsdom about ten seconds, so the open list is checked once per case.
-	it(
-		"opens onto a named popover, its search outside the listbox, asking no host for a flag",
-		async () => {
-			render(<CountryDropdown />);
-			const { list, dialog, search } = await openList();
-			expect(dialog).toHaveAttribute("aria-label", "Countries");
-			expect(search).toHaveAttribute("role", "combobox");
-			expect(dialog?.contains(search)).toBe(true);
-			expect(list.contains(search)).toBe(false);
-			expect(document.querySelector("img")).toBeNull();
-			expect(list.querySelectorAll("[data-flag-fallback]").length).toBeGreaterThan(200);
-		},
-		OPEN_TIMEOUT,
-	);
+	// Popper and cmdk leave jsdom seconds of work after a popover opens, so the
+	// open list is checked in one test.
+	it("opens onto a named popover with the search outside the listbox, loading a flag only in view", () => {
+		const { observed, instances } = stubObserver();
+		render(<CountryDropdown flagsBaseURL="/flags/" />);
+		const { list, dialog, search } = openList();
+		expect(dialog).toHaveAttribute("aria-label", "Countries");
+		expect(search).toHaveAttribute("role", "combobox");
+		expect(dialog?.contains(search)).toBe(true);
+		expect(list.getAttribute("role")).toBe("listbox");
+		expect(list.contains(search)).toBe(false);
+		// The two the dropdown leaves out, a deleted entry and North Korea, are not offered.
+		expect(list.textContent).not.toContain("Yugoslavia");
+		expect(list.textContent).not.toContain("North Korea");
+
+		// Nothing is asked for until a row is in view: every row draws its code.
+		expect(list.querySelectorAll("img")).toHaveLength(0);
+		expect(list.querySelectorAll("[data-flag-fallback]")).toHaveLength(LISTED);
+		expect(observed).toHaveLength(LISTED);
+		expect(instances[0].root).toBe(list);
+
+		// Bring the first three rows into view.
+		act(() => {
+			for (const instance of instances.slice(0, 3)) {
+				instance.callback(
+					[{ isIntersecting: true } as IntersectionObserverEntry],
+					instance as unknown as IntersectionObserver,
+				);
+			}
+		});
+		const shown = Array.from(list.querySelectorAll("img")).map((img) => img.getAttribute("src"));
+		expect(shown).toEqual(["/flags/is.svg", "/flags/it.svg", "/flags/no.svg"]);
+		closeList();
+	});
 });
 
 describe("getCountryFlag", () => {
