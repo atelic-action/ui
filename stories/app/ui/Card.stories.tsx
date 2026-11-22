@@ -9,6 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 /** The kit's card: a header (title, description), content, and a footer, each optional. */
@@ -75,6 +76,6 @@ export const LongContentPhone: Story = {
 		</Card>
 	),
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

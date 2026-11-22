@@ -11,8 +11,8 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "../../../src/app/ui";
+import { layerOpened, noneLeft, settledLayer } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft } from "../layers";
 
 type Side = "top" | "right" | "bottom" | "left";
 
@@ -44,7 +44,7 @@ async function open() {
 	const sheet = await layerOpened(() =>
 		screen.getByRole("dialog", { name: "Larkspur Coffee Bar" }),
 	);
-	await Promise.all(sheet.getAnimations().map((animation) => animation.finished));
+	await settledLayer(sheet);
 	return { trigger, sheet };
 }
 

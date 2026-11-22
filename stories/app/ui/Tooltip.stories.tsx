@@ -8,7 +8,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "../../../src/app/ui";
-import { layerOpened, noneLeft, until } from "../layers";
+import { layerOpened, noneLeft, until } from "../../support/settle";
 
 /**
  * A short line about a control, on hover or focus. It describes the control

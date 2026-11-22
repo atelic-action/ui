@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, screen, userEvent, within } from "storybook/test";
 import { CountryDropdown, Label } from "../../../src/app/ui";
+import { layerClosed, layerOpened, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerClosed, layerOpened, until } from "../layers";
 
 /**
  * The open list, once it has finished opening: the popover named for the

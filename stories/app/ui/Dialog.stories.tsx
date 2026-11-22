@@ -13,8 +13,8 @@ import {
 	Input,
 	Label,
 } from "../../../src/app/ui";
+import { layerOpened, noneLeft, settledLayer } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft } from "../layers";
 
 /**
  * A modal dialog: it opens from its trigger, holds focus, and closes by its
@@ -53,11 +53,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-/** Wait until an element's entrance animations have run, so its box is where it rests. */
-async function settled(element: Element) {
-	await Promise.all(element.getAnimations().map((animation) => animation.finished));
-}
 
 async function open() {
 	const trigger = screen.getByRole("button", { name: "Rename the cafe" });
@@ -117,7 +112,7 @@ export const CancelButton: Story = {
 export const PressOutside: Story = {
 	play: async () => {
 		const { trigger, dialog } = await open();
-		await settled(dialog);
+		await settledLayer(dialog);
 		// The overlay has no role; it is whatever sits at the screen's corner.
 		await userEvent.click(document.elementFromPoint(4, 4) as Element);
 		await noneLeft(() => screen.queryByRole("dialog"));
@@ -130,7 +125,7 @@ export const OpenPhone: Story = {
 	globals: pin("phone"),
 	play: async () => {
 		const { dialog } = await open();
-		await settled(dialog);
+		await settledLayer(dialog);
 		await expect(dialog.getBoundingClientRect().left).toBeGreaterThanOrEqual(0);
 		await expect(dialog.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
 	},

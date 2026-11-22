@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PageSkeleton } from "../../src/app";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -67,7 +68,7 @@ export const GridPhone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expect(rowsOf(canvas)).toBe(3);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 

@@ -1,6 +1,7 @@
 import type { Decorator } from "@storybook/react-vite";
 import type { ReactNode } from "react";
 import { expect } from "storybook/test";
+import { expectNoSidewaysScroll } from "../support/geometry";
 
 /**
  * A mail client's column: 600 wide, or the screen's width when that is less,
@@ -72,5 +73,5 @@ export async function fitsTheColumn(canvasElement: HTMLElement) {
 		(element) => element.clientWidth > 0 && element.scrollWidth > element.clientWidth + 1,
 	);
 	await expect(spilling.map((element) => element.textContent?.slice(0, 40))).toEqual([]);
-	await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+	await expectNoSidewaysScroll();
 }

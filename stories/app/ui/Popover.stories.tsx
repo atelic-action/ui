@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, userEvent, within } from "storybook/test";
 import { Button, Input, Label, Popover, PopoverContent, PopoverTrigger } from "../../../src/app/ui";
+import { layerOpened, noneLeft, settledLayer, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft, until } from "../layers";
 
 /**
  * A floating panel from a trigger, for a small form or detail. Its content
@@ -78,7 +78,7 @@ export const PressOutside: Story = {
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Change the drop time" }));
 		const panel = await layerOpened(() => screen.getByRole("dialog"));
-		await Promise.all(panel.getAnimations().map((animation) => animation.finished));
+		await settledLayer(panel);
 		await userEvent.click(
 			document.elementFromPoint(window.innerWidth - 4, window.innerHeight - 4) as Element,
 		);
@@ -92,7 +92,7 @@ export const OpenPhone: Story = {
 	play: async ({ canvas }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "Change the drop time" }));
 		const panel = await layerOpened(() => screen.getByRole("dialog", { name: "Drop time" }));
-		await Promise.all(panel.getAnimations().map((animation) => animation.finished));
+		await settledLayer(panel);
 		await expect(within(panel).getByLabelText("Leaves the bakehouse at")).toBeVisible();
 		await expect(panel.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
 	},

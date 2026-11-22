@@ -4,8 +4,9 @@ import { type ComponentProps, useState } from "react";
 import { expect, fn, screen, within } from "storybook/test";
 import { AppPage, AppPageToolbar, type ToolbarFilter } from "../../src/app";
 import { Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../src/app/ui";
+import { expectNoSidewaysScroll } from "../support/geometry";
+import { layerOpened, until } from "../support/settle";
 import { pin } from "../support/viewports";
-import { layerOpened, until } from "./layers";
 
 type ToolbarProps = ComponentProps<typeof AppPageToolbar>;
 
@@ -284,7 +285,7 @@ export const Phone: Story = {
 			notice.getBoundingClientRect().bottom,
 		);
 		await expect(filter.getBoundingClientRect().width).toBeGreaterThan(window.innerWidth / 2);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
 

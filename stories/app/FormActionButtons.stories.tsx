@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { FormActionButtons } from "../../src/app";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -124,6 +125,6 @@ export const Phone: Story = {
 		await expect(Math.round(save.getBoundingClientRect().width)).toBe(
 			Math.round(cancel.getBoundingClientRect().width),
 		);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

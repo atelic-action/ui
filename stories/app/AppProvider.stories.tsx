@@ -4,8 +4,8 @@ import { expect, screen, userEvent } from "storybook/test";
 import { AppProvider, queryClient } from "../../src/app";
 import { Button } from "../../src/app/ui";
 import { storyAppConfig, storyAppNav } from "../fixtures/app";
+import { until } from "../support/settle";
 import { pin } from "../support/viewports";
-import { until } from "./layers";
 
 /** A save that succeeds or fails, carrying the toast it raises in its meta, as an app's mutations do. */
 function SaveOrder({ fails = false }: { fails?: boolean }) {

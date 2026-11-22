@@ -3,8 +3,9 @@ import { useState } from "react";
 import { expect } from "storybook/test";
 import { PageError } from "../../src/app";
 import { Button } from "../../src/app/ui";
+import { expectNoSidewaysScroll } from "../support/geometry";
+import { layerOpened } from "../support/settle";
 import { pin } from "../support/viewports";
-import { layerOpened } from "./layers";
 
 /**
  * A page's error state: a card with an alert icon, a title in the kit's
@@ -79,6 +80,6 @@ export const LongMessagePhone: Story = {
 	},
 	globals: pin("phone"),
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

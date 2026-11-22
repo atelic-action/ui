@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Component, type ReactNode } from "react";
 import { expect, fn } from "storybook/test";
 import { ErrorFallback } from "../../src/app";
+import { expectNoSidewaysScroll } from "../support/geometry";
+import { layerOpened } from "../support/settle";
 import { pin } from "../support/viewports";
-import { layerOpened } from "./layers";
 
 /**
  * What an error boundary shows when a page crashes: an apology, an optional
@@ -80,7 +81,7 @@ export const LongDetailsPhone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("button", { name: "Try Again" })).toBeVisible();
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 		const details = canvas.getByText(/Failed to load/);
 		await expect(details.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
 		await expect(details.scrollWidth).toBeGreaterThan(details.clientWidth);

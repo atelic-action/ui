@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../../src/app/ui";
+import { expectNoSidewaysScroll } from "../../support/geometry";
+import { noneLeft } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { noneLeft } from "../layers";
 
 const questions = [
 	{ value: "cutoff", q: "When do orders close?", a: "At 20:00 the night before the drop." },
@@ -119,6 +120,6 @@ export const LongQuestionPhone: Story = {
 	args: { type: "single", collapsible: true, defaultValue: "returns" },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("region")).toBeVisible();
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

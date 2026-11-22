@@ -18,8 +18,8 @@ import {
 	DropdownMenuTrigger,
 } from "../../../src/app/ui";
 import { knownIssues } from "../../support/known-issues";
+import { layerOpened, noneLeft, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
-import { layerOpened, noneLeft, until } from "../layers";
 
 /** What an item reports, fresh for each story. */
 const chose = { spy: fn() };

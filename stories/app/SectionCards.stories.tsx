@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { AppPage, SectionCards } from "../../src/app";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -82,6 +83,6 @@ export const Phone: Story = {
 			links[1].getBoundingClientRect().left,
 		);
 		await expect(links[0].getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };
