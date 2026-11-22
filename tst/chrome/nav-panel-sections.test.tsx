@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { StrictMode } from "react";
 import { SiteHeader, SiteMenu, SiteShell } from "../../src/chrome";
 import type { NavLink } from "../../src/types";
 import { brand } from "../fixtures";
@@ -127,6 +128,52 @@ describe("the mega panel's link shapes", () => {
 		render(<SiteHeader brand={brand} links={groups} currentPath="/bread/seeded" />);
 		expect(screen.getByRole("button", { name: "Bread" })).toHaveClass("is-current");
 		expect(within(panelOf("Bread")).getByRole("link", { name: "Seeded New" })).toHaveAttribute(
+			"aria-current",
+			"page",
+		);
+	});
+
+	it("marks one link current under StrictMode's double render, the first in reading order", () => {
+		// The page is linked three times: the group's own page as its "all"
+		// link, a column head, and a link. StrictMode renders every component
+		// twice; the current link is worked out from the props alone, so the
+		// second render marks the same one.
+		const twice: NavLink[] = [
+			{
+				label: "Bread",
+				href: "/bread",
+				allLabel: "All bread",
+				columns: [
+					{
+						heading: "Loaves",
+						href: "/bread",
+						links: [{ label: "Every loaf", href: "/bread" }],
+					},
+				],
+			},
+		];
+		render(
+			<StrictMode>
+				<SiteHeader brand={brand} links={twice} currentPath="/bread" />
+			</StrictMode>,
+		);
+		const panel = panelOf("Bread");
+		expect(panel.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+		expect(within(panel).getByRole("link", { name: "All bread" })).toHaveAttribute(
+			"aria-current",
+			"page",
+		);
+	});
+
+	it("marks a later link current when it is the first to the page, under StrictMode", () => {
+		render(
+			<StrictMode>
+				<SiteHeader brand={brand} links={groups} currentPath="/bread/seeded" />
+			</StrictMode>,
+		);
+		const panel = panelOf("Bread");
+		expect(panel.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+		expect(within(panel).getByRole("link", { name: "Seeded New" })).toHaveAttribute(
 			"aria-current",
 			"page",
 		);
