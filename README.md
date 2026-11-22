@@ -190,13 +190,36 @@ height as the sender's, `--brand-mark-height`.
 The mark is the brand's own artwork. A site whose logo is cut once per
 surface passes `logo.onLight` (drawn on the light bar) and `logo.onDark`
 (drawn on the dark bar, over a hero, and in the footer), and the chrome
-recolors neither; either alone serves every surface. A site that passes
-`logo.src` alone keeps what it had: a light mark that the header tints to
-ink with a filter on the light bar. Every header mark stands at
-`--brand-mark-height` (30px unless the theme sets it) and runs as wide as
-its own ratio, so a wide wordmark reads at a height the theme picks, and
-`logo.wordmark: false` drops the live name beside artwork that already
-spells it.
+never recolors a cut on its own surface. A site that passes `logo.src`
+alone keeps what it had: a light mark that the header tints to ink on the
+light bar. Every header mark stands at `--brand-mark-height` (30px unless
+the theme sets it) and runs as wide as its own ratio, so a wide wordmark
+reads at a height the theme picks, and `logo.wordmark: false` drops the
+live name beside artwork that already spells it; with no mark at all the
+name stays, so the home link is never empty.
+
+The header and the footer resolve the mark by one order (8.0.0): a
+surface draws its own cut as given; failing that, `src`, as given on a dark
+surface and tinted to ink on the light bar; failing that, the other
+surface's cut flattened to a silhouette of the surface's words color (ink
+on the light bar, white on a dark one), since drawn as given it would
+vanish. "Dark" is the dark bar, the transparent bar over a hero, and the
+footer band.
+
+| `onLight` | `onDark` | `src` | The light bar draws | The dark bars and the footer draw |
+|---|---|---|---|---|
+| set | set | either | `onLight` | `onDark` |
+| set | | set | `onLight` | `src` |
+| set | | | `onLight` | `onLight` as a white silhouette |
+| | set | set | `src` tinted to ink | `onDark` |
+| | set | | `onDark` tinted to ink | `onDark` |
+| | | set | `src` tinted to ink | `src` |
+| | | | the name alone | the name alone |
+
+A glyph tile (`logo.tile`) wins over all three; its letter is drawn by the
+stylesheet, so it is never text in the home link, and the link's name is
+always the words it shows (the brand's name, or the wordmark when it names
+something else), then "home".
 
 The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus containment, and focus return come from the browser.
 
@@ -494,7 +517,7 @@ Every site's footer has one shape, and `Footer` draws it (7.0.0):
 - **Four link columns:** Company, Resources, Social, and Legal, in that order. A Social link carries its icon in front of its words. A column with no links is left out, and the grid sizes itself to the columns shown.
 - **The closing bar:** `ClosingBar` under it all, `Copyright` with the business's name on the left and `Credit` on the right.
 
-The rating's five stars read `--star-fill`, the same token `StarRating`'s filled star reads, and fall back to `--review-gold` (`#f5b301`) when a theme sets none, so one line in `theme.css` recolors every star on a site (8.0.0). The logo is the mark cut for a dark surface (`logo.onDark`) when the site gives one, else `logo.src`.
+The rating's five stars read `--star-fill`, the same token `StarRating`'s filled star reads, and fall back to `--review-gold` (`#f5b301`) when a theme sets none, so one line in `theme.css` recolors every star on a site (8.0.0). The logo is the mark the dark surface resolves to, by the header's own order (see the table under [Rendering From Props](#rendering-from-props)). The column headings are `h2` by default (`headingLevel` takes 2 to 6): the footer is a landmark beside the page's main content, so its sections sit one level under the page's `h1` whatever the page's own outline ends on, which satisfies axe's `heading-order` on every page and keeps the columns in a screen reader's heading list. They wear `.footer-heading`.
 
 The header carries the services and the service areas, so the footer does not repeat them. It holds no blurb, no hours, no call to action, and no credential badges; a site that needs one of those puts it on a page.
 
@@ -519,7 +542,7 @@ Moving to 7.0.0: `footerBlurb` and `footer.contactHeading` are gone from the con
 
 A nav entry in the config is a page or a group. A group is an entry with `columns`, its panel's sections from left to right; its `to` is the group's own page. On a desktop the label is a control that opens a panel under the bar, as wide as the page's wrap whatever it holds, and every panel opens to the same height (440px), the feature card's, so moving along the bar never makes it jump. A mouse hover or a keyboard focus opens a group, a click pins it open, and Escape, a click outside, or focus leaving it closes it; left and right walk the bar, the down arrow steps into the panel, and up and down walk every link in it, whatever section holds it. A closed panel stays in the HTML, `inert`.
 
-A section is one of four kinds, named by `kind`; a section without one is a link column:
+A section is one of four kinds, named by `kind`; a section without one is a link column, and a section naming a kind this version does not know is left out of the panel, the menu, and the base path mapping alike, never drawn as another kind (a group left with no section is a plain link):
 
 | Kind | What it draws | Its data |
 |---|---|---|
@@ -529,6 +552,8 @@ A section is one of four kinds, named by `kind`; a section without one is a link
 | `"cards"` | Small cards under an optional heading, set off by a rule: a kicker, a title, and a meta line beside a square picture, or a quiet tile without one | `{ kind: "cards", heading?, cards: [{ kicker?, title, meta?, image?, href }] }` |
 
 A row's `icon` is one of `calculator`, `calendar`, `card`, `chat`, `document`, `help`, `home`, `mail`, `map`, `phone`, `pin`, `play`, `shield`, `star`, `tool`, `truck`, and `users` (the `NavIcon` type), each a lucide icon. `feature` is the card at the panel's right, 340px wide on `--primary-deep`: a picture taking the height the words leave, an eyebrow, a headline, a line (`text`), ticked `points` (`TickList`), and its action as a `Button` with the arrow, which turns light on the card (`.on-primary`). `allLabel` is off unless given; given, it links the group's own page first in the panel at a column link's weight.
+
+Every link in a panel that leads to the page being read carries `aria-current="page"`, the picture, the cards, a column heading, and the group's own link included, and a flat bar link on the current page is marked as a group holding it is. The sections share one row and wrap to a second when their least widths outrun it (a picture, icon rows, and cards beside the feature card at a narrow desktop), so none is squeezed past reading or pushed out of the card.
 
 On a phone and a tablet the menu opens each group as an accordion, one at a time, and every group starts closed whenever the menu opens, the one holding the current page included. It draws the same data: each section's heading, a link's children indented under it with the same elbow, the badges kept, icon rows and cards as plain links of their labels and titles, and a picture as a plain link of its caption. A plain entry wears a number, and the numbers count plain entries alone, so a group between them leaves no gap.
 
@@ -583,7 +608,7 @@ header: { phones: [{ e164: "+15555550100", display: "(555) 555-0100", label: "Th
 
 `SiteShell` puts the base path on every link and picture a section holds. The footer's Company column lists the entries themselves and never a group's links. A bar holding a group or a number keeps the burger up to 1180px instead of 900px, since it needs the room; the second of two numbers shows from 1360px, and the menu lists both. `header.phones` takes up to two, each a tel link; the first is also the round call button beside the burger on a phone.
 
-`contactDock` in the config turns on the floating launcher: `label` is the launcher's words, `title` and `subtitle` the panel's head, `footnote` its foot, and `items` the ways to reach the business, each `{ label, description, icon, href }` or, for something already on the page such as a chat vendor's window, `{ label, description, icon, onSelect }`: the type takes one or the other and never neither. A dock item always points at the business's own flow. The dock lifts over the phone's sticky bar while it shows and rides above the footer as it scrolls in. It finds the bar by the `data-dock-lift` attribute `StickyCTABar` wears, which keeps `data-showing` current (`lift` names another selector), and the footer by `avoid`, a ref or a selector, which `SiteShell` fills with a ref to its own footer. It finds both again only when the page's elements change (a route change, a bar that mounts late) and measures again when either, or the page, changes size, never querying the page on a scroll frame. Rendered with `track={false}` it sets no inset of its own and sits in the stylesheet's corner, 24px in from the right and the bottom, 16px on a phone.
+`contactDock` in the config turns on the floating launcher: `label` is the launcher's words, `title` and `subtitle` the panel's head, `footnote` its foot, and `items` the ways to reach the business, each `{ label, description, icon, href }` or, for something already on the page such as a chat vendor's window, `{ label, description, icon, onSelect }`: the type takes one or the other and never neither. A dock item always points at the business's own flow. The dock lifts over the phone's sticky bar while it shows and rides above the footer as it scrolls in. It finds the bar by the `data-dock-lift` attribute `StickyCTABar` wears, which keeps `data-showing` current, or failing that a site's own `.sticky-cta`, read as showing by its `show` class when it keeps no `data-showing` (`lift` names another selector), and the footer by `avoid`, a ref or a selector, which `SiteShell` fills with a ref to its own footer. When the page's elements change it asks the two selectors again once a frame, and binds and measures anew only when the bar or the footer it finds is not the one it holds (a route change, a bar that mounts late), never for the dock's own changes and never on a scroll frame; it measures again when either, or the page, changes size. While open, the launcher reads `closeLabel` ("Close") and the panel's own close button `panelCloseLabel` ("Close panel"), so the two never share a name. Rendered with `track={false}` it sets no inset of its own and sits in the stylesheet's corner, 24px in from the right and the bottom, 16px on a phone.
 
 ### Density
 
@@ -609,6 +634,14 @@ The space a section leaves above and below itself is one token, `--section-space
 - **`ContactDockItem` is a union:** an item has an `href` or an `onSelect`, and a config with neither no longer compiles. `ContactDock`'s `avoid` takes a ref as well as a selector, `lift` names the bar it rides over (default `[data-dock-lift]`, which `StickyCTABar` now wears), and with `track={false}` it sets no inset of its own. `SiteShell` hands the dock a ref to its footer, so a page's own `footer` element can no longer be mistaken for it. `Footer` and `ClosingBar` take a `ref`.
 - **Smaller changes:** the sections' `surface` props share one exported type, `Surface`; `ProcessSteps` takes `id`; `FeatureGrid` takes `lead`; `Button` calls `onClick` on a link as well as a button; `SiteMenu` numbers plain entries alone, so a group no longer leaves a gap in the count; a `StatRow` figure given as words wraps instead of pushing the page sideways; `FullBleedVideo` mounts its video, and fetches the clip, only once the band is within a screen of the viewport; the split hero's copy starts where a `.wrap`'s content does at any width; and the FAQ's icon buttons hover with a wash of the text color, which shows on an alternate band.
 - **Fixes the package now owns:** a primary button or an eyebrow inside `.on-primary` (the split hero, the callout panel, the menu's feature card, or a site band wearing the class) turns light, and the footer's stars read `--star-fill`.
+- **The primary's three jobs are three tokens.** `--primary-fill` and `--primary-ink` (see [Tokens](#tokens)) each fall back to `--primary`, so a site that sets neither paints its rest states as before. Two things move at the defaults: a primary fill's hover and press darken the fill (`color-mix` toward `--shade`) where the hover read `--primary-deep`, and the words on a primary field read `--on-primary` whole where the subtitles, the dock's line, the feature card's line, and the price band's lead and figures read a softened mix of it, since no mix of white stays over 4.5 to 1 on a fill cut close to that line. The split hero's headline and its serif accent read `--on-primary` (the accent read `--primary-bright`, 1.38 to 1 on the practice's palette), the feature card's eyebrow and ticks read `--on-primary` (they read `--primary-bright`), and the price card sets itself off by a shade rather than a wash of white.
+- **The current page and the foot of the page.** A flat nav link on the current page is now marked like a current group. While the phone's sticky bar shows, `SiteShell` pads the closing bar by the bar's measured height (`--sticky-cta-space`, from `StickyCTABar`'s new `onSpaceChange`), so the copyright and the credit are never under it; a site rendering `StickyCTABar` itself wires the same.
+- **The footer's headings** are `h2` with `.footer-heading`, where they were `h4`; a site rule against `.footer h4` moves to the class, and `headingLevel` sets another level.
+- **The lockup.** A logo with one cut no longer draws it untinted everywhere (the table under [Rendering From Props](#rendering-from-props)), the header and the footer resolve the same way, `wordmark: false` with no mark keeps the name, and a glyph tile's letter is drawn by the stylesheet from `data-glyph` (a site styling `.logo-tile`'s text keeps working; one reading its text content finds none).
+- **The contact dock** names its panel's close button `panelCloseLabel` ("Close panel"), and still lifts over a site's own bar that wears only `.sticky-cta.show`.
+- **A document's mark height** is the token: `ArtifactShell` wears `data-shell="artifact"`, where `artifact.css` sets `--brand-mark-height: 20px` in place of pinning the image's height, so a theme's own token now reaches a document's header and a site importing the sheet keeps its own header's size.
+- **The email palette's `faint`** is `#736c5f`, darkened from the jq's `#8a8272` (3.38 to 1 on the ground at 11px) to 4.62 to 1 on the ground and 5.03 on paper. Every piece that sets it (the masthead's title and meta, the eyebrows, the folds' counts, the record meta, the scoreboard's quiet rows, the failure page's labels, the footer) reads it on the ground or on paper, never on a rule color.
+- **The token defaults moved to `styles/defaults.css`,** which every layered sheet imports first, so a consumer loading one sheet alone (`primitives.css` for the prose lightbox, say) has every default it reads. Nothing changes for a site importing them all.
 
 ### Every Section
 
@@ -833,29 +866,34 @@ The plain text alternative part ports as plain functions with no React anywhere 
 
 ### Tokens
 
-The sheets read a set of tokens beyond the theme's palette, type, radii, and layout. Each has a default, declared once in `components.css` on `:where(.atelic-ui)`, which weighs nothing, so a theme's own `.atelic-ui` rule wins and sets one only to change it; every default is the value the sheets used before it was a token, so a site that sets none looks as it did (8.0.0). No layered sheet paints a raw color anywhere else: `tst/no-raw-colors.test.ts` fails on a hex, a color function, or a named color outside a token's declaration, with its few exceptions listed in the test, each with its reason.
+The sheets read a set of tokens beyond the theme's palette, type, radii, and layout. Each has a default, declared once in `styles/defaults.css` on `:where(.atelic-ui)`, which weighs nothing, so a theme's own `.atelic-ui` rule wins and sets one only to change it; every default is the value the sheets used before it was a token, so a site that sets none looks as it did (8.0.0). Every layered sheet imports `defaults.css` first, so a sheet loaded alone still finds its defaults. No layered sheet paints a raw color anywhere else: `tst/no-raw-colors.test.ts` sweeps every sheet in `src/styles/` but the ones it excludes by name with a reason (`app.css`, Tailwind source outside the layer), and fails on a hex, a color function, or a named color outside a token's declaration in the defaults sheet, with its few exceptions listed in the test, each with its reason.
+
+**The primary does three jobs, and each has its own token.** `--primary` is the brand color as a mark: lines, rules, focus rings, icons, stars, dots, and accents that carry no words. `--primary-fill` is the primary as a field that carries words: the primary button, the dock's launcher and panel head, the split hero and the callout panel bands, the price band, the menu's badges and highlighted row, the reveal slider's after label, the map's directions chip, a step bubble's badge; the words on it read `--on-primary`, and its hover and press darken it, so they stay distinct even where a theme's fill is its old hover shade. `--primary-ink` is the primary as words on `--surface` and `--surface-alt`: the eyebrow, a serif accent in a heading, the current nav entry and panel link, inline accent links, a feature number, the info tone. Both new tokens fall back to `--primary` where they are read, so a site that sets neither looks as it did, and a band that restates `--primary` carries both with it. A bright brand color that cannot pass text contrast keeps `--primary` and sets the other two deeper; the gallery's own theme sets `--primary` `#fc4a1a`, `--primary-fill` `#d63a10` (white on it 4.70 to 1), and `--primary-ink` `#c2330c` (4.94 to 1 on `--surface`, 4.57 on `--surface-alt`).
 
 | Token | Default | What it colors or sets |
 |---|---|---|
-| `--on-primary` | `#fff` | Anything set on the primary color: a primary button's words, the dock's head and lead icon, the split hero's copy, the callout panel, the price band, a step bubble's badge, a menu badge, a highlighted menu row, the feature card |
+| `--primary-fill` | `--primary`, read in place | Every primary field that carries words: `.btn-primary`, the dock's launcher, panel head, and lead icon, the split hero and callout panel bands, the price band, a step bubble's badge, a menu badge, a highlighted menu row, the reveal slider's after label, the map's directions chip. Its hover is 84% of it mixed with `--shade`, its press 74% |
+| `--primary-ink` | `--primary`, read in place | The primary's words on `--surface` and `--surface-alt`: the eyebrow, `em.serif` and a heading's `.serif`, the current nav entry, group, and panel link, inline accent links and hovers, feature numbers and links, the FAQ's links, the gate's brand line and links, the info tone, the surface button inside `.on-primary` |
+| `--on-primary` | `#fff` | Anything set on the primary fill: a primary button's words, the dock's head and lead icon, the split hero's copy and accent, the callout panel, the price band, a step bubble's badge, a menu badge, a highlighted menu row, the feature card. Read whole, never softened, since a fill cut to pass leaves no room for a mix |
 | `--on-dark` | `#fff` | Anything on a dark band or over a photograph: the skip link, the transparent header, the dark header's text (mixed with `--surface`), the phone menu's rules, the footer's headings and links, a hero's headline, the contact card, the process band, a ghost button and a chip on dark, the reveal slider's handle |
 | `--on-dark-chip` | `#efe7da` | A chip's words on a dark band (the credentials chips, `Chip onDark`) |
 | `--on-dark-quiet` | `rgb(248 244 237 / 0.74)` | Quiet text on the dark process band |
-| `--shade` | `#000` | Pure shadow: a lightbox backdrop, a caption's wash, a headline's text shadow, the dark button's press, and the fallbacks behind `--hairline` and `--shadow-md` |
+| `--shade` | `#000` | Pure shadow: a lightbox backdrop, a caption's wash, a headline's text shadow, the dark button's press, a primary fill's hover and press, the price card's ground, and the fallbacks behind `--hairline` and `--shadow-md`. A `::backdrop` that inherits no custom property (before Safari 17.4 and Chrome 122) falls back to `--backdrop-shade`, which `defaults.css` sets on the backdrop itself |
 | `--scrim` | `#140f0b` | The warm wash a hero lays over its photograph, and the reveal slider's before label |
 | `--placeholder-ink` | `#8a7c68` | The hatching and ring of a placeholder before photography exists |
 | `--hover-tint` | `rgb(33 28 23 / 0.06)` | The light bar's hover behind a nav entry |
 | `--review-gold` | `#f5b301` | The footer rating's stars when the theme sets no `--star-fill` |
-| `--grade-a` to `--grade-d`, each with `-line` and `-bg` | A `#1b7f3b`, B `#9a6b00` on `#c99a1a`, C `#a84500` on `#e8650a`, D `#b3261e`, grounds `#eaf6ee`, `#fdf5dc`, `#fff0e3`, `#fdecea` | The grade chip's words, rule, and ground, green to red whatever the brand is |
+| `--grade-a` to `--grade-d`, each with `-line` and `-bg` | A `var(--tone-good)` (`#1b7f3b`) on its ground `var(--tone-good-bg)`, B `#9a6b00` on `#c99a1a`, ground `#fdf5dc`, C `var(--tone-warn)` (`#a84500`) on `#e8650a`, ground `#fff0e3`, D `var(--tone-bad)` (`#b3261e`) on its ground `var(--tone-bad-bg)` | The grade chip's words, rule, and ground, green to red whatever the brand is. A grade whose value is a tone's reads the tone, so a theme restating the tone moves both |
 | `--weight-light`, `--weight-regular`, `--weight-medium`, `--weight-semibold`, `--weight-strong`, `--weight-bold`, `--weight-heavy` | 300, 400, 500, 600, 650, 700, 800 | Every font weight in every layered sheet. A font kit with only 400 and 700 maps each name to one of those (medium to 400, semibold, strong, and heavy to 700), so the browser synthesizes no weight |
-| `--brand-mark-height` | `30px` | The header mark's height, and a sent document's recipient mark; the width follows the image's own ratio |
+| `--brand-mark-height` | `30px` (20px inside `ArtifactShell`) | The header mark's height, and a sent document's recipient mark; the width follows the image's own ratio |
+| `--sticky-cta-space` | `0px`, read in place | The room the phone's sticky bar takes while it shows, which the closing bar pads its foot by; `SiteShell` sets it on its root from `StickyCTABar`'s measurement, and a theme never does |
 | `--section-space`, `--block-gap`, `--card-min` | `clamp(56px, 9vw, 120px)`, `44px`, `240px` | The section rhythm where no `base.css` sets it (an app importing `components.css` alone); with `base.css` the settings under [Density](#density) win |
 
-Two more read a fallback in place: `--star-fill` colors every filled star (`StarRating`'s, which falls back to the text color, and the footer's rating, which falls back to `--review-gold`), and `--font-condensed` sets a `CalloutPanel` title's face. The tone palette (`--tone-good` and its kin) is under [Page Components](#page-components).
+Two more read a fallback in place: `--star-fill` colors every filled star (`StarRating`'s, which falls back to the text color, and the footer's rating, which falls back to `--review-gold`), and `--font-condensed` sets a `CalloutPanel` title's face. The tone palette (`--tone-good` and its kin) is declared with the defaults and described under [Page Components](#page-components).
 
 `@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
 
-The palette carries three optional keys beyond the jq's eight: `up` (`#2F7A4B`, a calm green) and `down` (`#B23A2E`, a calm red, kept well apart from the orange accent), the colors a record's aside or a change wears by its direction, and `warm` (`#B7791F`, an amber between `up` and the accent) for a record's aside that is cooling but not cold. All three read on the cream card. They are optional so a client palette written before 0.5.0 still compiles, and a palette without them borrows the Atelic values. None maps to a site token.
+`faint` departs from the jq's value on purpose: `#736c5f`, where the jq has `#8a8272`, which reads 3.38 to 1 on the ground at the 11px a masthead's title and meta are set in; the new value reads 4.62 on the ground and 5.03 on paper (8.0.0). The palette carries three optional keys beyond the jq's eight: `up` (`#2F7A4B`, a calm green) and `down` (`#B23A2E`, a calm red, kept well apart from the orange accent), the colors a record's aside or a change wears by its direction, and `warm` (`#B7791F`, an amber between `up` and the accent) for a record's aside that is cooling but not cold. All three read on the cream card. They are optional so a client palette written before 0.5.0 still compiles, and a palette without them borrows the Atelic values. None maps to a site token.
 
 ## Page Components
 
