@@ -74,7 +74,7 @@ const SelectContent = React.forwardRef<
 				// a phone would otherwise hold the list past the screen's edge,
 				// since a min-width beats a max-width.
 				position === "popper" &&
-					"min-w-[min(var(--radix-select-trigger-width),var(--radix-select-content-available-width))] max-w-(--radix-select-content-available-width) data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+					"min-w-[min(max(8rem,var(--radix-select-trigger-width)),var(--radix-select-content-available-width))] max-w-(--radix-select-content-available-width) data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
 				className,
 			)}
 			position={position}

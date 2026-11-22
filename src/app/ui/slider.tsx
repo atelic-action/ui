@@ -50,8 +50,13 @@ const Slider = React.forwardRef<React.ElementRef<typeof SliderPrimitive.Root>, S
 						<SliderPrimitive.Thumb
 							// biome-ignore lint/suspicious/noArrayIndexKey: a thumb's position is its identity
 							key={index}
-							aria-label={own ?? ariaLabel}
-							aria-labelledby={own ? undefined : ariaLabelledBy}
+							// One thumb takes the slider's name; a range tells its thumbs
+							// apart, so a shared name never hides which end is which.
+							aria-label={
+								own ??
+								(ariaLabel && count > 1 ? `${ariaLabel} ${index + 1} of ${count}` : ariaLabel)
+							}
+							aria-labelledby={own || count > 1 ? undefined : ariaLabelledBy}
 							className="block h-5 w-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
 						/>
 					);

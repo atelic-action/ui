@@ -235,10 +235,15 @@ export function AppPageToolbar({
 										to={action.to}
 										disabled={action.disabled}
 										className={className}
-										aria-label={action.ariaLabel}
+										aria-label={
+											action.ariaLabel
+												? [action.ariaLabel, action.ago].filter(Boolean).join(" ")
+												: undefined
+										}
 									>
 										{action.icon}
 										{action.label}
+										{action.ago && <span className="ago">{action.ago}</span>}
 									</Link>
 								);
 							}
