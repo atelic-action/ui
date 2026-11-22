@@ -17,15 +17,11 @@ const week: Day[] = [
 
 /**
  * Monday to Sunday across a card row, each day's entries top aligned under
- * a heavy rule: plain, strong, or with a badge. The day labels are the
- * faint ink at 11px and the badges the accent, both failing contrast on the
- * paper, so every story is marked.
+ * a heavy rule: plain, strong, or with a badge.
  */
 const meta = {
 	title: "Email/DayStrip",
 	component: DayStrip,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

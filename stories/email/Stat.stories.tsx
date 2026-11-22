@@ -3,11 +3,7 @@ import { expect } from "storybook/test";
 import { Card, Stat, StatsRow } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
-/**
- * A big number over a small caption: one cell of a `StatsRow`. The caption
- * takes the row's faint ink, which fails contrast on the paper, so a story
- * with a caption is marked.
- */
+/** A big number over a small faint caption: one cell of a `StatsRow`. */
 const meta = {
 	title: "Email/Stat",
 	component: Stat,
@@ -30,8 +26,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The number over its caption. */
 export const WithCaption: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
 		const number = canvas.getByText("41").getBoundingClientRect();
 		await expect(canvas.getByText(/trays/).getBoundingClientRect().bottom).toBeGreaterThan(

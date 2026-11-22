@@ -6,9 +6,8 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * The card row a scoreboard's groups and targets sit in: a four column
- * table of label, count, bar, and note. Its group names wear the accent and
- * its notes the faint ink, both failing contrast on the paper, so every
- * story is marked.
+ * table of label, count, bar, and note. Its group names and a short count
+ * wear the accent, which fails contrast as words, so every story is marked.
  */
 const meta = {
 	title: "Email/Scoreboard",

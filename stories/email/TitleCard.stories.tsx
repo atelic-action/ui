@@ -6,14 +6,11 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * The title card that opens a report: a faint eyebrow, a headline of one to
- * three lines, a lede, and whatever rows the runner hands in. The faint
- * eyebrow fails contrast on the paper, so every story is marked.
+ * three lines, a lede, and whatever rows the runner hands in.
  */
 const meta = {
 	title: "Email/TitleCard",
 	component: TitleCard,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [inColumn],
 	args: {
 		eyebrowText: "2026-W47",

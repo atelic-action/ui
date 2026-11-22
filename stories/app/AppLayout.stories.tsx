@@ -168,16 +168,10 @@ export const UserMenuByClick: Story = {
 	},
 };
 
-/** The user menu left open, so the check reads the open menu. */
+/** The user menu left open, so the check reads the open menu (the trigger is hidden behind it). */
 export const UserMenuOpen: Story = {
 	tags: ["known-issue"],
-	parameters: {
-		...knownIssues(
-			"user-menu-name-mismatch",
-			"app-destructive-contrast",
-			"checker-radix-hides-page",
-		),
-	},
+	parameters: { ...knownIssues("app-destructive-contrast", "checker-radix-hides-page") },
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: "User menu" }));
 		const logOut = await screen.findByRole("menuitem", { name: "Log out" });

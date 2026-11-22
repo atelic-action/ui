@@ -7,14 +7,12 @@ import { fitsTheColumn, inColumn } from "./column";
 /**
  * A short note inside a card under a small eyebrow. Plain, the eyebrow is
  * faint and the words dim; accented, the eyebrow wears the accent and the
- * words the ink. Both eyebrows fail contrast on the paper, so every story is
+ * words the ink. The accent fails contrast as words, so an accented note is
  * marked.
  */
 const meta = {
 	title: "Email/Note",
 	component: Note,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>
@@ -48,10 +46,16 @@ export const Plain: Story = {
 };
 
 /** Accented: the one note that matters. */
-export const Accented: Story = { args: { accented: true, eyebrowText: "Act on it" } };
+export const Accented: Story = {
+	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
+	args: { accented: true, eyebrowText: "Act on it" },
+};
 
 /** Two notes: the first leaves room, the last closes the card. */
 export const TwoNotes: Story = {
+	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
 	render: (args) => (
 		<>
 			<Note

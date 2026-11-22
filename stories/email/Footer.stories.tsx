@@ -4,15 +4,10 @@ import { Card, Footer, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/**
- * One quiet line at the foot of the email: the run's facts. It is the faint
- * ink on the ground at 11px, the recorded failure, so every story is marked.
- */
+/** One quiet line at the foot of the email, in the faint ink: the run's facts. */
 const meta = {
 	title: "Email/Footer",
 	component: Footer,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [inColumn],
 	args: { meta: "weekly-ops · ran 2026-11-16 05:02 · 41 orders read · 3.2s" },
 	render: (args) => (

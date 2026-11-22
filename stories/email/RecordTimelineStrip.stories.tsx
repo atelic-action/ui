@@ -14,15 +14,11 @@ function cells(canvasElement: HTMLElement) {
  * A record's recent days on one line, today at the right edge: an ink
  * square for each send, an accent dot for each known open, stacked when they
  * share a day, on a hairline with a tick for today. Runs of empty days merge
- * into one cell. The axis is the faint ink at 9px, which fails contrast, so
- * every story is marked; and the marks are drawn, so a reader gets only the
- * axis words.
+ * into one cell. The marks are drawn, so a reader gets only the axis words.
  */
 const meta = {
 	title: "Email/RecordTimelineStrip",
 	component: RecordTimelineStrip,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

@@ -3,15 +3,10 @@ import { expect } from "storybook/test";
 import { Card, Row, SubEyebrow } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
-/**
- * A faint eyebrow inside a card, over a block. The faint ink at 11px fails
- * contrast on the paper, so every story is marked.
- */
+/** A faint eyebrow inside a card, over a block. */
 const meta = {
 	title: "Email/SubEyebrow",
 	component: SubEyebrow,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

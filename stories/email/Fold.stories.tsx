@@ -6,14 +6,11 @@ import { fitsTheColumn, inColumn } from "./column";
 
 /**
  * A small disclosure inside a row ("+ what they do"), a native `details`, so
- * it opens wherever the mail client allows. Its summary is the faint ink at
- * 12px, which fails contrast on the paper, so every story is marked.
+ * it opens wherever the mail client allows.
  */
 const meta = {
 	title: "Email/Fold",
 	component: Fold,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

@@ -41,16 +41,14 @@ function headers(canvasElement: HTMLElement) {
 
 /**
  * A table of numbers with a header row; a column every row leaves empty is
- * dropped unless it says keep. Its header is the faint ink at 10px and a hot
- * cell the accent, failing contrast on the paper, so every story is marked.
- * Its header row is plain cells, not `th`, so a screen reader cannot tie a
- * number to its column.
+ * dropped unless it says keep. A hot cell wears the accent, which fails
+ * contrast as words, so the stories with one are marked. Its header row is
+ * plain cells, not `th`, so a screen reader cannot tie a number to its
+ * column.
  */
 const meta = {
 	title: "Email/Records",
 	component: Records,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>
@@ -71,6 +69,8 @@ type Story = StoryObj<typeof meta>;
 
 /** Four columns, the numbers right aligned. */
 export const Default: Story = {
+	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
 		await expect(headers(canvasElement)).toEqual(["Cafe", "Trays", "Drop", "Change"]);
 		const trays = canvas.getByText("Trays").getBoundingClientRect();
@@ -103,6 +103,8 @@ export const KeepsAnEmptyColumn: Story = {
 
 /** Fixed widths, so sibling tables share a grid. */
 export const FixedWidths: Story = {
+	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
 	args: { columns: columns.map((column, i) => ({ ...column, width: [200, 60, 60, 120][i] })) },
 	play: async ({ canvas }) => {
 		// The fixed layout shares spare room out in proportion to the widths given.
@@ -131,6 +133,8 @@ export const MarkupCell: Story = {
 
 /** On a phone, four columns of short values fit the card. */
 export const DefaultPhone: Story = {
+	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
 		await fitsTheColumn(canvasElement);
@@ -144,6 +148,7 @@ export const DefaultPhone: Story = {
  */
 export const FixedWidthsPhone: Story = {
 	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
 	args: { columns: columns.map((column, i) => ({ ...column, width: [200, 60, 60, 120][i] })) },
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
@@ -156,6 +161,7 @@ export const FixedWidthsPhone: Story = {
 /** The header should name each column for a screen reader; it is plain cells. */
 export const HeaderCellsAreHeaders: Story = {
 	tags: ["known-issue"],
+	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas }) => {
 		await knownBug("records-header-not-th", async () => {
 			await expect(canvas.getByRole("columnheader", { name: "Trays" })).toBeInTheDocument();

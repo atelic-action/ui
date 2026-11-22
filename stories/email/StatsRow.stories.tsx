@@ -4,16 +4,10 @@ import { Card, Stat, StatsRow } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/**
- * The row of `Stat` cells inside a title card: big numbers over small faint
- * captions. The captions' faint ink fails contrast on the paper, so every
- * story is marked.
- */
+/** The row of `Stat` cells inside a title card: big numbers over small faint captions. */
 const meta = {
 	title: "Email/StatsRow",
 	component: StatsRow,
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	decorators: [
 		(Story) => (
 			<Card>

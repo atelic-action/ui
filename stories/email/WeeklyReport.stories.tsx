@@ -150,9 +150,9 @@ const kestrelPalette: Palette = {
  * A whole report email assembled from the pieces, as a runner sends it: the
  * masthead, the title card and its stats, a scoreboard under its read, the
  * wholesale records, a drops table, the week's strip, an item with a fold, a
- * card level fold, a note, and the footer. The pieces' faint and accent inks
- * fail contrast on the palette, so the atelic stories are marked; the client
- * palette's darker inks pass.
+ * card level fold, a note, and the footer. The palette's accent fails
+ * contrast as words, so the atelic stories are marked; the client palette's
+ * darker accent passes.
  */
 const meta = {
 	title: "Email/WeeklyReport",

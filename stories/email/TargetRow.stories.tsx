@@ -14,8 +14,8 @@ const ACCENT = "rgb(252, 74, 26)";
 
 /**
  * One target: its label, the count over the target (in the accent when
- * short), the bar, and a faint note. The accent count and the faint note
- * fail contrast on the paper, so every story that shows one is marked.
+ * short), the bar, and a faint note. The accent count fails contrast as
+ * words, so the stories short of their target are marked.
  */
 const meta = {
 	title: "Email/TargetRow",
@@ -50,8 +50,6 @@ export const Short: Story = {
 
 /** On target: the count in the ink. */
 export const Met: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { logged: 5 },
 	play: async ({ canvas }) => {
 		await expect(colorOf(canvas.getByText("5 / 5"))).toBe(INK);
@@ -60,8 +58,6 @@ export const Met: Story = {
 
 /** A count with nothing to measure it against: no target, no bar, the ink. */
 export const NoTarget: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { logged: 11, target: null, note: "no target" },
 	play: async ({ canvas }) => {
 		const count = canvas.getByText("11");

@@ -9,8 +9,8 @@ import { fitsTheColumn, inColumn } from "./column";
  * One record per row, stacked: the title with its pills, an optional
  * timeline, a mono meta line with an aside at its right, a note, and a
  * callout. No fixed columns, so a name of any length wraps on a phone. The
- * faint meta, the accent pills and callout eyebrow, and the warm aside fail
- * contrast on the paper, so every story with a record is marked.
+ * accent pill and callout eyebrow, and the warm aside, fail contrast as
+ * words, so the stories that show them are marked.
  */
 const meta = {
 	title: "Email/RecordStack",
@@ -58,8 +58,6 @@ export const Accounts: Story = {
 
 /** A record with nothing but its title and meta, as before the pills. */
 export const Plain: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { records: [{ title: "Wicket Lane Deli", meta: ["Standing order", "07:30 drop"] }] },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByText("Wicket Lane Deli")).toBeVisible();

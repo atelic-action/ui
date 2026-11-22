@@ -147,8 +147,6 @@ export const Keyboard: Story = {
 
 /** The checkbox item toggles and the radio items choose one, each saying so. */
 export const CheckAndChoose: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("checker-radix-hides-page") },
 	play: async ({ canvas }) => {
 		const trigger = canvas.getByRole("button", { name: "Order actions" });
 		await userEvent.click(trigger);
@@ -169,6 +167,9 @@ export const CheckAndChoose: Story = {
 			"aria-checked",
 			"false",
 		);
+		// Closed again, so the check reads the page rather than a menu mid animation.
+		await userEvent.keyboard("{Escape}");
+		await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
 	},
 };
 

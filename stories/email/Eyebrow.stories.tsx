@@ -28,10 +28,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The faint eyebrow, over its card. Its faint ink on the ground fails contrast. */
+/** The faint eyebrow, over its card. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	play: async ({ canvas, canvasElement }) => {
 		const label = canvas.getByText("Wholesale");
 		await expect(label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
@@ -54,8 +52,6 @@ export const Strong: Story = {
 
 /** An aside on the right of the same line, bottom aligned to the text. */
 export const WithAside: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { aside: <span>13 cafes</span> },
 	play: async ({ canvas, canvasElement }) => {
 		const label = canvas.getByText("Wholesale").getBoundingClientRect();
@@ -68,8 +64,6 @@ export const WithAside: Story = {
 
 /** A long label with an aside on a phone wraps rather than widening the column. */
 export const LongWithAsidePhone: Story = {
-	tags: ["known-issue"],
-	parameters: { a11y: { test: "todo" } },
 	args: { text: "Wholesale accounts that asked about Saturdays", aside: <span>13 cafes</span> },
 	globals: pin("phone"),
 	play: async ({ canvasElement }) => {
