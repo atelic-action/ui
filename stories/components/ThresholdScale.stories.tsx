@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { ThresholdScale } from "../../src/components";
 import { thresholdReadings, thresholdTicks, thresholdZones } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -22,18 +22,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The good tone's words fail contrast on the surface (stories/findings/primitives.md). */
-const goodWords = {
-	parameters: { ...knownIssues("tone-good-text-contrast") },
-} satisfies Story;
-
-/** Each reading's track is named by its label and figure; the pin sits at its share of the scale. */
+/**
+ * Each reading's track is named by its label, its figure, and the zone it
+ * falls in; the pin sits at its share of the scale.
+ */
 export const Default: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	play: async ({ canvas }) => {
-		const home = canvas.getByRole("img", { name: "Home page: 4.1 s" });
-		await expect(canvas.getByRole("img", { name: "Menu: 3.2 s" })).toBeInTheDocument();
+		const home = canvas.getByRole("img", { name: "Home page: 4.1 s, Poor" });
+		await expect(canvas.getByRole("img", { name: "Menu: 3.2 s, Slow" })).toBeInTheDocument();
+		await expect(canvas.getByRole("img", { name: "Order ahead: 1.9 s, Good" })).toBeInTheDocument();
 		const track = home.getBoundingClientRect();
 		const pin = home.lastElementChild as HTMLElement;
 		const at = pin.getBoundingClientRect();
@@ -43,55 +40,45 @@ export const Default: Story = {
 };
 
 /**
- * Which zone a reading falls in is the point of the scale. The track's name
- * should say it ("Poor"); it carries the figure alone, and the zone labels
- * and their lines are hidden, so the verdict reaches a screen reader only
- * as color (stories/findings/primitives.md, `threshold-zone-not-spoken`).
+ * Which zone a reading falls in is the point of the scale, so the track's
+ * name says it beside the figure ("Home page: 4.1 s, Poor"); the zone
+ * labels and their lines stay hidden, since the name already carries them.
  */
 export const ZoneIsSpoken: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	play: async ({ canvas }) => {
-		await knownBug("threshold-zone-not-spoken", async () => {
-			await expect(canvas.getByRole("img", { name: /Home page: 4\.1 s/ })).toHaveAccessibleName(
-				/Poor/,
-			);
-		});
+		await expect(canvas.getByRole("img", { name: /^Home page: 4\.1 s/ })).toHaveAccessibleName(
+			"Home page: 4.1 s, Poor",
+		);
 	},
 };
 
-/** A reading past the far end pins at the end of the track, never beyond it. */
+/**
+ * A reading past the far end pins at the end of the track, never beyond it:
+ * the pin, centered on its reading, centers on the track's last point, and
+ * the name puts it in the last zone.
+ */
 export const PastTheEnd: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	args: { readings: [{ label: "Gallery", value: 11.2, display: "11.2 s", tone: "bad" }] },
 	play: async ({ canvas }) => {
-		const track = canvas.getByRole("img", { name: "Gallery: 11.2 s" });
-		const pin = track.lastElementChild as HTMLElement;
-		await expect(pin.getBoundingClientRect().left).toBeLessThanOrEqual(
-			track.getBoundingClientRect().right,
-		);
+		const track = canvas.getByRole("img", { name: "Gallery: 11.2 s, Poor" });
+		const pin = (track.lastElementChild as HTMLElement).getBoundingClientRect();
+		const center = pin.left + pin.width / 2;
+		await expect(Math.abs(center - track.getBoundingClientRect().right)).toBeLessThan(1);
 	},
 };
 
 /** No tick labels: the zones' names alone. */
 export const NoTicks: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("tone-good-text-contrast") },
 	args: { ticks: undefined },
 };
 
 /** One reading. */
 export const Single: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	args: { readings: thresholdReadings.slice(0, 1) },
 };
 
 /** No readings: the axis alone. */
 export const NoReadings: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	args: { readings: [] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryAllByRole("img")).toHaveLength(0);
@@ -100,8 +87,6 @@ export const NoReadings: Story = {
 
 /** On a phone with long reading labels, nothing scrolls sideways. */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	globals: pin("phone"),
 	args: {
 		readings: [

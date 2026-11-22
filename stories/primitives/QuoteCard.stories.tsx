@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, within } from "storybook/test";
 import { QuoteCard } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll } from "./support";
 
 /** A pull quote or a testimonial in serif italic, over its attribution. */
 const meta = {
@@ -24,10 +23,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
 	play: async ({ canvas }) => {
 		const figure = canvas.getByRole("figure");
-		await expect(figure.querySelector("blockquote")).toHaveTextContent(/The rye keeps a full week/);
-		await expect(figure.querySelector("figcaption")).toHaveTextContent(
-			"Rosa Quill, Quill and Fern Cafe",
+		await expect(within(figure).getByRole("blockquote")).toHaveTextContent(
+			/The rye keeps a full week/,
 		);
+		// The caption is the figure's description; a figcaption has no role of its own.
+		await expect(within(figure).getByText("Rosa Quill, Quill and Fern Cafe")).toBeVisible();
 	},
 };
 
@@ -45,18 +45,16 @@ export const RichQuote: Story = {
 };
 
 /**
- * The longest quote and attribution, with an unbroken word, on a phone. It should wrap inside the screen; the unbroken word runs
- * past it and the page scrolls sideways (stories/findings/primitives.md,
- * `long-word-overflow`).
+ * The longest quote and attribution, with an unbroken word, on a phone: it
+ * wraps inside the screen, the word breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		quote: `Our regulars ask for the ${longWord} by name, and on a Saturday the line runs out the door and past the hardware store on the corner.`,
 		by: "Theodora Brightwater-Okonkwo, Head of Purchasing, The Riverside Grocers Cooperative",
 	},
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

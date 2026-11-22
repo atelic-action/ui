@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn } from "storybook/test";
 import { StarRating, type StarRatingProps } from "../../src/components";
-import { knownIssues } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** An editable row held by its caller, reporting each change to the story's spy. */
@@ -22,8 +22,8 @@ function Held(props: StarRatingProps) {
 
 /**
  * A row of stars in half star steps. Read only, it is one picture named by
- * the rating; given `onChange`, it is one slider to a keyboard, and each
- * star two pointer targets.
+ * the rating; given `onChange`, it is one slider, to a keyboard, a pointer,
+ * and a screen reader alike, holding no control of its own.
  */
 const meta = {
 	title: "Components/StarRating",
@@ -34,11 +34,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-/** The slider holds its half star buttons (stories/findings/primitives.md). */
-const nestedButtons = {
-	parameters: { ...knownIssues("star-rating-nested-buttons") },
-} satisfies Story;
 
 /** Read only: a picture named by the rating, with no buttons in it. */
 export const ReadOnly: Story = {
@@ -77,8 +72,6 @@ export const CustomScale: Story = {
  * way a person would.
  */
 export const EditableByKeyboard: Story = {
-	tags: ["known-issue"],
-	...nestedButtons,
 	args: { value: 3, onChange: fn() },
 	render: (args) => <Held {...args} />,
 	play: async ({ canvas, userEvent, args, step }) => {
@@ -127,36 +120,52 @@ export const EditableByKeyboard: Story = {
 };
 
 /**
- * By pointer each star is two targets: its left half picks the half star.
- * Picking the rating already set clears it.
+ * Where a pointer lands to pick a rating, found the way a pointer finds it:
+ * the element at the point inside the slider over that half star. The halves
+ * are plain areas with no role, since a slider's children are presentational,
+ * so there is no name to find them by.
+ */
+function pointAt(slider: HTMLElement, rating: number, max = 5) {
+	const box = slider.getBoundingClientRect();
+	const star = box.width / max;
+	const x = box.left + (Math.ceil(rating) - 1) * star + (rating % 1 ? star * 0.25 : star * 0.75);
+	return document.elementFromPoint(x, box.top + box.height / 2) as HTMLElement;
+}
+
+/**
+ * By pointer each star is two halves: its left half picks the half star.
+ * Picking the rating already set clears it. The slider holds no button: a
+ * screen reader meets one control, never ten.
  */
 export const EditableByPointer: Story = {
-	tags: ["known-issue"],
-	...nestedButtons,
 	args: { value: null, onChange: fn() },
 	render: (args) => <Held {...args} />,
-	play: async ({ canvas, userEvent, args }) => {
+	play: async ({ canvas, userEvent, args, step }) => {
 		const slider = canvas.getByRole("slider", { name: "The morning bun" });
-		const half = canvas.getByRole("button", { hidden: true, name: "3.5 stars" });
-		await userEvent.click(half);
-		await expect(args.onChange).toHaveBeenLastCalledWith(3.5);
-		await expect(slider).toHaveAttribute("aria-valuetext", "3.5 stars");
-		await userEvent.click(half);
-		await expect(args.onChange).toHaveBeenLastCalledWith(null);
-		await expect(slider).toHaveAttribute("aria-valuetext", "Not rated");
-		await userEvent.click(canvas.getByRole("button", { hidden: true, name: "5 stars" }));
-		await expect(slider).toHaveAttribute("aria-valuenow", "5");
+		await step("one control, no buttons inside it", async () => {
+			await expect(canvas.queryAllByRole("button", { hidden: true })).toHaveLength(0);
+		});
+		await step("the fourth star's left half picks 3.5, and again clears it", async () => {
+			await userEvent.click(pointAt(slider, 3.5));
+			await expect(args.onChange).toHaveBeenLastCalledWith(3.5);
+			await expect(slider).toHaveAttribute("aria-valuetext", "3.5 stars");
+			await userEvent.click(pointAt(slider, 3.5));
+			await expect(args.onChange).toHaveBeenLastCalledWith(null);
+			await expect(slider).toHaveAttribute("aria-valuetext", "Not rated");
+		});
+		await step("the last star's right half picks 5", async () => {
+			await userEvent.click(pointAt(slider, 5));
+			await expect(slider).toHaveAttribute("aria-valuenow", "5");
+		});
 	},
 };
 
 /** On a phone the editable row keeps its targets inside the screen. */
 export const EditableOnPhone: Story = {
-	tags: ["known-issue"],
-	...nestedButtons,
 	globals: pin("phone"),
 	args: { value: 4, onChange: fn(), max: 10, size: 32 },
 	render: (args) => <Held {...args} />,
 	play: async () => {
-		await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, waitFor, within } from "storybook/test";
 import { Tabs, type TabsItem } from "../../src/components";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 const tabs: TabsItem[] = [
@@ -28,9 +29,15 @@ const tabs: TabsItem[] = [
 	{ id: "cakes", label: "Cakes", content: <p>Cakes to order, two days ahead.</p> },
 ];
 
-/** Clears a story's hash, so no story opens on the one before it left. */
+/**
+ * Clears the page's hash before a story and again after it, so no story
+ * opens on a hash another left, this file's or the next one's.
+ */
 function clearHash() {
-	return () => history.replaceState(null, "", window.location.pathname + window.location.search);
+	const clear = () =>
+		history.replaceState(null, "", window.location.pathname + window.location.search);
+	clear();
+	return clear;
 }
 
 /**
@@ -43,7 +50,7 @@ const meta = {
 	component: Tabs,
 	decorators: [inWrap],
 	args: { tabs, ariaLabel: "What the bakery bakes" },
-	beforeEach: clearHash(),
+	beforeEach: clearHash,
 } satisfies Meta<typeof Tabs>;
 
 export default meta;

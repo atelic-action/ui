@@ -3,8 +3,8 @@ import { Clock, MapPin, Phone, Truck } from "lucide-react";
 import { expect } from "storybook/test";
 import { IconList } from "../../src/components";
 import { longURL } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 const items = [
@@ -73,11 +73,10 @@ export const Empty: Story = {
 };
 
 /**
- * Long items and a bare address, on a phone. It should wrap inside the screen; the bare address runs past it
- * and the page scrolls sideways (stories/findings/primitives.md, `long-word-overflow`).
+ * Long items and a bare address, on a phone: the list wraps inside the
+ * screen, the address breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		icon: <MapPin size={16} />,
@@ -90,6 +89,6 @@ export const LongestOnPhone: Story = {
 		],
 	},
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

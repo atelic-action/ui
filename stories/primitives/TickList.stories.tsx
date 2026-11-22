@@ -2,9 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { TickList } from "../../src/primitives";
 import { longWord } from "../fixtures/primitives";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll } from "./support";
 
 /** A list with a check mark before each item, for a feature or a price card. */
 const meta = {
@@ -47,12 +46,10 @@ export const RichItems: Story = {
 };
 
 /**
- * The longest items, on a phone. It should wrap inside the screen; the unbroken word runs
- * past it and the page scrolls sideways (stories/findings/primitives.md,
- * `long-word-overflow`).
+ * The longest items, on a phone: they wrap inside the screen, the unbroken
+ * word breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		items: [
@@ -67,6 +64,6 @@ export const LongestOnPhone: Story = {
 		await expect(
 			Math.abs(tick.getBoundingClientRect().top - first.getBoundingClientRect().top),
 		).toBeLessThan(4);
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

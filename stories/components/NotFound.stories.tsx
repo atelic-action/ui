@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { NotFound } from "../../src/components";
 import { cta, flatLinks } from "../fixtures/bakery";
-import { expectNoSidewaysScroll } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -95,16 +94,12 @@ export const PhoneAction: Story = {
 };
 
 /**
- * The arrow after the action's words is decoration. It is not hidden, so it
- * is read as part of the link's name (stories/findings/primitives.md,
- * `not-found-arrow-in-name`).
+ * The arrow after the action's words is decoration, hidden from the link's
+ * name, which is its words alone.
  */
 export const ArrowIsDecoration: Story = {
-	tags: ["known-issue"],
 	play: async ({ canvas }) => {
-		await knownBug("not-found-arrow-in-name", async () => {
-			await expect(canvas.getByRole("link", { name: "Order ahead" })).toBeVisible();
-		});
+		await expect(canvas.getByRole("link", { name: "Order ahead" })).toBeVisible();
 	},
 };
 

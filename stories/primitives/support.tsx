@@ -1,8 +1,5 @@
 import type { Decorator } from "@storybook/react-vite";
 
-/** The shared check, kept here until the group's stories import it from support/. */
-export { expectNoSidewaysScroll } from "../support/geometry";
-
 /*
  * The decorators the primitives, components, and artifact stories share. The
  * checks every group shares (the sideways scroll, reduced motion, held

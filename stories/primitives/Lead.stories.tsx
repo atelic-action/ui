@@ -2,9 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Lead } from "../../src/primitives";
 import { longURL } from "../fixtures/primitives";
-import { knownBug } from "../support/known-issues";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll } from "./support";
 
 /** The larger intro paragraph under a heading. */
 const meta = {
@@ -27,15 +26,13 @@ export const Default: Story = {
 };
 
 /**
- * A lead carrying a long unbroken address, on a phone. It should wrap inside the screen; the unbroken word runs
- * past it and the page scrolls sideways (stories/findings/primitives.md,
- * `long-word-overflow`).
+ * A lead carrying a long unbroken address, on a phone: it wraps inside the
+ * screen, the address breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { children: `The full autumn list lives at ${longURL}, updated every Thursday.` },
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

@@ -2,7 +2,7 @@ import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor } from "storybook/test";
 import { Shot } from "../../src/artifact";
 import { shotPortrait, shotWide } from "../fixtures/primitives";
-import { expectNoSidewaysScroll } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** A document's column, which sizes the shot the way a document's own sheet does. */
@@ -72,6 +72,12 @@ export const Portrait: Story = {
 export const Broken: Story = {
 	args: { shot: { ...shotPortrait, src: "/images/primitives/missing.png" } },
 	play: async ({ canvas }) => {
+		const img = canvas.getByRole("img") as HTMLImageElement;
+		// The failure has to have happened before the frame is judged: a
+		// complete image with no pixels is one that failed to load.
+		await waitFor(() => expect(img.complete && img.naturalWidth === 0).toBe(true), {
+			timeout: 5000,
+		});
 		const figure = canvas.getByRole("figure");
 		await expect(figure).toHaveTextContent(shotPortrait.caption);
 		await expect(figure.getBoundingClientRect().width).toBeGreaterThan(400);

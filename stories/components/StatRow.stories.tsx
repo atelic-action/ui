@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { StatRow } from "../../src/components";
 import { longWord, stats } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -22,16 +22,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The good tone's words fail contrast on the surface (stories/findings/primitives.md). */
-const goodWords = {
-	parameters: { ...knownIssues("tone-good-text-contrast") },
-} satisfies Story;
-
 /** The loud row: a report's headline figures, four across at desktop width. */
 export const Loud: Story = {
-	tags: ["known-issue"],
-	...goodWords,
-
 	play: async ({ canvas }) => {
 		const tops = ["3,948", "6", "4.1", "12"].map(
 			(figure) => canvas.getByText(figure).getBoundingClientRect().top,
@@ -45,8 +37,6 @@ export const Loud: Story = {
 
 /** The quiet row: a glance row for a working page, divided by hairlines. */
 export const Quiet: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	args: { variant: "quiet" },
 };
 
@@ -61,9 +51,6 @@ export const OutOf: Story = {
 
 /** The change beside a figure, in each direction; a flat change reads "Unchanged". */
 export const Changes: Story = {
-	tags: ["known-issue"],
-	...goodWords,
-
 	args: {
 		stats: [
 			{ value: "100", label: "Reviews", change: { direction: "up", text: "+26" } },
@@ -96,9 +83,6 @@ export const Empty: Story = {
 
 /** On a phone the loud row is two columns. */
 export const Phone: Story = {
-	tags: ["known-issue"],
-	...goodWords,
-
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		const top = (name: string) => canvas.getByText(name).getBoundingClientRect().top;
@@ -109,9 +93,6 @@ export const Phone: Story = {
 };
 
 export const QuietOnPhone: Story = {
-	tags: ["known-issue"],
-	...goodWords,
-
 	globals: pin("phone"),
 	args: { variant: "quiet" },
 	play: async () => {
@@ -121,12 +102,10 @@ export const QuietOnPhone: Story = {
 
 /**
  * The longest figures a report carries, a figure in one long word among
- * them, on a phone. The figure is meant to break inside its column; it runs
- * past the screen instead (stories/findings/primitives.md, `stat-figure-word-overflow`).
+ * them, on a phone: the word breaks inside its column, and the page stays
+ * still.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
-	...goodWords,
 	globals: pin("phone"),
 	args: {
 		stats: [
@@ -141,6 +120,6 @@ export const LongestOnPhone: Story = {
 		],
 	},
 	play: async () => {
-		await knownBug("stat-figure-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

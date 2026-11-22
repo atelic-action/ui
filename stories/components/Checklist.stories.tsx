@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Checklist } from "../../src/components";
 import { longURL } from "../fixtures/primitives";
-import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownBug } from "../support/known-issues";
+import { inWrap } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 const items = [
@@ -68,11 +68,10 @@ export const Phone: Story = {
 };
 
 /**
- * Many checks with long details and a bare address, on a phone. It should wrap inside the screen; the bare address runs past it
- * and the page scrolls sideways (stories/findings/primitives.md, `long-word-overflow`).
+ * Many checks with long details and a bare address, on a phone: the list
+ * wraps inside the screen, the address breaking where it must.
  */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: {
 		items: [
@@ -86,6 +85,6 @@ export const LongestOnPhone: Story = {
 		],
 	},
 	play: async () => {
-		await knownBug("long-word-overflow", expectNoSidewaysScroll);
+		await expectNoSidewaysScroll();
 	},
 };

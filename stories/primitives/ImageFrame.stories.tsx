@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { ImageFrame } from "../../src/primitives";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
-import { expectNoSidewaysScroll } from "./support";
 
 /** A rounded media frame, and a labeled placeholder block until the photograph exists. */
 const meta = {

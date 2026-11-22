@@ -3,7 +3,7 @@ import { expect, waitFor, within } from "storybook/test";
 import { ArtifactShell, Paragraph } from "../../src/artifact";
 import { ReportCard } from "../../src/components";
 import { artifactSite, reportGroups } from "../fixtures/primitives";
-import { expectNoSidewaysScroll } from "../primitives/support";
+import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** A document page: two sections the header's stops point at, then the sign off line. */
