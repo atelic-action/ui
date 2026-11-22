@@ -181,17 +181,24 @@
 	}
 	/* The entry for where the reader is: a page's scroll spied stop, the
 	   page being read, or the group holding it. Words on the bar's surface,
-	   so they read --primary-ink; over a hero the transparent bar keeps the
-	   plain primary, since no surface sits behind it. */
+	   so they read --primary-ink. */
 	.atelic-ui .nav-links > a.active,
 	.atelic-ui .nav-links > a[aria-current="page"],
 	.atelic-ui .nav-links .nav-group-btn.is-current {
 		color: var(--primary-ink, var(--primary));
 	}
+	/* Over a hero no surface sits behind the transparent bar, and a primary
+	   cut for light grounds can read under 2 to 1 on a dark photograph, so
+	   the entry keeps its siblings' --on-dark and is marked by an underline
+	   instead of a hue. An underline, not a weight: the entries are already
+	   semibold, and a heavier one would shift the bar as the reader moves. */
 	.atelic-ui .nav.is-transparent .nav-links > a.active,
 	.atelic-ui .nav.is-transparent .nav-links > a[aria-current="page"],
 	.atelic-ui .nav.is-transparent .nav-links .nav-group-btn.is-current {
-		color: var(--primary);
+		color: var(--on-dark);
+		text-decoration-line: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 6px;
 	}
 	/* Desktop only, and hidden until the bar is solid: on small screens the
 	   sticky CTA bar and the menu carry the action, and the wordmark needs the
@@ -364,9 +371,12 @@
 	   along the bar never makes the panel jump. */
 	/* The sections share the row, and wrap to a second one when their least
 	   widths outrun it (a picture, icon rows, and cards beside a feature card
-	   at a narrow desktop), so none is squeezed past reading or pushed out of
-	   the card. A section's least width matters only once the row is full, so
-	   a wide panel lays out exactly as before. */
+	   at a narrow desktop, or two link columns, icon rows, and cards on a
+	   wide wrap), so none is squeezed past reading or pushed out of the card.
+	   A section's least width is the larger of a readable floor (set on its
+	   list) and its longest word, so a crowded row wraps a section before any
+	   label breaks inside a word. It matters only once the row is full, so a
+	   roomy panel lays out exactly as before. */
 	.atelic-ui .nav-mega-sections {
 		flex: 1;
 		display: flex;
@@ -375,18 +385,28 @@
 		align-items: stretch;
 		min-height: 440px;
 	}
+	/* Words in a panel break only as a last resort, never to make a section
+	   narrower: the root's anywhere (defaults.css, Long words) would let a
+	   section's least width fall to a single letter. */
+	.atelic-ui .nav-mega-card {
+		overflow-wrap: break-word;
+	}
 	.atelic-ui .nav-mega-sec {
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
 	}
+	.atelic-ui .nav-mega-sec:is(.is-links, .is-rows, .is-cards) {
+		min-width: auto;
+	}
 	.atelic-ui .nav-mega-sec.is-links {
 		flex: 1 1 0;
+	}
+	.atelic-ui .nav-mega-sec.is-links > ul {
 		min-width: 120px;
 	}
 	.atelic-ui .nav-mega-sec.is-rows {
 		flex: 2.4 1 0;
-		min-width: min(320px, 100%);
 	}
 	.atelic-ui .nav-mega-head {
 		display: block;
@@ -498,7 +518,8 @@
 	/* Icon rows, two across, one of them set on the primary when it leads. */
 	.atelic-ui .nav-mega-rows {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(2, minmax(min-content, 1fr));
+		min-width: 320px;
 		gap: 4px 16px;
 		align-content: start;
 	}
@@ -567,7 +588,6 @@
 	/* Small cards, set off from the sections before them by a rule. */
 	.atelic-ui .nav-mega-sec.is-cards {
 		flex: 1 1 0;
-		min-width: min(240px, 100%);
 		padding-left: 32px;
 		border-left: 1px solid var(--neutral-100);
 	}
@@ -575,6 +595,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+		/* The section's 240px floor, less its rule's padding. */
+		min-width: 208px;
 	}
 	.atelic-ui .nav-mega-card-link {
 		display: flex;

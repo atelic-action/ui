@@ -63,7 +63,7 @@ The first segment of the title decides it (`.storybook/decorators.tsx`):
 - **`App/`** renders inside `AppProvider` with the fixture app's config and nav, under a memory router at `parameters.app.path` (default `/`), with the app shell's Tailwind sheet mounted only while the story shows.
 - **`Email/`** renders rows inside the email theme provider and a 680 column table on the email's ground. No sheet loads.
 
-Fixed chrome needs a page behind it: `support/page.tsx`'s `PageBehind` (with `hero` or `tall`). `support/geometry.ts` measures where words start (`textLeft`), how many lines they run to (`lines`), which words the browser broke inside themselves (`brokenWords`), and whether the page scrolls sideways (`expectNoSidewaysScroll`). Every group uses the helpers in `support/` rather than a copy of its own.
+Fixed chrome needs a page behind it: `support/page.tsx`'s `PageBehind` (with `hero` or `tall`, and `flatHero` for a hero of one flat color, which the accessibility check can measure words over where it leaves a gradient unjudged). `support/geometry.ts` measures where words start (`textLeft`), how many lines they run to (`lines`), which words the browser broke inside themselves (`brokenWords`), and whether the page scrolls sideways (`expectNoSidewaysScroll`). Every group uses the helpers in `support/` rather than a copy of its own.
 
 ## Accessibility and Bugs
 
