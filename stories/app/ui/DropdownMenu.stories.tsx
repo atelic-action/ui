@@ -157,7 +157,7 @@ export const CheckAndChoose: Story = {
 		await expect(
 			await screen.findByRole("menuitemcheckbox", { name: "Print labels" }),
 		).toHaveAttribute("aria-checked", "false");
-		await userEvent.click(screen.getByRole("menuitemradio", { name: "By name" }));
+		await userEvent.click(await screen.findByRole("menuitemradio", { name: "By name" }));
 		await userEvent.click(trigger);
 		await expect(await screen.findByRole("menuitemradio", { name: "By name" })).toHaveAttribute(
 			"aria-checked",
