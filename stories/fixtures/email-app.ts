@@ -121,6 +121,6 @@ export const wholesaleRecords: RecordStackItem[] = [
 /** A log tail with one long unbroken token, the way a runner's log ends. */
 export const longLogTail = [
 	"2026-11-16 05:02:11 fetching the wholesale ledger",
-	"2026-11-16 05:02:14 error: ENOENT /srv/bakehouse/runners/weekly-ops/cache/ledger-2026-W47-wholesale-accounts-export.json",
+	"2026-11-16 05:02:14 error: ENOENT /srv/bakehouse/runners/weekly_ops/cache/ledger_2026W47_wholesale_accounts_export.json",
 	"2026-11-16 05:02:14 exit 1",
 ].join("\n");

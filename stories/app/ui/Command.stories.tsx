@@ -58,9 +58,7 @@ function Palette() {
 const meta = {
 	title: "App/UI/Command",
 	component: Command,
-	// The palette holds a separator, which a listbox may not (stories/findings/email-app.md).
-	tags: ["known-issue"],
-	parameters: { layout: "padded", ...knownIssues("command-separator-in-listbox") },
+	parameters: { layout: "padded" },
 	beforeEach: () => {
 		picked.spy = fn();
 	},
@@ -75,7 +73,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Typing filters the items, the arrows move, and Enter picks. */
+/** Typing filters the items (the separator hides once a group empties), the arrows move, and Enter picks. */
 export const FilterAndPick: Story = {
 	play: async ({ canvas, step }) => {
 		const input = canvas.getByRole("combobox");
@@ -101,6 +99,9 @@ export const FilterAndPick: Story = {
 
 /** The arrows walk the items and skip a disabled one; the input keeps focus throughout. */
 export const Arrows: Story = {
+	// The palette holds a separator, which a listbox may not (stories/findings/email-app.md).
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("command-separator-in-listbox") },
 	play: async ({ canvas }) => {
 		const input = canvas.getByRole("combobox");
 		input.focus();
@@ -118,6 +119,7 @@ export const Arrows: Story = {
 
 /** Nothing matches: the empty line, and a listbox with no options in it. */
 export const Empty: Story = {
+	tags: ["known-issue"],
 	parameters: { ...knownIssues("command-separator-in-listbox", "command-empty-listbox") },
 	play: async ({ canvas }) => {
 		await userEvent.type(canvas.getByRole("combobox"), "croquembouche");
