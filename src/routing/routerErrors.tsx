@@ -5,15 +5,21 @@ import { reportError } from "../monitoring/catcher";
 export interface RouteErrorProps {
 	error: unknown;
 	reset: () => void;
+	/** Reloads the page; defaults to the window's own. For a test. */
+	reload?: () => void;
 }
 
 /**
  * The package's `ErrorFallback` as a router's error component: the same
- * dependency free page `AppErrorBoundary` draws, its Try Again button
- * resetting the route's boundary.
+ * dependency free page `AppErrorBoundary` draws. Try Again reloads the page.
+ * A loader or beforeLoad error stays on the router's match, so the boundary's
+ * own reset throws it again (and reports it a second time), and recovering in
+ * place takes the router's invalidate, which this entry cannot import. The
+ * `reload` prop is there for a test; a router never passes it.
  */
-export function RouteErrorFallback({ error, reset }: RouteErrorProps) {
-	return <ErrorFallback error={error} resetError={reset} />;
+export function RouteErrorFallback({ error, reload }: RouteErrorProps) {
+	const retry = reload ?? (() => window.location.reload());
+	return <ErrorFallback error={error} resetError={retry} />;
 }
 
 /**

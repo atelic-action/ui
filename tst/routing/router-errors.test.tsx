@@ -6,7 +6,7 @@ import {
 	Outlet,
 	RouterProvider,
 } from "@tanstack/react-router";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { installCatcher, readCatcher } from "../../src/monitoring/catcher";
 import { RouteErrorFallback, routerErrorOptions } from "../../src/routing";
 
@@ -71,5 +71,16 @@ describe("routerErrorOptions", () => {
 		render(<RouterProvider router={brokenRouter()} />);
 		expect((await screen.findAllByText(/route crash/)).length).toBeGreaterThan(0);
 		expect(report).not.toHaveBeenCalled();
+	});
+});
+
+describe("RouteErrorFallback", () => {
+	it("reloads on Try Again, without resetting the boundary again", () => {
+		const reload = vi.fn();
+		const reset = vi.fn();
+		render(<RouteErrorFallback error={new Error("loader failed")} reset={reset} reload={reload} />);
+		fireEvent.click(screen.getByRole("button", { name: "Try Again" }));
+		expect(reload).toHaveBeenCalledOnce();
+		expect(reset).not.toHaveBeenCalled();
 	});
 });
