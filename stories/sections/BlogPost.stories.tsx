@@ -48,8 +48,18 @@ export const FigureOpensAndCloses: Story = {
 		const tile = canvas.getByRole("button", { name: "Open larger: Seeded rye sliced on a board" });
 		const name = "Seeded rye sliced on a board";
 		const opened = () => waitFor(() => canvas.getByRole("dialog", { name }), { timeout: 3000 });
+		// Closed means the page has heard it too: the dialog is shut and its
+		// large picture unmounted, leaving the tile's own picture alone. The
+		// close event lands a task after the dialog shuts, so a press of the
+		// tile before then would be undone by it.
 		const closed = () =>
-			waitFor(() => expect(canvas.queryByRole("dialog")).toBeNull(), { timeout: 3000 });
+			waitFor(
+				() => {
+					expect(canvas.queryByRole("dialog")).toBeNull();
+					expect(canvas.getAllByRole("img", { name, hidden: true })).toHaveLength(1);
+				},
+				{ timeout: 3000 },
+			);
 		tile.scrollIntoView({ block: "center", behavior: "instant" });
 		await step("closed, there is no dialog to reach", async () => {
 			await expect(canvas.queryByRole("dialog")).toBeNull();
