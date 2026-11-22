@@ -10,17 +10,25 @@ import {
 	Phone as PhoneIcon,
 	X,
 } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { type RefObject, useEffect, useId, useRef, useState } from "react";
+import { useDismiss } from "../hooks/useDismiss";
 import { newTabProps } from "../lib/newTabProps";
 import type { ContactDockConfig, ContactDockIcon } from "../types";
 
 export interface ContactDockProps extends ContactDockConfig {
 	/**
-	 * A selector for the element the dock never covers: as it scrolls into
-	 * view the dock rides up to sit just above its top edge. Defaults to the
-	 * page's `footer`; `null` avoids nothing.
+	 * The element the dock never covers: as it scrolls into view the dock
+	 * rides up to sit just above its top edge. A ref to it, or a selector;
+	 * defaults to the page's `footer`, and `null` avoids nothing.
 	 */
-	avoid?: string | null;
+	avoid?: string | RefObject<Element | null> | null;
+	/**
+	 * A selector for the bar the dock lifts over while that bar shows. The
+	 * bar says it is showing with `data-showing="true"`; `StickyCTABar` wears
+	 * `data-dock-lift` and keeps `data-showing` current, which is the
+	 * default. `null` lifts over nothing.
+	 */
+	lift?: string | null;
 	/**
 	 * Whether the dock tracks the page: it lifts over the phone's sticky bar
 	 * once that bar shows, and rises above the footer. Off holds it at its
@@ -96,12 +104,15 @@ export function ContactDock({
 	items,
 	footnote,
 	avoid = "footer",
+	lift = "[data-dock-lift]",
 	track = true,
 	closeLabel = "Close",
 	defaultOpen = false,
 }: ContactDockProps) {
 	const [open, setOpen] = useState(defaultOpen);
-	const [place, setPlace] = useState({ inset: 24, bottom: 24 });
+	// Unmeasured, the dock sits at the corner chrome.css gives it for the
+	// viewport; tracking sets its place inline once it has measured.
+	const [place, setPlace] = useState<{ inset: number; bottom: number } | null>(null);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const launchRef = useRef<HTMLButtonElement>(null);
 	const panelRef = useRef<HTMLElement>(null);
@@ -110,12 +121,19 @@ export function ContactDock({
 	const headingId = `${panelId}h`;
 
 	useEffect(() => {
-		if (!track) return;
+		if (!track) {
+			setPlace(null);
+			return;
+		}
 		let frame = 0;
+		let bound = 0;
+		// The bar and the avoided element are found once and again only when
+		// the page's elements change, never on a scroll frame.
+		let bar: HTMLElement | null = null;
+		let footer: Element | null = null;
 		const measure = () => {
-			const bar = document.querySelector<HTMLElement>(".sticky-cta.show");
-			const showing = bar !== null && getComputedStyle(bar).display !== "none";
-			const footer = avoid ? document.querySelector(avoid) : null;
+			const showing =
+				bar !== null && bar.dataset.showing === "true" && getComputedStyle(bar).display !== "none";
 			const next = dockPlacement({
 				viewportWidth: window.innerWidth,
 				viewportHeight: window.innerHeight,
@@ -123,7 +141,7 @@ export function ContactDock({
 				avoidTop: footer ? footer.getBoundingClientRect().top : null,
 			});
 			setPlace((current) =>
-				current.inset === next.inset && current.bottom === next.bottom ? current : next,
+				current && current.inset === next.inset && current.bottom === next.bottom ? current : next,
 			);
 		};
 		// Read after the frame, so the sticky bar's own scroll handler has rendered.
@@ -131,40 +149,58 @@ export function ContactDock({
 			cancelAnimationFrame(frame);
 			frame = requestAnimationFrame(measure);
 		};
+		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(schedule);
+		// The bar slides in on an attribute change no scroll may follow (a bar
+		// shown from the top), so its own element is watched as well.
+		const shows =
+			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(schedule);
+		const bind = () => {
+			bar = lift ? document.querySelector<HTMLElement>(lift) : null;
+			footer =
+				avoid === null
+					? null
+					: typeof avoid === "string"
+						? document.querySelector(avoid)
+						: avoid.current;
+			sizes?.disconnect();
+			shows?.disconnect();
+			// The page's own height moves the footer (a late image, an opened
+			// fold), and the bar and the footer can change size themselves.
+			sizes?.observe(document.body);
+			if (bar) {
+				sizes?.observe(bar);
+				shows?.observe(bar, { attributes: true, attributeFilter: ["data-showing", "class"] });
+			}
+			if (footer) sizes?.observe(footer);
+			measure();
+		};
+		// A route change swaps the footer, and a bar can mount after the dock:
+		// either is an element added or removed, so the dock binds again then.
+		const rebind = () => {
+			cancelAnimationFrame(bound);
+			bound = requestAnimationFrame(bind);
+		};
+		const added =
+			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(rebind);
+		added?.observe(document.body, { childList: true, subtree: true });
 		window.addEventListener("scroll", schedule, { passive: true });
 		window.addEventListener("resize", schedule);
-		// The bar slides in on a class change that no scroll may follow (a bar
-		// shown from the top), so watch it as well.
-		const watcher =
-			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(schedule);
-		const bar = document.querySelector(".sticky-cta");
-		if (watcher && bar) watcher.observe(bar, { attributes: true, attributeFilter: ["class"] });
-		measure();
+		bind();
 		return () => {
 			cancelAnimationFrame(frame);
+			cancelAnimationFrame(bound);
 			window.removeEventListener("scroll", schedule);
 			window.removeEventListener("resize", schedule);
-			watcher?.disconnect();
+			sizes?.disconnect();
+			shows?.disconnect();
+			added?.disconnect();
 		};
-	}, [avoid, track]);
+	}, [avoid, lift, track]);
 
-	useEffect(() => {
-		if (!open) return;
-		const onKey = (event: KeyboardEvent) => {
-			if (event.key !== "Escape") return;
-			setOpen(false);
-			launchRef.current?.focus();
-		};
-		const onPointer = (event: PointerEvent) => {
-			if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-		};
-		document.addEventListener("keydown", onKey);
-		document.addEventListener("pointerdown", onPointer);
-		return () => {
-			document.removeEventListener("keydown", onKey);
-			document.removeEventListener("pointerdown", onPointer);
-		};
-	}, [open]);
+	useDismiss(open, rootRef, (reason) => {
+		setOpen(false);
+		if (reason === "escape") launchRef.current?.focus();
+	});
 
 	// The panel sits before the launcher in the DOM (it opens upward), so Tab
 	// from the launcher would skip it: opening by hand moves focus in.
@@ -186,10 +222,7 @@ export function ContactDock({
 			// While open the dock sits in the corner: the phone's panel is a sheet that
 			// reserves room for the launcher there, and a desktop panel opens upward
 			// and would run off the top if the dock were riding above the footer.
-			style={{
-				right: place.inset,
-				bottom: open ? place.inset : place.bottom,
-			}}
+			style={place ? { right: place.inset, bottom: open ? place.inset : place.bottom } : undefined}
 		>
 			<section
 				ref={panelRef}
@@ -236,7 +269,7 @@ export function ContactDock({
 						const className = ["cd-item", item.lead && "is-lead"].filter(Boolean).join(" ");
 						return (
 							<li key={item.label}>
-								{item.href && !item.onSelect ? (
+								{item.href !== undefined ? (
 									<a
 										className={className}
 										href={item.href}

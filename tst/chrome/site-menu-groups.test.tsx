@@ -78,11 +78,23 @@ describe("SiteMenu groups", () => {
 		expect(services).toHaveAttribute("aria-expanded", "false");
 	});
 
-	it("keeps a plain entry a numbered link", () => {
-		render(<SiteMenu open onClose={() => {}} links={links} />);
+	it("keeps a plain entry a numbered link, counting plain entries alone so a group leaves no gap", () => {
+		render(
+			<SiteMenu
+				open
+				onClose={() => {}}
+				links={[{ label: "Home", href: "/" }, ...links, { label: "Contact", href: "/contact" }]}
+			/>,
+		);
 		const about = screen.getByRole("link", { name: /About/ });
 		expect(about).toHaveClass("mm-link");
-		expect(about.querySelector(".idx")).toHaveTextContent("03");
+		expect(screen.getByRole("link", { name: /Home/ }).querySelector(".idx")).toHaveTextContent(
+			"01",
+		);
+		expect(about.querySelector(".idx")).toHaveTextContent("02");
+		expect(screen.getByRole("link", { name: /Contact/ }).querySelector(".idx")).toHaveTextContent(
+			"03",
+		);
 	});
 
 	it("lists the header's numbers at the foot, each a tel link with its label", () => {

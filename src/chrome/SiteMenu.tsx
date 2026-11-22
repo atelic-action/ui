@@ -1,7 +1,15 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
-import type { CallToAction, HeaderPhone, MenuContact, NavLink } from "../types";
+import type {
+	CallToAction,
+	HeaderPhone,
+	MenuContact,
+	NavGroupChildLink,
+	NavLink,
+	NavPanelSection,
+} from "../types";
+import { isLinkColumn } from "./navSections";
 
 export interface SiteMenuProps {
 	/** Whether the menu is showing. The owner holds this state. */
@@ -64,6 +72,11 @@ export function SiteMenu({
 	// and then close, and a followed link closes the dialog and notifies
 	// directly, so every path runs through reportClosed and reports once.
 	const closedRef = useRef(true);
+	// Only a plain entry wears a number, so the numbers count those alone and
+	// run 01, 02, 03 down the menu whatever groups sit between them.
+	const numbers: number[] = [];
+	let counted = 0;
+	for (const link of links) numbers.push(link.columns && link.columns.length > 0 ? 0 : ++counted);
 
 	useEffect(() => {
 		const dialog = dialogRef.current;
@@ -126,28 +139,14 @@ export function SiteMenu({
 									{link.allLabel}
 								</a>
 							)}
-							{link.columns.map((column) => (
-								<div className="mm-group-col" key={column.heading}>
-									{column.href ? (
-										<a className="mm-group-head" href={column.href} onClick={close}>
-											{column.heading}
-										</a>
-									) : (
-										<p className="mm-group-head">{column.heading}</p>
-									)}
-									{column.links.map((item) => (
-										<a
-											key={item.href}
-											className="mm-group-link"
-											href={item.href}
-											onClick={close}
-											aria-current={currentPath === item.href ? "page" : undefined}
-											{...newTabProps(item.href, item.external)}
-										>
-											{item.label}
-										</a>
-									))}
-								</div>
+							{link.columns.map((section, index) => (
+								<MenuSection
+									// biome-ignore lint/suspicious/noArrayIndexKey: a group's sections never reorder while the menu is open
+									key={index}
+									section={section}
+									currentPath={currentPath}
+									onNavigate={close}
+								/>
 							))}
 						</div>
 					</div>
@@ -160,7 +159,7 @@ export function SiteMenu({
 						aria-current={currentPath === link.href ? "page" : undefined}
 					>
 						<span>{link.label}</span>
-						<span className="idx">{String(i + 1).padStart(2, "0")}</span>
+						<span className="idx">{String(numbers[i]).padStart(2, "0")}</span>
 					</a>
 				),
 			)}
@@ -176,6 +175,74 @@ export function SiteMenu({
 			)}
 			{(contact || phones) && <ContactBlock contact={contact ?? {}} phones={phones} />}
 		</dialog>
+	);
+}
+
+/** A short word in a pill after a link's label, as on the desktop panel. */
+function Badge({ text }: { text?: string }) {
+	return text ? <span className="mm-badge">{text}</span> : null;
+}
+
+/**
+ * One section of a group, as the phone draws it: a link column with its
+ * children indented under their parent, icon rows and cards as plain links
+ * of their labels and titles, and a picture left out, since its link is a
+ * desktop flourish and the menu pins its own action at the foot.
+ */
+function MenuSection({
+	section,
+	currentPath,
+	onNavigate,
+}: {
+	section: NavPanelSection;
+	currentPath?: string;
+	onNavigate: () => void;
+}) {
+	if (section.kind === "picture") return null;
+	const link = (
+		item: { label: string; href: string; external?: boolean; badge?: string },
+		className: string,
+	) => (
+		<a
+			key={item.href}
+			className={className}
+			href={item.href}
+			onClick={onNavigate}
+			aria-current={currentPath === item.href ? "page" : undefined}
+			{...newTabProps(item.href, item.external)}
+		>
+			{item.label}
+			<Badge text={item.badge} />
+		</a>
+	);
+	const heading = section.heading;
+	const headHref = isLinkColumn(section) ? section.href : undefined;
+	return (
+		<div className="mm-group-col">
+			{heading &&
+				(headHref ? (
+					<a className="mm-group-head" href={headHref} onClick={onNavigate}>
+						{heading}
+					</a>
+				) : (
+					<p className="mm-group-head">{heading}</p>
+				))}
+			{isLinkColumn(section)
+				? section.links.map((item) => (
+						<div className="mm-group-item" key={item.href}>
+							{link(item, "mm-group-link")}
+							{item.children?.map((child: NavGroupChildLink) => link(child, "mm-group-sub"))}
+						</div>
+					))
+				: section.kind === "rows"
+					? section.rows.map((row) => link(row, "mm-group-link"))
+					: section.cards.map((card) =>
+							link(
+								{ label: card.title, href: card.href, external: card.external },
+								"mm-group-link",
+							),
+						)}
+		</div>
 	);
 }
 

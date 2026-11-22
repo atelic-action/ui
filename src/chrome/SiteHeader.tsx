@@ -8,11 +8,13 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useDismiss } from "../hooks/useDismiss";
 import { type PageStop, useScrollSpy } from "../hooks/useScrollSpy";
 import { newTabProps } from "../lib/newTabProps";
 import type { Brand, CallToAction, HeaderPhone, MenuContact, NavLink } from "../types";
 import { BrandLockup } from "./BrandLockup";
 import { NavMegaPanel } from "./NavMegaPanel";
+import { groupHrefs } from "./navSections";
 import { SiteMenu } from "./SiteMenu";
 
 /**
@@ -125,31 +127,14 @@ export function SiteHeader({
 		setPinned(false);
 	};
 
-	// Escape and a click outside the header close whatever is open, pinned or not.
-	useEffect(() => {
-		if (openGroup === null) return;
-		const onKey = (event: globalThis.KeyboardEvent) => {
-			if (event.key !== "Escape") return;
-			const header = headerRef.current;
-			const control = header?.querySelector<HTMLElement>(
-				`#${CSS.escape(`${baseId}g${openGroup}`)}`,
-			);
-			if (header?.contains(document.activeElement)) control?.focus();
-			setOpenGroup(null);
-			setPinned(false);
-		};
-		const onPointer = (event: globalThis.PointerEvent) => {
-			if (headerRef.current?.contains(event.target as Node)) return;
-			setOpenGroup(null);
-			setPinned(false);
-		};
-		document.addEventListener("keydown", onKey);
-		document.addEventListener("pointerdown", onPointer);
-		return () => {
-			document.removeEventListener("keydown", onKey);
-			document.removeEventListener("pointerdown", onPointer);
-		};
-	}, [openGroup, baseId]);
+	// Escape and a click outside the header close whatever is open, pinned or
+	// not; Escape hands focus back to the group's control when it was inside.
+	useDismiss(openGroup !== null, headerRef, (reason) => {
+		if (reason === "escape" && headerRef.current?.contains(document.activeElement)) {
+			document.getElementById(`${baseId}g${openGroup}`)?.focus();
+		}
+		close();
+	});
 
 	// The down arrow opens a panel and moves into it once it is no longer inert.
 	useEffect(() => {
@@ -160,15 +145,9 @@ export function SiteHeader({
 	}, [focusPanel, openGroup, baseId]);
 
 	const solid = variant !== "transparent" || scrolled || openGroup !== null;
-	const flatLinks = (links ?? []).map(({ label, href, columns, allLabel }) => ({
-		label,
-		href,
-		columns,
-		allLabel,
-	}));
 	const menuLinks = stops
 		? stops.map((stop) => ({ label: stop.label, href: `#${stop.id}` }))
-		: flatLinks;
+		: (links ?? []);
 	const menuCTA = stops ? undefined : primaryCTA;
 	const barCTA = hideCTA ? undefined : menuCTA;
 	const hasMenu = menuLinks.length > 0 || menuCTA !== undefined;
@@ -179,10 +158,7 @@ export function SiteHeader({
 
 	const isCurrent = (link: NavLink) =>
 		currentPath !== undefined &&
-		(link.href === currentPath ||
-			(link.columns ?? []).some((column) =>
-				column.links.some((item) => item.href === currentPath),
-			));
+		(link.href === currentPath || groupHrefs(link).includes(currentPath));
 
 	// One handler for the whole nav: left and right walk the bar's entries,
 	// up and down walk the links of the panel focus is in.

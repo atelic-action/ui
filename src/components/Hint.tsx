@@ -1,13 +1,6 @@
 import { Info } from "lucide-react";
-import {
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useId,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from "react";
+import { type ReactNode, useCallback, useId, useLayoutEffect, useRef, useState } from "react";
+import { useDismiss } from "../hooks/useDismiss";
 
 export interface HintProps {
 	/** What the button is called, for a screen reader, e.g. "About First paint". */
@@ -44,21 +37,7 @@ export function Hint({ label, side = "after", className, children }: HintProps) 
 		setKeyboard(false);
 	}, []);
 
-	useEffect(() => {
-		if (!open) return;
-		const away = (event: PointerEvent) => {
-			if (!root.current?.contains(event.target as Node)) close();
-		};
-		const key = (event: KeyboardEvent) => {
-			if (event.key === "Escape") close();
-		};
-		document.addEventListener("pointerdown", away);
-		document.addEventListener("keydown", key);
-		return () => {
-			document.removeEventListener("pointerdown", away);
-			document.removeEventListener("keydown", key);
-		};
-	}, [open, close]);
+	useDismiss(open, root, close);
 
 	// Opens from the icon's left edge, then slides left just far enough to
 	// stay on screen, and never past the screen's left edge.

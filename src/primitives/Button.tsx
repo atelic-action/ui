@@ -19,6 +19,7 @@ export interface ButtonProps {
 	newTab?: boolean;
 	/** Renders a real button element (e.g. form submit) when set. */
 	type?: "submit" | "button";
+	/** Called on a click, whether the button is a link or a real button. */
 	onClick?: () => void;
 	ariaLabel?: string;
 	className?: string;
@@ -69,6 +70,7 @@ export function Button({
 				className={classes}
 				style={style}
 				aria-label={ariaLabel}
+				onClick={onClick}
 				{...newTabProps(href, newTab)}
 			>
 				{content}
