@@ -251,10 +251,16 @@
 	}
 	.atelic-ui .nav-links > a:focus-visible,
 	.atelic-ui .nav-group-btn:focus-visible,
-	.atelic-ui .nav-mega a:focus-visible,
+	.atelic-ui .nav-mega a:not(.btn):focus-visible,
 	.atelic-ui .nav-phone:focus-visible,
 	.atelic-ui .nav-call:focus-visible {
 		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	/* The feature card's button sits on the primary field, so its ring is the
+	   page surface. */
+	.atelic-ui .nav-feature-cta:focus-visible {
+		outline: 2px solid var(--surface);
 		outline-offset: 2px;
 	}
 	/* The panel hangs from the bar itself: the item is never a positioned

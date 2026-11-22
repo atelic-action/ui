@@ -1691,8 +1691,8 @@
 	}
 
 	/* ---- FullBleedVideo (full-bleed-video.css) ---- */
-	/* The first frame as a picture, the video fading in over it once it can
-	   play through. */
+	/* The first frame as a picture, the video fading in over it once its
+	   metadata has loaded. */
 	.atelic-ui .fbv {
 		position: relative;
 		overflow: hidden;

@@ -26,8 +26,8 @@ export interface FullBleedVideoProps {
 /**
  * A silent, looping video band that runs edge to edge. The poster (the
  * first frame) shows at once as a plain picture, so the page never waits on
- * the video; the video loads in the background and starts only once it can
- * play through, fading in over the picture, and only while it is on screen.
+ * the video; the video loads in the background and starts once its metadata
+ * has loaded (an iPhone buffers nothing until play is asked for), fading in over the picture, and only while it is on screen.
  * Under `prefers-reduced-motion` it never loads and stays on the poster.
  * Muted, looping, and inline, with no controls unless asked for.
  */
@@ -113,7 +113,6 @@ export function FullBleedVideo({
 					playsInline
 					preload="auto"
 					onLoadedMetadata={() => setReady(true)}
-					onCanPlay={() => setReady(true)}
 					onPlaying={() => setPlaying(true)}
 					onPause={() => setPlaying(false)}
 				>
