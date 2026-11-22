@@ -19,7 +19,7 @@ export const issues = {
 	"muted-text-contrast": {
 		rule: "color-contrast",
 		elements:
-			".stat-delta-was, .stat-delta-basis, .stat-delta-change[data-tone='muted'], .stat-change[data-tone='muted'], .stat-period, .stat-out-of, .stat-unit, .stat .note, .stat-row.is-quiet .lbl, .disclosure-meta, .gate-fine, .column-chart-group-label span, .threshold-scale-axis i, .rc-title",
+			".stat-delta-was, .stat-delta-basis, .stat-delta-change[data-tone='muted'], .stat-change[data-tone='muted'], .stat-period, .stat-out-of, .stat-unit, .stat .note, .stat-row.is-quiet .lbl, .disclosure-meta, .gate-fine, .column-chart-group-label span, .threshold-scale-axis i, .rc-title, .op-shot figcaption",
 	},
 	/** Words in the package's own `--tone-good` (#1b7f3b) on the page surface: 4.49:1. */
 	"tone-good-text-contrast": {
@@ -29,6 +29,16 @@ export const issues = {
 	},
 	/** A link inside a report card row's line, `--primary` on `--card`: 3.31:1. */
 	"report-card-line-link-contrast": { rule: "color-contrast", elements: ".rc-line a" },
+	/**
+	 * The error fallback's message box (development builds only) scrolls but
+	 * cannot be focused, so a keyboard cannot scroll it. It is inline styled
+	 * with no class; it is the screen's one `pre`.
+	 */
+	"error-fallback-message-unfocusable": {
+		rule: "scrollable-region-focusable",
+		elements: "pre",
+		base: "*:not(select):not(textarea)",
+	},
 	/** A column chart with no bars is a picture with an empty name. */
 	"column-chart-empty-unnamed": {
 		rule: "role-img-alt",

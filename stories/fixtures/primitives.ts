@@ -274,7 +274,7 @@ export const sender: ArtifactConfig["sender"] = {
 	name: "Larkmoor Studio",
 	href: "https://studio.example.com",
 	email: "hello@studio.example.com",
-	logo: { alt: "Larkmoor Studio", wordmark: "larkmoor", run: true },
+	logo: { src: "/images/primitives/larkmoor-mark-light.svg", alt: "Larkmoor Studio" },
 };
 
 export const artifactSite: ArtifactConfig = {
@@ -290,7 +290,7 @@ export const artifactSite: ArtifactConfig = {
 
 /** The studio's person, closing the read. */
 export const person: WriteupPerson = {
-	photoSrc: "/images/note-person.svg",
+	photoSrc: "/images/primitives/larkmoor-person.svg",
 	photoAlt: "Ada Fennimore",
 	name: "Ada Fennimore",
 	role: "Larkmoor Studio",
