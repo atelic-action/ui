@@ -383,20 +383,30 @@ describe("the sticky bar's room at the foot of the page", () => {
 		});
 	});
 
-	it("is the bar's measured height while it shows, and 0 while it hides", () => {
+	it("reserves the bar's measured height from the first measure, before it slides in, and keeps it as it comes and goes", () => {
 		const space = vi.fn();
 		render(<StickyCTABar primaryCTA={primaryCTA} threshold={100} onSpaceChange={space} />);
-		expect(space).toHaveBeenLastCalledWith(0);
+		// Still below the screen at the top, the bar's room is already reserved,
+		// so a jump straight to the end lands clear of it.
+		expect(space.mock.calls).toEqual([[74]]);
 		act(() => {
 			Object.defineProperty(window, "scrollY", { configurable: true, value: 300 });
 			window.dispatchEvent(new Event("scroll"));
 		});
-		expect(space).toHaveBeenLastCalledWith(74);
 		act(() => {
 			Object.defineProperty(window, "scrollY", { configurable: true, value: 0 });
 			window.dispatchEvent(new Event("scroll"));
 		});
-		expect(space).toHaveBeenLastCalledWith(0);
+		// Sliding in and back out changes nothing at the page's end.
+		expect(space.mock.calls).toEqual([[74]]);
+	});
+
+	it("reserves nothing where the stylesheet hides the bar, a desktop", () => {
+		const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(0);
+		const space = vi.fn();
+		render(<StickyCTABar primaryCTA={primaryCTA} threshold={100} onSpaceChange={space} />);
+		expect(space.mock.calls).toEqual([[0]]);
+		height.mockRestore();
 	});
 
 	it("starts measuring for a listener supplied after the bar mounted", () => {

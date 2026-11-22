@@ -21,11 +21,14 @@ export interface StickyCTABarProps {
 	/** The call shortcut's accessible name. Defaults to "Call us". */
 	callLabel?: string;
 	/**
-	 * Hears the room the bar takes at the foot of the screen, in pixels: its
-	 * measured height while it shows, and 0 while it is hidden (scrolled
-	 * above its threshold, or on a desktop, where the stylesheet hides it).
-	 * `SiteShell` pads the page's closing bar by it, so the copyright and the
-	 * credit are never under the bar. A listener swapped in is told the
+	 * Hears the room the bar reserves at the foot of the page, in pixels: its
+	 * measured height wherever it can show, from the first measure, whether
+	 * or not it has slid in yet, and 0 on a desktop, where the stylesheet
+	 * hides it. `SiteShell` pads the page's closing bar by it, so the
+	 * copyright and the credit are never under the bar, even on a page whose
+	 * bar slides in only once scrolled and a jump straight to its end: the
+	 * page is already as long as it will be when the bar shows, so its
+	 * arrival moves nothing under the reader. A listener swapped in is told the
 	 * current height at once and the one it replaced gets 0; no listener
 	 * hears one value twice. A listener made anew each render that sets state
 	 * should store a plain number (or be memoized): each new function hears
@@ -75,15 +78,19 @@ export function StickyCTABar({
 		return () => window.removeEventListener("scroll", onScroll);
 	}, [threshold, fromTop]);
 
-	// The bar's real height while it shows, measured again whenever it changes
-	// size (a phone turned, a font loading, a label wrapping), never assumed.
-	// Hidden by the stylesheet its height reads 0, so a desktop reserves nothing.
+	// The bar's real height, measured again whenever it changes size (a phone
+	// turned, a font loading, a label wrapping), never assumed. It is reported
+	// while the bar waits below the screen too (its slide is a transform, which
+	// leaves its height as it is), so the space at the page's end is reserved
+	// from the start and never grows as the bar slides in, where a jump to the
+	// end would stop short of it. Hidden by the stylesheet its height reads 0,
+	// so a desktop reserves nothing.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: tell reads only refs
 	useEffect(() => {
 		const bar = barRef.current;
 		if (!bar || !listening) return;
 		const report = () => {
-			heightRef.current = show ? bar.offsetHeight : 0;
+			heightRef.current = bar.offsetHeight;
 			arrivalsRef.current = 0;
 			tell(spaceRef.current, heightRef.current);
 		};
@@ -94,12 +101,12 @@ export function StickyCTABar({
 		return () => {
 			sizes?.disconnect();
 			window.removeEventListener("resize", report);
-			// A final 0 on unmount, on hiding, and when the listener goes, so no
-			// foot padding outlives the bar.
+			// A final 0 on unmount and when the listener goes, so no foot padding
+			// outlives the bar.
 			heightRef.current = -1;
 			tell(spaceRef.current, 0);
 		};
-	}, [show, listening]);
+	}, [listening]);
 
 	// A listener swapped in is told the current height, and the one it
 	// replaced gets 0, unless either already heard that value. A function made
