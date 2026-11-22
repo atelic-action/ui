@@ -302,7 +302,7 @@ describe("CountryDropdown", () => {
 
 	// Popper and cmdk leave jsdom seconds of work after a popover opens, so the
 	// open list is checked in one test.
-	it("opens onto a named popover with the search outside the listbox, loading a flag only in view", () => {
+	it("opens onto a named popover with the search outside the listbox, loading a flag only in view", async () => {
 		const { observed, instances } = stubObserver();
 		render(<CountryDropdown flagsBaseURL="/flags/" />);
 		const { list, dialog, search } = openList();
@@ -333,7 +333,15 @@ describe("CountryDropdown", () => {
 		const shown = Array.from(list.querySelectorAll("img")).map((img) => img.getAttribute("src"));
 		expect(shown).toEqual(["/flags/is.svg", "/flags/it.svg", "/flags/no.svg"]);
 		closeList();
-	});
+		// Opening any Radix popover in jsdom stalls the next turn of the event
+		// loop for ten seconds or more (a bare Popover does it, so it is not
+		// the dropdown's). Take that turn here, where the stall is this test's
+		// own, rather than in whichever test runs next, which a slower machine
+		// would time out at five seconds for work it never did.
+		await act(async () => {
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		});
+	}, 60_000);
 });
 
 describe("getCountryFlag", () => {
