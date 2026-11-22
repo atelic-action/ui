@@ -500,3 +500,25 @@ export const DockStepsAsideForTheLightMenu: Story = {
 		await dockStepsAside(canvas, userEvent);
 	},
 };
+
+/**
+ * A page with a hero under a solid bar (`heroNav` off) whose config sets
+ * `cta.stickyFromTop: false`: the phone's sticky bar waits until the page
+ * scrolls, where by default such a page shows it from the first paint.
+ */
+export const StickyBarSlidesInUnderASolidBar: Story = {
+	args: {
+		...visitPage,
+		site: { ...site, cta: { ...site.cta, stickyFromTop: false } },
+		children: <HomeBody />,
+	},
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const call = canvas.getByRole("link", { name: "Call us" });
+		await expect(box(call).top).toBeGreaterThanOrEqual(window.innerHeight);
+		window.scrollTo({ top: 900, behavior: "instant" });
+		await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight), {
+			timeout: 5000,
+		});
+	},
+};

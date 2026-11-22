@@ -48,7 +48,11 @@ export interface SiteMenuProps {
 	 * its `menuLabel` when it has one, else its `label`.
 	 */
 	primaryCTA?: CallToAction;
-	/** The phone, email, and address block at the foot. */
+	/**
+	 * The phone, email, and address block at the foot of the dark sheet. The
+	 * light sheet draws its one phone as a card when `phones` is empty, and
+	 * leaves the email and the address out, as its design does.
+	 */
 	contact?: MenuContact;
 	/**
 	 * The numbers the header shows, each a tel link at the foot with its
@@ -69,7 +73,8 @@ export interface SiteMenuProps {
 	 * dark surface. `light` sets the page's ground: the brand's lockup and a
 	 * round close button across the top, the entries as rows under hairlines,
 	 * and a foot on the alternate ground holding the call to action and a
-	 * card per number. The behavior is the same on both.
+	 * card per number; it shows no email and no address, which the dark
+	 * sheet's contact block does. The behavior is the same on both.
 	 */
 	surface?: SiteMenuSurface;
 	/** The identity the light sheet's top row draws, linking home. */
@@ -294,14 +299,15 @@ export function SiteMenu({
 			{closeButton}
 			{entries}
 			{menuCTA && (
-				<a
-					className="btn btn-primary btn-lg mm-cta"
+				<Button
+					size="lg"
+					className="mm-cta"
 					href={menuCTA.href}
+					newTab={menuCTA.external}
 					onClick={close}
-					{...newTabProps(menuCTA.href, menuCTA.external)}
 				>
 					{menuCTA.label}
-				</a>
+				</Button>
 			)}
 			{(contact || phones) && <ContactBlock contact={contact ?? {}} phones={phones} />}
 		</dialog>

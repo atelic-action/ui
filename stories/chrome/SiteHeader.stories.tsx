@@ -1036,3 +1036,91 @@ export const FeatureCardDefaults: Story = {
 		);
 	},
 };
+
+/**
+ * Opening the light sheet moves nothing under the reader's thumb: its top
+ * row is the bar's height and inset, so the sheet's lockup starts where the
+ * bar's does and its close button ends where the burger does, on a bar with
+ * a group, a number, and the call button beside the burger, and with the
+ * bar's own gutter token set.
+ */
+export const LightMenuTopRowMatchesTheBar: Story = {
+	args: { links: groupedLinks, phones, menuSurface: "light" },
+	decorators: [
+		(Story) => (
+			<div style={{ "--header-gutter": "14px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		const bar = canvas.getByRole("banner");
+		const barHome = within(bar).getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		const burger = canvas.getByRole("button", { name: "Open menu" });
+		await userEvent.click(burger);
+		const dialog = canvas.getByRole("dialog", { name: "Menu" });
+		const sheetHome = within(dialog).getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+		const close = within(dialog).getByRole("button", { name: "Close menu" });
+		// Measured once the sheet has slid into place.
+		await waitFor(() => expect(dialog.getBoundingClientRect().top).toBe(0));
+		const box = (element: Element) => element.getBoundingClientRect();
+		await expect(Math.round(box(sheetHome).left)).toBe(Math.round(box(barHome).left));
+		await expect(Math.round(box(close).right)).toBe(Math.round(box(burger).right));
+		await expect(Math.round(box(sheetHome).top)).toBe(Math.round(box(barHome).top));
+		await expect(Math.round(box(barHome).left)).toBe(14);
+	},
+};
+
+/** The phone's round call button for a number with no label is named "Call" and the number. */
+export const CallButtonWithoutALabel: Story = {
+	args: { phones: [{ e164: "+15555550142", display: "(555) 555-0142" }] },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("link", { name: "Call (555) 555-0142" })).toHaveAttribute(
+			"href",
+			"tel:+15555550142",
+		);
+	},
+};
+
+/**
+ * The burger as a design draws it: the lines first and the word after,
+ * inside an outlined pill (`burger: { labelAfter, outlined }`). The word
+ * stays in place while the menu is open, and only the lines fold to an X.
+ */
+export const BurgerLinesFirstOutlined: Story = {
+	args: { menuLabel: "Menu", burger: { labelAfter: true, outlined: true } },
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		const burger = canvas.getByRole("button", { name: "Menu" });
+		const word = within(burger).getByText("Menu");
+		// The lines have no role; they are the word's sibling.
+		const lines = burger.querySelector('[aria-hidden="true"]') as HTMLElement;
+		await expect(lines.getBoundingClientRect().right).toBeLessThanOrEqual(
+			word.getBoundingClientRect().left,
+		);
+		await expect(getComputedStyle(burger).boxShadow).not.toBe("none");
+		await expect(Number.parseFloat(getComputedStyle(burger).borderTopLeftRadius)).toBeGreaterThan(
+			10,
+		);
+		await userEvent.click(burger);
+		await expect(getComputedStyle(word).opacity).toBe("1");
+		await expect(getComputedStyle(word).transform).toBe("none");
+	},
+};
+
+/** Without the option the word comes first and the burger has no outline, as before. */
+export const BurgerLabelDefault: Story = {
+	args: { menuLabel: "Menu" },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const burger = canvas.getByRole("button", { name: "Menu" });
+		const word = within(burger).getByText("Menu");
+		const lines = burger.querySelector('[aria-hidden="true"]') as HTMLElement;
+		await expect(word.getBoundingClientRect().right).toBeLessThanOrEqual(
+			lines.getBoundingClientRect().left,
+		);
+		await expect(getComputedStyle(burger).boxShadow).toBe("none");
+	},
+};

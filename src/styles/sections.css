@@ -1073,20 +1073,25 @@
 		padding-bottom: clamp(48px, 9vh, 110px);
 		padding-top: calc(var(--nav-height) + 30px);
 	}
+	/* The room between the hero's kicker, headline, lead, and actions: each
+	   its own as it always was (18, 22, and 32px; 12, 22, and 26px on the
+	   split hero), or one --hero-stack-gap for all three when a theme sets
+	   it, so each read keeps its own default in place. */
 	.atelic-ui .hero h1 {
 		color: var(--on-dark);
-		margin: 18px 0 0;
+		margin: var(--hero-stack-gap, 18px) 0 0;
 		text-shadow: 0 2px 30px color-mix(in srgb, var(--shade) 25%, transparent);
 	}
 	.atelic-ui .hero h1 .serif {
 		color: var(--primary-bright);
 	}
-	/* The hero's eyebrow line, at the eyebrow's own look unless a theme sets
-	   the hero's kicker tokens. */
+	/* The hero's eyebrow line, at the eyebrow primitive's own look (its
+	   private properties, primitives.css) unless a theme sets the hero's
+	   kicker tokens. */
 	.atelic-ui .hero .eyebrow {
-		font-size: var(--hero-kicker-size);
-		font-weight: var(--hero-kicker-weight);
-		letter-spacing: var(--hero-kicker-tracking);
+		font-size: var(--hero-kicker-size, var(--_eyebrow-size));
+		font-weight: var(--hero-kicker-weight, var(--_eyebrow-weight));
+		letter-spacing: var(--hero-kicker-tracking, var(--_eyebrow-tracking));
 	}
 	/* On the split hero the headline sits on the primary field, where the
 	   bright primary all but vanishes (1.38 to 1 on the practice's palette):
@@ -1097,8 +1102,8 @@
 	}
 	.atelic-ui .hero-sub {
 		font-size: var(--hero-lead-size);
-		max-width: 52ch;
-		margin-top: 22px;
+		max-width: var(--hero-lead-measure);
+		margin-top: var(--hero-stack-gap, 22px);
 		color: color-mix(in srgb, var(--on-dark) 92%, transparent);
 		line-height: 1.55;
 	}
@@ -1204,14 +1209,17 @@
 	.atelic-ui .hero.is-split h1 {
 		font-size: clamp(2.1rem, 4vw, 3.3rem);
 		line-height: 1.05;
-		margin-top: 12px;
+		margin-top: var(--hero-stack-gap, 12px);
 		text-shadow: none;
 	}
 	.atelic-ui .hero.is-split .hero-sub {
 		color: var(--on-primary);
 	}
+	.atelic-ui .hero .cta-row {
+		margin-top: var(--hero-stack-gap, 32px);
+	}
 	.atelic-ui .hero.is-split .cta-row {
-		margin-top: 26px;
+		margin-top: var(--hero-stack-gap, 26px);
 	}
 	.atelic-ui .hero-split-media {
 		position: relative;
@@ -1270,7 +1278,7 @@
 	}
 	/* A star row in a proof value takes --proof-star-fill, else the primary it always read. */
 	.atelic-ui .proof-strip-value .star-row {
-		color: var(--proof-star-fill);
+		color: var(--proof-star-fill, var(--primary));
 	}
 	/* Classed, never a bare span: a value may hold a star row, whose own spans keep their color. */
 	.atelic-ui .proof-strip-label {

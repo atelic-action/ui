@@ -101,56 +101,58 @@
 		--card-min: 240px;
 
 		/* The optional tokens a theme sets to restyle one piece, each at the
-		   look the piece had before it was a token (README.md, Tokens). A
-		   default that names another token reads it here, on the root, where
-		   a theme sets it. A color whose old look was the inherited one is
-		   currentColor, which as a color is exactly the inherited value. */
-		/* The bar and its panels' width and side gutter. */
-		--header-max: var(--max-width);
-		--header-gutter: var(--gutter);
-		/* The open group's pill on the bar. */
-		--nav-open-bg: var(--hover-tint);
+		   look the piece had before it was a token (README.md, Tokens): the
+		   ones whose default is a literal value or a system keyword. A color
+		   whose old look was the inherited one is currentColor, which as a
+		   color is exactly the inherited value.
+
+		   A default that names another token is never declared here: it stays
+		   an inline fallback where it is read, as --primary-fill and
+		   --primary-ink always have, so it resolves on the element that reads
+		   it, below any band that restates the named token. Declared here it
+		   would resolve once, on the root, and a band restating --primary
+		   would no longer reach it. Those defaults, each read in place (a
+		   chain read more than once is written once, as a private property
+		   on the component's own root): --header-max (--max-width) and
+		   --header-gutter (--gutter), on .nav; --nav-open-bg (--hover-tint);
+		   --menu-card-bg (--primary-deep) and --menu-card-ink (--on-primary),
+		   the ink on .nav-feature; --menu-badge-bg and --menu-cta-bg
+		   (--primary-fill, then --primary) and --menu-badge-ink and
+		   --menu-cta-ink (--on-primary), the call to action's on
+		   .mobile-menu; --heading-weight (--weight-heavy); the hero's
+		   --hero-kicker-weight, --hero-kicker-tracking, and
+		   --hero-kicker-size (the eyebrow's own, on .eyebrow);
+		   --proof-star-fill (--primary); --footer-link (--neutral-200),
+		   --footer-link-hover (--on-dark), --closing-link (--neutral-300),
+		   and --closing-link-hover (--surface mixed with --on-dark);
+		   --menu-rule (--hairline), on the light sheet. --hero-stack-gap has
+		   no default of its own: unset, each gap in the hero keeps the value
+		   it always had, in place. */
+		/* The open group's pill's words on the bar. */
 		--nav-open-ink: currentColor;
 		/* The header phone pill's padding and its number's size. */
 		--nav-phone-pad: 6px 16px 6px 12px;
 		--nav-phone-size: 0.95rem;
-		/* The mega panel's feature card: its ground and its words. */
-		--menu-card-bg: var(--primary-deep);
-		--menu-card-ink: var(--on-primary);
-		/* The phone menu's badge and call to action. */
-		--menu-badge-bg: var(--primary-fill, var(--primary));
-		--menu-badge-ink: var(--on-primary);
-		--menu-cta-bg: var(--primary-fill, var(--primary));
-		--menu-cta-ink: var(--on-primary);
 		/* The page and section headings (h1, h2), and the smaller ones (h3 at
 		   the tracking, h4 at two thirds of it). */
 		--heading-transform: none;
-		--heading-weight: var(--weight-heavy);
 		--heading-tracking: -0.02em;
 		--heading-color: currentColor;
 		--subheading-tracking: -0.015em;
-		/* The hero's eyebrow line and its lead paragraph. */
-		--hero-kicker-weight: var(--weight-medium);
-		--hero-kicker-tracking: 0.18em;
-		--hero-kicker-size: 0.74rem;
+		/* The hero's lead paragraph: its size and its measure. */
 		--hero-lead-size: clamp(1.05rem, 2.2vw, 1.35rem);
+		--hero-lead-measure: 52ch;
 		/* A FeatureGrid card's title. */
 		--card-title-color: currentColor;
 		/* A CalloutPanel title's case, and its subtitle's case and tracking. */
 		--callout-transform: none;
 		--callout-sub-transform: none;
 		--callout-sub-tracking: normal;
-		/* A star row in a ProofStrip value. */
-		--proof-star-fill: var(--primary);
 		/* The least a LinkColumns column narrows to. */
 		--link-columns-min: 170px;
-		/* The footer: its lockup's mark, its column links and their hover,
-		   and the closing bar's links (the credit's among them) and theirs. */
+		/* The footer lockup's mark, and the line its links take on hover. */
 		--footer-mark-height: 38px;
-		--footer-link: var(--neutral-200);
-		--footer-link-hover: var(--on-dark);
-		--closing-link: var(--neutral-300);
-		--closing-link-hover: color-mix(in srgb, var(--surface) 96%, var(--on-dark));
+		--footer-link-hover-decoration: none;
 	}
 
 	/* ---- Long words ----

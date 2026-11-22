@@ -229,10 +229,16 @@
 	   right — the wordmark's signature, in the brand's primary. This fade is
 	   the only rendering; the old leading-dash mode is retired. */
 	.atelic-ui .eyebrow {
+		/* The eyebrow's own size, weight, and tracking, named once so a
+		   context that restyles it (the hero's kicker tokens) falls back to
+		   them rather than copying the values. */
+		--_eyebrow-size: 0.74rem;
+		--_eyebrow-weight: var(--weight-medium);
+		--_eyebrow-tracking: 0.18em;
 		font-family: var(--font-mono);
-		font-size: 0.74rem;
-		font-weight: var(--weight-medium);
-		letter-spacing: 0.18em;
+		font-size: var(--_eyebrow-size);
+		font-weight: var(--_eyebrow-weight);
+		letter-spacing: var(--_eyebrow-tracking);
 		text-transform: uppercase;
 		color: var(--primary-ink, var(--primary));
 		/* Inline, so the rule follows the last line of a kicker that wraps

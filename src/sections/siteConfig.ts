@@ -12,6 +12,7 @@ import type {
 	ContactDockConfig,
 	FooterColumn,
 	HeaderPhone,
+	MenuBurgerStyle,
 	NavFeature,
 	NavPanelSection,
 	SiteLink,
@@ -69,6 +70,13 @@ export interface CTA {
 	 * Defaults to `label`.
 	 */
 	stickyLabel?: string;
+	/**
+	 * Whether the phone's sticky bar shows from the first paint. Defaults to
+	 * true on a page without a hero under the bar (`heroNav` off) and false on
+	 * one with, where it slides in once the page scrolls; a page with a hero
+	 * under a solid bar sets false to slide it in there too.
+	 */
+	stickyFromTop?: boolean;
 	/**
 	 * The phone menu's own words, when they should differ from `label` (a
 	 * fuller "Order ahead for Saturday" where the bar says "Order
@@ -320,6 +328,12 @@ export interface SiteConfig {
 		 * ground.
 		 */
 		surface?: SiteMenuSurface;
+		/**
+		 * How the burger is drawn: `labelAfter` sets the lines before the
+		 * words beside it (`menuLabel`), `outlined` sets it in an outlined
+		 * pill. Both off by default.
+		 */
+		burger?: MenuBurgerStyle;
 	};
 	/** What the header shows beyond the nav and the CTA. */
 	header?: {

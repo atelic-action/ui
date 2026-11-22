@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { SiteMenu } from "../../src/chrome";
 import { menuPhoneLabel } from "../../src/chrome/SiteMenu";
+import { BasePathProvider } from "../../src/routing";
 import { brand, links, phone, primaryCTA } from "../fixtures";
 
 const phones = [
@@ -125,5 +126,68 @@ describe("the light sheet", () => {
 		);
 		expect(screen.getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
 		expect(screen.getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
+	});
+});
+
+describe("the dark sheet's call to action, drawn by Button", () => {
+	/** The anchor's attributes and words, so the comparison ignores attribute order alone. */
+	function shape(link: HTMLElement) {
+		return {
+			attributes: Object.fromEntries(
+				Array.from(link.attributes, (attribute) => [attribute.name, attribute.value]),
+			),
+			html: link.innerHTML,
+		};
+	}
+
+	it("draws exactly what the hand built anchor drew on an unchanged site", () => {
+		const { unmount } = render(
+			<SiteMenu
+				open
+				onClose={() => {}}
+				links={links}
+				primaryCTA={{ label: "Order", href: "/order" }}
+			/>,
+		);
+		expect(shape(screen.getByRole("link", { name: "Order" }))).toEqual({
+			attributes: { class: "btn btn-primary btn-lg mm-cta", href: "/order" },
+			html: "Order",
+		});
+		unmount();
+		render(<SiteMenu open onClose={() => {}} links={links} primaryCTA={primaryCTA} />);
+		expect(shape(screen.getByRole("link", { name: "Book Now" }))).toEqual({
+			attributes: {
+				class: "btn btn-primary btn-lg mm-cta",
+				href: "https://booking.example.com",
+				target: "_blank",
+				rel: "noopener",
+			},
+			html: "Book Now",
+		});
+	});
+
+	it("takes the base path and holds a phone number whole, as Button does", () => {
+		const { unmount } = render(
+			<BasePathProvider base="/proto">
+				<SiteMenu
+					open
+					onClose={() => {}}
+					links={links}
+					primaryCTA={{ label: "Order", href: "/order" }}
+				/>
+			</BasePathProvider>,
+		);
+		expect(screen.getByRole("link", { name: "Order" })).toHaveAttribute("href", "/proto/order");
+		unmount();
+		render(
+			<SiteMenu
+				open
+				onClose={() => {}}
+				links={links}
+				primaryCTA={{ label: "Call (555) 555-0100", href: "tel:+15555550100" }}
+			/>,
+		);
+		const call = screen.getByRole("link", { name: "Call (555) 555-0100" });
+		expect(call.querySelector(".tel-number")?.textContent).toBe("(555) 555-0100");
 	});
 });

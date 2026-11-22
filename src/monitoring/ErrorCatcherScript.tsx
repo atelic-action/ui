@@ -10,12 +10,12 @@ export interface ErrorCatcherScriptProps {
 }
 
 /**
- * The inline early catcher as an element, for the first place in a root
- * route's `<head>`, ahead of `<HeadContent />`: it runs before any other
- * script, so an error thrown before the app's own JavaScript is held until
- * `startErrorReporting` hands it to Sentry. It is a few hundred bytes, well
- * inside the first kilobyte a browser scans for the charset. With `enabled`
- * false it renders nothing.
+ * The inline early catcher as an element, for a root route's `<head>` ahead
+ * of `<HeadContent />` and every other script: it is the page's first script
+ * and runs before any other, so an error thrown before the app's own
+ * JavaScript is held until `startErrorReporting` hands it to Sentry. React 19
+ * hoists the title, the meta tags, the preloads, and the stylesheets ahead of
+ * it, which changes nothing it does. With `enabled` false it renders nothing.
  */
 export function ErrorCatcherScript({ enabled = true }: ErrorCatcherScriptProps = {}) {
 	if (!enabled) return null;

@@ -674,3 +674,49 @@ export const DarkMenuLabels: Story = {
 		await expect(menu.getByRole("link", { name: /^CALL OR TEXT/ })).toBeVisible();
 	},
 };
+
+/**
+ * A band that restates the brand's primary around the menu (a plain element,
+ * not a theme root) reaches the call to action on either sheet: the
+ * defaults that name another token resolve where they are read, below the
+ * band, as they did in 8.1.0.
+ */
+export const CTAInABandRestatingPrimary: Story = {
+	args: { primaryCTA: cta },
+	decorators: [
+		(Story) => (
+			<div style={{ "--primary": "#1e4d2b", "--primary-fill": "#1e4d2b" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await expect(
+			getComputedStyle(menu.getByRole("link", { name: cta.label })).backgroundColor,
+		).toBe("rgb(30, 77, 43)");
+	},
+};
+
+/** The same band around the light sheet. */
+export const LightCTAInABandRestatingPrimary: Story = {
+	...CTAInABandRestatingPrimary,
+	args: { ...light, primaryCTA: cta },
+};
+
+/** `--menu-rule` sets the light sheet's row dividers, which default to `--hairline`. */
+export const LightMenuRule: Story = {
+	args: light,
+	decorators: [
+		(Story) => (
+			<div style={{ "--menu-rule": "rgb(180, 160, 120)" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const row = menu.getByRole("link", { name: "Visit" });
+		await expect(getComputedStyle(row).borderBottomColor).toBe("rgb(180, 160, 120)");
+	},
+};

@@ -268,13 +268,83 @@ export function reportServerErrorLater(
 	error: unknown,
 	options: ServerReportOptions & { context?: WaitUntilContext } = {},
 ): void {
+	const { context, ...report } = options;
+	const sending = reportServerError(error, report);
+	// The context's own waitUntil first, then the platform's; a context with
+	// none that can be called, or one that throws, falls through to the
+	// next, and with neither the send runs on its own, never blocking.
+	const own = (context as { waitUntil?: unknown } | undefined)?.waitUntil;
+	const fromContext =
+		typeof own === "function"
+			? (promise: Promise<unknown>) => own.call(context, promise)
+			: undefined;
+	for (const find of [() => fromContext, platformWaitUntil]) {
+		try {
+			const hold = find();
+			if (!hold) continue;
+			hold(sending);
+			return;
+		} catch {
+			// This one could not hold the send; the next is tried.
+		}
+	}
+}
+
+/** Anything shaped like an email address, which a refusal may quote (the recipient, the sender). */
+const ADDRESS = /[^\s@<>()[\]"',;:]+@[^\s@<>()[\]"',;:]+\.[^\s@<>()[\]"',;:]+/g;
+
+/** The longest a refusal's field is kept, so a report never carries a page of text. */
+const REFUSAL_FIELD_MAX = 300;
+
+/**
+ * A refused upstream answer as an error a report may carry: the service's
+ * name, the status, and the error body's `name` and `message` fields alone,
+ * each with anything shaped like an email address replaced by `[address]`
+ * and cut to 300 characters. Nothing else of the body is read, and a body
+ * that is not JSON leaves the status alone. Never throws.
+ *
+ *   await refusalError(response, "Resend")  // Error("Resend answered 422: validation_error: ...")
+ */
+export async function refusalError(
+	response: Response,
+	service = "The upstream service",
+): Promise<Error> {
+	let body: { name?: unknown; message?: unknown } = {};
 	try {
-		const { context, ...report } = options;
-		const sending = reportServerError(error, report);
-		const waitUntil = context ? context.waitUntil.bind(context) : platformWaitUntil();
-		waitUntil?.(sending);
+		const parsed: unknown = await response.json();
+		if (parsed && typeof parsed === "object") body = parsed as typeof body;
 	} catch {
-		// A context whose waitUntil throws leaves the send running on its own.
+		// Not JSON, or already read: the status says what there is to say.
+	}
+	const parts = [body.name, body.message]
+		.filter((part): part is string => typeof part === "string" && part.trim() !== "")
+		.map((part) => part.replace(ADDRESS, "[address]").slice(0, REFUSAL_FIELD_MAX));
+	return new Error(
+		`${service} answered ${response.status}${parts.length ? `: ${parts.join(": ")}` : ""}`,
+	);
+}
+
+/**
+ * Reports a refused upstream answer (a send the mail service would not
+ * take) without holding the caller's own answer: the error is built by
+ * `refusalError`, so no address in the refusal survives, and sent by
+ * `reportServerErrorLater`. Resolves once the refusal's body is read, never
+ * waiting on the send, and never throws.
+ *
+ *   if (!response.ok) {
+ *     await reportRefusedResponse(response, { service: "Resend", request, tags: { route: "contact" } });
+ *     return json(502, { ok: false, error: "Sending failed. Please try again in a moment." });
+ *   }
+ */
+export async function reportRefusedResponse(
+	response: Response,
+	options: ServerReportOptions & { service?: string; context?: WaitUntilContext } = {},
+): Promise<void> {
+	const { service, ...report } = options;
+	try {
+		reportServerErrorLater(await refusalError(response, service), report);
+	} catch {
+		// A report never becomes a second failure.
 	}
 }
 

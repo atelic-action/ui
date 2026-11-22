@@ -84,6 +84,11 @@
 
 	/* Fixed header: transparent over a hero, solid once scrolled, or dark. */
 	.atelic-ui .nav {
+		/* The bar's and its panels' width and gutter, resolved here, on the
+		   header, so a band around it that restates the named tokens reaches
+		   both. */
+		--_header-max: var(--header-max, var(--max-width));
+		--_header-gutter: var(--header-gutter, var(--gutter));
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -101,9 +106,9 @@
 	   sets --header-max and --header-gutter to run them wider. */
 	.atelic-ui .nav-inner {
 		width: 100%;
-		max-width: var(--header-max);
+		max-width: var(--_header-max);
 		margin-inline: auto;
-		padding-inline: var(--header-gutter);
+		padding-inline: var(--_header-gutter);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -187,7 +192,7 @@
 	/* The open group's pill: the hover tint and the bar's own words unless a
 	   theme sets --nav-open-bg and --nav-open-ink. */
 	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
-		background: var(--nav-open-bg);
+		background: var(--nav-open-bg, var(--hover-tint));
 		color: var(--nav-open-ink);
 	}
 	/* The entry for where the reader is: a page's scroll spied stop, the
@@ -264,6 +269,22 @@
 		width: 24px;
 		height: auto;
 		background: none;
+	}
+	/* The lines before the words (menu.burger.labelAfter), and the burger in
+	   an outlined pill (menu.burger.outlined). */
+	.atelic-ui .nav-burger.has-label.is-label-after {
+		flex-direction: row-reverse;
+	}
+	.atelic-ui .nav-burger.is-outlined {
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: 8px 16px;
+		border-radius: var(--radius-pill);
+		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
+	}
+	.atelic-ui .nav-burger.is-outlined:hover {
+		box-shadow: inset 0 0 0 1.5px currentColor;
 	}
 	/* A mark drawn on a surface it was not cut for is flattened to that
 	   surface's silhouette (resolveMark): to ink on the light bar (a single
@@ -367,7 +388,7 @@
 		left: 0;
 		right: 0;
 		top: 100%;
-		padding: 10px var(--header-gutter) 0;
+		padding: 10px var(--_header-gutter) 0;
 		color: var(--ink);
 		max-height: calc(100vh - var(--nav-height));
 		overflow-y: auto;
@@ -378,7 +399,7 @@
 	.atelic-ui .nav-mega-card {
 		box-sizing: border-box;
 		width: 100%;
-		max-width: calc(var(--header-max) - 2 * var(--header-gutter));
+		max-width: calc(var(--_header-max) - 2 * var(--_header-gutter));
 		margin-inline: auto;
 		display: flex;
 		align-items: stretch;
@@ -712,8 +733,10 @@
 		flex-direction: column;
 		overflow: hidden;
 		border-radius: var(--radius-md);
-		background: var(--menu-card-bg);
-		color: var(--menu-card-ink);
+		/* The card's words, resolved on the card, below any band. */
+		--_menu-card-ink: var(--menu-card-ink, var(--on-primary));
+		background: var(--menu-card-bg, var(--primary-deep));
+		color: var(--_menu-card-ink);
 	}
 	.atelic-ui .nav-feature-img {
 		flex: 1 1 0;
@@ -736,7 +759,7 @@
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		/* The bright primary on the card's deep primary is under 2 to 1. */
-		color: var(--menu-card-ink);
+		color: var(--_menu-card-ink);
 	}
 	.atelic-ui .nav-feature-title {
 		font-size: 1.3rem;
@@ -748,7 +771,7 @@
 	.atelic-ui .nav-feature-text {
 		font-size: 0.95rem;
 		line-height: 1.45;
-		color: var(--menu-card-ink);
+		color: var(--_menu-card-ink);
 	}
 	/* The ticked points: the tick bare and the words both in the card's own
 	   words color, since the bright primary all but vanishes on the deep
@@ -761,7 +784,7 @@
 	}
 	.atelic-ui .nav-feature .nav-feature-points li {
 		gap: 10px;
-		color: var(--menu-card-ink);
+		color: var(--_menu-card-ink);
 	}
 	.atelic-ui .nav-feature .nav-feature-points .tick {
 		width: 16px;
@@ -769,7 +792,7 @@
 		margin-top: 3px;
 		background: none;
 		box-shadow: none;
-		color: var(--menu-card-ink);
+		color: var(--_menu-card-ink);
 	}
 	.atelic-ui .nav-feature-cta {
 		margin-top: 8px;
@@ -869,13 +892,16 @@
 
 	/* The burger folds into an X while the menu is open. State lives on the
 	   button's own aria-expanded, so no extra class plumbing. */
-	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(1) {
+	.atelic-ui .nav-burger[aria-expanded="true"]:not(.has-label) > span:nth-child(1),
+	.atelic-ui .nav-burger[aria-expanded="true"] > .nav-burger-lines > span:nth-child(1) {
 		transform: translateY(7px) rotate(45deg);
 	}
-	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(2) {
+	.atelic-ui .nav-burger[aria-expanded="true"]:not(.has-label) > span:nth-child(2),
+	.atelic-ui .nav-burger[aria-expanded="true"] > .nav-burger-lines > span:nth-child(2) {
 		opacity: 0;
 	}
-	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(3) {
+	.atelic-ui .nav-burger[aria-expanded="true"]:not(.has-label) > span:nth-child(3),
+	.atelic-ui .nav-burger[aria-expanded="true"] > .nav-burger-lines > span:nth-child(3) {
 		transform: translateY(-7px) rotate(-45deg);
 	}
 
@@ -894,6 +920,9 @@
 		border: 0;
 		background: var(--surface-dark);
 		color: var(--surface);
+		/* The call to action's fill, read three times (rest, hover, press),
+		   resolved once here on the sheet, below any band. */
+		--_menu-cta-bg: var(--menu-cta-bg, var(--primary-fill, var(--primary)));
 		flex-direction: column;
 		padding: calc(var(--nav-height) + 20px) var(--gutter) 40px;
 		overflow-y: auto;
@@ -936,9 +965,11 @@
 		background: currentColor;
 		border-radius: 2px;
 	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to the menu's close button, which never meets the burger's lines */
 	.atelic-ui .mobile-menu .mm-close span:nth-child(1) {
 		transform: translateY(3.5px) rotate(45deg);
 	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to the menu's close button, which never meets the burger's lines */
 	.atelic-ui .mobile-menu .mm-close span:nth-child(2) {
 		transform: translateY(-3.5px) rotate(-45deg);
 	}
@@ -968,14 +999,14 @@
 	   ground is its primary sets them to --on-primary and --primary-ink, or
 	   the button vanishes into the sheet. */
 	.atelic-ui .mobile-menu .mm-cta.btn-primary {
-		background: var(--menu-cta-bg);
-		color: var(--menu-cta-ink);
+		background: var(--_menu-cta-bg);
+		color: var(--menu-cta-ink, var(--on-primary));
 	}
 	.atelic-ui .mobile-menu .mm-cta.btn-primary:hover {
-		background: color-mix(in srgb, var(--menu-cta-bg) 84%, var(--shade));
+		background: color-mix(in srgb, var(--_menu-cta-bg) 84%, var(--shade));
 	}
 	.atelic-ui .mobile-menu .mm-cta.btn-primary:active {
-		background: color-mix(in srgb, var(--menu-cta-bg) 74%, var(--shade));
+		background: color-mix(in srgb, var(--_menu-cta-bg) 74%, var(--shade));
 	}
 	.atelic-ui .mobile-menu .mm-contact {
 		margin-top: auto;
@@ -1083,8 +1114,8 @@
 		flex: none;
 		padding: 3px 9px;
 		border-radius: var(--radius-pill);
-		background: var(--menu-badge-bg);
-		color: var(--menu-badge-ink);
+		background: var(--menu-badge-bg, var(--primary-fill, var(--primary)));
+		color: var(--menu-badge-ink, var(--on-primary));
 		font-family: var(--font-mono);
 		font-size: 0.66rem;
 		font-weight: var(--weight-semibold);
@@ -1114,18 +1145,32 @@
 	   and following it when an open group runs long. Every rule restyles the
 	   dark sheet's own classes, so the two share their markup and behavior. */
 	.atelic-ui .mobile-menu.is-light {
+		/* The bar's own width and gutter, so the top row sits where the bar's
+		   lockup and burger sit, and the row dividers' rule. */
+		--_header-max: var(--header-max, var(--max-width));
+		--_header-gutter: var(--header-gutter, var(--gutter));
+		--_menu-rule: var(--menu-rule, var(--hairline));
 		background: var(--surface);
 		color: var(--ink);
 		padding: 0;
 	}
+	/* The top row is the bar: as tall, its content inset as the bar's wrap
+	   insets it, so opening the sheet moves neither the lockup nor the
+	   button under the reader's thumb. The rule under it is a shadow, as the
+	   bar's is, so it takes none of the height. */
 	.atelic-ui .mobile-menu.is-light .mm-top {
+		flex: none;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
-		min-height: var(--nav-height);
-		padding: 8px var(--gutter);
-		border-bottom: 1px solid var(--hairline-strong);
+		height: var(--nav-height);
+		padding-block: 0;
+		padding-inline: max(
+			var(--_header-gutter),
+			calc((100% - var(--_header-max)) / 2 + var(--_header-gutter))
+		);
+		box-shadow: 0 1px 0 var(--hairline-strong);
 	}
 	/* The lockup's mark drawn for the light ground, flattened to ink when the
 	   brand gave only a light cut, as the light bar draws it. */
@@ -1161,10 +1206,10 @@
 		font-size: 1.3rem;
 		font-weight: var(--weight-bold);
 		letter-spacing: -0.01em;
-		border-bottom: 1px solid var(--hairline);
+		border-bottom: 1px solid var(--_menu-rule);
 	}
 	.atelic-ui .mobile-menu.is-light .mm-group {
-		border-bottom: 1px solid var(--hairline);
+		border-bottom: 1px solid var(--_menu-rule);
 	}
 	.atelic-ui .mobile-menu.is-light .mm-group-btn {
 		border-bottom: 0;
@@ -1510,7 +1555,15 @@
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .footer, so it never meets the header's link rules */
 	.atelic-ui .footer a:hover {
-		color: var(--footer-link-hover);
+		color: var(--footer-link-hover, var(--on-dark));
+	}
+	/* A theme whose links are the hover's color already marks the hover by a
+	   line instead (--footer-link-hover-decoration: underline), on the column
+	   links and the contact lines; the rating link keeps its own underline. */
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to the footer, so it never meets the header's link rules */
+	.atelic-ui .footer :is(nav, .nap) a:hover {
+		text-decoration-line: var(--footer-link-hover-decoration);
+		text-underline-offset: 4px;
 	}
 	/* One grid: the brand column, then the link columns, however many the
 	   footer was given. A phone stacks the brand column over two across. */
@@ -1597,7 +1650,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 6px 0;
-		color: var(--footer-link);
+		color: var(--footer-link, var(--neutral-200));
 		font-weight: var(--weight-medium);
 	}
 	.atelic-ui .footer nav a svg {
@@ -1724,7 +1777,7 @@
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the footer's link rules */
 	.atelic-ui .closing-bar a {
-		color: var(--closing-link);
+		color: var(--closing-link, var(--neutral-300));
 		font-weight: var(--weight-medium);
 	}
 	/* The credit's link sits inside a sentence, so it is underlined, never
@@ -1735,6 +1788,6 @@
 	}
 	/* biome-ignore lint/style/noDescendingSpecificity: scoped to .closing-bar, so it never meets the header's link rules */
 	.atelic-ui .closing-bar a:hover {
-		color: var(--closing-link-hover);
+		color: var(--closing-link-hover, color-mix(in srgb, var(--surface) 96%, var(--on-dark)));
 	}
 }

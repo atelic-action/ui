@@ -7,6 +7,7 @@ import {
 	RouterProvider,
 } from "@tanstack/react-router";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { AppErrorBoundary } from "../../src/artifact";
 import { installCatcher, readCatcher } from "../../src/monitoring/catcher";
 import { RouteErrorFallback, routerErrorOptions } from "../../src/routing";
 
@@ -19,21 +20,51 @@ function clear() {
 	delete (window as { __atelicErrors?: unknown }).__atelicErrors;
 }
 
-/** A site's router with one route at / whose component throws as it renders. */
-function brokenRouter(options: Partial<ReturnType<typeof routerErrorOptions>> = {}) {
-	const rootRoute = createRootRoute({ component: () => <Outlet /> });
+/** A route's own error page, with no `onCatch` of its own. */
+function OwnErrorPage() {
+	return <p>The route's own error page</p>;
+}
+
+/**
+ * A site's router as the template builds it: the root route wraps its outlet
+ * in `AppErrorBoundary`, and the route at / throws as it renders, with its own
+ * `errorComponent` when asked.
+ */
+function siteRouter({
+	options = {},
+	ownErrorPage = false,
+}: {
+	options?: Partial<ReturnType<typeof routerErrorOptions>>;
+	ownErrorPage?: boolean;
+} = {}) {
+	const rootRoute = createRootRoute({
+		component: () => (
+			<AppErrorBoundary>
+				<Outlet />
+			</AppErrorBoundary>
+		),
+	});
 	const home = createRoute({
 		getParentRoute: () => rootRoute,
 		path: "/",
 		component: function Home(): never {
 			throw new Error("route crash");
 		},
+		...(ownErrorPage ? { errorComponent: OwnErrorPage } : {}),
 	});
 	return createRouter({
 		routeTree: rootRoute.addChildren([home]),
 		history: createMemoryHistory({ initialEntries: ["/"] }),
 		...options,
 	});
+}
+
+/** Renders the router with a reporter installed, and hands back the reporter. */
+function renderSite(router: ReturnType<typeof siteRouter>) {
+	const report = vi.fn();
+	installCatcher(window).report = report;
+	render(<RouterProvider router={router} />);
+	return report;
 }
 
 describe("routerErrorOptions", () => {
@@ -52,25 +83,36 @@ describe("routerErrorOptions", () => {
 		expect(typeof routerErrorOptions().defaultOnCatch).toBe("function");
 	});
 
-	it("reports a route's render crash once and draws the package's error page", async () => {
-		const report = vi.fn();
-		installCatcher(window).report = report;
-		render(<RouterProvider router={brokenRouter(routerErrorOptions())} />);
+	it("without them, a route with no errorComponent rises to AppErrorBoundary, reported once", async () => {
+		const report = renderSite(siteRouter());
+		expect(
+			await screen.findByRole("heading", { name: "Something went wrong" }),
+		).toBeInTheDocument();
+		expect(report).toHaveBeenCalledOnce();
+		expect((report.mock.calls[0]?.[0] as Error | undefined)?.message).toBe("route crash");
+	});
+
+	it("without them, a route's own errorComponent catches the crash and nobody reports it", async () => {
+		const report = renderSite(siteRouter({ ownErrorPage: true }));
+		expect(await screen.findByText("The route's own error page")).toBeInTheDocument();
+		expect(report).not.toHaveBeenCalled();
+	});
+
+	it("with them, a route with no errorComponent is caught by its own boundary, reported once", async () => {
+		const report = renderSite(siteRouter({ options: routerErrorOptions() }));
 		expect(
 			await screen.findByRole("heading", { name: "Something went wrong" }),
 		).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: "Try Again" })).toBeInTheDocument();
 		expect(report).toHaveBeenCalledOnce();
-		expect((report.mock.calls[0]?.[0] as Error | undefined)?.message).toBe("route crash");
 		expect(report.mock.calls[0]?.[1]).toBe("boundary");
 	});
 
-	it("is what reports it: the router's own boundary alone reports nothing", async () => {
-		const report = vi.fn();
-		installCatcher(window).report = report;
-		render(<RouterProvider router={brokenRouter()} />);
-		expect((await screen.findAllByText(/route crash/)).length).toBeGreaterThan(0);
-		expect(report).not.toHaveBeenCalled();
+	it("with them, a route's own errorComponent still draws, and the crash is reported once", async () => {
+		const report = renderSite(siteRouter({ options: routerErrorOptions(), ownErrorPage: true }));
+		expect(await screen.findByText("The route's own error page")).toBeInTheDocument();
+		expect(report).toHaveBeenCalledOnce();
+		expect((report.mock.calls[0]?.[0] as Error | undefined)?.message).toBe("route crash");
 	});
 });
 

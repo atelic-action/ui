@@ -119,7 +119,7 @@
 	.atelic-ui h1,
 	.atelic-ui h2 {
 		text-transform: var(--heading-transform);
-		font-weight: var(--heading-weight);
+		font-weight: var(--heading-weight, var(--weight-heavy));
 		letter-spacing: var(--heading-tracking);
 		color: var(--heading-color);
 	}
@@ -127,10 +127,12 @@
 	   ("dark" or "primary"), which every such section the package draws
 	   wears (the heroes, the credentials band, the callout panel, the price
 	   band, the process band, the contact card), and a site's own dark band
-	   wears too; .on-primary and .on-dark say the same. Headings there keep
-	   the ground's own words, so a new dark section gets it by the attribute
-	   alone. */
-	.atelic-ui :is([data-ground], .on-primary, .on-dark) {
+	   may wear too; .on-primary and .on-dark say the same. Headings there
+	   keep the ground's own words. A new section needs only the attribute.
+	   The second list is those sections' classes, as 8.1.0 matched them, so
+	   markup carrying a class without the attribute behaves as it did. */
+	.atelic-ui :is([data-ground="dark"], [data-ground="primary"], .on-primary, .on-dark),
+	.atelic-ui :is(.hero, .creds, .callout-panel, .price-band, .process, .contact-info-card) {
 		--heading-color: currentColor;
 	}
 	/* The smaller headings take the brand's tracking the same way: h3 at

@@ -35,6 +35,16 @@ export function checkSentry({ env, args }: SentryCheckInput): SentryCheckResult 
 	const production = env.VERCEL_ENV === "production";
 	const raw = env.VITE_SENTRY_DSN ?? "";
 	const dsn = raw.trim();
+	// A value of whitespace alone is set as far as the site's own checks go
+	// (`Boolean(dsn)` mounts the catcher and starts reporting) and sends
+	// nothing: it is malformed, on any environment, waiver or not.
+	if (raw !== "" && dsn === "") {
+		return {
+			code: 1,
+			message:
+				"[sentry] VITE_SENTRY_DSN is set to whitespace alone, which the site treats as set and which is not a DSN. Set it to the DSN, or remove it.",
+		};
+	}
 	// The build ships the value as it is set, untrimmed, so a DSN with a
 	// space or a line break around it is checked as shipped, not as it reads
 	// once trimmed: it fails here, on any environment, waiver or not.

@@ -10,8 +10,8 @@ describe("checkSentry", () => {
 		}
 	});
 
-	it("fails a production build with no DSN, or a DSN of spaces", () => {
-		for (const VITE_SENTRY_DSN of [undefined, "", "  "]) {
+	it("fails a production build with no DSN", () => {
+		for (const VITE_SENTRY_DSN of [undefined, ""]) {
 			const result = checkSentry({ env: { VERCEL_ENV: "production", VITE_SENTRY_DSN }, args: [] });
 			expect(result.code).toBe(1);
 			expect(result.message).toContain("--allow-missing");
@@ -30,6 +30,19 @@ describe("checkSentry", () => {
 			message: expect.stringContaining("this preview build"),
 		});
 		expect(checkSentry({ env: {}, args: [] }).message).toContain("this local build");
+	});
+
+	it("fails any build whose DSN is whitespace alone as malformed, waiver or not", () => {
+		for (const VERCEL_ENV of ["production", "preview", undefined]) {
+			for (const VITE_SENTRY_DSN of ["  ", "\n", "\t "]) {
+				const result = checkSentry({
+					env: { VERCEL_ENV, VITE_SENTRY_DSN },
+					args: ["--allow-missing"],
+				});
+				expect(result.code, `${VERCEL_ENV} ${JSON.stringify(VITE_SENTRY_DSN)}`).toBe(1);
+				expect(result.message).toContain("whitespace alone");
+			}
+		}
 	});
 
 	it("fails any build whose DSN carries whitespace around it, waiver or not", () => {

@@ -186,8 +186,13 @@ export function ContactDock({
 				: typeof avoid === "string"
 					? document.querySelector(avoid)
 					: avoid.current;
+		// A transition ending inside the header (a pill's hover, a panel's
+		// chevron) moves nothing; only the header's own counts.
+		const onHeadTransition = (event: Event) => {
+			if (event.target === head) schedule();
+		};
 		const bind = () => {
-			head?.removeEventListener("transitionend", schedule);
+			head?.removeEventListener("transitionend", onHeadTransition);
 			bar = findBar();
 			footer = findFooter();
 			head = findHeader();
@@ -206,7 +211,7 @@ export function ContactDock({
 			// the end of its own transition, which moves it without resizing it.
 			if (head) {
 				sizes?.observe(head);
-				head.addEventListener("transitionend", schedule);
+				head.addEventListener("transitionend", onHeadTransition);
 			}
 			measure();
 		};
@@ -238,7 +243,7 @@ export function ContactDock({
 			cancelAnimationFrame(bound);
 			window.removeEventListener("scroll", schedule);
 			window.removeEventListener("resize", schedule);
-			head?.removeEventListener("transitionend", schedule);
+			head?.removeEventListener("transitionend", onHeadTransition);
 			sizes?.disconnect();
 			shows?.disconnect();
 			added?.disconnect();

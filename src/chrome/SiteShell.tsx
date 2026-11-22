@@ -243,6 +243,7 @@ export function SiteShell({
 					phones={site.header?.phones}
 					menuLabel={site.menuLabel}
 					menuSurface={site.menu?.surface}
+					burger={site.menu?.burger}
 				/>
 				<main id="main" className={heroNav ? undefined : "clears-nav"}>
 					{children}
@@ -253,7 +254,7 @@ export function SiteShell({
 					<StickyCTABar
 						primaryCTA={stickyLink}
 						phone={site.phone}
-						fromTop={!heroNav}
+						fromTop={site.cta.stickyFromTop ?? !heroNav}
 						onSpaceChange={setBarSpace}
 					/>
 				)}

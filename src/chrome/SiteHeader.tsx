@@ -15,6 +15,7 @@ import type {
 	Brand,
 	CallToAction,
 	HeaderPhone,
+	MenuBurgerStyle,
 	MenuContact,
 	NavLink,
 	SiteMenuSurface,
@@ -72,6 +73,8 @@ export interface SiteHeaderProps {
 	menuLabel?: string;
 	/** The phone menu's sheet, `dark` (the default) or `light` (see `SiteMenu`). */
 	menuSurface?: SiteMenuSurface;
+	/** How the burger is drawn: the lines before its words, an outlined pill. Both off by default. */
+	burger?: MenuBurgerStyle;
 }
 
 /** The keys that move focus along the bar and down into an open panel. */
@@ -123,6 +126,7 @@ export function SiteHeader({
 	phones,
 	menuLabel,
 	menuSurface = "dark",
+	burger,
 }: SiteHeaderProps) {
 	const [scrolled, setScrolled] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -350,7 +354,10 @@ export function SiteHeader({
 						<a
 							className="nav-call"
 							href={`tel:${barPhones[0].e164}`}
-							aria-label={phoneName(barPhones[0])}
+							// An icon alone: a number with no label is named "Call" and the number.
+							aria-label={
+								barPhones[0].label ? phoneName(barPhones[0]) : `Call ${barPhones[0].display}`
+							}
 						>
 							<PhoneIcon size={19} aria-hidden="true" />
 						</a>
@@ -358,7 +365,14 @@ export function SiteHeader({
 					{hasMenu && (
 						<button
 							type="button"
-							className={menuLabel ? "nav-burger has-label" : "nav-burger"}
+							className={[
+								"nav-burger",
+								menuLabel && "has-label",
+								menuLabel && burger?.labelAfter && "is-label-after",
+								burger?.outlined && "is-outlined",
+							]
+								.filter(Boolean)
+								.join(" ")}
 							// Words beside the burger name it, so the name holds what a reader
 							// sees; the open state is aria-expanded's to say.
 							aria-label={menuLabel ? undefined : menuOpen ? "Close menu" : "Open menu"}

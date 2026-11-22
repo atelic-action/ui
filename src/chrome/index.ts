@@ -12,6 +12,7 @@ export type {
 	FooterIcon,
 	HeaderPhone,
 	HoursRow,
+	MenuBurgerStyle,
 	MenuContact,
 	NavCard,
 	NavCardsSection,

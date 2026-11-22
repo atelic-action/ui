@@ -31,18 +31,22 @@ export function reportRouteError(error: unknown): void {
 }
 
 /**
- * The router options that report a route's render crash. TanStack Router
- * wraps every route in its own catch boundary, which catches a crash before
- * any boundary of the site's sees it, and React keeps a caught crash away
- * from the window's handlers, so without these a crash reaches nobody.
- * Spread them into `createRouter`:
+ * The router options that make a route's render crash reach error reporting
+ * whichever boundary catches it. TanStack Router (1.170) gives a route its
+ * own catch boundary only when an `errorComponent` applies to it; with none,
+ * a crash rises to the site's `AppErrorBoundary`, which reports it. A route
+ * or a site that sets its own `errorComponent` with no `onCatch` puts a
+ * boundary in the way that catches the crash and reports it to nobody, since
+ * React keeps a caught crash from the window's handlers. With these spread
+ * into `createRouter`, every route has the boundary, `defaultOnCatch` reports
+ * what it catches once, and `defaultErrorComponent` draws the package's error
+ * page in its place, so the report no longer depends on which boundary is
+ * nearest:
  *
  *   createRouter({ routeTree, ...routerErrorOptions() })
  *
- * `defaultOnCatch` reports what the boundary caught, and
- * `defaultErrorComponent` draws the package's error page in its place. A
- * route with its own `onCatch` or `errorComponent` keeps its own; a not
- * found is never caught here, since the router rethrows it to its not found
+ * A route's own `onCatch` or `errorComponent` wins over these; a not found
+ * is never caught here, since the router rethrows it to its not found
  * handling first. Like the rest of this entry, it imports no router.
  */
 export function routerErrorOptions() {

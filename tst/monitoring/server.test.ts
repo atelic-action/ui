@@ -3,6 +3,8 @@ import {
 	buildEnvelope,
 	parseDSN,
 	parseStack,
+	refusalError,
+	reportRefusedResponse,
 	reportServerError,
 	reportServerErrorLater,
 	withErrorReporting,
@@ -263,6 +265,34 @@ describe("reportServerErrorLater", () => {
 		await expect(waitUntil.mock.calls[0]?.[0]).resolves.toBe(true);
 	});
 
+	it("falls through to the platform's waitUntil when the context has none it can call, or its own throws", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async () => new Response("{}")),
+		);
+		const waitUntil = vi.fn();
+		(globalThis as Record<symbol, unknown>)[VERCEL_CONTEXT] = { get: () => ({ waitUntil }) };
+		const contexts = [
+			{},
+			{ waitUntil: "not a function" },
+			{
+				waitUntil: () => {
+					throw new Error("closed");
+				},
+			},
+		];
+		for (const context of contexts) {
+			expect(() =>
+				reportServerErrorLater(new Error("x"), {
+					dsn: DSN,
+					context: context as unknown as { waitUntil(promise: Promise<unknown>): void },
+				}),
+			).not.toThrow();
+		}
+		expect(waitUntil).toHaveBeenCalledTimes(3);
+		for (const [promise] of waitUntil.mock.calls) await expect(promise).resolves.toBe(true);
+	});
+
 	it("still sends with no waitUntil anywhere, and never throws, a throwing context included", async () => {
 		const fetch = vi.fn(async () => new Response("{}"));
 		vi.stubGlobal("fetch", fetch);
@@ -305,5 +335,72 @@ describe("withErrorReporting", () => {
 		expect(event.request).toMatchObject({ method: "POST", url: "https://example.com/api/contact" });
 		expect(event.tags.route).toBe("contact");
 		expect(event.exception.values[0].value).toBe("relay exploded");
+	});
+});
+
+describe("refusalError and reportRefusedResponse", () => {
+	const VERCEL_CONTEXT = Symbol.for("@vercel/request-context");
+	afterEach(() => {
+		delete (globalThis as Record<symbol, unknown>)[VERCEL_CONTEXT];
+	});
+
+	const refused = (body: unknown, status = 422) =>
+		new Response(typeof body === "string" ? body : JSON.stringify(body), { status });
+
+	it("keeps the status and the body's name and message alone", async () => {
+		const error = await refusalError(
+			refused({ name: "validation_error", message: "Bad domain.", statusCode: 422, extra: "x" }),
+			"Resend",
+		);
+		expect(error.message).toBe("Resend answered 422: validation_error: Bad domain.");
+		expect((await refusalError(refused("<html>oops</html>", 500))).message).toBe(
+			"The upstream service answered 500",
+		);
+		expect((await refusalError(refused({ name: 7, message: "  " }, 429))).message).toBe(
+			"The upstream service answered 429",
+		);
+	});
+
+	it("never lets an address in the refusal survive, in any shape it is quoted", async () => {
+		const addresses = [
+			"jane.doe+forms@example.com",
+			"<Jane.Doe@Mail.Example.com>",
+			'"sam_o\'neil@example.com"',
+			"mailto:owner@sub.example.com",
+			"a@b.example.com, c@d.example.test",
+			"x%y@example.test;",
+		];
+		for (const address of addresses) {
+			const error = await refusalError(
+				refused({ name: `refused ${address}`, message: `The to field ${address} is invalid` }),
+			);
+			expect(error.message, address).not.toMatch(/@/);
+			expect(error.message).toContain("[address]");
+		}
+	});
+
+	it("cuts each field to 300 characters", async () => {
+		const error = await refusalError(refused({ name: "n", message: "m".repeat(1000) }));
+		expect(error.message.length).toBeLessThan(360);
+	});
+
+	it("reports the refusal later, on the platform's waitUntil, with no address in what is sent", async () => {
+		const fetch = vi.fn(async () => new Response("{}"));
+		vi.stubGlobal("fetch", fetch);
+		const waitUntil = vi.fn();
+		(globalThis as Record<symbol, unknown>)[VERCEL_CONTEXT] = { get: () => ({ waitUntil }) };
+		await reportRefusedResponse(
+			refused({ name: "validation_error", message: "Cannot send to owner@example.com" }),
+			{ dsn: DSN, service: "Resend", tags: { route: "contact" } },
+		);
+		expect(waitUntil).toHaveBeenCalledOnce();
+		await waitUntil.mock.calls[0]?.[0];
+		const body = (fetch.mock.calls[0] as unknown as [string, RequestInit])[1].body as string;
+		expect(body).not.toContain("owner@example.com");
+		const [, , event] = lines(body);
+		expect(event.exception.values[0].value).toBe(
+			"Resend answered 422: validation_error: Cannot send to [address]",
+		);
+		expect(event.tags.route).toBe("contact");
 	});
 });

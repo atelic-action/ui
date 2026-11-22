@@ -226,6 +226,14 @@ export interface HeaderPhone extends Phone {
  */
 export type SiteMenuSurface = "dark" | "light";
 
+/** How the burger that opens the phone menu is drawn. */
+export interface MenuBurgerStyle {
+	/** Sets the three lines before the words (`menuLabel`) rather than after them. Off by default. */
+	labelAfter?: boolean;
+	/** Draws the burger inside an outlined pill. Off by default. */
+	outlined?: boolean;
+}
+
 /** A conversion action rendered as a button link. */
 export interface CallToAction {
 	label: string;

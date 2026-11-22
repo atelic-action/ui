@@ -284,3 +284,115 @@ export const LinkColumnsDefaultPhone: Story = {
 		await expect(b as number).toBeGreaterThan(a as number);
 	},
 };
+
+/**
+ * A band that restates `--primary` on a plain element (not a theme root):
+ * the proof strip's stars inside it take the band's primary, since
+ * `--proof-star-fill` falls back to `--primary` where it is read.
+ */
+export const BandRestatingPrimary: Story = {
+	args: {},
+	render: () => (
+		<div style={{ "--primary": "rgb(30, 77, 43)" } as CSSProperties}>
+			<ProofStrip
+				ariaLabel="Why the line is long"
+				items={[
+					{
+						value: (
+							<>
+								4.9 <StarRow rating={5} size={15} />
+							</>
+						),
+						label: "212 reviews",
+					},
+				]}
+			/>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const star = canvas.getByRole("img", { name: /5 out of 5/ });
+		await expect(getComputedStyle(star).color).toBe("rgb(30, 77, 43)");
+	},
+};
+
+/**
+ * The heading color steps aside on `data-ground="dark"` and `"primary"` only,
+ * and on markup that carries one of the dark sections' classes without the
+ * attribute, as 8.1.0 matched them; another `data-ground` value keeps the
+ * brand's color.
+ */
+export const GroundsAndClasses: Story = {
+	args: {},
+	render: () => (
+		<div style={BRAND as CSSProperties}>
+			<div className="callout-panel">
+				<h2>A callout panel by its class alone</h2>
+			</div>
+			<section className="section" data-ground="paper">
+				<div className="wrap">
+					<h2>A ground of another kind</h2>
+				</div>
+			</section>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const color = (name: string) => getComputedStyle(canvas.getByRole("heading", { name })).color;
+		await expect(color("A callout panel by its class alone")).not.toBe("rgb(20, 70, 40)");
+		await expect(color("A ground of another kind")).toBe("rgb(20, 70, 40)");
+	},
+};
+
+/**
+ * The hero's lead measure and the gap between its kicker, headline, lead,
+ * and actions: unset, the split hero keeps 52ch and its 12, 22, and 26px;
+ * set, one measure and one gap.
+ */
+export const HeroMeasureAndGap: Story = {
+	args: {},
+	render: (_args, { parameters }) => (
+		<div style={parameters.tokens as CSSProperties}>
+			<Hero
+				layout="split"
+				eyebrow="Alder Street, since 2014"
+				title="Bread worth the early line."
+				subtitle="Country loaves and morning buns, out of the oven by seven."
+				primaryCTA={{ label: "Order ahead", href: "/order" }}
+				image={{ src: image("ovens"), alt: "The ovens at dawn" }}
+			/>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { name: "Bread worth the early line." });
+		const lead = canvas.getByText(/out of the oven by seven/);
+		const actions = canvas.getByRole("link", { name: /Order ahead/ }).parentElement as HTMLElement;
+		const ch = (element: Element) => {
+			const probe = document.createElement("span");
+			probe.style.cssText = "position:absolute;visibility:hidden;width:52ch";
+			element.append(probe);
+			const width = probe.getBoundingClientRect().width;
+			probe.remove();
+			return width;
+		};
+		await expect(
+			Math.abs(Number.parseFloat(getComputedStyle(lead).maxWidth) - ch(lead)),
+		).toBeLessThan(1);
+		await expect(getComputedStyle(title).marginTop).toBe("12px");
+		await expect(getComputedStyle(lead).marginTop).toBe("22px");
+		await expect(getComputedStyle(actions).marginTop).toBe("26px");
+	},
+};
+
+/** The same hero with `--hero-lead-measure` and `--hero-stack-gap` set. */
+export const HeroMeasureAndGapSet: Story = {
+	...HeroMeasureAndGap,
+	parameters: { tokens: { "--hero-lead-measure": "30ch", "--hero-stack-gap": "16px" } },
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { name: "Bread worth the early line." });
+		const lead = canvas.getByText(/out of the oven by seven/);
+		const actions = canvas.getByRole("link", { name: /Order ahead/ }).parentElement as HTMLElement;
+		await expect(getComputedStyle(lead).maxWidth).not.toBe("none");
+		await expect(getComputedStyle(title).marginTop).toBe("16px");
+		await expect(getComputedStyle(lead).marginTop).toBe("16px");
+		await expect(getComputedStyle(actions).marginTop).toBe("16px");
+	},
+};

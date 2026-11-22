@@ -269,8 +269,16 @@ describe("ContactDock tracking", () => {
 		for (const callback of callbacks) callback();
 		await waitFor(() => expect(dock.style.bottom).toBe("656px"));
 
-		// A transition moves the bar without resizing it: its end measures again.
+		// A transition ending inside the header (a pill, a chevron) is not the
+		// header moving, so it measures nothing.
 		bottom = 90;
+		const pill = document.createElement("a");
+		header.append(pill);
+		pill.dispatchEvent(new Event("transitionend", { bubbles: true }));
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(dock.style.bottom).toBe("656px");
+
+		// The header's own transition moves it without resizing it: its end measures again.
 		header.dispatchEvent(new Event("transitionend"));
 		await waitFor(() => expect(dock.style.bottom).toBe("686px"));
 		header.remove();
