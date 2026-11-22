@@ -10,15 +10,15 @@ Every export, grouped by the entry it is imported from. The gallery column links
 
 | Export | Entry | What it is | Gallery |
 |---|---|---|---|
-| `SiteHeader` | `@atelic-action/ui/chrome` | The fixed bar: the lockup, the nav or a page's own stops, the call to action, the burger; transparent, solid, or dark. A nav entry with `columns` is a group that opens a mega menu panel, and `phones` puts up to two tel links in the bar (8.0.0) | [#site-header](https://ui.atelic.me/#site-header) |
+| `SiteHeader` | `@atelic-action/ui/chrome` | The fixed bar: the lockup, the nav or a page's own stops, the call to action, the burger; transparent, solid, or dark. A nav entry with `columns` is a group that opens a mega menu panel of link columns (nested links, badges), a picture, icon rows, and cards beside a ticked feature card, and `phones` puts up to two tel links in the bar (8.0.0) | [#site-header](https://ui.atelic.me/#site-header) |
 | `SiteMenu` | `@atelic-action/ui/chrome` | The phone's full screen menu, on a native modal dialog; a group is an accordion that opens one at a time, every group closed when the menu opens (8.0.0) | [#site-menu](https://ui.atelic.me/#site-menu) |
 | `ContactDock` | `@atelic-action/ui/chrome` | The floating Get in Touch launcher and its panel of ways to reach the business, inset alike from the right and the bottom, lifting over the phone's sticky bar and riding above the footer; `SiteShell` mounts it from `site.contactDock` (8.0.0) | [#contact-dock](https://ui.atelic.me/#contact-dock) |
 | `Footer` | `@atelic-action/ui/chrome` | The default footer: the brand column (logo, Google rating, linked address, phone, email), the link columns, and the closing bar | [#footer](https://ui.atelic.me/#footer) |
 | `ClosingBar`, `Copyright`, `Credit` | `@atelic-action/ui/chrome` | The line that closes every page, in two sides that each take anything: by default `Copyright` with the business's name on the left and `Credit`, the practice's made with line, on the right | [#closing-bar](https://ui.atelic.me/#closing-bar) |
 | `StickyCTABar` | `@atelic-action/ui/chrome` | The phone's bottom bar: the call to action and a call shortcut, there from the top on an interior page (`fromTop`) and sliding in after a scroll on a hero page | [#sticky-cta-bar](https://ui.atelic.me/#sticky-cta-bar) |
-| `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
+| `BrandLockup` | `@atelic-action/ui/chrome` | The header's identity as one link, with the recipient's mark on a sent document; the brand's own mark per surface (`onLight`, `onDark`), never recolored, at `--brand-mark-height` (8.0.0) | [#brand-lockup](https://ui.atelic.me/#brand-lockup) |
 | `SkipLink` | `@atelic-action/ui/chrome` | The keyboard user's jump past the chrome | [#skip-link](https://ui.atelic.me/#skip-link) |
-| `Brand`, `BrandLogo`, `CallToAction`, `HoursRow`, `MenuContact`, `NavLink`, `NavGroupColumn`, `NavGroupLink`, `NavFeature`, `HeaderPhone`, `ContactDockConfig`, `ContactDockItem`, `ContactDockIcon`, `Phone`, `PostalAddress`, `SiteLink`, `SocialLink`, `PageStop`, `FooterColumn`, `FooterColumnLink`, `FooterIcon` | `@atelic-action/ui/chrome` | The shapes the chrome renders from (types) | none |
+| `Brand`, `BrandLogo`, `CallToAction`, `HoursRow`, `MenuContact`, `NavLink`, `NavPanelSection`, `NavGroupColumn`, `NavGroupLink`, `NavGroupChildLink`, `NavPictureSection`, `NavIconRowsSection`, `NavIconRow`, `NavIcon`, `NavCardsSection`, `NavCard`, `NavFeature`, `HeaderPhone`, `ContactDockConfig`, `ContactDockItem`, `ContactDockIcon`, `Phone`, `PostalAddress`, `SiteLink`, `SocialLink`, `PageStop`, `FooterColumn`, `FooterColumnLink`, `FooterIcon` | `@atelic-action/ui/chrome` | The shapes the chrome renders from (types) | none |
 | `NotFound` | `@atelic-action/ui/components` | The body of the page an unknown path renders | [#not-found](https://ui.atelic.me/#not-found) |
 | `Checklist` | `@atelic-action/ui/components` | A short list of checks, each passed or failed | [#checklist](https://ui.atelic.me/#checklist) |
 | `IconList` | `@atelic-action/ui/components` | A list whose bullets are icons, one for the list or one per item, each in a tone | [#icon-list](https://ui.atelic.me/#icon-list) |
@@ -75,7 +75,7 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ExpandList` | `@atelic-action/ui/sections` | A light accordion of numbered rows whose bodies stay in the HTML while closed | [#expand-list](https://ui.atelic.me/#expand-list) |
 | `FAQBrowser` | `@atelic-action/ui/sections` | The help page: live search, a sticky `JumpRail` of categories with scroll spy, expand all, deep links; `contactHref` sets where the no match line points | [#f-a-q-browser](https://ui.atelic.me/#f-a-q-browser) |
 | `FeatureDetail` | `@atelic-action/ui/sections` | Alternating copy and media rows with tags and a tick list | [#feature-detail](https://ui.atelic.me/#feature-detail) |
-| `FeatureGrid` | `@atelic-action/ui/sections` | Numbered cards with a hover lift; a card is a link or holds one, never both | [#feature-grid](https://ui.atelic.me/#feature-grid) |
+| `FeatureGrid` | `@atelic-action/ui/sections` | Numbered cards with a hover lift under a heading and an optional `lead`; a card is a link or holds one, never both | [#feature-grid](https://ui.atelic.me/#feature-grid) |
 | `FullBleedVideo` | `@atelic-action/ui/sections` | A silent looping clip edge to edge: the poster at once, the clip once it is on screen and only while on screen, the poster alone under reduced motion (8.0.0) | [#full-bleed-video](https://ui.atelic.me/#full-bleed-video) |
 | `Gallery` | `@atelic-action/ui/sections` | A captioned wall of the business's own work, a shot brief where a photo is missing | [#gallery](https://ui.atelic.me/#gallery) |
 | `Hero` | `@atelic-action/ui/sections` | The home page opener: a full bleed image (or the token gradient), a headline with a serif accent, a pair of actions, trust figures, and a scroll cue; `layout="split"` sets the copy on the primary field beside the photo (8.0.0) | [#hero](https://ui.atelic.me/#hero), [#hero-split](https://ui.atelic.me/#hero-split) |
@@ -91,13 +91,13 @@ Every export, grouped by the entry it is imported from. The gallery column links
 | `ProofStrip` | `@atelic-action/ui/sections` | One row of short proof facts under a hero, a figure over its label each, wrapping to a grid on a phone (8.0.0) | [#proof-strip](https://ui.atelic.me/#proof-strip) |
 | `PricingBand` | `@atelic-action/ui/sections` | A brand colored band with the price in a card beside it, informational by design | [#pricing-band](https://ui.atelic.me/#pricing-band) |
 | `PricingCard` | `@atelic-action/ui/sections` | A standalone price card with a tick list and its booking action | [#pricing-card](https://ui.atelic.me/#pricing-card) |
-| `ProcessSteps` | `@atelic-action/ui/sections` | A dark band of numbered steps beside a frame | [#process-steps](https://ui.atelic.me/#process-steps) |
+| `ProcessSteps` | `@atelic-action/ui/sections` | A dark band of numbered steps beside a frame, landing on its `id` | [#process-steps](https://ui.atelic.me/#process-steps) |
 | `ProfileCards` | `@atelic-action/ui/sections` | Equal weight cards of media beside a short bio | [#profile-cards](https://ui.atelic.me/#profile-cards) |
 | `RevealSlider` | `@atelic-action/ui/sections` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography | [#reveal-slider](https://ui.atelic.me/#reveal-slider) |
 | `ReviewCarousel` | `@atelic-action/ui/sections` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source | [#review-carousel](https://ui.atelic.me/#review-carousel) |
 | `ReviewWall` | `@atelic-action/ui/sections` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more | [#review-wall](https://ui.atelic.me/#review-wall) |
 | `SplitSection` | `@atelic-action/ui/sections` | The two column band: copy beside copy, or media beside copy | [#split-section](https://ui.atelic.me/#split-section) |
-| `SiteConfig` and its member types (`Density` among them), `formatClock`, `formatHoursRange`, `isClosed`, `isHoneypotFilled`, `trackEvent` | `@atelic-action/ui/sections` | The site contract the sections read, and the hours, honeypot, and lead event helpers | none |
+| `SiteConfig` and its member types (`Density` among them), `Surface` (the band every section's `surface` takes, 8.0.0), `formatClock`, `formatHoursRange`, `isClosed`, `isHoneypotFilled`, `trackEvent` | `@atelic-action/ui/sections` | The site contract the sections read, and the hours, honeypot, and lead event helpers | none |
 | `Bubble`, `ImageFrame`, `ProseBlocks`, `QuoteCard`, `StarRow`, `TickList` | `@atelic-action/ui/primitives` | The marketing primitives: a round tile holding an icon or a step number, a framed image, prose blocks (headings at two levels, paragraphs, lists, and figures: small captioned tiles in rows, an image or a silent looping clip played only while on screen, each opening large in a dialog), a quote card, a row of filled stars, a tick list | [#marketing-primitives](https://ui.atelic.me/#marketing-primitives) |
 | `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, the contact dock when configured, mounting the base path provider and setting the section density | none |
 | `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
@@ -152,7 +152,7 @@ Import the stylesheets in this order, from the root route or the site's base she
 
 Every rule in the package sheets is scoped under `.atelic-ui`, the one root class a consumer wears: a site puts it on its outermost wrapper, an app on the region that holds a package component. Which sheets it imports decides what it gets, so a site importing `base.css` gets the resets and typography under that class and an app importing `components.css` alone gets none of them.
 
-The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none, so `theme.css` stays the one file a site edits to rebrand. The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
+The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none of them, so `theme.css` stays the one file a site edits to rebrand; the only values it declares are the defaults of its own optional tokens, on a selector that weighs nothing (see [Tokens](#tokens)). The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
 
 ## Rendering From Props
 
@@ -185,7 +185,18 @@ an image; the chrome draws no second wordmark. A marketing site's lockup
 passes no recipient. The run after the wordmark reads `--brand-accent` when
 the theme sets it (a client branded host pins the sender's orange there) and
 falls back to `--primary` (0.6.1), and the recipient's mark sits at the same
-30 pixel height as the sender's.
+height as the sender's, `--brand-mark-height`.
+
+The mark is the brand's own artwork. A site whose logo is cut once per
+surface passes `logo.onLight` (drawn on the light bar) and `logo.onDark`
+(drawn on the dark bar, over a hero, and in the footer), and the chrome
+recolors neither; either alone serves every surface. A site that passes
+`logo.src` alone keeps what it had: a light mark that the header tints to
+ink with a filter on the light bar. Every header mark stands at
+`--brand-mark-height` (30px unless the theme sets it) and runs as wide as
+its own ratio, so a wide wordmark reads at a height the theme picks, and
+`logo.wordmark: false` drops the live name beside artwork that already
+spells it.
 
 The menu is a native `<dialog>` opened with `showModal()`, so Escape, focus containment, and focus return come from the browser.
 
@@ -483,7 +494,7 @@ Every site's footer has one shape, and `Footer` draws it (7.0.0):
 - **Four link columns:** Company, Resources, Social, and Legal, in that order. A Social link carries its icon in front of its words. A column with no links is left out, and the grid sizes itself to the columns shown.
 - **The closing bar:** `ClosingBar` under it all, `Copyright` with the business's name on the left and `Credit` on the right.
 
-The rating's five stars read `--star-fill`, the same token `StarRating`'s filled star reads, and fall back to the review gold (`#f5b301`) when a theme sets none, so one line in `theme.css` recolors every star on a site (8.0.0).
+The rating's five stars read `--star-fill`, the same token `StarRating`'s filled star reads, and fall back to `--review-gold` (`#f5b301`) when a theme sets none, so one line in `theme.css` recolors every star on a site (8.0.0). The logo is the mark cut for a dark surface (`logo.onDark`) when the site gives one, else `logo.src`.
 
 The header carries the services and the service areas, so the footer does not repeat them. It holds no blurb, no hours, no call to action, and no credential badges; a site that needs one of those puts it on a page.
 
@@ -506,37 +517,73 @@ Moving to 7.0.0: `footerBlurb` and `footer.contactHeading` are gone from the con
 
 ### The Mega Menu
 
-A nav entry in the config is a page or a group. A group is an entry with `columns`; its `to` is the group's own page, which `allLabel` links to first inside the group. On a desktop the label is a control that opens a panel under the bar holding the columns and, when the group has one, the `feature` card at the right (a headline, a line, a button, and a picture). A mouse hover or a keyboard focus opens a group, a click pins it open, and Escape, a click outside, or focus leaving it closes it; left and right walk the bar, the down arrow steps into the panel, and up and down walk its links. On a phone and a tablet the menu opens each group as an accordion, one at a time, and every group starts closed whenever the menu opens, the one holding the current page included. A closed panel stays in the HTML, `inert`.
+A nav entry in the config is a page or a group. A group is an entry with `columns`, its panel's sections from left to right; its `to` is the group's own page. On a desktop the label is a control that opens a panel under the bar, as wide as the page's wrap whatever it holds, and every panel opens to the same height (440px), the feature card's, so moving along the bar never makes it jump. A mouse hover or a keyboard focus opens a group, a click pins it open, and Escape, a click outside, or focus leaving it closes it; left and right walk the bar, the down arrow steps into the panel, and up and down walk every link in it, whatever section holds it. A closed panel stays in the HTML, `inert`.
+
+A section is one of four kinds, named by `kind`; a section without one is a link column:
+
+| Kind | What it draws | Its data |
+|---|---|---|
+| link column (`kind` left out, or `"links"`) | A mono heading over its links. The heading is itself a link when it has an `href`. A link may carry a `description` under it, a `badge` ("Popular") in a pill after its label, and `children`, drawn indented under it with an elbow, each with its own `badge` | `{ heading, href?, links: [{ label, href, description?, badge?, external?, children? }] }` |
+| `"picture"` | One photo filling the section, its caption over a wash at the foot, the whole of it a link named by the caption | `{ kind: "picture", image: { src, alt? }, caption, href }` |
+| `"rows"` | Icon rows two across under an optional heading: a lucide icon by name, a label, and a short line, one row (`highlight`) set on the primary | `{ kind: "rows", heading?, rows: [{ label, description?, icon, href, highlight? }] }` |
+| `"cards"` | Small cards under an optional heading, set off by a rule: a kicker, a title, and a meta line beside a square picture, or a quiet tile without one | `{ kind: "cards", heading?, cards: [{ kicker?, title, meta?, image?, href }] }` |
+
+A row's `icon` is one of `calculator`, `calendar`, `card`, `chat`, `document`, `help`, `home`, `mail`, `map`, `phone`, `pin`, `play`, `shield`, `star`, `tool`, `truck`, and `users` (the `NavIcon` type), each a lucide icon. `feature` is the card at the panel's right, 340px wide on `--primary-deep`: a picture taking the height the words leave, an eyebrow, a headline, a line (`text`), ticked `points` (`TickList`), and its action as a `Button` with the arrow, which turns light on the card (`.on-primary`). `allLabel` is off unless given; given, it links the group's own page first in the panel at a column link's weight.
+
+On a phone and a tablet the menu opens each group as an accordion, one at a time, and every group starts closed whenever the menu opens, the one holding the current page included. It draws the same data: each section's heading, a link's children indented under it with the same elbow, the badges kept, icon rows and cards as plain links of their labels and titles, and a picture left out, since its link is a desktop flourish and the menu pins its own action at the foot. A plain entry wears a number, and the numbers count plain entries alone, so a group between them leaves no gap.
 
 ```ts
 // src/site.config.ts
 nav: [
 	{
-		label: "Services",
-		to: "/services",
-		allLabel: "All services",
+		label: "Menu",
+		to: "/menu",
 		columns: [
 			{
-				heading: "Repair",
-				href: "/services/repair",
-				links: [{ label: "Patching", href: "/services/patching", description: "Small fixes, same week" }],
+				heading: "Bread",
+				href: "/menu/bread",
+				links: [
+					{
+						label: "Country sourdough",
+						href: "/menu/sourdough",
+						children: [{ label: "Seeded", href: "/menu/seeded" }],
+					},
+					{ label: "Morning buns", href: "/menu/buns", badge: "Popular" },
+				],
 			},
 		],
 		feature: {
-			eyebrow: "Free estimate",
-			title: "Know the number first.",
-			cta: { label: "Get an estimate", href: "/estimate" },
-			image: { src: "/images/menu-feature.jpg", alt: "A finished job" },
+			eyebrow: "Order ahead",
+			title: "Skip the Saturday line.",
+			points: ["Order by Friday noon", "Pick a pickup time", "Pay at the counter"],
+			cta: { label: "Order ahead", href: "/order" },
+			image: { src: "/images/menu-feature.jpg", alt: "The ovens at dawn" },
 		},
+	},
+	{
+		label: "Visit",
+		to: "/visit",
+		columns: [
+			{ kind: "picture", image: { src: "/images/menu-shop.jpg" }, caption: "Bread from the back of the shop.", href: "/visit" },
+			{
+				kind: "rows",
+				heading: "Plan a visit",
+				rows: [
+					{ label: "Order ahead", description: "Pick a loaf and a time", icon: "calendar", href: "/order", highlight: true },
+					{ label: "Questions", description: "Plain answers", icon: "help", href: "/faq" },
+				],
+			},
+			{ kind: "cards", heading: "Latest", cards: [{ kicker: "From the blog", title: "Why the rye takes three days", meta: "4 min", href: "/blog/rye" }] },
+		],
 	},
 	{ label: "About", to: "/about" },
 ],
-header: { phones: [{ e164: "+15555550100", display: "(555) 555-0100", label: "Main office" }] },
+header: { phones: [{ e164: "+15555550100", display: "(555) 555-0100", label: "The shop" }] },
 ```
 
-The footer's Company column lists the entries themselves and never a group's links. A bar holding a group or a number keeps the burger up to 1180px instead of 900px, since it needs the room; the second of two numbers shows from 1360px, and the menu lists both. `header.phones` takes up to two, each a tel link; the first is also the round call button beside the burger on a phone.
+`SiteShell` puts the base path on every link and picture a section holds. The footer's Company column lists the entries themselves and never a group's links. A bar holding a group or a number keeps the burger up to 1180px instead of 900px, since it needs the room; the second of two numbers shows from 1360px, and the menu lists both. `header.phones` takes up to two, each a tel link; the first is also the round call button beside the burger on a phone.
 
-`contactDock` in the config turns on the floating launcher: `label` is the launcher's words, `title` and `subtitle` the panel's head, `footnote` its foot, and `items` the ways to reach the business, each `{ label, description, icon, href }` or, for something already on the page such as a chat vendor's window, `onSelect` in place of `href`. A dock item always points at the business's own flow.
+`contactDock` in the config turns on the floating launcher: `label` is the launcher's words, `title` and `subtitle` the panel's head, `footnote` its foot, and `items` the ways to reach the business, each `{ label, description, icon, href }` or, for something already on the page such as a chat vendor's window, `{ label, description, icon, onSelect }`: the type takes one or the other and never neither. A dock item always points at the business's own flow. The dock lifts over the phone's sticky bar while it shows and rides above the footer as it scrolls in. It finds the bar by the `data-dock-lift` attribute `StickyCTABar` wears, which keeps `data-showing` current (`lift` names another selector), and the footer by `avoid`, a ref or a selector, which `SiteShell` fills with a ref to its own footer. It finds both again only when the page's elements change (a route change, a bar that mounts late) and measures again when either, or the page, changes size, never querying the page on a scroll frame. Rendered with `track={false}` it sets no inset of its own and sits in the stylesheet's corner, 24px in from the right and the bottom, 16px on a phone.
 
 ### Density
 
@@ -556,6 +603,11 @@ The space a section leaves above and below itself is one token, `--section-space
 - **`.nav-links a` became `.nav-links > a`** so a panel's links keep their own styling. A site rule written against the old selector should be checked against the bar.
 - **Surfaces:** `BlogIndex`, `BlogPost`, `LegalPage`, `LocationSection`, `Locations`, `ProfileCards`, and `ReviewCarousel` take `surface` like the sections that had it, and `PageHero` takes it defaulting to `alt`. Nothing alternates on its own except the `FAQBrowser`'s subject bands, every second one now on the alternate surface.
 - **Eleven components are gone**, none of them used by any site, app, or runner: the sections `DeviceShowcase`, `MediaBand`, `CTABanner`, `PressQuotes` (with `sortPress` and the `PressItem` type), `SocialStrip`, and `MenuList`; the app shell's `CardErrorBoundary`; and the email pieces `MonoTable`, `StatStrip`, `WhatMoved`, and `RecordTimelineLegend`. Their props types and their styles (`.cta-banner`, `.device-*`, `.media-band`, `.menu-list`, `.press-quotes`, `.social-strip`) went with them. A page that still imports one fails to build: a banner moves to `CTASection` or a site's own `SplitSection`, a press row to `ReviewCarousel` or `LogoMarquee`, a photo strip to `Gallery`. The template's example pages that use `CTABanner`, `PressQuotes`, and `SocialStrip` are repointed in the template.
+- **The mega menu takes more than link columns.** `columns` is now the panel's sections (`NavPanelSection`): a link column as before, or a `picture`, `rows`, or `cards` section; a link takes `badge` and `children`, and the feature card takes `points`. The panel is the wrap's width and 440px tall whatever it holds, the feature card is 340px on `--primary-deep`, and its action is the `Button` primitive. `allLabel` stays off unless given and now reads as a plain link at a column link's weight, where it was a bold primary line with an arrow. Existing groups render with the new spacing (a link at 17px, the panel's padding 36 by 40) and nothing to change in the config.
+- **The brand mark.** `logo.onLight` and `logo.onDark` take the brand's own artwork per surface, never recolored, and `logo.wordmark: false` drops the live name. A site passing `logo.src` alone changes in one way: its mark is as tall as `--brand-mark-height` (30px) and as wide as its own ratio, where the header squeezed every mark into a 30 by 30 box, so a square mark looks exactly as it did and a wider one stops being squashed. The light bar still tints it to ink. The footer draws `logo.onDark` when it is given.
+- **Every raw color and weight in the sheets is a token**, each defaulting to the value it replaced (see [Tokens](#tokens)), so a site that sets none looks the same, with one rounding exception: the reveal slider's before label and line read `--scrim` (`#140f0b`) where they had `rgb(20 16 12)`, one step lighter in green and blue. A theme sets `--on-primary` for a primary light enough to want dark words, and the weight tokens for a font kit that lacks 500, 600, or 800. A site that styled against `#fff` in its own sheet is unaffected.
+- **`ContactDockItem` is a union:** an item has an `href` or an `onSelect`, and a config with neither no longer compiles. `ContactDock`'s `avoid` takes a ref as well as a selector, `lift` names the bar it rides over (default `[data-dock-lift]`, which `StickyCTABar` now wears), and with `track={false}` it sets no inset of its own. `SiteShell` hands the dock a ref to its footer, so a page's own `footer` element can no longer be mistaken for it. `Footer` and `ClosingBar` take a `ref`.
+- **Smaller changes:** the sections' `surface` props share one exported type, `Surface`; `ProcessSteps` takes `id`; `FeatureGrid` takes `lead`; `Button` calls `onClick` on a link as well as a button; `SiteMenu` numbers plain entries alone, so a group no longer leaves a gap in the count; a `StatRow` figure given as words wraps instead of pushing the page sideways; `FullBleedVideo` mounts its video, and fetches the clip, only once the band is within a screen of the viewport; the split hero's copy starts where a `.wrap`'s content does at any width; and the FAQ's icon buttons hover with a wash of the text color, which shows on an alternate band.
 - **Fixes the package now owns:** a primary button or an eyebrow inside `.on-primary` (the split hero, the callout panel, the menu's feature card, or a site band wearing the class) turns light, and the footer's stars read `--star-fill`.
 
 ### Every Section
@@ -781,7 +833,25 @@ The plain text alternative part ports as plain functions with no React anywhere 
 
 ### Tokens
 
-The sheets read a few optional tokens beyond the palette, each with a fallback, so a theme sets them only to change them: `--star-fill` colors every filled star (`StarRating`'s, which falls back to the text color, and the footer's rating, which falls back to the review gold), `--font-condensed` sets a `CalloutPanel` title's face, and the density tokens are under [Density](#density).
+The sheets read a set of tokens beyond the theme's palette, type, radii, and layout. Each has a default, declared once in `components.css` on `:where(.atelic-ui)`, which weighs nothing, so a theme's own `.atelic-ui` rule wins and sets one only to change it; every default is the value the sheets used before it was a token, so a site that sets none looks as it did (8.0.0). No layered sheet paints a raw color anywhere else: `tst/no-raw-colors.test.ts` fails on a hex, a color function, or a named color outside a token's declaration, with its few exceptions listed in the test, each with its reason.
+
+| Token | Default | What it colors or sets |
+|---|---|---|
+| `--on-primary` | `#fff` | Anything set on the primary color: a primary button's words, the dock's head and lead icon, the split hero's copy, the callout panel, the price band, a step bubble's badge, a menu badge, a highlighted menu row, the feature card |
+| `--on-dark` | `#fff` | Anything on a dark band or over a photograph: the skip link, the transparent header, the dark header's text (mixed with `--surface`), the phone menu's rules, the footer's headings and links, a hero's headline, the contact card, the process band, a ghost button and a chip on dark, the reveal slider's handle |
+| `--on-dark-chip` | `#efe7da` | A chip's words on a dark band (the credentials chips, `Chip onDark`) |
+| `--on-dark-quiet` | `rgb(248 244 237 / 0.74)` | Quiet text on the dark process band |
+| `--shade` | `#000` | Pure shadow: a lightbox backdrop, a caption's wash, a headline's text shadow, the dark button's press, and the fallbacks behind `--hairline` and `--shadow-md` |
+| `--scrim` | `#140f0b` | The warm wash a hero lays over its photograph, and the reveal slider's before label |
+| `--placeholder-ink` | `#8a7c68` | The hatching and ring of a placeholder before photography exists |
+| `--hover-tint` | `rgb(33 28 23 / 0.06)` | The light bar's hover behind a nav entry |
+| `--review-gold` | `#f5b301` | The footer rating's stars when the theme sets no `--star-fill` |
+| `--grade-a` to `--grade-d`, each with `-line` and `-bg` | A `#1b7f3b`, B `#9a6b00` on `#c99a1a`, C `#a84500` on `#e8650a`, D `#b3261e`, grounds `#eaf6ee`, `#fdf5dc`, `#fff0e3`, `#fdecea` | The grade chip's words, rule, and ground, green to red whatever the brand is |
+| `--weight-light`, `--weight-regular`, `--weight-medium`, `--weight-semibold`, `--weight-strong`, `--weight-bold`, `--weight-heavy` | 300, 400, 500, 600, 650, 700, 800 | Every font weight in every layered sheet. A font kit with only 400 and 700 maps each name to one of those (medium to 400, semibold, strong, and heavy to 700), so the browser synthesizes no weight |
+| `--brand-mark-height` | `30px` | The header mark's height, and a sent document's recipient mark; the width follows the image's own ratio |
+| `--section-space`, `--block-gap`, `--card-min` | `clamp(56px, 9vw, 120px)`, `44px`, `240px` | The section rhythm where no `base.css` sets it (an app importing `components.css` alone); with `base.css` the settings under [Density](#density) win |
+
+Two more read a fallback in place: `--star-fill` colors every filled star (`StarRating`'s, which falls back to the text color, and the footer's rating, which falls back to `--review-gold`), and `--font-condensed` sets a `CalloutPanel` title's face. The tone palette (`--tone-good` and its kin) is under [Page Components](#page-components).
 
 `@atelic-action/ui/tokens` carries the palette and the font stacks with no React import, so a build script or a plain text renderer can read them. `toThemeCSS(palette)` writes the palette out as the site token declarations (`--surface`, `--surface-dark`, `--card`, `--ink`, `--primary`), and `themeTokenMap` exposes which palette key each token takes.
 
