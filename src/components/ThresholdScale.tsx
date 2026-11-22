@@ -34,40 +34,50 @@ export interface ThresholdScaleProps {
 export function ThresholdScale({ max, zones, ticks, readings, className }: ThresholdScaleProps) {
 	let from = 0;
 	const sized = zones.map((zone) => {
+		const start = from;
 		const to = zone.upTo ?? max;
 		const width = ((to - from) / max) * 100;
 		from = to;
-		return { ...zone, width };
+		return { ...zone, start, to, width };
 	});
+	// The zone a reading falls in, which the track's name speaks with the
+	// figure: the scale's verdict is otherwise only the pin's place and color.
+	// A reading on a line belongs to the zone the line closes; one past the
+	// far end, to the last zone.
+	const zoneOf = (value: number) =>
+		sized.find((zone) => value <= zone.to) ?? sized[sized.length - 1];
 	return (
 		<div className={["threshold-scale", className].filter(Boolean).join(" ")}>
-			{readings.map((reading) => (
-				<div className="threshold-scale-row" key={reading.label}>
-					<span className="threshold-scale-label">{reading.label}</span>
-					<span
-						className="threshold-scale-track"
-						role="img"
-						aria-label={`${reading.label}: ${reading.display}`}
-					>
-						{sized.map((zone) => (
-							<span
-								className="threshold-scale-zone"
-								key={zone.label}
-								data-tone={zone.tone}
-								style={{ width: `${zone.width}%` }}
-							/>
-						))}
+			{readings.map((reading) => {
+				const zone = zoneOf(reading.value);
+				return (
+					<div className="threshold-scale-row" key={reading.label}>
+						<span className="threshold-scale-label">{reading.label}</span>
 						<span
-							className="threshold-scale-pin"
-							data-tone={reading.tone}
-							style={{ left: `${Math.min(reading.value / max, 1) * 100}%` }}
-						/>
-					</span>
-					<b className="threshold-scale-value" data-tone={reading.tone}>
-						{reading.display}
-					</b>
-				</div>
-			))}
+							className="threshold-scale-track"
+							role="img"
+							aria-label={`${reading.label}: ${reading.display}${zone ? `, ${zone.label}` : ""}`}
+						>
+							{sized.map((zone) => (
+								<span
+									className="threshold-scale-zone"
+									key={zone.label}
+									data-tone={zone.tone}
+									style={{ width: `${zone.width}%` }}
+								/>
+							))}
+							<span
+								className="threshold-scale-pin"
+								data-tone={reading.tone}
+								style={{ left: `${Math.min(reading.value / max, 1) * 100}%` }}
+							/>
+						</span>
+						<b className="threshold-scale-value" data-tone={reading.tone}>
+							{reading.display}
+						</b>
+					</div>
+				);
+			})}
 			<div className="threshold-scale-row is-axis" aria-hidden="true">
 				<span className="threshold-scale-label" />
 				<span className="threshold-scale-axis">

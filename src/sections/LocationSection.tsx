@@ -16,6 +16,11 @@ export interface LocationSectionProps {
 	lead?: ReactNode;
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
 	surface?: Surface;
+	/**
+	 * The level of the section's title; the hours heading sits one below it,
+	 * so the outline never skips a level. Defaults to 2.
+	 */
+	headingLevel?: 2 | 3 | 4 | 5;
 }
 
 /** Joins service areas into readable prose: "A, B, and C". */
@@ -35,7 +40,10 @@ export function LocationSection({
 	title,
 	lead,
 	surface = "default",
+	headingLevel = 2,
 }: LocationSectionProps) {
+	const Title = `h${headingLevel}` as const;
+	const Subheading = `h${(headingLevel + 1) as 3 | 4 | 5 | 6}` as const;
 	return (
 		<section
 			className={["section location", surface === "alt" && "surface-alt"].filter(Boolean).join(" ")}
@@ -43,14 +51,14 @@ export function LocationSection({
 			<div className="wrap location-grid">
 				<div>
 					<Eyebrow>{eyebrow}</Eyebrow>
-					<h2>{title}</h2>
+					<Title className="location-title">{title}</Title>
 					{lead && <Lead>{lead}</Lead>}
 					{site.serviceAreas.length > 0 && (
 						<p className="loc-areas">Proudly serving {areasSentence(site.serviceAreas)}.</p>
 					)}
 
 					<div className="loc-block">
-						<h4>Hours</h4>
+						<Subheading className="loc-heading">Hours</Subheading>
 						<HoursTable hours={site.hours} clock={site.clock} />
 					</div>
 

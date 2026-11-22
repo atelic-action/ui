@@ -928,6 +928,15 @@
 		gap: 12px;
 		min-width: 0;
 	}
+	/* With no bars the plot says so in the quiet words of the chart's labels. */
+	.atelic-ui .column-chart-empty {
+		flex: 1 1 auto;
+		padding: 18px 0;
+		border-bottom: 1px solid var(--neutral-200);
+		font-size: 0.82rem;
+		color: var(--ink-soft);
+		text-align: center;
+	}
 	.atelic-ui .column-chart-group {
 		flex: 1 1 0;
 		min-width: 0;

@@ -38,7 +38,26 @@ export interface RevealSliderProps {
 	 * than the component's. Name them when the page can be specific.
 	 */
 	ariaLabel?: string;
+	/**
+	 * What the handle's position means, as a screen reader hears it, given
+	 * the whole percent of the frame the before covers. Defaults to each
+	 * side's share by its corner label ("40% Today, 60% The rebuild"), so it
+	 * names whatever the page named the halves.
+	 */
+	valueText?: (value: number) => string;
 }
+
+/** How far each key moves the divider, in percent of the frame. */
+const SLIDER_KEYS: Record<string, (position: number) => number> = {
+	ArrowLeft: (p) => p - 3,
+	ArrowDown: (p) => p - 3,
+	ArrowRight: (p) => p + 3,
+	ArrowUp: (p) => p + 3,
+	PageDown: (p) => p - 10,
+	PageUp: (p) => p + 10,
+	Home: () => 0,
+	End: () => 100,
+};
 
 /** One side of the frame: the photograph, or its shot brief until one exists. */
 function Layer({
@@ -85,6 +104,7 @@ export function RevealSlider({
 	startAt = 50,
 	aspectRatio = "16/10",
 	ariaLabel = "Drag to compare before and after",
+	valueText = (value) => `${value}% ${before.label}, ${100 - value}% ${after.label}`,
 }: RevealSliderProps) {
 	const [pos, setPos] = useState(startAt);
 	const frameRef = useRef<HTMLDivElement>(null);
@@ -109,14 +129,14 @@ export function RevealSlider({
 	const endDrag = () => {
 		dragging.current = false;
 	};
+	// The platform's slider keys: the arrows step, Page Up and Page Down
+	// take a larger step, and Home and End go to the ends. Up and Right
+	// grow the before, Down and Left shrink it.
 	const onKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
-		if (e.key === "ArrowLeft") {
-			setPos((p) => Math.max(0, p - 3));
-			e.preventDefault();
-		} else if (e.key === "ArrowRight") {
-			setPos((p) => Math.min(100, p + 3));
-			e.preventDefault();
-		}
+		const step = SLIDER_KEYS[e.key];
+		if (!step) return;
+		e.preventDefault();
+		setPos((p) => Math.max(0, Math.min(100, step(p))));
 	};
 
 	return (
@@ -143,6 +163,7 @@ export function RevealSlider({
 				aria-valuemin={0}
 				aria-valuemax={100}
 				aria-valuenow={Math.round(pos)}
+				aria-valuetext={valueText(Math.round(pos))}
 				onPointerDown={onPointerDown}
 				onKeyDown={onKeyDown}
 			>

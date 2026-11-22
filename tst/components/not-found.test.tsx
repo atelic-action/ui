@@ -41,3 +41,11 @@ describe("NotFound", () => {
 		expect(screen.getByRole("link", { name: "Back to Home" })).toHaveAttribute("href", "/");
 	});
 });
+
+describe("NotFound, the closing link", () => {
+	it("keeps its arrow out of the name a screen reader hears", () => {
+		render(<NotFound {...base} />);
+		expect(screen.getByRole("link", { name: "Book a Free Consult" })).toBeInTheDocument();
+		expect(screen.queryByRole("link", { name: /→/ })).toBeNull();
+	});
+});

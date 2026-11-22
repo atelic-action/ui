@@ -1388,7 +1388,8 @@
 			gap: 64px;
 		}
 	}
-	.atelic-ui .location-grid h2 {
+	.atelic-ui .location-grid h2,
+	.atelic-ui .location-grid .location-title {
 		margin: 10px 0 18px;
 	}
 	.atelic-ui .loc-areas {
@@ -1401,9 +1402,11 @@
 		margin: 30px 0;
 		max-width: 420px;
 	}
-	.atelic-ui .loc-block h4 {
+	/* The hours heading keeps one look at whatever level the section sets. */
+	.atelic-ui .loc-block .loc-heading {
 		font-family: var(--font-mono);
 		font-size: 0.74rem;
+		font-weight: var(--weight-bold);
 		letter-spacing: 0.16em;
 		text-transform: uppercase;
 		color: var(--neutral-600);
@@ -1813,11 +1816,12 @@
 	}
 	/* A heading's serif accent reads --primary-ink on the page surface
 	   (base.css); on this dark band it keeps the plain primary it had. */
-	.atelic-ui .process :is(h1, h2) .serif,
+	.atelic-ui .process :is(h1, h2, .process-title) .serif,
 	.atelic-ui .process em.serif {
 		color: var(--primary);
 	}
-	.atelic-ui .process h2 {
+	.atelic-ui .process h2,
+	.atelic-ui .process .process-title {
 		color: var(--on-dark);
 	}
 	.atelic-ui .process-grid {
@@ -1857,10 +1861,14 @@
 		color: var(--primary-bright);
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-dark) 22%, transparent);
 	}
-	.atelic-ui .steps h4 {
+	/* A step's title keeps the look it had as an h4 at whatever level the
+	   band sets (an h3 under the default h2). */
+	.atelic-ui .steps .step-title {
 		color: var(--on-dark);
 		margin-bottom: 6px;
 		font-size: 1.25rem;
+		font-weight: var(--weight-bold);
+		letter-spacing: -0.01em;
 	}
 	.atelic-ui .steps p {
 		color: var(--on-dark-quiet);

@@ -17,6 +17,10 @@ export interface JumpRailProps {
 export function JumpRail({ items, ariaLabel = "Page sections" }: JumpRailProps) {
 	const activeId = useScrollSpy(items.map((item) => item.id));
 
+	// With every stop filtered away (a search with no match) there is nowhere
+	// to jump, so no navigation landmark is drawn empty.
+	if (items.length === 0) return null;
+
 	return (
 		<nav className="jump-rail" aria-label={ariaLabel}>
 			<div className="wrap jump-rail-inner">
@@ -25,6 +29,9 @@ export function JumpRail({ items, ariaLabel = "Page sections" }: JumpRailProps) 
 						key={item.id}
 						href={`#${item.id}`}
 						className={activeId === item.id ? "active" : undefined}
+						// The marked tab is told apart by more than its color and underline:
+						// a screen reader hears where on the page the reader is.
+						aria-current={activeId === item.id ? "location" : undefined}
 					>
 						{item.label}
 					</a>

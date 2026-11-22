@@ -26,6 +26,8 @@ export interface ColumnChartProps {
 	legend?: Array<{ label: string; tone: Tone }>;
 	/** The tallest a bar draws, in pixels. */
 	height?: number;
+	/** What the chart says, shown and spoken, when it has no bars; defaults to "No data to show". */
+	emptyLabel?: string;
 	className?: string;
 }
 
@@ -34,18 +36,41 @@ export interface ColumnChartProps {
  * their own label and total, so a reader compares a quarter with the one
  * before it and with the same quarter a year earlier in one picture.
  */
-export function ColumnChart({ groups, legend, height = 120, className }: ColumnChartProps) {
+export function ColumnChart({
+	groups,
+	legend,
+	height = 120,
+	emptyLabel = "No data to show",
+	className,
+}: ColumnChartProps) {
 	const all = groups.flatMap((group) => group.bars);
 	const max = Math.max(...all.map((bar) => bar.value), 1);
 	const figure = (bar: ColumnChartBar) => bar.display ?? bar.value.toLocaleString("en-US");
+	// A bar marked apart from its group is told by its tone; the legend's
+	// words for that tone go into the picture's name, so the mark is never
+	// carried by color alone. A group's tone is named by the group's label.
+	const meaning = (tone: Tone) => legend?.find((entry) => entry.tone === tone)?.label;
+	const describe = (bar: ColumnChartBar, group: ColumnChartGroup) => {
+		const marked = bar.tone && bar.tone !== group.tone ? meaning(bar.tone) : undefined;
+		return `${bar.label} ${bar.value.toLocaleString("en-US")}${marked ? ` (${marked})` : ""}`;
+	};
 	const summary = groups
 		.map(
 			(group) =>
 				`${group.label ? `${group.label}${group.total ? `, ${group.total}` : ""}: ` : ""}${group.bars
-					.map((bar) => `${bar.label} ${bar.value.toLocaleString("en-US")}`)
+					.map((bar) => describe(bar, group))
 					.join(", ")}`,
 		)
 		.join("; ");
+	if (all.length === 0) {
+		return (
+			<div className={["column-chart", "is-empty", className].filter(Boolean).join(" ")}>
+				<div className="column-chart-plot" role="img" aria-label={emptyLabel}>
+					<p className="column-chart-empty">{emptyLabel}</p>
+				</div>
+			</div>
+		);
+	}
 	return (
 		<div className={["column-chart", className].filter(Boolean).join(" ")}>
 			<div className="column-chart-plot" role="img" aria-label={summary}>

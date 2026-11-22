@@ -289,6 +289,15 @@
 		margin-top: 16px;
 		max-width: 60ch;
 	}
+	/* On a dark band the whole heading lifts, not only the eyebrow: the
+	   title to --on-dark, so a site's colored heading rule cannot sink it, and
+	   the lead to the band's quiet words (--ink-soft read 2.26 to 1 there). */
+	.atelic-ui .section-head.on-dark > :is(h1, h2, h3) {
+		color: var(--on-dark);
+	}
+	.atelic-ui .section-head.on-dark .section-head-lead {
+		color: var(--on-dark-quiet);
+	}
 }
 
 /* The five primitives that came from template-marketing in 0.19.0 (ATE-643):

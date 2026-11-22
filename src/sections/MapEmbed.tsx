@@ -1,5 +1,6 @@
 import { MapPin, Navigation } from "lucide-react";
 import { useState } from "react";
+import { newTabProps } from "../lib/newTabProps";
 import { useWithBase } from "../routing/BasePathProvider";
 import type { SiteConfig } from "./siteConfig";
 
@@ -27,14 +28,20 @@ export function MapEmbed({ site }: MapEmbedProps) {
 	const address = `${site.address.street}, ${site.address.locality} ${site.address.region} ${site.address.postalCode}`;
 
 	if (site.mapImage) {
+		const image = (
+			<img src={withBase(site.mapImage)} alt={`Map to ${site.name}, ${address}`} loading="lazy" />
+		);
+		// With nowhere to send a reader, the screenshot is a plain picture:
+		// a link to "#" would only jump to the top of the page.
+		if (!site.mapLinkURL) return <div className="map-frame map-static">{image}</div>;
 		return (
 			<a
 				className="map-frame map-static"
-				href={site.mapLinkURL ?? "#"}
-				{...(site.mapLinkURL ? { target: "_blank", rel: "noopener" } : {})}
+				href={site.mapLinkURL}
+				{...newTabProps(site.mapLinkURL, true)}
 				aria-label={`Get directions to ${site.name}, ${address}`}
 			>
-				<img src={withBase(site.mapImage)} alt={`Map to ${site.name}, ${address}`} loading="lazy" />
+				{image}
 				<span className="map-directions">
 					<Navigation size={15} aria-hidden />
 					Get Directions
@@ -48,12 +55,9 @@ export function MapEmbed({ site }: MapEmbedProps) {
 	if (!loaded) {
 		return (
 			<div className="map-frame">
-				<button
-					type="button"
-					className="map-facade"
-					onClick={() => setLoaded(true)}
-					aria-label={`Load the map to ${site.name}, ${address}`}
-				>
+				<button type="button" className="map-facade" onClick={() => setLoaded(true)}>
+					{/* Named by its own words, the address and the hint, so a reader
+					    who presses it by voice says what they see. */}
 					<MapPin size={28} aria-hidden />
 					<span className="map-facade-address">{address}</span>
 					<span className="map-facade-hint">Tap to load the map</span>

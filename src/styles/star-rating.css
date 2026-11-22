@@ -48,14 +48,11 @@
 	.star-rating-fill svg {
 		fill: currentColor;
 	}
+	/* A half star's hit area: a plain area the slider reads its rating from. */
 	.star-rating-hit {
 		position: absolute;
 		inset-block: 0;
 		width: 50%;
-		margin: 0;
-		padding: 0;
-		border: 0;
-		background: none;
 		cursor: pointer;
 	}
 	.star-rating-hit.is-left {
