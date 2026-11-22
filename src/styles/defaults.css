@@ -24,6 +24,10 @@
 		--on-dark-chip: #efe7da;
 		/* Quiet body text on a dark band, such as a process step's line. */
 		--on-dark-quiet: rgb(248 244 237 / 0.74);
+		/* The quietest text on a dark band, the closing bar's copyright and
+		   credit: 5.23 to 1 on a #151515 band. A light ground's gray
+		   (--neutral-500) is too dark for it there. */
+		--on-dark-faint: rgb(248 244 237 / 0.52);
 		/* Pure shadow: a lightbox's backdrop, a caption's wash, a headline's
 		   text shadow, a darker press on a dark button. */
 		--shade: #000;

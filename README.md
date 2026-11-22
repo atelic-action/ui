@@ -878,6 +878,7 @@ The sheets read a set of tokens beyond the theme's palette, type, radii, and lay
 | `--on-dark` | `#fff` | Anything on a dark band or over a photograph: the skip link, the transparent header, the dark header's text (mixed with `--surface`), the phone menu's rules, the footer's headings and links, a hero's headline, the contact card, the process band, a ghost button and a chip on dark, the reveal slider's handle |
 | `--on-dark-chip` | `#efe7da` | A chip's words on a dark band (the credentials chips, `Chip onDark`) |
 | `--on-dark-quiet` | `rgb(248 244 237 / 0.74)` | Quiet text on the dark process band |
+| `--on-dark-faint` | `rgb(248 244 237 / 0.52)` | The quietest text on a dark band: the closing bar's copyright and credit (5.23 to 1 on `#151515`), where a light ground's gray such as `--neutral-500` falls short |
 | `--shade` | `#000` | Pure shadow: a lightbox backdrop, a caption's wash, a headline's text shadow, the dark button's press, a primary fill's hover and press, the price card's ground, and the fallbacks behind `--hairline` and `--shadow-md`. A `::backdrop` that inherits no custom property (before Safari 17.4 and Chrome 122) falls back to `--backdrop-shade`, which `defaults.css` sets on the backdrop itself |
 | `--scrim` | `#140f0b` | The warm wash a hero lays over its photograph, and the reveal slider's before label |
 | `--placeholder-ink` | `#8a7c68` | The hatching and ring of a placeholder before photography exists |
