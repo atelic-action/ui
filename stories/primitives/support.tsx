@@ -1,16 +1,13 @@
 import type { Decorator } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+
+/** The shared check, kept here until the group's stories import it from support/. */
+export { expectNoSidewaysScroll } from "../support/geometry";
 
 /*
- * Helpers the primitives, components, and artifact stories share. They live
- * in the group's own folder rather than stories/support/ (read only while the
- * writers work); a later pass may lift them there.
+ * The decorators the primitives, components, and artifact stories share. The
+ * checks every group shares (the sideways scroll, reduced motion, held
+ * fragment jumps, settling) live in stories/support/.
  */
-
-/** The page never scrolls sideways: the check every phone story ends on. */
-export async function expectNoSidewaysScroll() {
-	await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth);
-}
 
 /** A dark band behind a piece made for one (`onDark`). */
 export const onDarkBand: Decorator = (Story) => (
