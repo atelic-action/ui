@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Eyebrow, Lead } from "../primitives";
+import type { Surface } from "./siteConfig";
 
 export interface PageHeroProps {
 	eyebrow?: string;
@@ -9,7 +10,7 @@ export interface PageHeroProps {
 	/** Extra content under the lead (e.g. jump-link chips). */
 	children?: ReactNode;
 	/** The band's background. Defaults to `alt`, the band an interior page opens on. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /** Interior page opener on the alternate surface band. */

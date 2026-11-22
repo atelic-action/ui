@@ -4,6 +4,7 @@ import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow } from "../primitives";
 import { StarRow } from "../primitives/StarRow";
 import type { ReviewItem } from "./ReviewWall";
+import type { Surface } from "./siteConfig";
 
 export type { ReviewItem };
 
@@ -47,7 +48,7 @@ export interface ReviewCarouselProps {
 	id?: string;
 	className?: string;
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /**

@@ -3,7 +3,7 @@ import { Eyebrow, Lead } from "../primitives";
 import { Button } from "../primitives/Button";
 import { HoursTable } from "./HoursTable";
 import { MapEmbed, type MapEmbedSite } from "./MapEmbed";
-import type { SiteConfig } from "./siteConfig";
+import type { SiteConfig, Surface } from "./siteConfig";
 
 /** The keys of the site config the section reads; a whole `SiteConfig` passes as it is. */
 export type LocationSectionSite = MapEmbedSite &
@@ -15,7 +15,7 @@ export interface LocationSectionProps {
 	title: ReactNode;
 	lead?: ReactNode;
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /** Joins service areas into readable prose: "A, B, and C". */

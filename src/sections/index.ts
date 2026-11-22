@@ -82,4 +82,5 @@ export type {
 	SiteConfig,
 	SiteLink,
 	SocialLink,
+	Surface,
 } from "./siteConfig";

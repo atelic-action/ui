@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Surface } from "./siteConfig";
 
 /** One proof fact: a short figure or claim, and the line that says what it is. */
 export interface ProofItem {
@@ -11,7 +12,7 @@ export interface ProofItem {
 export interface ProofStripProps {
 	items: ProofItem[];
 	/** The band's background. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 	/** The list's accessible name, e.g. "Why people choose us". Omit for none. */
 	ariaLabel?: string;
 	id?: string;

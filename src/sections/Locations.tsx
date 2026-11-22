@@ -2,6 +2,7 @@ import { Navigation, Phone } from "lucide-react";
 import type { ReactNode } from "react";
 import { Eyebrow, Lead } from "../primitives";
 import { MapEmbed, type MapEmbedSite } from "./MapEmbed";
+import type { Surface } from "./siteConfig";
 
 export interface LocationEntry {
 	name: string;
@@ -23,7 +24,7 @@ export interface LocationsProps {
 	lead?: ReactNode;
 	locations: LocationEntry[];
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /**

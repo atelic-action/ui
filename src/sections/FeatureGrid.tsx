@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { SectionHeading } from "../primitives";
 import { useWithBase } from "../routing/BasePathProvider";
+import type { Surface } from "./siteConfig";
 
 interface FeatureCardBase {
 	/** Small mono index label, e.g. "01". */
@@ -29,10 +30,12 @@ export interface FeatureGridProps {
 	/** Deprecated no-op: the eyebrow's trailing fade is now its only rendering. */
 	eyebrowRun?: boolean;
 	title: ReactNode;
+	/** A line or two under the heading, before the cards. */
+	lead?: ReactNode;
 	items: FeatureCard[];
 	/** Cards per row at desktop width (default 4). */
 	columns?: 2 | 3 | 4;
-	surface?: "default" | "alt";
+	surface?: Surface;
 	id?: string;
 }
 
@@ -40,6 +43,7 @@ export interface FeatureGridProps {
 export function FeatureGrid({
 	eyebrow,
 	title,
+	lead,
 	items,
 	columns = 4,
 	surface = "alt",
@@ -51,7 +55,7 @@ export function FeatureGrid({
 	return (
 		<section className={sectionClasses} id={id}>
 			<div className="wrap">
-				<SectionHeading eyebrow={eyebrow} title={title} />
+				<SectionHeading eyebrow={eyebrow} title={title} lead={lead} />
 				<div className="feature-grid" style={gridStyle}>
 					{items.map((item) => {
 						const inner = (
