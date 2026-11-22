@@ -67,6 +67,20 @@ describe("Progress", () => {
 		expect(fill.style.transform).toBe("translateX(-25%)");
 	});
 
+	it("holds a value past either end at that end, never reading indeterminate", () => {
+		const { container, rerender } = render(<Progress value={120} aria-label="Trays" />);
+		const bar = screen.getByRole("progressbar", { name: "Trays" });
+		expect(bar).toHaveAttribute("aria-valuenow", "100");
+		expect(bar).toHaveAttribute("data-state", "complete");
+		const fill = () =>
+			(container.querySelector("[data-state] > div") as HTMLElement).style.transform;
+		expect(fill()).toBe("translateX(-0%)");
+		rerender(<Progress value={-3} aria-label="Trays" />);
+		expect(bar).toHaveAttribute("aria-valuenow", "0");
+		expect(bar).toHaveAttribute("data-state", "loading");
+		expect(fill()).toBe("translateX(-100%)");
+	});
+
 	it("stays indeterminate with no value", () => {
 		render(<Progress aria-label="Syncing" />);
 		const bar = screen.getByRole("progressbar", { name: "Syncing" });

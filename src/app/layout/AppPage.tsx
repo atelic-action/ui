@@ -172,9 +172,12 @@ interface AppPageToolbarProps {
 	filters?: ToolbarFilter[];
 	actions?: ToolbarAction[];
 	/**
-	 * Optional status line (a sync progress message). On a desktop it sits in
-	 * the toolbar's wrapping row, after the search and the actions and before
-	 * the filters; on a phone, where the row stacks, it sits under the search.
+	 * Optional status line (a sync progress message), drawn between the
+	 * search and actions row and the filters. From 1024px up the toolbar is
+	 * one wrapping row, so it sits on the same line after the actions, before
+	 * the filters, and wraps when the line is full; below that the toolbar
+	 * stacks, so it is a line of its own under the search and the actions
+	 * (which may have wrapped under the search) and above the filters.
 	 * A plain block, never a live region, so a ticking line is not announced.
 	 */
 	notice?: ReactNode;
