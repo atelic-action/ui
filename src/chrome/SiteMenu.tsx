@@ -186,8 +186,8 @@ function Badge({ text }: { text?: string }) {
 /**
  * One section of a group, as the phone draws it: a link column with its
  * children indented under their parent, icon rows and cards as plain links
- * of their labels and titles, and a picture left out, since its link is a
- * desktop flourish and the menu pins its own action at the foot.
+ * of their labels and titles, and a picture as a plain link of its caption,
+ * so the page it leads to stays reachable without the photo.
  */
 function MenuSection({
 	section,
@@ -198,7 +198,6 @@ function MenuSection({
 	currentPath?: string;
 	onNavigate: () => void;
 }) {
-	if (section.kind === "picture") return null;
 	const link = (
 		item: { label: string; href: string; external?: boolean; badge?: string },
 		className: string,
@@ -215,8 +214,18 @@ function MenuSection({
 			<Badge text={item.badge} />
 		</a>
 	);
-	const heading = section.heading;
+	const heading = section.kind === "picture" ? undefined : section.heading;
 	const headHref = isLinkColumn(section) ? section.href : undefined;
+	if (section.kind === "picture") {
+		return (
+			<div className="mm-group-col">
+				{link(
+					{ label: section.caption, href: section.href, external: section.external },
+					"mm-group-link",
+				)}
+			</div>
+		);
+	}
 	return (
 		<div className="mm-group-col">
 			{heading &&

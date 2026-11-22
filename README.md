@@ -1021,7 +1021,7 @@ Delete `src/shared/`, `src/stores/authStore.ts`, `src/stores/unitsStore.ts`, and
 |---|---|
 | `@/shared/components/layout` and every file in it | `@atelic-action/ui/app` |
 | `@/shared/components/ui/<name>` | `@atelic-action/ui/app/ui` |
-| `@/shared/components/AuthGuard`, `CardErrorBoundary`, `ErrorFallback`, `GoogleGlyph` | `@atelic-action/ui/app` |
+| `@/shared/components/AuthGuard`, `ErrorFallback`, `GoogleGlyph` | `@atelic-action/ui/app` |
 | `@/shared/context/SidebarContext`, `@/shared/context/UserContext` | `@atelic-action/ui/app` |
 | `@/shared/hooks/useDebounce`, `useIsDesktop`, `useWakeLock` | `@atelic-action/ui/app` |
 | `@/shared/lib/<name>`, every file but `env` | `@atelic-action/ui/app` |

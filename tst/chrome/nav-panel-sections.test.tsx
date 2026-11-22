@@ -222,14 +222,20 @@ describe("the phone menu's sections", () => {
 		expect(within(panel).getByRole("link", { name: "Rye Popular" })).toBeInTheDocument();
 	});
 
-	it("turns icon rows and cards into plain links and leaves the picture out", () => {
+	it("turns icon rows and cards into plain links and a picture into a link of its caption, with no image", () => {
 		render(<SiteMenu open onClose={() => {}} links={groups} />);
 		const panel = openGroup("Learn");
 		expect(
 			within(panel)
 				.getAllByRole("link")
 				.map((link) => link.textContent),
-		).toEqual(["Order tool", "Allergens", "Why rye", "Morning buns"]);
+		).toEqual([
+			"Bread from the back of the shop.",
+			"Order tool",
+			"Allergens",
+			"Why rye",
+			"Morning buns",
+		]);
 		expect(within(panel).getByText("Explore")).toHaveClass("mm-group-head");
 		expect(panel.querySelector("img")).toBeNull();
 	});
