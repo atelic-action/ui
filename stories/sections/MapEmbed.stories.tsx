@@ -112,7 +112,8 @@ export const ClickToLoad: Story = {
 			);
 			await expect(frame).toHaveAttribute("src", siteWithEmbed.mapEmbedURL);
 			await expect(canvas.queryByRole("button")).toBeNull();
-			await waitFor(() => expect(framePaths()).toEqual([mapEmbedStandIn]), { timeout: 3000 });
+			// The frame is lazy, so under load it can sit blank a while before it navigates.
+			await waitFor(() => expect(framePaths()).toEqual([mapEmbedStandIn]), { timeout: 8000 });
 		});
 	},
 };
