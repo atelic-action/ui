@@ -1,0 +1,27 @@
+/*
+ * The app shell's Tailwind entry, set up the way an app's globals.css is
+ * (and the gallery's app page): Tailwind, the package's app sheet straight
+ * after it, the animation plugin, and the fonts. The app decorator imports it
+ * inline and mounts it only while an app story is showing, so Tailwind's reset
+ * never reaches a marketing story in the same tab.
+ */
+@import "tailwindcss";
+@import "../src/styles/app.css";
+
+@plugin "tailwindcss-animate";
+
+@font-face {
+	font-family: "Geist";
+	src: url("/fonts/Geist-Variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Geist Mono";
+	src: url("/fonts/GeistMono-Variable.woff2") format("woff2");
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}

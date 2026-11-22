@@ -1060,6 +1060,27 @@ beforeEach(() => {
 
 An `expiresAt` an hour out keeps the refresh path quiet; one inside five minutes sends the transport to the refresh endpoint first, through the same mocked `fetch`.
 
+## Storybook
+
+Every component's states live as stories, and every story runs as a test in a real browser. Storybook replaces the gallery once every component has stories; until then the two stand side by side.
+
+```bash
+bun run storybook        # the dev server on the repo's own source, at localhost:6006
+bun run storybook:build  # the static site, written to storybook-static/ (gitignored)
+bun run test:stories     # every story as a test, in headless Chromium
+bun run test:run         # the unit tests in tst/, on jsdom, as before
+```
+
+The stories live in `stories/`, outside `src/`, one file per component in a folder mirroring it (`stories/chrome/SiteHeader.stories.tsx`), and import the components from `src/` by relative path, so they always show the code in the repo. The configuration is `.storybook/`. Neither publishes: the package's `files` names `src`, `dist`, and `bin` alone. **[stories/README.md](stories/README.md) is how a story is written**: the names, the states a component needs, what a `play` function covers, how a bug a story exposes is marked and logged (one findings file per writer group, in `stories/findings/`), which files each group of writers owns, the components still owed, and the fixtures.
+
+**The test run.** `vitest.config.ts` holds two projects. `unit` is the jsdom suite in `tst/`, unchanged, and `bun run test:run` runs it alone. `storybook` runs every story through `@storybook/addon-vitest` in Vitest's browser mode on Playwright's Chromium, headless: the story renders, its `play` function runs, and axe checks the page after it, failing the story on any violation (`a11y: { test: "error" }`). A story pins its width (`phone` 390, `tablet` 820, `desktop` 1280) and the run sizes the page to it, so layout is asserted as geometry. Playwright's Chromium is installed once per machine with `bunx playwright install chromium`; CI installs it with its system libraries and caches it.
+
+**The frame.** A story is mounted the way its consumer mounts the component, chosen by the first segment of its title. Site pieces render inside a `.atelic-ui` root with every package sheet in a site's import order and the practice's theme last (`.storybook/theme.css`, lifted from the gallery). `App/` stories run inside `AppProvider` with a fixture app under a memory router, with the shell's Tailwind sheet mounted only while the story shows, so its reset never reaches a site story. `Email/` stories render their rows in the email theme on a 680 column, with no sheet at all.
+
+**The layer order.** `.storybook/preview-head.html` names the layers before any sheet loads (`properties, theme, base, atelic-ui, components, utilities`), the line an app's `index.html` carries, since Storybook injects sheets in whatever order its modules load. `stories/foundations/CascadeLayers.stories.tsx` proves it: the package outranks Tailwind's reset loaded after it, an app's utilities outrank the package, and an unlayered rule wins with less specificity.
+
+**The toolbar.** Density sets `data-density` on the story's root (default, compact, comfortable; see [Density](#density)), and the viewport menu offers the same three widths the tests pin.
+
 ## The Gallery
 
 `gallery/` is two static pages. The Components shows everything the package exports that draws (the chrome, the page components, the sections, the pieces a document is built from, and the email) on its own with made up data for a fictional bakery, wearing the practice's own palette and type. It lives at [ui.atelic.me](https://ui.atelic.me), noindexed and disallowed in its `robots.txt`, since it is for the people building with the package and never search inventory. It imports the components and stylesheets from `src/` by relative path rather than from npm, so it always shows the code in the repo, and it reads the package name and version from `package.json` at build time. It sits outside `src/`, so it is never published. The second page, [ui.atelic.me/app](https://ui.atelic.me/app) (`gallery/app.html`), runs the app shell for a made up bakery's ops app, on Tailwind through `@tailwindcss/vite`, with its own stylesheet set up the way an app's `globals.css` is; the plugin leaves The Components' plain sheets as they are.

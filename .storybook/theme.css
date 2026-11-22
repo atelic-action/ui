@@ -1,0 +1,78 @@
+/* The theme every marketing, chrome, primitive, component, and artifact
+   story wears, loaded last, after the package's sheets, as a site's
+   theme.css is. It plays the part a site plays and nothing more: the fonts
+   and the theme tokens, lifted from the gallery's sheet (the practice's own
+   palette and type, the artifact template's default theme), unlayered so
+   they win over the atelic-ui layer. Nothing here restyles a component. */
+
+/* ---- Fonts: Geist and Geist Mono, self hosted from the static folder ---- */
+@font-face {
+	font-family: "Geist";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url(/fonts/Geist-Variable.woff2) format("woff2");
+}
+@font-face {
+	font-family: "Geist Mono";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url(/fonts/GeistMono-Variable.woff2) format("woff2");
+}
+
+/* ---- Theme: the Atelic palette ---- */
+.atelic-ui {
+	--surface: #f6f1e7;
+	--surface-alt: #efe8da;
+	--surface-inset: #e9e0cd;
+	--surface-dark: #151515;
+	--card: #fdfbf6;
+
+	--ink: #151515;
+	--ink-soft: #55503f;
+
+	--neutral-100: #e5dcc8;
+	--neutral-200: #d4c8b0;
+	--neutral-300: #b6a98f;
+	--neutral-500: #8a8272;
+	--neutral-600: #6b6559;
+
+	--primary: #fc4a1a;
+	--primary-deep: #d63a10;
+	--primary-bright: #ff8059;
+	--primary-tint: #fee7df;
+	--primary-shadow: 0 6px 18px rgba(252, 74, 26, 0.28);
+	--primary-shadow-hover: 0 8px 24px rgba(252, 74, 26, 0.36);
+	--primary-focus-ring: rgba(252, 74, 26, 0.12);
+
+	--secondary: #55503f;
+	--secondary-soft: #6b6559;
+	--secondary-tint: #ece5d6;
+	--tertiary: #8a8272;
+
+	--font-sans: "Geist", system-ui, -apple-system, sans-serif;
+	--font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+	--font-serif: "Geist", Georgia, serif;
+	--font-brand: var(--font-sans);
+
+	--radius-sm: 8px;
+	--radius-md: 14px;
+	--radius-lg: 22px;
+	--radius-xl: 32px;
+	--radius-pill: 999px;
+
+	--shadow-sm: 0 1px 2px rgba(21, 21, 21, 0.06), 0 2px 8px rgba(21, 21, 21, 0.04);
+	--hairline: rgba(21, 21, 21, 0.05);
+	--hairline-strong: rgba(21, 21, 21, 0.08);
+
+	--max-width: 1040px;
+	--gutter: clamp(16px, 5vw, 56px);
+	--nav-height: 68px;
+}
+
+/* The page ground, behind a story that does not fill the canvas. Only while
+   a site root is mounted, so an app or email story keeps its own ground. */
+body:has(.atelic-ui) {
+	background: #f6f1e7;
+}
