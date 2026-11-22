@@ -101,6 +101,10 @@ export function ReviewCarousel({
 	const [rawIndex, setIndex] = useState(0);
 	const count = items.length;
 	const index = Math.min(rawIndex, Math.max(count - 1, 0));
+	// The profile link's new tab attributes, worked out once for the link and its name.
+	const profileTab: ReturnType<typeof newTabProps> = profileURL
+		? newTabProps(profileURL, true)
+		: {};
 
 	function go(next: number) {
 		if (count === 0) return;
@@ -144,9 +148,9 @@ export function ReviewCarousel({
 									<a
 										className="rvc-caption"
 										href={profileURL}
-										{...newTabProps(profileURL, true)}
+										{...profileTab}
 										aria-label={
-											newTabProps(profileURL, true).target
+											profileTab.target
 												? `${caption}, opens the review profile in a new tab`
 												: caption
 										}
