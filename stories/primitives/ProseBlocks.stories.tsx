@@ -29,6 +29,12 @@ function openDialog() {
 	return document.querySelector("dialog[open]") as HTMLDialogElement | null;
 }
 
+/** The lightbox, waited for: the tile opens it in an effect after the click. */
+async function opened() {
+	await waitFor(() => expect(openDialog()).not.toBeNull());
+	return openDialog() as HTMLDialogElement;
+}
+
 /** Whether a computed color paints anything. */
 function paints(color: string) {
 	return color !== "transparent" && !/rgba\(\s*0,\s*0,\s*0,\s*0\s*\)/.test(color);
@@ -109,7 +115,7 @@ export const LightboxOpensAndCloses: Story = {
 		});
 		await step("the tile opens the dialog, named by the picture, with focus inside", async () => {
 			await userEvent.click(tile);
-			const dialog = openDialog() as HTMLDialogElement;
+			const dialog = await opened();
 			await expect(dialog).toBeTruthy();
 			await expect(dialog).toHaveAccessibleName("The ovens at dawn, the first trays going in");
 			await expect(dialog.contains(document.activeElement)).toBe(true);
@@ -117,7 +123,7 @@ export const LightboxOpensAndCloses: Story = {
 			await expect(dialog).toHaveTextContent("The first trays, at five");
 		});
 		await step("the close button closes it and focus returns to the tile", async () => {
-			const dialog = openDialog() as HTMLDialogElement;
+			const dialog = await opened();
 			const close = Array.from(dialog.querySelectorAll("button")).find(
 				(b) => b.getAttribute("aria-label") === "Close",
 			) as HTMLButtonElement;
@@ -127,14 +133,14 @@ export const LightboxOpensAndCloses: Story = {
 		});
 		await step("Escape closes it and focus returns to the tile", async () => {
 			await userEvent.click(tile);
-			const dialog = openDialog() as HTMLDialogElement;
+			const dialog = await opened();
 			dialog.requestClose();
 			await waitFor(() => expect(openDialog()).toBeNull());
 			await expect(tile).toHaveFocus();
 		});
 		await step("a click on the backdrop closes it", async () => {
 			await userEvent.click(tile);
-			const dialog = openDialog() as HTMLDialogElement;
+			const dialog = await opened();
 			const box = dialog.getBoundingClientRect();
 			fireEvent.click(dialog, { clientX: box.left - 10, clientY: box.top - 10 });
 			await waitFor(() => expect(openDialog()).toBeNull());
@@ -142,7 +148,7 @@ export const LightboxOpensAndCloses: Story = {
 		});
 		await step("a click on the panel's own padding does not", async () => {
 			await userEvent.click(tile);
-			const dialog = openDialog() as HTMLDialogElement;
+			const dialog = await opened();
 			const box = dialog.getBoundingClientRect();
 			fireEvent.click(dialog, { clientX: box.left + 4, clientY: box.bottom - 4 });
 			await expect(openDialog()).toBe(dialog);
@@ -157,7 +163,7 @@ export const LightboxBackdrop: Story = {
 	args: { blocks: proseFigures.slice(0, 1) },
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: /Open larger/ }));
-		const dialog = openDialog() as HTMLDialogElement;
+		const dialog = await opened();
 		const backdrop = getComputedStyle(dialog, "::backdrop").backgroundColor;
 		await expect(paints(backdrop)).toBe(true);
 		dialog.requestClose();
@@ -183,7 +189,7 @@ export const LightboxBackdropWithoutShadeToken: Story = {
 	],
 	play: async ({ canvas, userEvent }) => {
 		await userEvent.click(canvas.getByRole("button", { name: /Open larger/ }));
-		const dialog = openDialog() as HTMLDialogElement;
+		const dialog = await opened();
 		await knownBug("lightbox-backdrop-needs-shade", async () => {
 			await expect(paints(getComputedStyle(dialog, "::backdrop").backgroundColor)).toBe(true);
 		});
@@ -205,13 +211,13 @@ export const LightboxClip: Story = {
 		});
 		await step("opened, the large clip mounts with controls, and goes when closed", async () => {
 			await userEvent.click(tile);
-			const dialog = openDialog() as HTMLDialogElement;
+			const dialog = await opened();
 			const large = dialog.querySelector("video") as HTMLVideoElement;
 			await expect(large).toHaveAttribute("controls");
 			await expect(large).toHaveAccessibleName("A baker scoring loaves on the bench");
 			dialog.requestClose();
 			await waitFor(() => expect(openDialog()).toBeNull());
-			await expect(dialog.querySelector("video")).toBeNull();
+			await waitFor(() => expect(dialog.querySelector("video")).toBeNull());
 		});
 	},
 };

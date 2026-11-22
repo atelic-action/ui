@@ -37,7 +37,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The slider holds its half star buttons (stories/findings/primitives.md). */
 const nestedButtons = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("star-rating-nested-buttons") },
 } satisfies Story;
 
@@ -78,6 +77,7 @@ export const CustomScale: Story = {
  * way a person would.
  */
 export const EditableByKeyboard: Story = {
+	tags: ["known-issue"],
 	...nestedButtons,
 	args: { value: 3, onChange: fn() },
 	render: (args) => <Held {...args} />,
@@ -131,6 +131,7 @@ export const EditableByKeyboard: Story = {
  * Picking the rating already set clears it.
  */
 export const EditableByPointer: Story = {
+	tags: ["known-issue"],
 	...nestedButtons,
 	args: { value: null, onChange: fn() },
 	render: (args) => <Held {...args} />,
@@ -150,6 +151,7 @@ export const EditableByPointer: Story = {
 
 /** On a phone the editable row keeps its targets inside the screen. */
 export const EditableOnPhone: Story = {
+	tags: ["known-issue"],
 	...nestedButtons,
 	globals: pin("phone"),
 	args: { value: 4, onChange: fn(), max: 10, size: 32 },

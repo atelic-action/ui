@@ -23,12 +23,12 @@ type Story = StoryObj<typeof meta>;
 
 /** The eyebrow fails contrast on the page surface (stories/findings/primitives.md). */
 const eyebrowContrast = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("eyebrow-contrast") },
 } satisfies Story;
 
 /** An `h2` by default, with the eyebrow and the lead outside it. */
 export const Default: Story = {
+	tags: ["known-issue"],
 	...eyebrowContrast,
 	play: async ({ canvas }) => {
 		const heading = canvas.getByRole("heading", { level: 2 });
@@ -48,10 +48,11 @@ export const TitleOnly: Story = {
 	},
 };
 
-export const Center: Story = { ...eyebrowContrast, args: { center: true } };
+export const Center: Story = { tags: ["known-issue"], ...eyebrowContrast, args: { center: true } };
 
 /** A page's opener: an `h1`. */
 export const AsH1: Story = {
+	tags: ["known-issue"],
 	...eyebrowContrast,
 	args: { as: "h1" },
 	play: async ({ canvas }) => {
@@ -60,6 +61,7 @@ export const AsH1: Story = {
 };
 
 export const AsH3: Story = {
+	tags: ["known-issue"],
 	...eyebrowContrast,
 	args: { as: "h3" },
 	play: async ({ canvas }) => {
@@ -81,6 +83,7 @@ export const OnDark: Story = {
 
 /** A title with serif emphasis, the way a site sets one. */
 export const EmphasizedTitle: Story = {
+	tags: ["known-issue"],
 	...eyebrowContrast,
 	args: {
 		title: (

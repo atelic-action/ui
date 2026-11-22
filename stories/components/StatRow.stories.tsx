@@ -24,12 +24,12 @@ type Story = StoryObj<typeof meta>;
 
 /** The quiet words and the good tone's words fail contrast on the surface (stories/findings/primitives.md). */
 const quietWords = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("muted-text-contrast", "tone-good-text-contrast") },
 } satisfies Story;
 
 /** The loud row: a report's headline figures, four across at desktop width. */
 export const Loud: Story = {
+	tags: ["known-issue"],
 	...quietWords,
 
 	play: async ({ canvas, canvasElement }) => {
@@ -43,13 +43,15 @@ export const Loud: Story = {
 
 /** The quiet row: a glance row for a working page, divided by hairlines. */
 export const Quiet: Story = {
+	tags: ["known-issue"],
 	...quietWords,
 	args: { variant: "quiet" },
 };
 
 /** A figure that is a share: a big 6 and a small /7. */
 export const OutOf: Story = {
-	...quietWords,
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("muted-text-contrast") },
 
 	args: { stats: [{ value: "6", outOf: "7", label: "Pages in the index" }] },
 	play: async ({ canvasElement }) => {
@@ -59,6 +61,7 @@ export const OutOf: Story = {
 
 /** The change beside a figure, in each direction; a flat change reads "Unchanged". */
 export const Changes: Story = {
+	tags: ["known-issue"],
 	...quietWords,
 
 	args: {
@@ -93,6 +96,7 @@ export const Empty: Story = {
 
 /** On a phone the loud row is two columns. */
 export const Phone: Story = {
+	tags: ["known-issue"],
 	...quietWords,
 
 	globals: pin("phone"),
@@ -107,6 +111,7 @@ export const Phone: Story = {
 };
 
 export const QuietOnPhone: Story = {
+	tags: ["known-issue"],
 	...quietWords,
 
 	globals: pin("phone"),
@@ -122,6 +127,7 @@ export const QuietOnPhone: Story = {
  * past the screen instead (stories/findings/primitives.md, `stat-figure-word-overflow`).
  */
 export const LongestOnPhone: Story = {
+	tags: ["known-issue"],
 	...quietWords,
 	globals: pin("phone"),
 	args: {

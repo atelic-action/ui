@@ -22,12 +22,12 @@ type Story = StoryObj<typeof meta>;
 
 /** The primary on the page surface fails contrast (stories/findings/primitives.md). */
 const eyebrowContrast = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("eyebrow-contrast") },
 } satisfies Story;
 
 /** A paragraph, so it never adds a heading to the outline. */
 export const Default: Story = {
+	tags: ["known-issue"],
 	...eyebrowContrast,
 	play: async ({ canvas }) => {
 		const eyebrow = canvas.getByText("Baked daily");
@@ -38,6 +38,7 @@ export const Default: Story = {
 
 /** Centered, the trailing fade included. */
 export const Center: Story = {
+	tags: ["known-issue"],
 	...eyebrowContrast,
 	args: { center: true },
 	decorators: [
@@ -70,7 +71,11 @@ export const OnPrimaryField: Story = {
 };
 
 /** The deprecated `run` prop changes nothing: the fade is the only rendering. */
-export const DeprecatedRun: Story = { ...eyebrowContrast, args: { run: true } };
+export const DeprecatedRun: Story = {
+	tags: ["known-issue"],
+	...eyebrowContrast,
+	args: { run: true },
+};
 
 /**
  * The longest kicker, on a phone. It should wrap inside the screen; the unbroken word runs
@@ -79,7 +84,6 @@ export const DeprecatedRun: Story = { ...eyebrowContrast, args: { run: true } };
  */
 export const LongestOnPhone: Story = {
 	tags: ["known-issue"],
-	...eyebrowContrast,
 	globals: pin("phone"),
 	args: { children: `Wholesale for cafes, grocers, and ${longWord} lovers across Fairhaven` },
 	play: async () => {

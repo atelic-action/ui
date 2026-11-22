@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor } from "storybook/test";
 import { Shot } from "../../src/artifact";
 import { shotPortrait, shotWide } from "../fixtures/primitives";
@@ -7,7 +7,7 @@ import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** A document's column, which sizes the shot the way a document's own sheet does. */
-const column = (Story: () => JSX.Element) => (
+const column: Decorator = (Story) => (
 	<div className="wrap" style={{ paddingBlock: 32, maxWidth: 640 }}>
 		<Story />
 	</div>
@@ -56,7 +56,7 @@ export const CropAlone: Story = {
 export const Wide: Story = {
 	play: async ({ canvas }) => {
 		const img = canvas.getByRole("img") as HTMLImageElement;
-		await waitFor(() => expect(img.naturalWidth).toBeGreaterThan(0));
+		await waitFor(() => expect(img.naturalWidth).toBeGreaterThan(0), { timeout: 5000 });
 		const figure = canvas.getByRole("figure");
 		await expect(figure.getBoundingClientRect().width).toBeGreaterThan(400);
 	},
@@ -67,7 +67,7 @@ export const Portrait: Story = {
 	args: { shot: shotPortrait },
 	play: async ({ canvas }) => {
 		const img = canvas.getByRole("img") as HTMLImageElement;
-		await waitFor(() => expect(img.naturalWidth).toBeGreaterThan(0));
+		await waitFor(() => expect(img.naturalWidth).toBeGreaterThan(0), { timeout: 5000 });
 		const figure = canvas.getByRole("figure");
 		await waitFor(() => expect(figure.getBoundingClientRect().width).toBeLessThanOrEqual(200));
 	},

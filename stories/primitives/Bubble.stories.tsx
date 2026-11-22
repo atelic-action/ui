@@ -22,13 +22,11 @@ type Story = StoryObj<typeof meta>;
 
 /** The number in the primary fails contrast on the card (stories/findings/primitives.md). */
 const numberContrast = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("bubble-number-contrast") },
 } satisfies Story;
 
 /** The badge's white number on the primary fails contrast (stories/findings/primitives.md). */
 const badgeContrast = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("bubble-badge-contrast") },
 } satisfies Story;
 
@@ -42,10 +40,15 @@ export const Icon: Story = {
 };
 
 /** A step number alone, set in the middle. */
-export const StepNumber: Story = { ...numberContrast, args: { icon: undefined, num: "01" } };
+export const StepNumber: Story = {
+	tags: ["known-issue"],
+	...numberContrast,
+	args: { icon: undefined, num: "01" },
+};
 
 /** Given both, the icon sits inside and the number rides a badge on the lower right rim. */
 export const IconWithBadge: Story = {
+	tags: ["known-issue"],
 	...badgeContrast,
 	args: { num: "03" },
 	play: async ({ canvas, canvasElement }) => {
@@ -58,12 +61,21 @@ export const IconWithBadge: Story = {
 	},
 };
 
-export const Small: Story = { ...numberContrast, args: { size: "sm", num: "2" } };
+export const Small: Story = {
+	tags: ["known-issue"],
+	...numberContrast,
+	args: { size: "sm", icon: undefined, num: "02" },
+};
 
-export const Large: Story = { ...badgeContrast, args: { size: "lg", num: "12" } };
+export const Large: Story = {
+	tags: ["known-issue"],
+	...badgeContrast,
+	args: { size: "lg", num: "12" },
+};
 
 /** On a dark band the fill lifts and the badge's ring takes the band's color. */
 export const OnDark: Story = {
+	tags: ["known-issue"],
 	...badgeContrast,
 	args: { onDark: true, num: "04" },
 	decorators: [onDarkBand],
@@ -80,6 +92,7 @@ export const Empty: Story = {
 
 /** The sizes side by side, each beside the heading that carries its meaning. */
 export const BesideHeadings: Story = {
+	tags: ["known-issue"],
 	...numberContrast,
 	render: () => (
 		<div style={{ display: "grid", gap: 16 }}>

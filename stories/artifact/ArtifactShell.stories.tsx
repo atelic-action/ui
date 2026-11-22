@@ -122,7 +122,7 @@ export const MarkHeight: Story = {
 		// The sender's mark is decoration inside the named lockup, reached from it.
 		const lockup = within(canvas.getByRole("banner")).getByRole("link", { name: /home$/ });
 		const mark = lockup.querySelector("img") as HTMLImageElement;
-		await waitFor(() => expect(mark.complete).toBe(true));
+		await waitFor(() => expect(mark.complete).toBe(true), { timeout: 5000 });
 		await knownBug("artifact-sheet-mark-height", async () => {
 			await expect(Math.round(mark.getBoundingClientRect().height)).toBe(40);
 		});

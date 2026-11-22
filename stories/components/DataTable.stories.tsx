@@ -31,7 +31,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The sorted column's heading fails contrast (stories/findings/primitives.md). */
 const sortedContrast = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("data-table-active-sort-contrast") },
 } satisfies Story;
 
@@ -59,6 +58,7 @@ export const AsListed: Story = {
  * ways, and a value cell sorts by its value, not its words.
  */
 export const SortsByHeading: Story = {
+	tags: ["known-issue"],
 	...sortedContrast,
 	play: async ({ canvas, canvasElement, userEvent, step }) => {
 		const place = canvas.getByRole("columnheader", { name: "Map place" });
@@ -96,6 +96,7 @@ export const SortsByHeading: Story = {
 
 /** The keyboard sorts too: the heading's button takes Enter. */
 export const SortsByKeyboard: Story = {
+	tags: ["known-issue"],
 	...sortedContrast,
 	play: async ({ canvas, canvasElement, userEvent }) => {
 		within(canvas.getByRole("columnheader", { name: "Monthly searches" }))
@@ -108,6 +109,7 @@ export const SortsByKeyboard: Story = {
 
 /** Opens sorted by `defaultSort`. */
 export const DefaultSort: Story = {
+	tags: ["known-issue"],
 	...sortedContrast,
 	args: { defaultSort: { column: 2, direction: "asc" } },
 	play: async ({ canvas, canvasElement }) => {

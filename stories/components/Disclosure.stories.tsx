@@ -1,11 +1,27 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { type ComponentType, type ReactNode, useState } from "react";
 import { expect, fn } from "storybook/test";
 import { Disclosure, type DisclosureControlledProps } from "../../src/components";
 import { longWord } from "../fixtures/primitives";
 import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
 import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
+
+/**
+ * Both forms' props in one shape, for the story args: the component picks
+ * its form by whether `open` or `onToggle` is passed, which its own union
+ * type expresses and a story's args cannot.
+ */
+interface EitherProps {
+	label: ReactNode;
+	summary?: ReactNode;
+	defaultOpen?: boolean;
+	open?: boolean;
+	onToggle?: () => void;
+	panelId?: string;
+	className?: string;
+	children: ReactNode;
+}
 
 /** The detail behind a fold, with a link so the tab order can be read. */
 const body = (
@@ -30,7 +46,7 @@ function Held(props: Omit<DisclosureControlledProps, "open" | "onToggle"> & { in
  */
 const meta = {
 	title: "Components/Disclosure",
-	component: Disclosure,
+	component: Disclosure as unknown as ComponentType<EitherProps>,
 	decorators: [
 		(Story) => (
 			<>
@@ -47,7 +63,7 @@ const meta = {
 		summary: "Order by Friday noon; the loaf waits for you at the counter.",
 		children: body,
 	},
-} satisfies Meta<typeof Disclosure>;
+} satisfies Meta<EitherProps>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

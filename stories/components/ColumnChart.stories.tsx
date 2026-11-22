@@ -23,7 +23,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The quiet labels fail contrast on the surface (stories/findings/primitives.md). */
 const quietLabels = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("muted-text-contrast") },
 } satisfies Story;
 
@@ -31,6 +30,7 @@ const plot = (canvas: { getByRole: (role: string) => HTMLElement }) => canvas.ge
 
 /** Two quarters a year apart: the picture's name reads every group, total, and month. */
 export const Default: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	play: async ({ canvas }) => {
 		await expect(plot(canvas)).toHaveAccessibleName(
@@ -42,6 +42,7 @@ export const Default: Story = {
 
 /** The tallest bar draws at `height`, the rest in proportion. */
 export const Height: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	args: { height: 200 },
 	play: async ({ canvasElement }) => {
@@ -64,6 +65,7 @@ export const SingleGroup: Story = {
 
 /** A year of months, no legend. */
 export const TwelveMonths: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	args: {
 		legend: undefined,
@@ -97,6 +99,7 @@ export const TwelveMonths: Story = {
  * color alone (stories/findings/primitives.md, `column-chart-tone-color-only`).
  */
 export const MarkedBar: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	args: {
 		legend: [
@@ -137,6 +140,7 @@ export const Empty: Story = {
 
 /** Two quarters of months on a phone stay inside the screen. */
 export const Phone: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	globals: pin("phone"),
 	play: async () => {
@@ -146,6 +150,7 @@ export const Phone: Story = {
 
 /** The widest a chart gets, two years of months, on a phone. */
 export const WidestOnPhone: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	globals: pin("phone"),
 	args: {

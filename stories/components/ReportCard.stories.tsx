@@ -24,7 +24,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The card's title, a quiet kicker, fails contrast on the surface (stories/findings/primitives.md). */
 const quietTitle = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("muted-text-contrast") },
 } satisfies Story;
 
@@ -40,6 +39,7 @@ const rowOf = (name: HTMLElement) => name.closest("b")?.parentElement as HTMLEle
 
 /** Each row says its grade in words before its name; the section is named by its heading. */
 export const FirstRead: Story = {
+	tags: ["known-issue"],
 	...quietTitle,
 	play: async ({ canvas }) => {
 		const card = canvas.getByRole("region", { name: "At a Glance" });
@@ -56,6 +56,7 @@ export const FirstRead: Story = {
  * its line included, lands on the link.
  */
 export const LinkedRows: Story = {
+	tags: ["known-issue"],
 	...quietTitle,
 	play: async ({ canvas }) => {
 		const link = canvas.getByRole("link", { name: "Technical SEO" });
@@ -122,6 +123,7 @@ export const LaterRead: Story = {
 
 /** The legend under the card, so nothing sits between the heading and the rows. */
 export const LegendAtFoot: Story = {
+	tags: ["known-issue"],
 	...quietTitle,
 	args: { legendAt: "foot" },
 	play: async ({ canvas }) => {
@@ -144,6 +146,7 @@ export const Bare: Story = {
 
 /** A group with no rows is left out, its label with it. */
 export const EmptyGroup: Story = {
+	tags: ["known-issue"],
 	...quietTitle,
 	args: { groups: [...reportGroups, { title: "Reputation", rows: [] }] },
 	play: async ({ canvas }) => {
@@ -153,6 +156,7 @@ export const EmptyGroup: Story = {
 
 /** Every word around the letters in the caller's language. */
 export const OwnWords: Story = {
+	tags: ["known-issue"],
 	...quietTitle,
 	args: {
 		groups: reportGroupsLater,
@@ -166,6 +170,7 @@ export const OwnWords: Story = {
 
 /** On a phone with the longest names and lines, nothing scrolls sideways. */
 export const LongestOnPhone: Story = {
+	tags: ["known-issue"],
 	...quietTitle,
 	globals: pin("phone"),
 	args: {

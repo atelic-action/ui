@@ -24,12 +24,12 @@ type Story = StoryObj<typeof meta>;
 
 /** The quiet labels fail contrast on the surface (stories/findings/primitives.md). */
 const quietLabels = {
-	tags: ["known-issue"],
 	parameters: { ...knownIssues("muted-text-contrast", "tone-good-text-contrast") },
 } satisfies Story;
 
 /** Each reading's track is named by its label and figure; the pin sits at its share of the scale. */
 export const Default: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	play: async ({ canvas }) => {
 		const home = canvas.getByRole("img", { name: "Home page: 4.1 s" });
@@ -49,6 +49,7 @@ export const Default: Story = {
  * as color (stories/findings/primitives.md, `threshold-zone-not-spoken`).
  */
 export const ZoneIsSpoken: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	play: async ({ canvas }) => {
 		await knownBug("threshold-zone-not-spoken", async () => {
@@ -61,6 +62,7 @@ export const ZoneIsSpoken: Story = {
 
 /** A reading past the far end pins at the end of the track, never beyond it. */
 export const PastTheEnd: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	args: { readings: [{ label: "Gallery", value: 11.2, display: "11.2 s", tone: "bad" }] },
 	play: async ({ canvas }) => {
@@ -73,13 +75,22 @@ export const PastTheEnd: Story = {
 };
 
 /** No tick labels: the zones' names alone. */
-export const NoTicks: Story = { ...quietLabels, args: { ticks: undefined } };
+export const NoTicks: Story = {
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("tone-good-text-contrast") },
+	args: { ticks: undefined },
+};
 
 /** One reading. */
-export const Single: Story = { ...quietLabels, args: { readings: thresholdReadings.slice(0, 1) } };
+export const Single: Story = {
+	tags: ["known-issue"],
+	...quietLabels,
+	args: { readings: thresholdReadings.slice(0, 1) },
+};
 
 /** No readings: the axis alone. */
 export const NoReadings: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	args: { readings: [] },
 	play: async ({ canvas }) => {
@@ -89,6 +100,7 @@ export const NoReadings: Story = {
 
 /** On a phone with long reading labels, nothing scrolls sideways. */
 export const LongestOnPhone: Story = {
+	tags: ["known-issue"],
 	...quietLabels,
 	globals: pin("phone"),
 	args: {
