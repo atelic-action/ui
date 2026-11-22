@@ -52,6 +52,10 @@ export async function judgeIssue(issue: Issue, root: ParentNode = document): Pro
 			resultTypes: ["violations"],
 		});
 		return result.violations.length > 0 ? "violated" : "fixed";
+	} catch (error) {
+		// A layer that was closing when it was found is gone by the time axe looks: the page shows none of it.
+		if (elements.every((element) => !element.isConnected)) return "absent";
+		throw error;
 	} finally {
 		axe.reset();
 	}
