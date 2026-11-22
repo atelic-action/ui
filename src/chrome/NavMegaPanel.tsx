@@ -1,6 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import { newTabProps } from "../lib/newTabProps";
-import { holdPhoneNumbers, isTel } from "../lib/phoneText";
+import { telText } from "../lib/phoneText";
 import { Button } from "../primitives/Button";
 import { TickList } from "../primitives/TickList";
 import type {
@@ -112,7 +112,7 @@ function LinkColumn({
 				aria-current={current(linkKey(index, parent, at))}
 				{...newTabProps(link.href, link.external)}
 			>
-				{isTel(link.href) ? holdPhoneNumbers(link.label) : link.label}
+				{telText(link.href, link.label)}
 				<Badge text={link.badge} />
 			</a>
 		</li>
@@ -143,13 +143,11 @@ function LinkColumn({
 							{...newTabProps(link.href, link.external)}
 						>
 							<span className="nav-mega-label">
-								{isTel(link.href) ? holdPhoneNumbers(link.label) : link.label}
+								{telText(link.href, link.label)}
 								<Badge text={link.badge} />
 							</span>
 							{link.description && (
-								<span className="nav-mega-desc">
-									{isTel(link.href) ? holdPhoneNumbers(link.description) : link.description}
-								</span>
+								<span className="nav-mega-desc">{telText(link.href, link.description)}</span>
 							)}
 						</a>
 						{link.children && link.children.length > 0 && (
@@ -216,13 +214,9 @@ function RowsSection({
 									<Icon size={21} strokeWidth={1.75} aria-hidden="true" />
 								</span>
 								<span className="nav-mega-row-text">
-									<span className="nav-mega-row-label">
-										{isTel(row.href) ? holdPhoneNumbers(row.label) : row.label}
-									</span>
+									<span className="nav-mega-row-label">{telText(row.href, row.label)}</span>
 									{row.description && (
-										<span className="nav-mega-row-desc">
-											{isTel(row.href) ? holdPhoneNumbers(row.description) : row.description}
-										</span>
+										<span className="nav-mega-row-desc">{telText(row.href, row.description)}</span>
 									)}
 								</span>
 								<ChevronRight className="nav-mega-row-go" size={16} aria-hidden="true" />

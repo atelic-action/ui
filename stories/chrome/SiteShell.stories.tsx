@@ -427,3 +427,98 @@ export const StickyLabelDefault: Story = {
 		await expect(within(bar).getByRole("link", { name: site.cta.label })).toBeVisible();
 	},
 };
+
+/**
+ * The phone menu from the config: `menu.surface` sets the light sheet,
+ * `cta.menuLabel` gives the menu's call to action its own words where the
+ * sticky bar keeps the label, and a header number's `menuLabel` names its
+ * card where the bar's pill keeps `label`.
+ */
+export const LightMenuFromTheConfig: Story = {
+	args: {
+		...visitPage,
+		site: {
+			...site,
+			menu: { surface: "light" },
+			cta: { ...site.cta, menuLabel: "Order ahead for Saturday", arrow: true },
+			header: { phones: [{ ...phones[0], menuLabel: "Call the shop" }] },
+		},
+	},
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
+		const dialog = canvas.getByRole("dialog", { name: "Menu" });
+		const menu = within(dialog);
+		await expect(menu.getByRole("link", { name: /Kestrel Hollow/ })).toHaveAttribute("href", "/");
+		await expect(menu.getByRole("link", { name: /Order ahead for Saturday/ })).toBeVisible();
+		await expect(
+			menu.getByRole("link", { name: `Call the shop ${phones[0]?.display}` }),
+		).toHaveAttribute("href", `tel:${phones[0]?.e164}`);
+		const bar = canvas.getByRole("link", { name: "Call us" }).parentElement as HTMLElement;
+		await expect(within(bar).getByRole("link", { name: site.cta.label })).toBeInTheDocument();
+	},
+};
+
+/** Steps through opening and closing the menu, the launcher hidden only while it shows. */
+async function dockStepsAside(
+	canvas: ReturnType<typeof within>,
+	userEvent: { click: (element: Element) => Promise<void> },
+) {
+	const launcher = canvas.getByRole("button", { name: "Talk to us" });
+	await expect(launcher).toBeVisible();
+	const at = box(launcher);
+	await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
+	const dialog = canvas.getByRole("dialog", { name: "Menu" });
+	await waitFor(() => expect(launcher).not.toBeVisible());
+	// What a tap where the launcher sat lands on is the sheet, never the launcher.
+	await waitFor(() => {
+		const hit = document.elementFromPoint(at.left + at.width / 2, at.top + at.height / 2);
+		expect(dialog.contains(hit)).toBe(true);
+	});
+	await userEvent.click(within(dialog).getByRole("button", { name: "Close menu" }));
+	await waitFor(() => expect(launcher).toBeVisible());
+}
+
+/**
+ * While the phone menu is open the contact dock's launcher steps aside, so
+ * it never sits over the menu's foot: on the dark sheet, where the sheet
+ * always covered it from the top layer, and now hidden outright too.
+ */
+export const DockStepsAsideForTheMenu: Story = {
+	args: visitPage,
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		await dockStepsAside(canvas, userEvent);
+	},
+};
+
+/** The same on the light sheet, whose foot holds the call to action and the numbers. */
+export const DockStepsAsideForTheLightMenu: Story = {
+	args: { ...visitPage, site: { ...site, menu: { surface: "light" }, header: { phones } } },
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		await dockStepsAside(canvas, userEvent);
+	},
+};
+
+/**
+ * A page with a hero under a solid bar (`heroNav` off) whose config sets
+ * `cta.stickyFromTop: false`: the phone's sticky bar waits until the page
+ * scrolls, where by default such a page shows it from the first paint.
+ */
+export const StickyBarSlidesInUnderASolidBar: Story = {
+	args: {
+		...visitPage,
+		site: { ...site, cta: { ...site.cta, stickyFromTop: false } },
+		children: <HomeBody />,
+	},
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const call = canvas.getByRole("link", { name: "Call us" });
+		await expect(box(call).top).toBeGreaterThanOrEqual(window.innerHeight);
+		window.scrollTo({ top: 900, behavior: "instant" });
+		await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight), {
+			timeout: 5000,
+		});
+	},
+};

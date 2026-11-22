@@ -114,7 +114,6 @@ describe("Footer", () => {
 		).toEqual(["9a to 5p", "Closed"]);
 		const grid = container.querySelector(".footer-grid") as HTMLElement;
 		expect(grid).toHaveClass("has-hours");
-		expect(grid.style.getPropertyValue("--footer-columns")).toBe("5");
 	});
 
 	it("draws no hours column for no hours or an empty list, and takes its own heading", () => {
@@ -182,7 +181,7 @@ describe("Footer", () => {
 		expect(within(legal).getByRole("link", { name: "Privacy" }).querySelector("svg")).toBeNull();
 	});
 
-	it("leaves out a column with no links and sizes the grid to the columns shown", () => {
+	it("leaves out a column with no links, setting no column count nothing reads", () => {
 		const { container } = render(
 			<Footer
 				{...props}
@@ -191,11 +190,8 @@ describe("Footer", () => {
 		);
 
 		expect(screen.queryByRole("navigation", { name: "Social" })).toBeNull();
-		expect(
-			(container.querySelector(".footer-grid") as HTMLElement).style.getPropertyValue(
-				"--footer-columns",
-			),
-		).toBe("2");
+		expect(screen.getAllByRole("navigation")).toHaveLength(2);
+		expect(container.querySelector(".footer-grid")).not.toHaveAttribute("style");
 	});
 
 	it("always carries the closing bar at its foot, and credit off empties its right side", () => {

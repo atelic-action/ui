@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { newTabProps } from "../lib/newTabProps";
-import { holdPhoneNumbers, isTel } from "../lib/phoneText";
+import { telText } from "../lib/phoneText";
 import { useWithBase } from "../routing/BasePathProvider";
 
 export interface ButtonProps {
@@ -56,7 +56,7 @@ export function Button({
 	// A call button with words beside its number holds the number whole.
 	const content = (
 		<>
-			{isTel(href) ? holdPhoneNumbers(children) : children}
+			{telText(href, children)}
 			{arrow && (
 				<span className="arrow" aria-hidden="true">
 					→

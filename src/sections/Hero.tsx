@@ -115,7 +115,7 @@ export function Hero({
 
 	if (layout === "split") {
 		return (
-			<section className="hero is-split">
+			<section className="hero is-split" data-ground="dark">
 				<div className="hero-split-copy on-primary">
 					<div className="hero-split-inner">{copy}</div>
 				</div>
@@ -125,7 +125,7 @@ export function Hero({
 	}
 
 	return (
-		<section className="hero">
+		<section className="hero" data-ground="dark">
 			<div className="hero-media">
 				{media}
 				<div className="hero-scrim" />

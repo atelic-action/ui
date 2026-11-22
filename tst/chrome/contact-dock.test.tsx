@@ -231,4 +231,57 @@ describe("ContactDock tracking", () => {
 		expect(query).not.toHaveBeenCalled();
 		query.mockRestore();
 	});
+
+	it("measures its ceiling again when the header changes size or ends a transition", async () => {
+		const observed: Element[] = [];
+		const callbacks: (() => void)[] = [];
+		vi.stubGlobal(
+			"ResizeObserver",
+			class {
+				constructor(callback: () => void) {
+					callbacks.push(callback);
+				}
+				observe(element: Element) {
+					observed.push(element);
+				}
+				disconnect() {}
+				unobserve() {}
+			},
+		);
+		const header = document.createElement("header");
+		header.className = "nav";
+		let bottom = 64;
+		header.getBoundingClientRect = () => ({ bottom }) as DOMRect;
+		document.body.append(header);
+		// A footer taller than the screen holds the launcher just under the header.
+		const footer = document.createElement("footer");
+		footer.getBoundingClientRect = () => ({ top: 40 }) as DOMRect;
+		const { container } = render(
+			<ContactDock label="Talk to us" items={items} avoid={{ current: footer }} />,
+		);
+		const dock = container.querySelector(".contact-dock") as HTMLElement;
+		// 844 - 64 - 52 - 16.
+		await waitFor(() => expect(dock.style.bottom).toBe("712px"));
+		expect(observed).toContain(header);
+
+		// A late logo makes the bar taller: the header's resize measures again.
+		bottom = 120;
+		for (const callback of callbacks) callback();
+		await waitFor(() => expect(dock.style.bottom).toBe("656px"));
+
+		// A transition ending inside the header (a pill, a chevron) is not the
+		// header moving, so it measures nothing.
+		bottom = 90;
+		const pill = document.createElement("a");
+		header.append(pill);
+		pill.dispatchEvent(new Event("transitionend", { bubbles: true }));
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(dock.style.bottom).toBe("656px");
+
+		// The header's own transition moves it without resizing it: its end measures again.
+		header.dispatchEvent(new Event("transitionend"));
+		await waitFor(() => expect(dock.style.bottom).toBe("686px"));
+		header.remove();
+		vi.unstubAllGlobals();
+	});
 });

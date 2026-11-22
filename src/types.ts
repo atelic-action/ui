@@ -205,8 +205,33 @@ export interface NavFeature {
 
 /** A number the header shows, with the words that say whose line it is. */
 export interface HeaderPhone extends Phone {
-	/** Printed small over the number and read with it, e.g. "Mountain office". */
+	/**
+	 * Printed small over the number in the desktop bar's phone pill and read
+	 * with it, e.g. "Mountain office". The phone menu's line falls back to it.
+	 */
 	label?: string;
+	/**
+	 * The phone menu's words for this number, when they should differ from
+	 * the bar's `label`, e.g. "Call or text" for a line that answers texts.
+	 * Defaults to `label`, then to "Call".
+	 */
+	menuLabel?: string;
+}
+
+/**
+ * The phone menu's sheet: `dark`, the full screen sheet on the dark surface
+ * with large light links, or `light`, the page's own ground with the lockup
+ * and a round close button across the top, the entries as rows, and the call
+ * to action and the numbers in a foot on the alternate ground.
+ */
+export type SiteMenuSurface = "dark" | "light";
+
+/** How the burger that opens the phone menu is drawn. */
+export interface MenuBurgerStyle {
+	/** Sets the three lines before the words (`menuLabel`) rather than after them. Off by default. */
+	labelAfter?: boolean;
+	/** Draws the burger inside an outlined pill. Off by default. */
+	outlined?: boolean;
 }
 
 /** A conversion action rendered as a button link. */
@@ -217,6 +242,12 @@ export interface CallToAction {
 	external?: boolean;
 	/** The header's button carries the arrow a hero's primary button shows. Off by default. */
 	arrow?: boolean;
+	/**
+	 * The phone menu's words for the action, when they should differ from
+	 * `label` (a fuller "Order ahead for Saturday" where the bar says "Order
+	 * ahead"). Defaults to `label`.
+	 */
+	menuLabel?: string;
 }
 
 /** A footer or legal link that may open in a new tab. */

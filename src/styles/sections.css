@@ -934,7 +934,7 @@
 	}
 	.atelic-ui .feature-card h3 {
 		margin: 14px 0 10px;
-		color: var(--card-title-color, inherit);
+		color: var(--card-title-color);
 	}
 	.atelic-ui .feature-card p {
 		color: var(--ink-soft);
@@ -1073,13 +1073,25 @@
 		padding-bottom: clamp(48px, 9vh, 110px);
 		padding-top: calc(var(--nav-height) + 30px);
 	}
+	/* The room between the hero's kicker, headline, lead, and actions: each
+	   its own as it always was (18, 22, and 32px; 12, 22, and 26px on the
+	   split hero), or one --hero-stack-gap for all three when a theme sets
+	   it, so each read keeps its own default in place. */
 	.atelic-ui .hero h1 {
 		color: var(--on-dark);
-		margin: 18px 0 0;
+		margin: var(--hero-stack-gap, 18px) 0 0;
 		text-shadow: 0 2px 30px color-mix(in srgb, var(--shade) 25%, transparent);
 	}
 	.atelic-ui .hero h1 .serif {
 		color: var(--primary-bright);
+	}
+	/* The hero's eyebrow line, at the eyebrow primitive's own look (its
+	   private properties, primitives.css) unless a theme sets the hero's
+	   kicker tokens. */
+	.atelic-ui .hero .eyebrow {
+		font-size: var(--hero-kicker-size, var(--_eyebrow-size));
+		font-weight: var(--hero-kicker-weight, var(--_eyebrow-weight));
+		letter-spacing: var(--hero-kicker-tracking, var(--_eyebrow-tracking));
 	}
 	/* On the split hero the headline sits on the primary field, where the
 	   bright primary all but vanishes (1.38 to 1 on the practice's palette):
@@ -1089,9 +1101,9 @@
 		color: var(--on-primary);
 	}
 	.atelic-ui .hero-sub {
-		font-size: clamp(1.05rem, 2.2vw, 1.35rem);
-		max-width: 52ch;
-		margin-top: 22px;
+		font-size: var(--hero-lead-size);
+		max-width: var(--hero-lead-measure);
+		margin-top: var(--hero-stack-gap, 22px);
 		color: color-mix(in srgb, var(--on-dark) 92%, transparent);
 		line-height: 1.55;
 	}
@@ -1182,7 +1194,8 @@
 		--hero-split-edge: max(var(--gutter), calc((100cqw - var(--max-width)) / 2 + var(--gutter)));
 		width: 100%;
 		/* --hero-split-pad sets the copy's sides outright, for a design that
-		   wants them tighter than the wrap's edge. */
+		   wants them tighter than the wrap's edge. Its default is the edge
+		   computed on this element, so it stays at the read. */
 		padding: var(--section-space) var(--hero-split-pad, var(--hero-split-edge));
 	}
 	/* From 900px the copy sits beside the photo under the transparent header;
@@ -1196,14 +1209,17 @@
 	.atelic-ui .hero.is-split h1 {
 		font-size: clamp(2.1rem, 4vw, 3.3rem);
 		line-height: 1.05;
-		margin-top: 12px;
+		margin-top: var(--hero-stack-gap, 12px);
 		text-shadow: none;
 	}
 	.atelic-ui .hero.is-split .hero-sub {
 		color: var(--on-primary);
 	}
+	.atelic-ui .hero .cta-row {
+		margin-top: var(--hero-stack-gap, 32px);
+	}
 	.atelic-ui .hero.is-split .cta-row {
-		margin-top: 26px;
+		margin-top: var(--hero-stack-gap, 26px);
 	}
 	.atelic-ui .hero-split-media {
 		position: relative;
@@ -1694,7 +1710,7 @@
 	   aligned on its line in tabular numerals. */
 	.atelic-ui .link-columns {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--link-columns-min, 170px)), 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--link-columns-min)), 1fr));
 		gap: 24px 28px;
 	}
 	.atelic-ui * + .link-columns {
@@ -1763,7 +1779,7 @@
 		min-width: 0;
 	}
 	.atelic-ui .callout-panel-title {
-		text-transform: var(--callout-transform, none);
+		text-transform: var(--callout-transform);
 		font-family: var(--font-condensed, var(--font-heading, var(--font-sans)));
 		font-size: clamp(1.35rem, 2.15vw, 1.9rem);
 		font-weight: var(--weight-heavy);
@@ -1772,7 +1788,11 @@
 		text-wrap: balance;
 	}
 	.atelic-ui .callout-panel-sub {
+		/* Inherited unless a theme sets it: no custom property can hold
+		   inherit as a default, so the fallback stays at the read. */
 		font-family: var(--callout-sub-font, inherit);
+		text-transform: var(--callout-sub-transform);
+		letter-spacing: var(--callout-sub-tracking);
 		font-size: clamp(0.85rem, 1.1vw, 1rem);
 		line-height: 1.3;
 		color: var(--on-primary);

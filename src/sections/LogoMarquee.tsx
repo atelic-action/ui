@@ -38,7 +38,7 @@ export function LogoMarquee({
 		</div>
 	);
 	return (
-		<section className="creds" aria-label={ariaLabel}>
+		<section className="creds" data-ground="dark" aria-label={ariaLabel}>
 			<div className="marquee" data-paused={paused || undefined}>
 				<div className="marquee-track">
 					{row(false)}

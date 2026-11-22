@@ -21,7 +21,10 @@ export interface CalloutPanelProps {
  */
 export function CalloutPanel({ items, className }: CalloutPanelProps) {
 	return (
-		<ul className={["callout-panel", "on-primary", className].filter(Boolean).join(" ")}>
+		<ul
+			className={["callout-panel", "on-primary", className].filter(Boolean).join(" ")}
+			data-ground="primary"
+		>
 			{items.map((item, i) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: callouts are static content in a fixed order
 				<li key={i}>

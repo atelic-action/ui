@@ -47,6 +47,8 @@ export function StickyCTABar({
 	const spaceRef = useRef(onSpaceChange);
 	spaceRef.current = onSpaceChange;
 	const listening = onSpaceChange !== undefined;
+	// The measuring effect's report, so a swap of listeners is told at once.
+	const reportRef = useRef<(() => void) | null>(null);
 
 	useEffect(() => {
 		if (fromTop) {
@@ -82,10 +84,12 @@ export function StickyCTABar({
 			heard?.(next);
 		};
 		report();
+		reportRef.current = report;
 		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(report);
 		sizes?.observe(bar);
 		window.addEventListener("resize", report);
 		return () => {
+			reportRef.current = null;
 			sizes?.disconnect();
 			window.removeEventListener("resize", report);
 			// A final 0 on unmount, on hiding, and when the listener goes, to the
@@ -93,6 +97,14 @@ export function StickyCTABar({
 			heard?.(0);
 		};
 	}, [show, listening]);
+
+	// A caller that swaps listeners is heard at once: the old one gives its
+	// space back and the new one is told the height, with no resize to wait
+	// for. A first render's report has already run, so this one says nothing.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: the listener is the trigger; the report reads it through spaceRef
+	useEffect(() => {
+		reportRef.current?.();
+	}, [onSpaceChange]);
 
 	return (
 		// Inert while offscreen, so its links take no keyboard focus before it slides in.

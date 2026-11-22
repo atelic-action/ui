@@ -1,0 +1,64 @@
+import { type ComponentType, createElement, type ReactElement } from "react";
+import { CATCH_ALL_ROUTE_ID, isMiss, type MissMatch } from "./miss";
+
+/** What the pending view needs from the site's router, handed in so this entry imports none. */
+export interface StaticNotFoundOptions {
+	/**
+	 * The router's own `useMatches` (`import { useMatches } from
+	 * "@tanstack/react-router"`). With it, the pending view draws the not
+	 * found page on a miss alone and nothing on any other route's pending
+	 * state, so a slow client navigation never flashes a bare 404 body.
+	 */
+	useMatches: (options: { select: (matches: ReadonlyArray<MissMatch>) => boolean }) => boolean;
+	/** The catch all route's id, when it is not `/$`. */
+	catchAllId?: string;
+}
+
+/**
+ * The router options that keep a not found page alive on a statically
+ * prerendered TanStack Start site. Spread them into createRouter:
+ *
+ *   createRouter({ routeTree, ...staticNotFoundRouting(NotFoundPage, { useMatches }) })
+ *
+ * The static host serves the /404 prerender for every unknown path, and it
+ * takes a catch all route (src/routes/$.tsx rendering the same page) plus
+ * these two options to survive hydration:
+ *
+ * - The splat gives the client a match below the root. With a dedicated
+ *   /404 route instead, an unknown path matches only the root, hydrate takes
+ *   its SPA branch, throws, and the page goes blank.
+ * - The splat's match id still carries the path, so it differs from the
+ *   dehydrated /404 match and hydrate renders the pending state first.
+ *   Pending as the page itself keeps that first render identical to the
+ *   server HTML; a pending view of plain null is a hydration mismatch (React
+ *   error 418) and a blank body on every miss.
+ *
+ * Given the router's `useMatches` (8.2.0), the pending view draws the page
+ * on a miss (`isMiss`) and nothing otherwise, so another route's pending
+ * state on a slow client navigation shows no bare 404 body. Without it the
+ * pending view is the page itself, as before.
+ *
+ * Static sites only. On a live app the pending state is a real loading
+ * moment; an app sets defaultNotFoundComponent alone.
+ *
+ * Generic over the page so the router checks it against its own component
+ * type; the package stays free of any router import.
+ */
+export function staticNotFoundRouting<Page>(page: Page): {
+	defaultNotFoundComponent: Page;
+	defaultPendingComponent: Page;
+};
+export function staticNotFoundRouting<Page extends ComponentType>(
+	page: Page,
+	options: StaticNotFoundOptions,
+): { defaultNotFoundComponent: Page; defaultPendingComponent: () => ReactElement | null };
+export function staticNotFoundRouting<Page>(page: Page, options?: StaticNotFoundOptions) {
+	if (!options) return { defaultNotFoundComponent: page, defaultPendingComponent: page };
+	const { useMatches, catchAllId = CATCH_ALL_ROUTE_ID } = options;
+	const select = (matches: ReadonlyArray<MissMatch>) => isMiss(matches, catchAllId);
+	function NotFoundPending(): ReactElement | null {
+		const miss = useMatches({ select });
+		return miss ? createElement(page as ComponentType) : null;
+	}
+	return { defaultNotFoundComponent: page, defaultPendingComponent: NotFoundPending };
+}

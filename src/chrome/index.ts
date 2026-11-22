@@ -12,6 +12,7 @@ export type {
 	FooterIcon,
 	HeaderPhone,
 	HoursRow,
+	MenuBurgerStyle,
 	MenuContact,
 	NavCard,
 	NavCardsSection,
@@ -28,6 +29,7 @@ export type {
 	Phone,
 	PostalAddress,
 	SiteLink,
+	SiteMenuSurface,
 	SocialLink,
 } from "../types";
 export { BrandLockup, type BrandLockupProps } from "./BrandLockup";
