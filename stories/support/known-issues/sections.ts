@@ -43,4 +43,37 @@ export const issues = {
 		elements: ".process .steps h4",
 		base: "h1, h2, h3, h4, h5, h6, [role=heading]",
 	},
+	/** The marked jump rail tab, `--primary` on the rail's `--surface`: about 3:1 at 15.2px. The primary as small text. */
+	"jump-rail-active-contrast": { rule: "color-contrast", elements: ".jump-rail a.active" },
+	/** An expand row's mono index, `--primary` on `--surface`: 3.04:1 at 12.5px. The primary as small text. */
+	"expand-index-contrast": { rule: "color-contrast", elements: ".xl-num" },
+	/** A location card's note, `--primary` on `--card`: 3.31:1 at 11.5px. The primary as small text. */
+	"location-note-contrast": { rule: "color-contrast", elements: ".loc-note" },
+	/** A profile's mono line and link label, `--primary` on `--card`: 3.31:1 at 12 and 14.7px. The primary as small text. */
+	"profile-meta-contrast": { rule: "color-contrast", elements: ".profile-meta, .profile-link" },
+	/**
+	 * The static map's Get Directions pill, `--on-primary` (white) on
+	 * `--primary`: 3.42:1 at 13px. The same cause as `on-primary-field-contrast`.
+	 */
+	"map-directions-contrast": { rule: "color-contrast", elements: ".map-directions" },
+	/**
+	 * Soft words on the inset well: the map facade's hint and a gallery
+	 * tile's shot brief, `--ink-soft` on `--surface-inset`, 4.4:1 at 12.8 and 13px.
+	 */
+	"inset-soft-text-contrast": {
+		rule: "color-contrast",
+		elements: ".map-facade-hint, .gallery-frame.ph",
+	},
+	/**
+	 * The map facade's name, "Load the map to <name>, <address>", does not
+	 * contain its visible words, "<address> Tap to load the map", so a reader
+	 * who speaks what they see cannot press it by voice.
+	 */
+	"map-facade-name-mismatch": { rule: "label-content-name-mismatch", elements: ".map-facade" },
+	/** The hours block's heading is an `h4` under the section's `h2`, skipping `h3`. */
+	"location-hours-heading-order": {
+		rule: "heading-order",
+		elements: ".loc-block h4",
+		base: "h1, h2, h3, h4, h5, h6, [role=heading]",
+	},
 } satisfies Record<string, Issue>;

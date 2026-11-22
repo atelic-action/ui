@@ -30,11 +30,17 @@ const para = (text: string) => createElement("p", null, text);
 /** A picture of this group's, at the root the static folder serves. */
 export const image = (name: string) => `/images/sections/${name}.svg`;
 
+/**
+ * Where the live map embed loads from in a story: a local stand in page, so
+ * pressing the facade never reaches a real map service.
+ */
+export const mapEmbedStandIn = "/images/sections/map-embed.html";
+
 /** The bakery with no map screenshot but a live embed, so the map shows its click to load facade. */
 export const siteWithEmbed: SiteConfig = {
 	...site,
 	mapImage: undefined,
-	mapEmbedURL: "https://maps.example.com/embed?q=418+Alder+Street",
+	mapEmbedURL: mapEmbedStandIn,
 };
 
 /** The bakery with neither a screenshot nor an embed: no map at all. */
