@@ -1,0 +1,10 @@
+{
+  /* The stories' own check: the root config, plus Vite's client types for
+     the `?inline` sheet the app decorator mounts, over the stories and the
+     Storybook config. It also checks every file under src/ they import. */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client", "node"]
+  },
+  "include": [".", "../.storybook"]
+}

@@ -1,0 +1,12 @@
+<!--
+	The layer order, named before any stylesheet loads. A layer ranks by where
+	it is first named, and Storybook's dev server injects sheets in whatever
+	order the modules load, so without this line the package's layer could rank
+	below Tailwind's reset in an app story. This is the line an app puts in its
+	index.html (README, In an App); a site has no other layer, so it changes
+	nothing there. stories/foundations/CascadeLayers.stories.tsx proves it.
+-->
+<style>
+	@layer properties, theme, base, atelic-ui, components, utilities;
+</style>
+<meta name="robots" content="noindex, nofollow" />
