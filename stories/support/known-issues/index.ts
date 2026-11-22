@@ -2,6 +2,7 @@ import { issues as chrome } from "./chrome";
 import { issues as emailApp } from "./email-app";
 import { issues as primitives } from "./primitives";
 import { issues as sections } from "./sections";
+import { selectorList } from "./selectors";
 import type { Issue } from "./types";
 
 /**
@@ -44,13 +45,23 @@ export type KnownIssue =
 	| keyof typeof primitives
 	| keyof typeof emailApp;
 
-/** Every element of a selector list, and everything inside them. */
+/** Every element of a selector list, and everything inside them, as a run of `:not()`s. */
 function andInside(elements: string): string {
-	return elements
-		.split(",")
-		.map((part) => part.trim())
+	return selectorList(elements)
 		.flatMap((part) => [`:not(${part})`, `:not(${part} *)`])
 		.join("");
+}
+
+/**
+ * A rule's own selector (`base`) with the elements of every list taken out,
+ * and everything inside them. Each selector of the base keeps its own
+ * commas, so a base such as `[role='img']:not(img, area)` stays whole.
+ */
+export function scopedSelector(base: string, lists: string[]): string {
+	const skip = lists.map(andInside).join("");
+	return selectorList(base)
+		.map((part) => `${part}${skip}`)
+		.join(", ");
 }
 
 /**
@@ -68,16 +79,10 @@ export function knownIssues(...names: KnownIssue[]) {
 		entry.lists.push(issue.elements);
 		byRule.set(issue.rule, entry);
 	}
-	const rules = [...byRule].map(([id, { base, lists }]) => {
-		const skip = lists.map(andInside).join("");
-		return {
-			id,
-			selector: base
-				.split(",")
-				.map((part) => `${part.trim()}${skip}`)
-				.join(", "),
-		};
-	});
+	const rules = [...byRule].map(([id, { base, lists }]) => ({
+		id,
+		selector: scopedSelector(base, lists),
+	}));
 	return { a11y: { config: { rules } }, knownIssueIds: names };
 }
 
