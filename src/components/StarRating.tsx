@@ -57,6 +57,10 @@ export function StarRating({
 	className,
 }: StarRatingProps) {
 	const [hover, setHover] = useState<number | null>(null);
+	// The half just picked, held out of the preview until the pointer moves
+	// to another half or leaves: the pointer is still on it, and its next
+	// move would put back up the very preview the pick took down.
+	const [picked, setPicked] = useState<number | null>(null);
 	const shown = hover ?? value ?? 0;
 
 	const style = {
@@ -118,6 +122,7 @@ export function StarRating({
 		// and a preview left up would hide a clear behind the very stars it
 		// just emptied.
 		setHover(null);
+		setPicked(rating);
 		onChange(rating === value ? null : rating);
 	};
 
@@ -159,9 +164,14 @@ export function StarRating({
 			onClick={onClick}
 			onMouseMove={(event) => {
 				const rating = ratingAt(event);
-				if (rating !== null) setHover(rating);
+				if (rating === null || rating === picked) return;
+				setPicked(null);
+				setHover(rating);
 			}}
-			onMouseLeave={() => setHover(null)}
+			onMouseLeave={() => {
+				setHover(null);
+				setPicked(null);
+			}}
 		>
 			{stars}
 		</span>
