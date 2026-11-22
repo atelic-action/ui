@@ -29,6 +29,8 @@ export const longNameUser: AppUser = {
 	username: "maximiliana",
 };
 
+const realFetch = globalThis.fetch.bind(globalThis);
+
 const A_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
 
 /**
@@ -38,7 +40,9 @@ const A_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
  * A request to any other host (Storybook's own modules) passes through.
  */
 export function mockAPI(user: AppUser = storyUser) {
-	const original = globalThis.fetch.bind(globalThis);
+	// The real fetch, taken once: a story whose own beforeEach follows the meta's
+	// mocks twice, and the second mock must not call the first as its original.
+	const original = realFetch;
 	const spy = spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
 		const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
 		if (!url.startsWith(storyAppConfig.apiBaseURL)) return original(input, init);

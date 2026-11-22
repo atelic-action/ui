@@ -209,7 +209,6 @@ export const ClientPalette: Story = {
 				<Story />
 			</EmailThemeProvider>
 		),
-		inColumn,
 	],
 	play: async ({ canvas, canvasElement }) => {
 		await expect(getComputedStyle(canvas.getByText("The week")).color).toBe("rgb(95, 102, 90)");
@@ -225,15 +224,11 @@ function Sent({ width }: { width: number }) {
 		children: <Report />,
 	});
 	return (
-		<tr>
-			<td>
-				<iframe
-					title="The weekly ops email"
-					srcDoc={html}
-					style={{ width, height: 900, border: 0 }}
-				/>
-			</td>
-		</tr>
+		<iframe
+			title="The weekly ops email"
+			srcDoc={html}
+			style={{ width, height: 900, border: 0, display: "block" }}
+		/>
 	);
 }
 
@@ -251,7 +246,7 @@ async function sentDocument(canvasElement: HTMLElement) {
  * frame (stories/findings/email-app.md, Checker Limits).
  */
 export const SentDocument: Story = {
-	decorators: [],
+	parameters: { noColumn: true },
 	render: () => <Sent width={760} />,
 	play: async ({ canvasElement }) => {
 		const doc = await sentDocument(canvasElement);
@@ -266,7 +261,7 @@ export const SentDocument: Story = {
  * take the phone's width, and nothing scrolls sideways.
  */
 export const SentDocumentPhone: Story = {
-	decorators: [],
+	parameters: { noColumn: true },
 	globals: pin("phone"),
 	render: () => <Sent width={366} />,
 	play: async ({ canvasElement }) => {

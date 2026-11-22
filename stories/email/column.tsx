@@ -28,12 +28,19 @@ export function Column({ children }: { children?: ReactNode }) {
 	);
 }
 
-/** The decorator form of `Column`, for a meta. */
-export const inColumn: Decorator = (Story) => (
-	<Column>
+/**
+ * The decorator form of `Column`, for a meta. A story that shows a whole
+ * document on its own sets `parameters.noColumn`, since a story's
+ * `decorators: []` adds to the meta's and never replaces them.
+ */
+export const inColumn: Decorator = (Story, context) =>
+	context.parameters.noColumn ? (
 		<Story />
-	</Column>
-);
+	) : (
+		<Column>
+			<Story />
+		</Column>
+	);
 
 /** The column a story set, by its harness marker. */
 export function columnOf(canvasElement: HTMLElement): HTMLElement {
