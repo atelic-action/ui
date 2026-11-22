@@ -963,6 +963,21 @@
 	.atelic-ui .mobile-menu .mm-cta {
 		margin-top: 28px;
 	}
+	/* The menu's call to action carries its own light fill and the primary's
+	   words, as the badge does, so it shows on whatever ground the sheet
+	   takes: the dark band, or a theme's primary, where a primary filled
+	   button vanished into the sheet. */
+	.atelic-ui .mobile-menu .mm-cta.btn-primary {
+		background: var(--on-primary);
+		color: var(--primary-ink, var(--primary));
+		box-shadow: none;
+	}
+	.atelic-ui .mobile-menu .mm-cta.btn-primary:hover {
+		background: color-mix(in srgb, var(--on-primary) 86%, var(--primary));
+	}
+	.atelic-ui .mobile-menu .mm-cta.btn-primary:active {
+		background: color-mix(in srgb, var(--on-primary) 76%, var(--primary));
+	}
 	.atelic-ui .mobile-menu .mm-contact {
 		margin-top: auto;
 		font-family: var(--font-mono);
@@ -1198,12 +1213,16 @@
 		outline: 2px solid var(--on-primary);
 		outline-offset: -2px;
 	}
+	/* A heading by role (ContactDock.tsx says why), so it carries the whole
+	   of its look, the balance and the margin an h2 took included. */
 	.atelic-ui .cd-panel .cd-title {
+		margin: 0;
 		font-family: var(--font-sans);
 		font-size: 1.15rem;
 		font-weight: var(--weight-bold);
 		letter-spacing: 0;
 		line-height: 1.2;
+		text-wrap: balance;
 		color: var(--on-primary);
 	}
 	.atelic-ui .cd-sub {

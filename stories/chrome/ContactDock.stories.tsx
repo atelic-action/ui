@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, fn, waitFor, within } from "storybook/test";
 import { ContactDock } from "../../src/chrome";
 import { dock } from "../fixtures/bakery";
@@ -193,5 +194,29 @@ export const CallRowLongDescription: Story = {
 		await expect(lines(line)).toBeGreaterThan(1);
 		// The number, and the number alone, holds on one line.
 		await expect(lines(within(row).getByText("(555) 555-0142"))).toBe(1);
+	},
+};
+
+/**
+ * Under a brand's headline tokens (here every heading set uppercase and
+ * light), the panel's title keeps its own case and weight: it is a heading
+ * by role, a small label the page's heading style never reaches.
+ */
+export const TitleUnderHeadingTokens: Story = {
+	args: { defaultOpen: true },
+	decorators: [
+		(Story) => (
+			<div
+				style={{ "--heading-transform": "uppercase", "--heading-weight": "300" } as CSSProperties}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { name: "How can we help?", level: 2 });
+		await expect(getComputedStyle(title).textTransform).toBe("none");
+		await expect(getComputedStyle(title).fontWeight).toBe("700");
+		await expect(canvas.getByRole("region", { name: "How can we help?" })).toBeVisible();
 	},
 };

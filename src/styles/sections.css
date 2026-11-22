@@ -44,11 +44,17 @@
 
 	/* A title fills the line before it wraps, where the base headings balance
 	   their lines; pretty still keeps a last word from standing alone. */
+	/* A card's title in a list: an h2 for the outline, but never the brand's
+	   headline style, so it pins the look the heading tokens would set. */
 	.atelic-ui .bi-title {
 		margin: 0 0 10px;
 		font-size: 1.4rem;
 		line-height: 1.25;
 		text-wrap: pretty;
+		text-transform: none;
+		font-weight: var(--weight-heavy);
+		letter-spacing: -0.02em;
+		color: inherit;
 	}
 
 	.atelic-ui .bi-excerpt {

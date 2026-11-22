@@ -273,9 +273,13 @@ export function ContactDock({
 			>
 				<div className="cd-head">
 					<div className="cd-head-text">
-						<h2 className="cd-title" id={headingId}>
+						{/* A heading by role, never an h2 element: a site's heading rules
+						    and the brand's heading tokens are for its page titles, not
+						    this small label (Component Rules 21). */}
+						{/* biome-ignore lint/a11y/useSemanticElements: an h2 element would take a site's heading rules and tokens, see above */}
+						<div className="cd-title" id={headingId} role="heading" aria-level={2}>
 							{heading}
-						</h2>
+						</div>
 						{subtitle && <p className="cd-sub">{subtitle}</p>}
 					</div>
 					<button

@@ -342,3 +342,23 @@ export const BadgeOnPrimarySheet: Story = {
 		);
 	},
 };
+
+/**
+ * The menu's call to action on the same primary sheet: its own light fill
+ * and the primary's words, as the badge, so it shows as a button there,
+ * where a primary filled one vanished. The accessibility check holds its
+ * contrast.
+ */
+export const CTAOnPrimarySheet: Story = {
+	...BadgeOnPrimarySheet,
+	args: { links: flatLinks, primaryCTA: cta },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const action = menu.getByRole("link", { name: cta.label });
+		const sheet = canvas.getByRole("dialog");
+		await expect(getComputedStyle(action).backgroundColor).not.toBe(
+			getComputedStyle(sheet).backgroundColor,
+		);
+		await expect(getComputedStyle(action).color).toBe("rgb(30, 77, 43)");
+	},
+};

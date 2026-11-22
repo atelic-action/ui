@@ -138,3 +138,33 @@ export const FillHoverAndPress: Story = {
 		});
 	},
 };
+
+/**
+ * A call button whose words hold a number: the number is kept whole by a
+ * wrapper that costs nothing to see. The button measures what the same
+ * words measure with no wrapper (a page link, which gets none), within half
+ * a pixel, and the space before the number is a space, not the button's gap.
+ */
+export const CallWithNumber: Story = {
+	render: () => (
+		<div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 12 }}>
+			<Button variant="ghost" href="tel:+15555550142">
+				Call (555) 555-0142
+			</Button>
+			<Button variant="ghost" href="/call">
+				Call (555) 555-0142
+			</Button>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const [call, plain] = canvas.getAllByRole("link", { name: "Call (555) 555-0142" }) as [
+			HTMLElement,
+			HTMLElement,
+		];
+		await expect(call).toHaveAttribute("href", "tel:+15555550142");
+		await expect(call.querySelector(".tel-number")).toHaveTextContent("(555) 555-0142");
+		await expect(plain.querySelector(".tel-number")).toBeNull();
+		const width = (element: HTMLElement) => element.getBoundingClientRect().width;
+		await expect(Math.abs(width(call) - width(plain))).toBeLessThanOrEqual(0.5);
+	},
+};
