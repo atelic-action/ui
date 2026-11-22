@@ -4,7 +4,7 @@ How a story is written here, so every component's stories read alike and every o
 
 ## Where a Story Lives
 
-- One file per component, `stories/<kind>/<Component>.stories.tsx`, the folder mirroring `src/`: `chrome/`, `sections/`, `primitives/`, `components/`, `artifact/`, `email/`, `app/`. `foundations/` holds the stories that prove the setup itself (the layer order, the viewports).
+- One file per component, `stories/<kind>/<Component>.stories.tsx`, the folder mirroring `src/`: `chrome/`, `sections/`, `primitives/`, `components/`, `artifact/`, `routing/`, `email/`, `app/`. `foundations/` holds the stories that prove the setup itself (the layer order, the viewports).
 - The title is written out, never derived: `title: "<Kind>/<Component>"`, the kind in Title Case matching the folder (`Chrome/SiteHeader`, `App/Breadcrumbs`). The first segment picks the frame the story is mounted in (below), so it must be right.
 - Import the component from `src/` by relative path (`../../src/chrome`), never from the package name.
 

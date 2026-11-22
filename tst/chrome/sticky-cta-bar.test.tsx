@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
+import { useState } from "react";
 import { StickyCTABar } from "../../src/chrome";
 import { phone, primaryCTA } from "../fixtures";
 
@@ -65,20 +66,31 @@ describe("StickyCTABar", () => {
 		height.mockRestore();
 	});
 
-	it("tells a swapped in listener the height at once, with no resize to wait for", () => {
+	it("never calls a listener on a render alone, so an inline listener that sets state cannot loop", () => {
 		const height = vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(64);
-		const first = vi.fn();
-		const second = vi.fn();
-		const { rerender, unmount } = render(
-			<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={first} />,
-		);
-		expect(first).toHaveBeenCalledTimes(1);
-		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={second} />);
-		expect(first).toHaveBeenLastCalledWith(0);
-		expect(second).toHaveBeenCalledExactlyOnceWith(64);
-		// A render that keeps the listener reports nothing again.
-		rerender(<StickyCTABar primaryCTA={primaryCTA} fromTop onSpaceChange={second} />);
-		expect(second).toHaveBeenCalledTimes(1);
+		const heard = vi.fn();
+		let renders = 0;
+		function Page() {
+			const [space, setSpace] = useState({ pixels: 0 });
+			renders += 1;
+			return (
+				<>
+					<p>{space.pixels}</p>
+					<StickyCTABar
+						primaryCTA={primaryCTA}
+						fromTop
+						onSpaceChange={(pixels) => {
+							heard(pixels);
+							setSpace({ pixels });
+						}}
+					/>
+				</>
+			);
+		}
+		const { unmount } = render(<Page />);
+		expect(screen.getByText("64")).toBeInTheDocument();
+		expect(heard).toHaveBeenCalledExactlyOnceWith(64);
+		expect(renders).toBeLessThanOrEqual(3);
 		unmount();
 		height.mockRestore();
 	});

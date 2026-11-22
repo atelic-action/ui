@@ -3,9 +3,10 @@ import { ContactInfoCard } from "../../src/sections/ContactInfoCard";
 import { testSite as site } from "./site-fixture";
 
 describe("ContactInfoCard", () => {
-	it("renders the single config phone as one Call / Text row by default", () => {
+	it("renders the single config phone as one row named Call by default, never claiming texts", () => {
 		render(<ContactInfoCard site={site} />);
-		expect(screen.getByText("Call / Text")).toBeInTheDocument();
+		expect(screen.getByText("Call")).toBeInTheDocument();
+		expect(screen.queryByText(/Text/)).toBeNull();
 		expect(screen.getByRole("link", { name: "(555) 555-0100" })).toHaveAttribute(
 			"href",
 			"tel:+15555550100",
@@ -24,7 +25,12 @@ describe("ContactInfoCard", () => {
 		);
 		expect(screen.getByText("Owner")).toBeInTheDocument();
 		expect(screen.getByText("Co Owner")).toBeInTheDocument();
-		expect(screen.queryByText("Call / Text")).toBeNull();
+		expect(screen.queryByText("Call")).toBeNull();
+	});
+
+	it("takes the single phone row's words from phoneLabel", () => {
+		render(<ContactInfoCard site={site} phoneLabel="Call or text" />);
+		expect(screen.getByText("Call or text")).toBeInTheDocument();
 	});
 
 	it("drops the visit row for a business with no storefront", () => {

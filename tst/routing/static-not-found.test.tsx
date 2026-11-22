@@ -117,3 +117,29 @@ describe("staticNotFoundRouting", () => {
 		).toBeInTheDocument();
 	});
 });
+
+describe("the pending view on a parameter route", () => {
+	it("draws the page once the router reports the match not found, or a not found nothing below handled", () => {
+		for (const match of [
+			{ routeId: "/blog/$slug", params: { slug: "unwritten" }, status: "notFound" },
+			{ routeId: "/blog/$slug", params: { slug: "unwritten" }, globalNotFound: true },
+		]) {
+			const Pending = staticNotFoundRouting(NotFoundPage, {
+				useMatches: matchesOf([{ routeId: "__root__", params: {} }, match]),
+			}).defaultPendingComponent;
+			const { unmount } = render(<Pending />);
+			expect(screen.getByRole("heading", { name: "Nothing at this address" })).toBeInTheDocument();
+			unmount();
+		}
+	});
+
+	it("draws nothing for a route still loading with no missing of its own, which is why such a route sets one", () => {
+		const Pending = staticNotFoundRouting(NotFoundPage, {
+			useMatches: matchesOf([
+				{ routeId: "/blog/$slug", params: { slug: "unwritten" }, status: "pending" },
+			]),
+		}).defaultPendingComponent;
+		const { container } = render(<Pending />);
+		expect(container).toBeEmptyDOMElement();
+	});
+});

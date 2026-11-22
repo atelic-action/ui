@@ -17,6 +17,10 @@ export interface MissMatch {
 	routeId: string;
 	params: Record<string, string>;
 	staticData?: { missing?: (params: Record<string, string>) => boolean };
+	/** The match's state; `notFound` once a route's loader has thrown `notFound()`. */
+	status?: string;
+	/** Set on the match that renders a not found nothing below it handled. */
+	globalNotFound?: boolean;
 }
 
 /** The catch all route's id in a TanStack file route tree. */

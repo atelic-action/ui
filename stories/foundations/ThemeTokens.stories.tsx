@@ -456,3 +456,26 @@ export const HeroLeadingAndPaddingDefaults: Story = {
 		probe.remove();
 	},
 };
+
+/**
+ * A theme that sets `--subheading-tracking: normal` (flat, as a keyword)
+ * inside a band with tracking of its own: the h3 reads normal and the h4,
+ * whose two thirds no arithmetic can take of a keyword, falls flat to 0
+ * rather than taking the band's tracking.
+ */
+export const SubheadingTrackingNormal: Story = {
+	args: {},
+	render: () => (
+		<div style={{ "--subheading-tracking": "normal", letterSpacing: "0.3em" } as CSSProperties}>
+			<h2>Out of the oven</h2>
+			<h3>Three loaves</h3>
+			<h4>Four rolls</h4>
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const tracking = (name: string) =>
+			getComputedStyle(canvas.getByRole("heading", { name })).letterSpacing;
+		await expect(tracking("Three loaves")).toBe("normal");
+		await expect(["normal", "0px"]).toContain(tracking("Four rolls"));
+	},
+};

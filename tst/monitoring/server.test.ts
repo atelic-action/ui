@@ -379,6 +379,32 @@ describe("refusalError and reportRefusedResponse", () => {
 		}
 	});
 
+	it("keeps a sentence's closing period outside the address it scrubs", async () => {
+		const error = await refusalError(
+			refused({ name: "validation_error", message: "Cannot send to owner@example.com." }),
+		);
+		expect(error.message).toBe(
+			"The upstream service answered 422: validation_error: Cannot send to [address].",
+		);
+	});
+
+	it("scrubs phone number shapes, and leaves a status, a count, and a year", async () => {
+		for (const number of ["(555) 555-0142", "+1 555 555 0143", "555.555.0144", "5555550145"]) {
+			const error = await refusalError(
+				refused({ name: "refused", message: `Call ${number} to confirm` }),
+			);
+			expect(error.message, number).toBe(
+				"The upstream service answered 422: refused: Call [number] to confirm",
+			);
+		}
+		const kept = await refusalError(
+			refused({ name: "rate_limit", message: "429 after 120 sends since 2026" }),
+		);
+		expect(kept.message).toBe(
+			"The upstream service answered 422: rate_limit: 429 after 120 sends since 2026",
+		);
+	});
+
 	it("cuts each field to 300 characters", async () => {
 		const error = await refusalError(refused({ name: "n", message: "m".repeat(1000) }));
 		expect(error.message.length).toBeLessThan(360);

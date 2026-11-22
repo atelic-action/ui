@@ -290,8 +290,26 @@ export function reportServerErrorLater(
 	}
 }
 
-/** Anything shaped like an email address, which a refusal may quote (the recipient, the sender). */
-const ADDRESS = /[^\s@<>()[\]"',;:]+@[^\s@<>()[\]"',;:]+\.[^\s@<>()[\]"',;:]+/g;
+/**
+ * Anything shaped like an email address, which a refusal may quote (the
+ * recipient, the sender). The domain is labels of letters, digits, and
+ * hyphens joined by dots, so a sentence's closing period stays outside it.
+ */
+const ADDRESS = /[^\s@<>()[\]"',;:]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g;
+
+/**
+ * A run shaped like a phone number: a digit, then digits and the usual
+ * separators, then a digit. Only a run holding seven digits or more is one,
+ * so a status, a count, or a year is left alone.
+ */
+const PHONE = /\+?\(?\d[\d\s().-]{5,}\d/g;
+
+/** A refusal's field with every address and phone number in it replaced. */
+function scrub(text: string): string {
+	return text
+		.replace(ADDRESS, "[address]")
+		.replace(PHONE, (run) => ((run.match(/\d/g)?.length ?? 0) >= 7 ? "[number]" : run));
+}
 
 /** The longest a refusal's field is kept, so a report never carries a page of text. */
 const REFUSAL_FIELD_MAX = 300;
@@ -300,8 +318,14 @@ const REFUSAL_FIELD_MAX = 300;
  * A refused upstream answer as an error a report may carry: the service's
  * name, the status, and the error body's `name` and `message` fields alone,
  * each with anything shaped like an email address replaced by `[address]`
- * and cut to 300 characters. Nothing else of the body is read, and a body
- * that is not JSON leaves the status alone. Never throws.
+ * and anything shaped like a phone number by `[number]`, then cut to 300
+ * characters. Nothing else of the body is read, and a body that is not JSON
+ * leaves the status alone. Never throws.
+ *
+ * The scrub takes out the shapes it knows and nothing more: the fields are
+ * still the upstream's free text, and a name, a street, or a message quoted
+ * in it in words passes through. Report a refusal from a service whose
+ * errors are about the request, never one that echoes what a person wrote.
  *
  *   await refusalError(response, "Resend")  // Error("Resend answered 422: validation_error: ...")
  */
@@ -318,7 +342,7 @@ export async function refusalError(
 	}
 	const parts = [body.name, body.message]
 		.filter((part): part is string => typeof part === "string" && part.trim() !== "")
-		.map((part) => part.replace(ADDRESS, "[address]").slice(0, REFUSAL_FIELD_MAX));
+		.map((part) => scrub(part).slice(0, REFUSAL_FIELD_MAX));
 	return new Error(
 		`${service} answered ${response.status}${parts.length ? `: ${parts.join(": ")}` : ""}`,
 	);

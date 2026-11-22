@@ -28,6 +28,12 @@ export interface ContactInfoCardProps {
 	 * broken card, and inventing one is worse.
 	 */
 	showAddress?: boolean;
+	/**
+	 * The words beside the single `site.phone` row. Defaults to "Call", which
+	 * asserts nothing a business may not do; a line that answers texts says
+	 * so here ("Call or text").
+	 */
+	phoneLabel?: string;
 }
 
 /** Dark card with direct contact rows: call, email, visit, portal. */
@@ -36,6 +42,7 @@ export function ContactInfoCard({
 	title = "Reach us directly",
 	phones,
 	showAddress = true,
+	phoneLabel = "Call",
 }: ContactInfoCardProps) {
 	const withBase = useWithBase();
 	const portal = site.footerLinks?.find((link) => link.label.toLowerCase().includes("portal"));
@@ -54,7 +61,7 @@ export function ContactInfoCard({
 						))
 					: site.phone && (
 							<div className="ci-row">
-								<span className="k">Call / Text</span>
+								<span className="k">{phoneLabel}</span>
 								<span className="v">
 									<a href={`tel:${site.phone.e164}`}>{site.phone.display}</a>
 								</span>

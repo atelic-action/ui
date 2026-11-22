@@ -1355,7 +1355,9 @@
 	.atelic-ui:has(dialog.mobile-menu[open]) .contact-dock {
 		visibility: hidden;
 	}
-	/* Positioned, so it paints over the phone's sheet, which is fixed. */
+	/* Positioned, so on a phone it paints over the dock's own panel, a fixed
+	   sheet across the bottom that leaves room for it as its close button.
+	   It never shows over the phone menu's sheet, which hides it (above). */
 	.atelic-ui .cd-launch {
 		position: relative;
 		display: inline-flex;
