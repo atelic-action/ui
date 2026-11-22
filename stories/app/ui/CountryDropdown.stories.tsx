@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
-import { CountryDropdown, Label } from "../../../src/app/ui";
+import { CountryDropdown, getCountryFlag, Label } from "../../../src/app/ui";
 import { knownBug, knownIssues } from "../../support/known-issues";
 import { pin } from "../../support/viewports";
 
@@ -176,5 +176,27 @@ export const OpenPhone: Story = {
 		const list = await screen.findByRole("listbox");
 		await waitFor(() => expect(list).toBeVisible());
 		await expect(list.getBoundingClientRect().right).toBeLessThanOrEqual(window.innerWidth);
+	},
+};
+
+/** `getCountryFlag`, the helper beside it: a small flag for a country's name, and nothing for a name it does not know. */
+export const FlagForAName: Story = {
+	render: () => (
+		<ul className="space-y-2">
+			<li className="flex items-center gap-2">
+				{getCountryFlag("Portugal")}
+				Portugal
+			</li>
+			<li className="flex items-center gap-2">
+				{getCountryFlag("Fairhaven")}
+				Fairhaven
+			</li>
+		</ul>
+	),
+	play: async ({ canvas }) => {
+		const [portugal, unknown] = canvas.getAllByRole("listitem");
+		await expect(portugal.querySelector("img")).not.toBeNull();
+		await expect(unknown.querySelector("img")).toBeNull();
+		await expect(flags.asked).toEqual([`${FLAG_HOST}pt.svg`]);
 	},
 };

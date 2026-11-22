@@ -79,6 +79,8 @@ export const issues = {
 		elements: "[role=slider]",
 		base: '[role="combobox"], [role="listbox"], [role="searchbox"], [role="slider"], [role="spinbutton"], [role="textbox"]',
 	},
+	/** The shell's default toaster is sonner with `richColors`: the success and error words on their tints fail contrast. */
+	"toast-rich-colors-contrast": { rule: "color-contrast", elements: "[data-sonner-toaster]" },
 	/**
 	 * Not a bug: a limit of the checker. A modal Radix menu hides the rest of
 	 * the page with `aria-hidden` (marking each element `data-aria-hidden`) and
