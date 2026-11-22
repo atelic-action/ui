@@ -19,7 +19,7 @@ export const issues = {
 	"muted-text-contrast": {
 		rule: "color-contrast",
 		elements:
-			".stat-delta-was, .stat-delta-basis, .stat-delta-change[data-tone='muted'], .stat-change[data-tone='muted'], .stat-period, .stat-out-of, .stat-unit, .stat .note, .stat-row.is-quiet .lbl",
+			".stat-delta-was, .stat-delta-basis, .stat-delta-change[data-tone='muted'], .stat-change[data-tone='muted'], .stat-period, .stat-out-of, .stat-unit, .stat .note, .stat-row.is-quiet .lbl, .disclosure-meta",
 	},
 	/** Words in the package's own `--tone-good` (#1b7f3b) on the page surface: 4.49:1. */
 	"tone-good-text-contrast": {
