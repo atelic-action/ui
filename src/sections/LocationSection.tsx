@@ -7,7 +7,7 @@ import type { SiteConfig, Surface } from "./siteConfig";
 
 /** The keys of the site config the section reads; a whole `SiteConfig` passes as it is. */
 export type LocationSectionSite = MapEmbedSite &
-	Pick<SiteConfig, "serviceAreas" | "hours" | "clock" | "phone">;
+	Pick<SiteConfig, "serviceAreas" | "hours" | "clock" | "meridiem" | "phone">;
 
 export interface LocationSectionProps {
 	site: LocationSectionSite;
@@ -64,7 +64,7 @@ export function LocationSection({
 						<div className="loc-heading" role="heading" aria-level={headingLevel + 1}>
 							Hours
 						</div>
-						<HoursTable hours={site.hours} clock={site.clock} />
+						<HoursTable hours={site.hours} clock={site.clock} meridiem={site.meridiem} />
 					</div>
 
 					<div className="loc-actions">

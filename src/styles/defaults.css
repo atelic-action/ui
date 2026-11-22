@@ -129,7 +129,8 @@
 		   (--section-space). --hero-stack-gap and the three gaps under it
 		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
 		   default of their own: unset, each gap in the hero keeps the value
-		   it always had, in place. */
+		   it always had, in place; so has --footer-brand-width, the brand
+		   column's share of the footer's row (1.4, or 2 beside the hours). */
 		/* The open group's pill's words on the bar. */
 		--nav-open-ink: currentColor;
 		/* The header phone pill's padding and its number's size. */
@@ -156,6 +157,9 @@
 		/* The footer lockup's mark, and the line its links take on hover. */
 		--footer-mark-height: 38px;
 		--footer-link-hover-decoration: none;
+		/* The footer's column links' size: 1em is the footer's own, as they
+		   always inherited it. */
+		--footer-link-size: 1em;
 	}
 
 	/* ---- Long words ----

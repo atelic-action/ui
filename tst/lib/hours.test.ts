@@ -88,6 +88,19 @@ describe("formatHoursRange", () => {
 	});
 });
 
+describe("the word meridiem", () => {
+	it("reads am and pm after a space, short or whole, and leaves the 24 hour clock alone", () => {
+		expect(formatClock("08:00", { meridiem: "word" })).toBe("8:00 am");
+		expect(formatClock("17:30", { meridiem: "word" })).toBe("5:30 pm");
+		expect(formatClock("08:00", { meridiem: "word", short: true })).toBe("8 am");
+		expect(formatClock("12:00", { meridiem: "word" })).toBe("12:00 pm");
+		expect(formatClock("17:00", { meridiem: "word", clock: "24h" })).toBe("17:00");
+		const day: OpeningHours = { ...monday, opens: "08:00", closes: "17:00" };
+		expect(formatHoursRange(day, { meridiem: "word" })).toBe("8:00 am to 5:00 pm");
+		expect(formatHoursRange(day, { short: true })).toBe("8a to 5p");
+	});
+});
+
 describe("isClosed", () => {
 	it("detects open and closed rows", () => {
 		expect(isClosed(monday)).toBe(false);

@@ -612,7 +612,7 @@ export function SiteShell(props: Omit<SiteShellProps, "currentPath" | "basePath"
 Every site's footer has one shape, and `Footer` draws it (7.0.0):
 
 - **The brand column:** the header's lockup (the mark with the wordmark beside it, or the mark alone when `logo.wordmark` is false), then the Google rating beside five stars, the whole line one link to the business's Google profile when it has one, then the one address, the headquarters, linked to the same profile, then the phone and the email, each a link.
-- **The hours,** when the site gives them: a column of their own headed Hours (`hoursHeading`), each row's days beside or over its range, as the column's width allows (8.1.0).
+- **The hours,** when the site gives them: a column of their own headed Hours (`hoursHeading`), each row's days beside or over its range, as the column's width allows (8.1.0). On a phone, where the footer is two across, the hours take the row's whole width with their rows two across and the link columns pair up under them, since a column of hours beside a taller link column left a hole (8.2.1). `footer.hoursPlacement: "brand"` (`Footer`'s `hoursPlacement`, 8.2.1) sets them inside the brand column instead, under the address, the phone, and the email, as a compact list (days, then ranges) under a small Hours label, so the four link columns keep the row's room: at 1280 four columns of six links, three word labels among them, hold their labels on one line.
 - **Four link columns:** Company, Resources, Social, and Legal, in that order. From 760px the columns share one row at their shares but never narrower than their longest word, wrapping a column to a second row before a label breaks inside itself (8.1.0). A Social link carries its icon in front of its words. A column with no links is left out, and the grid sizes itself to the columns shown.
 - **The closing bar:** `ClosingBar` under it all, `Copyright` with the business's name on the left and `Credit` on the right while the two share a line; when they do not (a phone, a long attribution), the credit wraps under the copyright and both start at the same edge, and a copyright longer than the line wraps inside itself (8.2.1).
 
@@ -627,7 +627,7 @@ The header carries the services and the service areas, so the footer does not re
 | The rating | `footer.rating`, as printed (`"4.8 on Google"`) |
 | The rating's link | `footer.ratingHref`, else `mapLinkURL`, the Google profile, whenever a rating is set; `footer.ratingLabel` names it |
 | The address and its link | `address` and `mapLinkURL`; `footer.showAddress: false` drops the address |
-| The hours | `hours`, each row's `labelShort` and its range on `clock`; `footer.showHours: false` keeps them out of the footer and in the structured data |
+| The hours | `hours`, each row's `labelShort` and its range on `clock` and `meridiem`, short ("8a to 5p") unless `footer.hoursShort` is false ("8:00a to 5:00p", or "8:00 am to 5:00 pm" with `meridiem: "word"`); `footer.hoursPlacement` sets them as a column (the default) or inside the brand column; `footer.showHours: false` keeps them out of the footer and in the structured data |
 | The phone and the email | `phone`, `email` |
 | Company | `nav` |
 | Resources | `footerLinks` |
@@ -811,7 +811,7 @@ Nothing breaks: every addition is an optional prop, config key, token, or entry.
 | `SplitSection` | The two column band: copy beside copy, or media beside copy. `ratio` is `even`, `narrow-first`, or `media`, a fixed 420px shot column and the gap a card row uses, so a photo beside copy lines up with a case study entry above it; `even` and `narrow-first` stack below 920px, `media` below 761px |
 | `PricingBand` | A brand colored band with the price in a card beside it, informational by design |
 | `CTASection` | The standard closer: the site's own primary action and an optional ghost second |
-| `FeatureGrid` | Numbered cards with a hover lift; a card is a link or holds one, never both |
+| `FeatureGrid` | Numbered cards with a hover lift; a card is a link or holds one, never both; a linked card with `external` opens in a new tab and says so to a screen reader (`newTabLabel`, 8.2.1) |
 | `FeatureDetail` | Alternating copy and media rows with tags and a tick list |
 | `ProcessSteps` | A dark band of numbered steps beside a frame |
 | `PricingCard` | A standalone price card with a tick list and its booking action |
@@ -839,7 +839,7 @@ The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFra
 
 The entry also exports the helpers the sections use, for a site's own code: `formatClock`, `formatHoursRange`, and `isClosed` for hours, `isHoneypotFilled`, and `trackEvent`.
 
-Hours print on the 12 hour clock unless the site's config sets `clock: "24h"`, which turns "9a to 5p" into "09:00 to 17:00" everywhere hours appear: `LocationSection` and `HoursTable` (which takes `clock` as a prop when used on its own). `formatClock` and `formatHoursRange` take the same `clock` option for a site's own code.
+Hours print on the 12 hour clock unless the site's config sets `clock: "24h"`, which turns "9a to 5p" into "09:00 to 17:00" everywhere hours appear: `LocationSection` and `HoursTable` (which takes `clock` as a prop when used on its own). `meridiem: "word"` (8.2.1) marks the 12 hour clock with a word, "9 am to 5 pm", wherever hours print (`HoursTable`'s `meridiem` when used on its own). The footer prints the short form, a whole hour's minutes dropped ("8a to 5p"), unless `footer.hoursShort` is false, so "8:00 am to 5:00 pm" in the footer is `meridiem: "word"` with `footer: { hoursShort: false }`, no site code. `formatClock` and `formatHoursRange` take the same `clock`, `meridiem`, and `short` options for a site's own code.
 
 ### The Marketing Vite Config and Commands
 
@@ -1065,6 +1065,8 @@ The sheets read a set of tokens beyond the theme's palette, type, radii, and lay
 | `--footer-mark-height`, `--footer-nap-weight` | `38px`, `--weight-semibold` (the plain address: the column's own, read in place, since no custom property can hold `inherit`) | The footer lockup's mark and the address, phone, and email lines (8.1.0) |
 | `--footer-link`, `--footer-link-hover` | `--neutral-200`, `--on-dark`, read in place | The footer's column links and every footer link's hover, apart from the neutrals that also draw outlines (8.2.0) |
 | `--footer-link-hover-decoration` | `none` | The line a footer column link and a contact line take on hover (`underline`), for a theme whose links are already the hover's color, where a hover by color alone shows nothing (8.2.0) |
+| `--footer-link-size` | `1em` (the footer's own size, as the links always inherited) | The footer's column links' size, to a design's proportion (8.2.1) |
+| `--footer-brand-width` | none; unset, the brand column's share is 1.4, or 2 beside the hours from 1100px, read in place | The brand column's share of the footer's row from 760px, a link column's being 1 (8.2.1) |
 | `--closing-link`, `--closing-link-hover` | `--neutral-300`, `--surface` mixed 96% with `--on-dark`, read in place | The closing bar's links, the credit's among them, and their hover. Their own pair, since the closing bar's links have always read a step quieter than the footer's (8.2.0) |
 | `--menu-card-bg`, `--menu-card-ink` | `--primary-deep`, `--on-primary`, read in place | The mega panel's feature card: its ground, and its eyebrow, headline, line, and ticked points. The card is the primary field (`.on-primary`), so its button stays light; a theme that sets a light ground here checks the button against it (8.2.0) |
 | `--menu-rule` | `--hairline`, read in place | The light phone menu's row dividers (8.2.0) |

@@ -4,7 +4,7 @@ import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, type HoursRow, SiteHeader } from "../../src/chrome";
 import { formatHoursRange } from "../../src/sections";
 import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
-import { brokenWords, expectNoSidewaysScroll } from "../support/geometry";
+import { brokenWords, expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /** The default footer's four columns, as SiteShell derives them from the bakery's config. */
@@ -422,7 +422,11 @@ export const WithHours: Story = {
 	},
 };
 
-/** On a phone the hours take a column in the pairs under the brand column. */
+/**
+ * On a phone the hours take the row's whole width under the brand column,
+ * their rows two across, and the link columns pair up under them, where a
+ * column of hours beside a taller link column left a hole under the hours.
+ */
 export const WithHoursPhone: Story = {
 	args: { hours },
 	globals: pin("phone"),
@@ -430,9 +434,16 @@ export const WithHoursPhone: Story = {
 		const footer = within(canvas.getByRole("contentinfo"));
 		const box = (element: HTMLElement) => element.getBoundingClientRect();
 		const hoursHeading = footer.getByRole("heading", { name: "Hours" });
-		const [company] = footer.getAllByRole("navigation");
-		await expect(Math.round(box(hoursHeading).top)).toBe(
-			Math.round(box(company as HTMLElement).top),
+		const hoursColumn = hoursHeading.parentElement as HTMLElement;
+		const [company, resources] = footer.getAllByRole("navigation") as HTMLElement[];
+		await expect(box(hoursColumn).bottom).toBeLessThanOrEqual(box(company as HTMLElement).top);
+		await expect(Math.round(box(company as HTMLElement).top)).toBe(
+			Math.round(box(resources as HTMLElement).top),
+		);
+		// The rows two across: the second row starts beside the first.
+		const [first, second] = within(hoursColumn).getAllByRole("term");
+		await expect(Math.round(box(first as HTMLElement).top)).toBe(
+			Math.round(box(second as HTMLElement).top),
 		);
 		await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
 		await expectNoSidewaysScroll();
@@ -551,5 +562,178 @@ export const LongEmailDesktop: Story = {
 		});
 		await expect(brokenWords(mail)).toEqual([]);
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** Six links a column, the longest labels a design gives, three words among them. */
+const fullColumns: FooterColumn[] = [
+	{
+		heading: "Company",
+		links: [
+			{ label: "Our story", href: "/about" },
+			{ label: "The morning bake", href: "/bake" },
+			{ label: "Wholesale", href: "/wholesale" },
+			{ label: "Careers", href: "/jobs" },
+			{ label: "Visit the shop", href: "/visit" },
+			{ label: "Contact", href: "/contact" },
+		],
+	},
+	{
+		heading: "Resources",
+		links: [
+			{ label: "Order for Saturday", href: "/order" },
+			{ label: "Allergen guide", href: "/allergens" },
+			{ label: "Cake ordering", href: "/cakes" },
+			{ label: "Price sheet", href: "/prices" },
+			{ label: "Gift cards", href: "/gifts" },
+			{ label: "Questions", href: "/faq" },
+		],
+	},
+	{
+		heading: "Social",
+		links: [
+			{
+				label: "Instagram",
+				href: "https://instagram.example.com/kh",
+				icon: "instagram",
+				external: true,
+			},
+			{
+				label: "Facebook",
+				href: "https://facebook.example.com/kh",
+				icon: "facebook",
+				external: true,
+			},
+			{ label: "YouTube", href: "https://youtube.example.com/kh", icon: "youtube", external: true },
+			{
+				label: "LinkedIn",
+				href: "https://linkedin.example.com/kh",
+				icon: "linkedin",
+				external: true,
+			},
+			{ label: "Reviews", href: "https://reviews.example.com/kh", icon: "star", external: true },
+			{ label: "Newsletter", href: "/news", icon: "mail" },
+		],
+	},
+	{
+		heading: "Legal",
+		links: [
+			{ label: "Privacy", href: "/privacy" },
+			{ label: "Terms of sale", href: "/terms" },
+			{ label: "Accessibility", href: "/accessibility" },
+			{ label: "Cookie settings", href: "/cookies" },
+			{ label: "Refund policy", href: "/refunds" },
+			{ label: "Site map", href: "/sitemap" },
+		],
+	},
+];
+
+/** No label in the footer breaks inside a word. */
+async function expectWholeWords(canvas: ReturnType<typeof within>) {
+	await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
+	await expectNoSidewaysScroll();
+}
+
+/** The hours as their own column beside four full link columns, at 1280. */
+export const CrowdedHoursColumn: Story = {
+	args: { hours, columns: fullColumns },
+	play: async ({ canvas }) => {
+		await expectWholeWords(canvas);
+	},
+};
+
+/** The same at 820. */
+export const CrowdedHoursColumnTablet: Story = {
+	...CrowdedHoursColumn,
+	globals: pin("tablet"),
+};
+
+/** The same at 390. */
+export const CrowdedHoursColumnPhone: Story = {
+	...CrowdedHoursColumn,
+	globals: pin("phone"),
+};
+
+/**
+ * The hours inside the brand column (`hoursPlacement: "brand"`), under the
+ * address, the phone, and the email as a compact list under a small label,
+ * so four full link columns keep the row: at 1280 a three word label holds
+ * one line, and no label breaks inside a word.
+ */
+export const CrowdedHoursInBrand: Story = {
+	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const hoursHeading = footer.getByRole("heading", { name: "Hours" });
+		const nap = canvas.getByRole("contentinfo").querySelector("address") as HTMLElement;
+		await expect(hoursHeading.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+			nap.getBoundingClientRect().bottom,
+		);
+		await expect(nap.parentElement).toContainElement(hoursHeading);
+		await expect(lines(footer.getByRole("link", { name: "Order for Saturday" }))).toBe(1);
+		// The days and the ranges side by side, a row a line.
+		const [day] = footer.getAllByRole("term");
+		const [range] = footer.getAllByRole("definition");
+		await expect(Math.round((day as HTMLElement).getBoundingClientRect().top)).toBe(
+			Math.round((range as HTMLElement).getBoundingClientRect().top),
+		);
+		await expectWholeWords(canvas);
+	},
+};
+
+/** The brand placement at 820. */
+export const CrowdedHoursInBrandTablet: Story = {
+	args: CrowdedHoursInBrand.args,
+	globals: pin("tablet"),
+	play: async ({ canvas }) => {
+		await expectWholeWords(canvas);
+	},
+};
+
+/** The brand placement at 390. */
+export const CrowdedHoursInBrandPhone: Story = {
+	args: CrowdedHoursInBrand.args,
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expectWholeWords(canvas);
+	},
+};
+
+/**
+ * `--footer-link-size` sets the column links' size and `--footer-brand-width`
+ * the brand column's share of the row, a link column's being 1.
+ */
+export const LinkSizeAndBrandShare: Story = {
+	args: { columns: fullColumns },
+	decorators: [
+		(Story) => (
+			<div style={{ "--footer-link-size": "15px", "--footer-brand-width": "2" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		await expect(getComputedStyle(footer.getByRole("link", { name: "Our story" })).fontSize).toBe(
+			"15px",
+		);
+		const brand = (canvas.getByRole("contentinfo").querySelector("address") as HTMLElement)
+			.parentElement as HTMLElement;
+		const [company] = footer.getAllByRole("navigation") as HTMLElement[];
+		const ratio =
+			brand.getBoundingClientRect().width / (company as HTMLElement).getBoundingClientRect().width;
+		await expect(ratio).toBeGreaterThan(1.7);
+	},
+};
+
+/** Unset, the links take the footer's own size and the brand column its 1.4 share, as before. */
+export const LinkSizeAndBrandShareDefaults: Story = {
+	args: { columns: fullColumns },
+	play: async ({ canvas }) => {
+		const footer = within(canvas.getByRole("contentinfo"));
+		const link = footer.getByRole("link", { name: "Our story" });
+		await expect(getComputedStyle(link).fontSize).toBe(
+			getComputedStyle(canvas.getByRole("contentinfo")).fontSize,
+		);
 	},
 };

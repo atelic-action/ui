@@ -88,6 +88,13 @@ export interface CTA {
 /** How opening hours print: "12h" reads "9a to 5p", "24h" reads "09:00 to 17:00". */
 export type Clock = "12h" | "24h";
 
+/**
+ * How the 12 hour clock marks morning and afternoon: "letter" (the default)
+ * reads "9a" and "9:30a", "word" reads "9 am" and "9:30 am". The 24 hour
+ * clock marks neither.
+ */
+export type Meridiem = "letter" | "word";
+
 export interface OpeningHours {
 	/** Row label as displayed, e.g. "Monday" or "Friday to Sunday". */
 	label: string;
@@ -222,6 +229,11 @@ export interface SiteConfig {
 	 * `opens` and `closes` are already 24 hour.
 	 */
 	clock?: Clock;
+	/**
+	 * How the 12 hour clock marks the time of day, wherever hours print:
+	 * "letter" (the default) reads "9a to 5p", "word" reads "9 am to 5 pm".
+	 */
+	meridiem?: Meridiem;
 	/** Neighborhoods or cities served; feeds local SEO copy and structured data. */
 	serviceAreas: string[];
 	priceRange?: string;
@@ -275,6 +287,18 @@ export interface SiteConfig {
 		 * to true: a site whose config holds hours shows them in its footer.
 		 */
 		showHours?: boolean;
+		/**
+		 * Where the footer's hours sit: "column" (the default), a column of
+		 * their own beside the link columns, or "brand", a compact list inside
+		 * the brand column under the address, the phone, and the email.
+		 */
+		hoursPlacement?: "column" | "brand";
+		/**
+		 * Whether the footer's hours drop a whole hour's minutes ("8a to 5p").
+		 * Defaults to true; false prints them as the hours table does
+		 * ("8:00a to 5:00p", or "8:00 am to 5:00 pm" with `meridiem: "word"`).
+		 */
+		hoursShort?: boolean;
 	};
 	ogImage?: string;
 	/** Profile URLs for the schema.org sameAs entity graph (socials, listings). */

@@ -941,6 +941,16 @@
 		font-size: 0.98rem;
 		flex: 1;
 	}
+	/* A card opening in a new tab says so to a screen reader alone. */
+	.atelic-ui .feature-new-tab {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
 	.atelic-ui .feature-link {
 		margin-top: 18px;
 		font-weight: var(--weight-bold);

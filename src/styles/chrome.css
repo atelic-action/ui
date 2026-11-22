@@ -1639,19 +1639,54 @@
 		flex-wrap: wrap;
 		column-gap: 8px;
 	}
-	.atelic-ui .footer-hours dt {
+	.atelic-ui :is(.footer-hours, .footer-brand-hours) dt {
 		color: var(--on-dark);
 		font-weight: var(--weight-medium);
 	}
-	.atelic-ui .footer-hours dd {
+	.atelic-ui :is(.footer-hours, .footer-brand-hours) dd {
 		margin: 0;
 		color: var(--neutral-200);
+	}
+	/* Two across (a phone), a column of hours beside a taller link column left
+	   a hole under the hours, so the hours take the row's whole width, their
+	   rows laid two across, and the link columns pair up under them. */
+	@media (max-width: 759px) {
+		.atelic-ui .footer-grid > .footer-hours {
+			grid-column: 1 / -1;
+		}
+		.atelic-ui .footer-hours dl {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 8px 32px;
+		}
+	}
+	/* The hours inside the brand column (hoursPlacement "brand"): a small
+	   label over a compact list, the days in one column and the ranges in
+	   the next, under the address, the phone, and the email. */
+	.atelic-ui .footer-brand-hours {
+		margin-top: 20px;
+	}
+	.atelic-ui .footer .footer-brand-hours .footer-heading {
+		font-size: 0.72rem;
+		margin-bottom: 8px;
+	}
+	.atelic-ui .footer-brand-hours dl {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		gap: 4px 16px;
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.4;
+	}
+	.atelic-ui .footer-brand-hours dl > div {
+		display: contents;
 	}
 	.atelic-ui .footer nav a {
 		display: flex;
 		align-items: center;
 		gap: 10px;
 		padding: 6px 0;
+		font-size: var(--footer-link-size);
 		color: var(--footer-link, var(--neutral-200));
 		font-weight: var(--weight-medium);
 	}
@@ -1703,8 +1738,10 @@
 		.atelic-ui .footer-grid > * {
 			flex: 1 1 0;
 		}
+		/* The brand column's share of the row, a link column's being 1:
+		   --footer-brand-width, else 1.4 (2 beside the hours from 1100px). */
 		.atelic-ui .footer-grid > .footer-brand {
-			flex-grow: 1.4;
+			flex-grow: var(--footer-brand-width, 1.4);
 		}
 		/* With the hours beside the four link columns a tablet has no room for
 		   the brand column too, so it keeps the row above them until 1100px. */
@@ -1716,7 +1753,7 @@
 	   hours, so the lockup and the rating keep a line each. */
 	@media (min-width: 1100px) {
 		.atelic-ui .footer-grid.has-hours > .footer-brand {
-			flex: 2 1 0;
+			flex: var(--footer-brand-width, 2) 1 0;
 		}
 	}
 	/* Text wordmark for a site with no mark image. */
