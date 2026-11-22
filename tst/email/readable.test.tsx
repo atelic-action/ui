@@ -111,7 +111,7 @@ describe("small accent words wear the accent's ink, never the accent", () => {
 				key="s"
 				records={[
 					{
-						title: "Crema",
+						title: "Larkspur Bakery",
 						meta: ["Lead"],
 						badges: [{ text: "New", tone: "accent" }],
 						aside: { text: "opened", strong: "40d", tone: "accent" },
@@ -155,7 +155,7 @@ describe("small accent words wear the accent's ink, never the accent", () => {
 			<RecordStack
 				records={[
 					{
-						title: "Crema",
+						title: "Larkspur Bakery",
 						url: "https://example.com",
 						meta: [],
 						timeline: { days: 7, touches: [], opens: [1] },
