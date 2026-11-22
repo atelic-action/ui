@@ -126,4 +126,9 @@ describe("ArtifactShell", () => {
 		expect(screen.queryByRole("button", { name: "Open menu" })).toBeNull();
 		expect(container.querySelector("dialog.mobile-menu")).toBeNull();
 	});
+
+	it("pins the roomier section spacing, so a document reads as it did before 8.0.0", () => {
+		const { container } = renderShell();
+		expect(container.firstElementChild).toHaveAttribute("data-density", "comfortable");
+	});
 });
