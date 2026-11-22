@@ -403,7 +403,7 @@ describe("the scoreboard", () => {
 			<RecordStack
 				records={[
 					{
-						title: "Crema Coffee House",
+						title: "Larch Coffee House",
 						meta: ["5 touches", "1 open"],
 						badges: [
 							{ text: "New", tone: "accent" },

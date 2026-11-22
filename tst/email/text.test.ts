@@ -186,7 +186,7 @@ describe("the plain text helpers", () => {
 	it("recordStackText brackets every pill, draws the timeline and ends the meta with the aside", () => {
 		const text = recordStackText([
 			{
-				title: "Crema Coffee House",
+				title: "Larch Coffee House",
 				meta: ["5 touches", "1 open"],
 				badge: "Contacted",
 				badges: [
@@ -198,7 +198,7 @@ describe("the plain text helpers", () => {
 			},
 		]);
 		expect(text).toBe(
-			"  Crema Coffee House [Contacted] [New] [Bump]\n    10d [#······@·o|]\n    5 touches · 1 open · opened 3d",
+			"  Larch Coffee House [Contacted] [New] [Bump]\n    10d [#······@·o|]\n    5 touches · 1 open · opened 3d",
 		);
 	});
 
