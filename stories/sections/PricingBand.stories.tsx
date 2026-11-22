@@ -1,19 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PricingBand } from "../../src/sections";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * A band on the primary color: the pitch on the left, the price in a card on
- * the right. Its small words fail contrast on this theme's primary
- * (stories/findings/sections.md).
+ * the right.
  */
 const meta = {
 	title: "Sections/PricingBand",
 	component: PricingBand,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("price-band-contrast") },
 	args: {
 		eyebrow: "Wholesale",
 		title: "One price a loaf, delivered",

@@ -7,7 +7,7 @@ import { pin } from "../support/viewports";
 
 /**
  * A legal document carried as data: its revision date, then its blocks
- * verbatim. The muted dateline fails contrast on this theme (stories/findings/sections.md).
+ * verbatim.
  */
 const meta = {
 	title: "Sections/LegalPage",
@@ -29,8 +29,6 @@ type Story = StoryObj<typeof meta>;
 
 /** The date first, the headings as h2, and the capitals left exactly as the source sets them. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	play: async ({ canvas }) => {
 		const updated = canvas.getByText("Last updated: 2026-09-01");
 		const first = canvas.getByRole("heading", { level: 2, name: "What we collect" });
@@ -50,6 +48,7 @@ export const NoDate: Story = {
 	},
 };
 
+/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
 export const AltSurface: Story = {
 	tags: ["known-issue"],
 	parameters: { ...knownIssues("muted-text-contrast") },
@@ -58,8 +57,6 @@ export const AltSurface: Story = {
 
 /** No blocks: only the date. */
 export const Empty: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: { doc: { ...legalDoc, blocks: [] } },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole("heading", { level: 2 })).toBeNull();
@@ -68,8 +65,6 @@ export const Empty: Story = {
 
 /** A long document with a long contact address, on a phone. */
 export const LongestContent: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	globals: pin("phone"),
 	args: {
 		doc: {

@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { HoursTable } from "../../src/sections";
 import { site } from "../fixtures/bakery";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** The week's hours as rows: the days on the left, the times on the right in mono. */
@@ -30,8 +29,6 @@ const top = (element: Element) => Math.round(element.getBoundingClientRect().top
 
 /** The 12 hour clock, the default: each day's times on its own line beside it, and a closed day says so. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	play: async ({ canvas }) => {
 		const day = canvas.getByText("Tuesday to Friday");
 		const times = canvas.getByText("7:00a to 3:00p");
@@ -46,8 +43,6 @@ export const Default: Story = {
 
 /** The 24 hour clock, with leading zeros. */
 export const TwentyFourHour: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: { clock: "24h" },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByText("07:00 to 15:00")).toBeVisible();
@@ -57,8 +52,6 @@ export const TwentyFourHour: Story = {
 
 /** A row with no times prints its note instead of Closed. */
 export const NoteInsteadOfClosed: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: {
 		hours: [
 			...site.hours.slice(0, 2),
@@ -81,8 +74,6 @@ export const Empty: Story = {
 
 /** Every day its own row, on a phone, with the longest labels a site writes. */
 export const LongestContent: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	globals: pin("phone"),
 	args: {
 		hours: [

@@ -2,23 +2,17 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, type MockInstance, spyOn, waitFor, within } from "storybook/test";
 import { FAQBrowser } from "../../src/sections";
 import { faqCategories, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * The help center: a hero with live search, a sticky rail of categories
  * that follows the scroll, and each category's questions folding open, with
- * expand all, back to top, and a copyable link per question. The hero's
- * eyebrow, the category links, and the marked rail tab fail contrast on this
- * theme (stories/findings/).
+ * expand all, back to top, and a copyable link per question.
  */
 const meta = {
 	title: "Sections/FAQBrowser",
 	component: FAQBrowser,
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues("eyebrow-contrast", "jump-rail-active-contrast", "faq-link-contrast"),
-	},
 	args: {
 		hero: {
 			eyebrow: "Questions",
@@ -166,6 +160,7 @@ export const AllOpenByHand: Story = {
  * brings everything back.
  */
 export const Search: Story = {
+	tags: ["known-issue"],
 	play: async ({ canvas, userEvent, step }) => {
 		await step("a word in a question and in an answer, either case", async () => {
 			await userEvent.type(search(canvas), "CAKE");

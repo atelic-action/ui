@@ -53,8 +53,6 @@ const framePaths = () =>
 
 /** The screenshot, as one link to directions that opens a new tab. */
 export const Static: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("map-directions-contrast") },
 	play: async ({ canvas }) => {
 		const link = canvas.getByRole("link", {
 			name: `Get directions to Kestrel Hollow Bakehouse, ${address}`,
@@ -75,7 +73,6 @@ export const Static: Story = {
  * the page.
  */
 export const StaticNoLink: Story = {
-	parameters: { ...knownIssues("map-directions-contrast") },
 	tags: ["known-issue"],
 	args: { site: { ...site, mapLinkURL: undefined } },
 	play: async ({ canvas }) => {

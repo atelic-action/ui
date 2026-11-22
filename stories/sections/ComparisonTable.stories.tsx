@@ -2,19 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ComparisonTable } from "../../src/sections";
 import { comparisonRows, unbroken } from "../fixtures/sections";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * A graded before and after, one row per thing graded, each side a grade
- * beside its points. A changed grade takes the primary color. Its muted
- * heads and notes fail contrast on this theme (stories/findings/sections.md).
+ * beside its points. A changed grade takes the primary color.
  */
 const meta = {
 	title: "Sections/ComparisonTable",
 	component: ComparisonTable,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: {
 		rows: comparisonRows,
 		footnote: "A is the best grade, D the worst. Measured on a phone in October.",

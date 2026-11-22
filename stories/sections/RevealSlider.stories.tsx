@@ -2,19 +2,16 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, type within } from "storybook/test";
 import { RevealSlider } from "../../src/sections";
 import { image } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * Drag to compare: the old page on the left, revealed over the rebuilt one
  * by a handle that drags, steps by the arrow keys, and says where it stands.
- * The after label fails contrast on this theme (stories/findings/sections.md).
  */
 const meta = {
 	title: "Sections/RevealSlider",
 	component: RevealSlider,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("reveal-label-contrast") },
 	args: {
 		before: { src: image("old-site"), alt: "The bakery's old home page", label: "Today" },
 		after: { src: image("new-site"), alt: "The bakery's rebuilt home page", label: "The rebuild" },
@@ -69,6 +66,7 @@ export const Default: Story = {
 
 /** The keyboard: the arrows step the divider by three, and stop at the ends. */
 export const Keyboard: Story = {
+	tags: ["known-issue"],
 	play: async ({ canvas, userEvent, step }) => {
 		const slider = handle(canvas);
 		await step("Tab reaches the handle", async () => {

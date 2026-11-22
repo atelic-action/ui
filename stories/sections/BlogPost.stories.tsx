@@ -6,14 +6,12 @@ import { knownBug, knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
- * One journal post: the way back, the headline, the byline and dates, and the body.
- * Its muted byline and way back fail contrast on this theme (stories/findings/sections.md).
+ * One journal post: the way back, the headline, the byline and dates, and
+ * the body.
  */
 const meta = {
 	title: "Sections/BlogPost",
 	component: BlogPost,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: { doc: blogPost },
 	globals: pin("desktop"),
 } satisfies Meta<typeof BlogPost>;
@@ -122,7 +120,12 @@ export const OtherBasePath: Story = {
 	},
 };
 
-export const AltSurface: Story = { args: { surface: "alt" } };
+/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
+export const AltSurface: Story = {
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("muted-text-contrast") },
+	args: { surface: "alt" },
+};
 
 /** The body as plain paragraphs only, on a phone, with a long address inside the page. */
 export const Phone: Story = {
@@ -147,6 +150,7 @@ export const Phone: Story = {
  * word, so the page scrolls sideways.
  */
 export const UnbrokenWord: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { doc: { ...blogPost, title: `The ${unbroken}` } },
 	play: async () => {

@@ -2,19 +2,16 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { FeatureDetail } from "../../src/sections";
 import { image, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * One feature row: the copy (index, eyebrow, title, tags, lead, ticks) beside
- * its photo, flipping sides row to row. The eyebrow and the index fail
- * contrast on this theme (stories/findings/).
+ * its photo, flipping sides row to row.
  */
 const meta = {
 	title: "Sections/FeatureDetail",
 	component: FeatureDetail,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "feature-num-contrast") },
 	args: {
 		id: "sourdough",
 		num: "01",
@@ -75,9 +72,6 @@ export const Placeholder: Story = {
 
 /** Only a title: every other part is optional, and the frame still holds its place. */
 export const TitleOnly: Story = {
-	// Nothing here shows the file's known issue, so the story is checked whole.
-	tags: ["!known-issue"],
-	parameters: { ...knownIssues() },
 	args: {
 		num: undefined,
 		eyebrow: undefined,
@@ -125,6 +119,7 @@ export const LongestContent: Story = {
  * word, and the copy column keeps its `min-width: auto`, so the page scrolls sideways.
  */
 export const UnbrokenTag: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { tags: ["Two day ferment", unbroken] },
 	play: async () => {

@@ -2,18 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PageHero } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * An interior page's opener on the alternate band: eyebrow, headline, lead.
- * The eyebrow fails contrast on this theme (stories/findings/primitives.md).
  */
 const meta = {
 	title: "Sections/PageHero",
 	component: PageHero,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast") },
 	args: {
 		eyebrow: "Cakes to order",
 		title: (
@@ -31,8 +28,6 @@ type Story = StoryObj<typeof meta>;
 
 /** Left aligned: the headline and the lead start on one edge. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "serif-accent-contrast") },
 	play: async ({ canvas }) => {
 		const title = canvas.getByRole("heading", { level: 1 });
 		await expect(title).toHaveTextContent("A cake for the day itself");
@@ -45,8 +40,6 @@ export const Default: Story = {
 
 /** Centered: the headline sits in the middle of the page. */
 export const Centered: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "serif-accent-contrast") },
 	args: { center: true },
 	play: async ({ canvas }) => {
 		const title = canvas.getByRole("heading", { level: 1 });
@@ -63,8 +56,6 @@ export const DefaultSurface: Story = { args: { surface: "default" } };
 
 /** Extra content under the lead: jump links. */
 export const WithChildren: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "serif-accent-contrast") },
 	args: {
 		children: (
 			<p>
@@ -82,8 +73,6 @@ export const WithChildren: Story = {
 
 /** Only the headline: the eyebrow and the lead are optional. */
 export const HeadlineOnly: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "serif-accent-contrast") },
 	args: { eyebrow: undefined, lead: undefined },
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("heading", { level: 1 })).toBeVisible();

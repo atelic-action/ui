@@ -8,15 +8,15 @@ import { withReducedMotion } from "./motion";
 
 /**
  * The aggregate rating beside one large review at a time, stepped by dots
- * and round arrows. The eyebrow, the denominator, and the muted lines fail
- * contrast on this theme (stories/findings/).
+ * and round arrows. The denominator beside the score fails contrast on this
+ * theme (stories/findings/sections.md).
  */
 const meta = {
 	title: "Sections/ReviewCarousel",
 	component: ReviewCarousel,
 	tags: ["known-issue"],
 	parameters: {
-		...knownIssues("eyebrow-contrast", "muted-text-contrast", "review-score-out-contrast"),
+		...knownIssues("review-score-out-contrast"),
 	},
 	args: {
 		eyebrow: "What the line says",
@@ -157,11 +157,34 @@ export const Keyboard: Story = {
 	},
 };
 
+/**
+ * Every transition a step starts inside the carousel, by the element's
+ * accessible name or its role and the property, heard as each one starts, so
+ * a slow machine that finishes a short transition before the check still
+ * counts it.
+ */
+async function stepAndListen(canvas: Canvas, press: () => Promise<void>) {
+	const started: string[] = [];
+	const region = carousel(canvas);
+	const hear = (event: TransitionEvent) => {
+		const target = event.target as Element;
+		started.push(
+			`${target.getAttribute("aria-label") ?? target.tagName.toLowerCase()} ${event.propertyName}`,
+		);
+	};
+	region.addEventListener("transitionrun", hear);
+	await press();
+	await waitFor(() => expect(shown(canvas)).toHaveAccessibleName("Review 2 of 4"));
+	await new Promise((resolve) => setTimeout(resolve, 150));
+	region.removeEventListener("transitionrun", hear);
+	return started;
+}
+
 /** A step fades the new review in. */
 export const FadesIn: Story = {
 	play: async ({ canvas, userEvent }) => {
-		await userEvent.click(next(canvas));
-		await waitFor(() => expect(shown(canvas).getAnimations().length).toBeGreaterThan(0));
+		const started = await stepAndListen(canvas, () => userEvent.click(next(canvas)));
+		await expect(started).toContain("Review 2 of 4 opacity");
 	},
 };
 
@@ -169,16 +192,13 @@ export const FadesIn: Story = {
 export const ReducedMotion: Story = {
 	beforeEach: withReducedMotion,
 	play: async ({ canvas, userEvent }) => {
-		await userEvent.click(next(canvas));
-		await waitFor(() => expect(shown(canvas)).toHaveAccessibleName("Review 2 of 4"));
-		// Two frames on, the fade would be under way; here the review is already whole.
-		await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-		await expect(shown(canvas).getAnimations()).toHaveLength(0);
+		const started = await stepAndListen(canvas, () => userEvent.click(next(canvas)));
+		await expect(started.filter((name) => name.startsWith("Review "))).toEqual([]);
 		await expect(getComputedStyle(shown(canvas)).opacity).toBe("1");
 		// The dots still grow and recolor over a quarter second: their
 		// transition has no reduced motion rule.
 		await knownBug("carousel-dots-ignore-reduced-motion", async () => {
-			await expect(carousel(canvas).getAnimations({ subtree: true })).toHaveLength(0);
+			await expect(started).toEqual([]);
 		});
 	},
 };
@@ -222,7 +242,12 @@ export const Plain: Story = {
 	},
 };
 
-export const AltSurface: Story = { args: { surface: "alt" } };
+/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
+export const AltSurface: Story = {
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("review-score-out-contrast", "muted-text-contrast") },
+	args: { surface: "alt" },
+};
 
 /** The tablet sits below the side by side step: the review stacks under the aggregate. */
 export const Tablet: Story = {

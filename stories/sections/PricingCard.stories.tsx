@@ -1,19 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { PricingCard } from "../../src/sections";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * The pricing page's centerpiece: a ribbon, the price, what it buys, the
- * action, and a quiet second link. The primary button and the ribbon fail
- * contrast on this theme (stories/findings/).
+ * action, and a quiet second link.
  */
 const meta = {
 	title: "Sections/PricingCard",
 	component: PricingCard,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast", "pricing-ribbon-contrast") },
 	args: {
 		ribbon: "Every cake · every size",
 		price: "$48",

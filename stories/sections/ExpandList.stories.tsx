@@ -2,18 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, type within } from "storybook/test";
 import { ExpandList } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
- * A light accordion of numbered rows, each folding out its body. The index
- * fails contrast on this theme (stories/findings/sections.md).
+ * A light accordion of numbered rows, each folding out its body.
  */
 const meta = {
 	title: "Sections/ExpandList",
 	component: ExpandList,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("expand-index-contrast") },
 	args: {
 		items: [
 			{
@@ -131,9 +128,6 @@ export const BodiesInThePage: Story = {
 
 /** An empty list draws nothing. */
 export const Empty: Story = {
-	// Nothing here shows the file's known issue, so the story is checked whole.
-	tags: ["!known-issue"],
-	parameters: { ...knownIssues() },
 	args: { items: [] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole("button")).toBeNull();
@@ -161,6 +155,7 @@ export const LongestContent: Story = {
  * inside a word, so the row, and the page, scroll sideways.
  */
 export const UnbrokenWord: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ title: unbroken, body: <p>The guild's prize loaf.</p> }] },
 	play: async () => {

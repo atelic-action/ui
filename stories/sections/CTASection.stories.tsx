@@ -2,19 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { CTASection } from "../../src/sections";
 import { site } from "../fixtures/bakery";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * The closing call to action every page ends on: the site's primary action,
- * and a page's own secondary beside it. The primary button and the eyebrow
- * fail contrast on this theme (stories/findings/primitives.md).
+ * and a page's own secondary beside it.
  */
 const meta = {
 	title: "Sections/CTASection",
 	component: CTASection,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast", "eyebrow-contrast") },
 	args: {
 		site,
 		eyebrow: "Saturday mornings",
@@ -88,7 +84,6 @@ export const PhoneAction: Story = {
 /** Only the headline and the site's action. */
 export const Minimal: Story = {
 	args: { eyebrow: undefined, lead: undefined, secondary: undefined },
-	parameters: { ...knownIssues("primary-button-contrast") },
 	play: async ({ canvas }) => {
 		await expect(canvas.getAllByRole("link")).toHaveLength(1);
 	},

@@ -8,16 +8,11 @@ import { pin } from "../support/viewports";
 
 /**
  * More than one address: the flagship's map beside a card per location, each
- * with its hours, a call, and directions. The eyebrow, the cards' notes, and
- * the directions pill fail contrast on this theme (stories/findings/).
+ * with its hours, a call, and directions.
  */
 const meta = {
 	title: "Sections/Locations",
 	component: Locations,
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues("eyebrow-contrast", "location-note-contrast", "map-directions-contrast"),
-	},
 	args: {
 		site,
 		title: "Two counters, one bake",
@@ -70,13 +65,9 @@ export const OneLocation: Story = {
 
 /** No screenshot: the flagship's click to load facade. */
 export const EmbedFacade: Story = {
+	tags: ["known-issue"],
 	parameters: {
-		...knownIssues(
-			"eyebrow-contrast",
-			"location-note-contrast",
-			"inset-soft-text-contrast",
-			"map-facade-name-mismatch",
-		),
+		...knownIssues("inset-soft-text-contrast", "map-facade-name-mismatch"),
 	},
 	args: { site: siteWithEmbed },
 	play: async ({ canvas }) => {

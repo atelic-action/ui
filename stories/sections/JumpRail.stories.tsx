@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { JumpRail } from "../../src/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 const stops = [
@@ -30,14 +30,11 @@ function Page({ children }: { children: React.ReactNode }) {
 
 /**
  * The sticky in page navigation: a tab per section, the one in the reading
- * band marked by scroll. The marked tab, the primary as small text, fails
- * contrast on this theme (stories/findings/sections.md).
+ * band marked by scroll.
  */
 const meta = {
 	title: "Sections/JumpRail",
 	component: JumpRail,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("jump-rail-active-contrast") },
 	args: { items: stops, ariaLabel: "Menu sections" },
 	decorators: [
 		(Story) => (
@@ -67,6 +64,7 @@ const scrollToStop = (id: string) => {
  * page and back, and the rail sticks under the header the whole way.
  */
 export const FollowsScroll: Story = {
+	tags: ["known-issue"],
 	play: async ({ canvas, step }) => {
 		const tab = (name: string) => rail(canvas).getByRole("link", { name });
 		await step("a tab per stop, each an in page jump", async () => {
@@ -115,9 +113,6 @@ export const DefaultName: Story = {
 
 /** Many stops on a phone: the rail scrolls sideways inside itself, never the page. */
 export const ManyStopsPhone: Story = {
-	// Nothing here shows the file's known issue, so the story is checked whole.
-	tags: ["!known-issue"],
-	parameters: { ...knownIssues() },
 	globals: pin("phone"),
 	args: {
 		items: [

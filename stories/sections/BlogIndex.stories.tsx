@@ -7,14 +7,12 @@ import { knownBug, knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
- * The journal's archive: every post as a plain stack, newest first, each a link to its page.
- * Its muted dates fail contrast on this theme (stories/findings/sections.md).
+ * The journal's archive: every post as a plain stack, newest first, each a
+ * link to its page.
  */
 const meta = {
 	title: "Sections/BlogIndex",
 	component: BlogIndex,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: { items: blogItems },
 	globals: pin("desktop"),
 } satisfies Meta<typeof BlogIndex>;
@@ -71,13 +69,15 @@ export const UnderBasePath: Story = {
 	},
 };
 
-export const AltSurface: Story = { args: { surface: "alt" } };
+/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
+export const AltSurface: Story = {
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("muted-text-contrast") },
+	args: { surface: "alt" },
+};
 
 /** No posts yet: an empty list. */
 export const Empty: Story = {
-	// Nothing here shows the file's known issue, so the story is checked whole.
-	tags: ["!known-issue"],
-	parameters: { ...knownIssues() },
 	args: { items: [] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryAllByRole("listitem")).toHaveLength(0);
@@ -108,6 +108,7 @@ export const LongestContent: Story = {
  * word, so the page scrolls sideways.
  */
 export const UnbrokenWord: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ slug: "guild", title: `The ${unbroken}`, publishedAt: "2026-10-01" }] },
 	play: async () => {

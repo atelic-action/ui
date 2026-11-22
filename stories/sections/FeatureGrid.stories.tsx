@@ -2,18 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, type within } from "storybook/test";
 import { FeatureGrid } from "../../src/sections";
 import { features, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
- * A heading over a grid of numbered cards. The heading's eyebrow and the
- * cards' indexes fail contrast on this theme (stories/findings/).
+ * A heading over a grid of numbered cards.
  */
 const meta = {
 	title: "Sections/FeatureGrid",
 	component: FeatureGrid,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "feature-num-contrast") },
 	args: {
 		eyebrow: "What we bake",
 		title: "Four things, done every morning",
@@ -106,9 +103,6 @@ export const LinkInsideDescription: Story = {
 
 /** No numbers, no eyebrow, no lead. */
 export const Plain: Story = {
-	// Nothing here shows the file's known issue, so the story is checked whole.
-	tags: ["!known-issue"],
-	parameters: { ...knownIssues() },
 	args: {
 		eyebrow: undefined,
 		lead: undefined,
@@ -155,6 +149,7 @@ export const Phone: Story = {
  * breaks inside a word, so the card, and the page, scroll sideways.
  */
 export const UnbrokenWord: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ num: "01", title: unbroken, description: "The guild's prize loaf." }] },
 	play: async () => {

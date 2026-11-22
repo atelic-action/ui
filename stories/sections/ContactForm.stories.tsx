@@ -30,14 +30,10 @@ const onLead = fn();
 /**
  * The contact form: a name, an email, a topic, and a message, checked in
  * the browser and sent to the site's relay, with a honeypot no person sees.
- * The send button, the primary, fails contrast on this theme
- * (stories/findings/primitives.md).
  */
 const meta = {
 	title: "Sections/ContactForm",
 	component: ContactForm,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("primary-button-contrast") },
 	args: {
 		endpoint: "/api/contact",
 		topics: ["An order", "A cake", "Wholesale", "Something else"],
@@ -82,6 +78,7 @@ const send = (canvas: Canvas) => canvas.getByRole("button", { name: /Send Messag
  * you shows, the form clears, and one lead is counted.
  */
 export const SendsAndThanks: Story = {
+	tags: ["known-issue"],
 	play: async ({ canvas, userEvent, step }) => {
 		await step("filled in and sent", async () => {
 			await fillIn(canvas, userEvent);
@@ -121,7 +118,8 @@ export const SendsAndThanks: Story = {
  * Then fixed one at a time, each message leaves with its fix.
  */
 export const Validation: Story = {
-	parameters: { ...knownIssues("primary-button-contrast", "form-error-contrast") },
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("form-error-contrast") },
 	play: async ({ canvas, userEvent, step }) => {
 		await step("before a send, no field complains", async () => {
 			await expect(canvas.getByText("Please enter your name.")).not.toBeVisible();
@@ -211,7 +209,8 @@ export const HoneypotCatchesABot: Story = {
 
 /** The relay refuses: the error shows, what was written stays, and no lead is counted. */
 export const RelayRefuses: Story = {
-	parameters: { ...knownIssues("primary-button-contrast", "form-error-contrast") },
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("form-error-contrast") },
 	beforeEach: answering(() => Promise.resolve(new Response("{}", { status: 500 }))),
 	args: { errorMessage: "That did not go through. Call us at (555) 555-0142 instead." },
 	play: async ({ canvas, userEvent }) => {
@@ -275,7 +274,8 @@ export const SendingOnce: Story = {
 
 /** No endpoint and no inbox: a send fails rather than vanishing. */
 export const NowhereToSend: Story = {
-	parameters: { ...knownIssues("primary-button-contrast", "form-error-contrast") },
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("form-error-contrast") },
 	args: { endpoint: undefined, toEmail: undefined },
 	play: async ({ canvas, userEvent }) => {
 		await fillIn(canvas, userEvent);

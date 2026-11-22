@@ -22,6 +22,7 @@ const band = (canvas: ReturnType<typeof within>) =>
 
 /** The row moves on its own, and every credential is read once. */
 export const Default: Story = {
+	tags: ["known-issue"],
 	play: async ({ canvas, step }) => {
 		await step("the row is moving", async () => {
 			const running = band(canvas)
@@ -54,10 +55,11 @@ export const DefaultName: Story = {
 
 /**
  * Under reduced motion the row stops and wraps to a still, centered block.
- * The test run sets the reader's setting through the browser, so the sheet's
- * own media query applies.
+ * The story turns the reader's setting on for its own page, so the sheet's
+ * own reduced motion rules apply.
  */
 export const ReducedMotion: Story = {
+	tags: ["known-issue"],
 	beforeEach: withReducedMotion,
 	play: async ({ canvas, step }) => {
 		await step("nothing moves", async () => {

@@ -2,27 +2,16 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ReviewWall } from "../../src/sections";
 import { longestReview, reviews, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * The reviews page: a heading, a tag filter and a date sort when the data
  * can drive them, and a grid of cards, a long quote clamped behind Read more.
- * The eyebrow, the muted lines, the initials, and Read more fail contrast on
- * this theme (stories/findings/).
  */
 const meta = {
 	title: "Sections/ReviewWall",
 	component: ReviewWall,
-	tags: ["known-issue"],
-	parameters: {
-		...knownIssues(
-			"eyebrow-contrast",
-			"muted-text-contrast",
-			"review-avatar-contrast",
-			"review-more-contrast",
-		),
-	},
 	args: {
 		eyebrow: "Reviews",
 		title: "What the line says",
@@ -220,6 +209,7 @@ export const LongestContent: Story = {
  * inside the word, so the card, and the page, scroll sideways.
  */
 export const UnbrokenName: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ quote: "Best bread in the county.", by: unbroken }] },
 	play: async () => {

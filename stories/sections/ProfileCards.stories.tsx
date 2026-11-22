@@ -2,19 +2,16 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { ProfileCards } from "../../src/sections";
 import { profiles, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
  * Equal weight cards for the people behind the counter: a portrait beside a
- * short bio. The eyebrow and the cards' mono lines fail contrast on this
- * theme (stories/findings/).
+ * short bio.
  */
 const meta = {
 	title: "Sections/ProfileCards",
 	component: ProfileCards,
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("eyebrow-contrast", "profile-meta-contrast") },
 	args: {
 		id: "bakers",
 		eyebrow: "The bakers",
@@ -109,6 +106,7 @@ export const LongestContent: Story = {
  * it, so the card, and the page, scroll sideways.
  */
 export const UnbrokenHandle: Story = {
+	tags: ["known-issue"],
 	globals: pin("phone"),
 	args: { items: [{ ...profiles[0], meta: `@${unbroken.toLowerCase()}` }] },
 	play: async () => {

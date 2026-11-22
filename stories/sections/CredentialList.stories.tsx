@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { CredentialList } from "../../src/sections";
 import { credentials, unbroken } from "../fixtures/sections";
-import { knownBug, knownIssues } from "../support/known-issues";
+import { knownBug } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** Card rows of credentials, each led by a short mono code. */
@@ -31,8 +31,6 @@ const rows = (canvas: ReturnType<typeof within>) =>
 
 /** Each row: the code beside the title, the detail under it when there is one. */
 export const Default: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("credential-code-contrast") },
 	play: async ({ canvas }) => {
 		await expect(rows(canvas)).toHaveLength(3);
 		const [first] = rows(canvas);
@@ -51,8 +49,6 @@ export const Default: Story = {
 
 /** Two up on a desktop, so a long stack stays compact. */
 export const TwoUp: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("credential-code-contrast") },
 	play: async ({ canvas }) => {
 		const [a, b, c] = rows(canvas);
 		await expect(Math.round(a.getBoundingClientRect().top)).toBe(
@@ -66,8 +62,6 @@ export const TwoUp: Story = {
 
 /** The cards stack one to a row on a phone. */
 export const Phone: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("credential-code-contrast") },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		const [a, b] = rows(canvas);
@@ -80,8 +74,6 @@ export const Phone: Story = {
 
 /** The longest realistic rows, on a phone. */
 export const LongestContent: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("credential-code-contrast") },
 	globals: pin("phone"),
 	args: {
 		items: [
@@ -104,7 +96,6 @@ export const LongestContent: Story = {
  */
 export const UnbrokenWord: Story = {
 	tags: ["known-issue"],
-	parameters: { ...knownIssues("credential-code-contrast") },
 	globals: pin("phone"),
 	args: { items: [{ code: "GUILD", title: unbroken, detail: "Gold, three years running" }] },
 	play: async () => {

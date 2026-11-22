@@ -8,20 +8,15 @@ import { pin } from "../support/viewports";
 
 /**
  * The local section: where it is, who it serves, its hours, directions and a
- * call, beside the map. Its eyebrow, closed day, directions pill, and hours
- * heading carry known issues (stories/findings/).
+ * call, beside the map. Its hours heading skips a level
+ * (stories/findings/sections.md).
  */
 const meta = {
 	title: "Sections/LocationSection",
 	component: LocationSection,
 	tags: ["known-issue"],
 	parameters: {
-		...knownIssues(
-			"eyebrow-contrast",
-			"muted-text-contrast",
-			"location-hours-heading-order",
-			"map-directions-contrast",
-		),
+		...knownIssues("location-hours-heading-order"),
 	},
 	args: {
 		site,
@@ -93,8 +88,6 @@ export const TwentyFourHour: Story = {
 export const EmbedFacade: Story = {
 	parameters: {
 		...knownIssues(
-			"eyebrow-contrast",
-			"muted-text-contrast",
 			"location-hours-heading-order",
 			"inset-soft-text-contrast",
 			"map-facade-name-mismatch",
@@ -114,7 +107,12 @@ export const Minimal: Story = {
 	},
 };
 
-export const AltSurface: Story = { args: { surface: "alt" } };
+/** On the alternate band, where the quiet gray still falls short (stories/findings/sections.md). */
+export const AltSurface: Story = {
+	tags: ["known-issue"],
+	parameters: { ...knownIssues("location-hours-heading-order", "muted-text-contrast") },
+	args: { surface: "alt" },
+};
 
 /** On a phone the map stacks under the copy, inside the page. */
 export const Phone: Story = {
