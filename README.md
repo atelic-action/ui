@@ -911,7 +911,7 @@ Every color the palette sets words in reads 4.5 to 1 or better on both the paper
 
 ## Page Components
 
-The blocks a page composes, each styled in `styles/components.css` inside the `atelic-ui` layer, so a site's own unlayered rule resizes or recolors any of them. They were cut from the SkySpec baseline writeup on 2026-10-02 (ATE-600), which is the worked example of them on one page.
+The blocks a page composes, each styled in `styles/components.css` inside the `atelic-ui` layer, so a site's own unlayered rule resizes or recolors any of them. They were cut from a client's baseline writeup on 2026-10-02 (ATE-600), which is the worked example of them on one page.
 
 | Component | What it is | Notes |
 |---|---|---|

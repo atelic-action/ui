@@ -130,7 +130,7 @@ export interface SiteConfig {
 	/**
 	 * Canonical URL, no trailing slash, e.g. "https://example.com". For a cut
 	 * with a `basePath` it is the full URL including the prefix
-	 * ("https://atwood.atelic.me/proto"), and the build fails if it does not
+	 * ("https://example.atelic.me/proto"), and the build fails if it does not
 	 * end with the base.
 	 */
 	url: string;
