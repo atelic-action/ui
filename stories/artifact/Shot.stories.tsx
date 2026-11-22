@@ -3,7 +3,6 @@ import { expect, waitFor } from "storybook/test";
 import { Shot } from "../../src/artifact";
 import { shotPortrait, shotWide } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../primitives/support";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /** A document's column, which sizes the shot the way a document's own sheet does. */
@@ -22,10 +21,6 @@ const meta = {
 	title: "Artifact/Shot",
 	component: Shot,
 	decorators: [column],
-	// Every shot carries its caption, in the quiet ink that fails contrast
-	// on the surface (stories/findings/primitives.md).
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: { shot: shotWide },
 } satisfies Meta<typeof Shot>;
 

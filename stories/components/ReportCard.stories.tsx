@@ -3,7 +3,6 @@ import { expect, within } from "storybook/test";
 import { ReportCard } from "../../src/components";
 import { longWord, reportGroups, reportGroupsLater, reportLegend } from "../fixtures/primitives";
 import { expectNoSidewaysScroll, inWrap } from "../primitives/support";
-import { knownIssues } from "../support/known-issues";
 import { pin } from "../support/viewports";
 
 /**
@@ -22,11 +21,6 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The card's title, a quiet kicker, fails contrast on the surface (stories/findings/primitives.md). */
-const quietTitle = {
-	parameters: { ...knownIssues("muted-text-contrast") },
-} satisfies Story;
-
 /** A row's words as a screen reader hears them: everything but what is hidden from it. */
 function spoken(row: Element) {
 	const copy = row.cloneNode(true) as Element;
@@ -39,8 +33,6 @@ const rowOf = (name: HTMLElement) => name.closest("b")?.parentElement as HTMLEle
 
 /** Each row says its grade in words before its name; the section is named by its heading. */
 export const FirstRead: Story = {
-	tags: ["known-issue"],
-	...quietTitle,
 	play: async ({ canvas }) => {
 		const card = canvas.getByRole("region", { name: "At a Glance" });
 		await expect(within(card).getByRole("heading", { level: 2 })).toHaveTextContent("At a Glance");
@@ -56,8 +48,6 @@ export const FirstRead: Story = {
  * its line included, lands on the link.
  */
 export const LinkedRows: Story = {
-	tags: ["known-issue"],
-	...quietTitle,
 	play: async ({ canvas }) => {
 		const link = canvas.getByRole("link", { name: "Technical SEO" });
 		await expect(link).toHaveAttribute("href", "#technical-seo");
@@ -70,8 +60,6 @@ export const LinkedRows: Story = {
 
 /** A link inside a row's line still goes where it points. */
 export const LinkInTheLine: Story = {
-	tags: ["known-issue"],
-	parameters: { ...knownIssues("muted-text-contrast") },
 	args: {
 		groups: [
 			{
@@ -123,8 +111,6 @@ export const LaterRead: Story = {
 
 /** The legend under the card, so nothing sits between the heading and the rows. */
 export const LegendAtFoot: Story = {
-	tags: ["known-issue"],
-	...quietTitle,
 	args: { legendAt: "foot" },
 	play: async ({ canvas }) => {
 		const legend = canvas.getAllByRole("list").at(-1) as HTMLElement;
@@ -146,8 +132,6 @@ export const Bare: Story = {
 
 /** A group with no rows is left out, its label with it. */
 export const EmptyGroup: Story = {
-	tags: ["known-issue"],
-	...quietTitle,
 	args: { groups: [...reportGroups, { title: "Reputation", rows: [] }] },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByText("Reputation")).toBeNull();
@@ -156,8 +140,6 @@ export const EmptyGroup: Story = {
 
 /** Every word around the letters in the caller's language. */
 export const OwnWords: Story = {
-	tags: ["known-issue"],
-	...quietTitle,
 	args: {
 		groups: reportGroupsLater,
 		labels: { grade: "Nota", before: "Antes", notGraded: "Sin nota" },
@@ -170,8 +152,6 @@ export const OwnWords: Story = {
 
 /** On a phone with the longest names and lines, nothing scrolls sideways. */
 export const LongestOnPhone: Story = {
-	tags: ["known-issue"],
-	...quietTitle,
 	globals: pin("phone"),
 	args: {
 		groups: [
