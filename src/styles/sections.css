@@ -168,7 +168,8 @@
 	.atelic-ui .cta-banner .wrap {
 		position: relative;
 		z-index: 1;
-		padding-block: clamp(56px, 9vw, 110px);
+		/* A shade under the section spacing, as it always sat (110 of 120). */
+		padding-block: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.92);
 	}
 	.atelic-ui .cta-banner-content {
 		max-width: 620px;
@@ -698,9 +699,12 @@
 
 	/* ---- PageHero (page-hero.css) ---- */
 	.atelic-ui .page-hero {
-		padding-top: clamp(40px, 7vw, 86px);
-		padding-bottom: clamp(28px, 5vw, 60px);
+		padding-top: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.72);
+		padding-bottom: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.5);
 		background: var(--surface-alt);
+	}
+	.atelic-ui .page-hero.surface-default {
+		background: var(--surface);
 	}
 	.atelic-ui .page-hero h1 {
 		font-size: clamp(2.4rem, 7vw, 4.2rem);
@@ -799,6 +803,11 @@
 	}
 	.atelic-ui .faq-cats {
 		padding-block: clamp(8px, 1.5vw, 16px) clamp(16px, 2.5vw, 32px);
+	}
+	/* A run of like bands alternates by itself, so no two subjects in a row
+	   wear the same ground. */
+	.atelic-ui .faq-cats > .faq-cat:nth-child(even) {
+		background: var(--surface-alt);
 	}
 	/* Category head: stacked on small screens (description, then the utility
 	   links) so the description keeps its full measure; from 720px up the
@@ -969,12 +978,19 @@
 		display: grid;
 		gap: 36px;
 		align-items: center;
-		padding-block: clamp(40px, 6vw, 72px);
+		padding-block: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.6);
 		border-top: 1px solid var(--neutral-200);
 		scroll-margin-top: calc(var(--nav-height) + 20px);
 	}
+	/* The section around a run of rows pads it already, so the first row
+	   starts and the last row ends flush with the section's own padding,
+	   and a lone row inside a section never doubles it. */
 	.atelic-ui .feature-detail:first-of-type {
 		border-top: none;
+		padding-top: 0;
+	}
+	.atelic-ui .feature-detail:last-of-type {
+		padding-bottom: 0;
 	}
 	@media (min-width: 900px) {
 		.atelic-ui .feature-detail {
@@ -1009,7 +1025,7 @@
 	.atelic-ui .feature-grid {
 		display: grid;
 		gap: 16px;
-		margin-top: 44px;
+		margin-top: var(--block-gap, 44px);
 		grid-template-columns: 1fr;
 	}
 	@media (min-width: 560px) {
@@ -1031,7 +1047,8 @@
 		border: 1px solid var(--hairline);
 		display: flex;
 		flex-direction: column;
-		min-height: 240px;
+		/* The least a card stands, by density: 240px comfortable, none tighter. */
+		min-height: var(--card-min, 240px);
 		transition:
 			transform 0.25s ease,
 			box-shadow 0.25s ease;
@@ -1079,7 +1096,8 @@
 
 	.atelic-ui .gallery-grid {
 		list-style: none;
-		margin: 34px 0 0;
+		/* Its old 34px against the block gap's 44px, kept in proportion. */
+		margin: calc(var(--block-gap, 44px) * 0.77) 0 0;
 		padding: 0;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -1253,6 +1271,105 @@
 		.atelic-ui .hero-scroll {
 			display: inline-flex;
 		}
+	}
+
+	/* The split layout: the copy and its actions on the primary field on one
+	   side, the photo on the other, at the height the copy needs. The copy
+	   column holds half the site's width against the page's edge, so the
+	   words line up with the sections under it; a phone stacks the photo
+	   first. */
+	.atelic-ui .hero.is-split {
+		min-height: 0;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		align-items: stretch;
+		background: var(--primary);
+	}
+	.atelic-ui .hero-split-copy {
+		display: flex;
+		align-items: center;
+		background: var(--primary);
+		color: #fff;
+	}
+	.atelic-ui .hero-split-inner {
+		width: 100%;
+		padding: var(--section-space, clamp(56px, 9vw, 120px)) var(--gutter);
+	}
+	.atelic-ui main:not(.clears-nav) .hero.is-split .hero-split-inner {
+		padding-top: calc(var(--nav-height, 72px) + var(--section-space, clamp(56px, 9vw, 120px)));
+	}
+	.atelic-ui .hero.is-split h1 {
+		font-size: clamp(2.1rem, 4vw, 3.3rem);
+		line-height: 1.05;
+		margin-top: 12px;
+		text-shadow: none;
+	}
+	.atelic-ui .hero.is-split .hero-sub {
+		color: color-mix(in srgb, #fff 92%, transparent);
+	}
+	.atelic-ui .hero.is-split .cta-row {
+		margin-top: 26px;
+	}
+	.atelic-ui .hero-split-media {
+		position: relative;
+		order: -1;
+		min-height: 230px;
+		background: var(--primary-deep);
+	}
+	.atelic-ui .hero-split-media img,
+	.atelic-ui .hero-split-media .hero-media-fallback {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	@media (min-width: 900px) {
+		.atelic-ui .hero.is-split {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+		}
+		.atelic-ui .hero-split-inner {
+			max-width: calc(var(--max-width) / 2.15);
+			margin-left: auto;
+		}
+		.atelic-ui .hero-split-media {
+			order: 0;
+			min-height: clamp(260px, 36vw, 500px);
+		}
+	}
+
+	/* ---- ProofStrip (proof-strip.css) ---- */
+	/* Short proof facts in one row under a hero, wrapping to a grid on a phone. */
+	.atelic-ui .proof-strip {
+		background: var(--surface);
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .proof-strip.surface-alt {
+		background: var(--surface-alt);
+	}
+	.atelic-ui .proof-strip-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+		gap: 14px 24px;
+		padding-block: 16px;
+	}
+	.atelic-ui .proof-strip-list li {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+	.atelic-ui .proof-strip-value {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 1.08rem;
+		line-height: 1.25;
+	}
+	/* Classed, never a bare span: a value may hold a star row, whose own spans keep their color. */
+	.atelic-ui .proof-strip-label {
+		font-size: 0.86rem;
+		color: var(--ink-soft);
 	}
 
 	/* ---- HoursTable (hours-table.css) ---- */
@@ -1575,6 +1692,150 @@
 		object-fit: cover;
 	}
 
+	/* ---- FullBleedVideo (full-bleed-video.css) ---- */
+	/* The first frame as a picture, the video fading in over it once it can
+	   play through. */
+	.atelic-ui .fbv {
+		position: relative;
+		overflow: hidden;
+		background: var(--primary-deep);
+	}
+	.atelic-ui .fbv-poster,
+	.atelic-ui .fbv-video {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	.atelic-ui .fbv-poster.ph {
+		border-radius: 0;
+	}
+	.atelic-ui .fbv-video {
+		opacity: 0;
+		transition: opacity 0.6s ease;
+	}
+	.atelic-ui .fbv-video.is-on {
+		opacity: 1;
+	}
+	.atelic-ui .fbv-toggle {
+		position: absolute;
+		left: 16px;
+		bottom: 16px;
+		width: 44px;
+		height: 44px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--surface);
+		color: var(--primary);
+	}
+	.atelic-ui .fbv-toggle:hover {
+		background: var(--primary-tint, var(--surface-alt));
+	}
+	.atelic-ui .fbv-toggle:focus-visible {
+		outline: 2px solid var(--surface);
+		outline-offset: 2px;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .fbv-video {
+			transition: none;
+		}
+	}
+
+	/* ---- LinkColumns (link-columns.css) ---- */
+	/* Columns of links under a section heading; a link's figure sits right
+	   aligned on its line in tabular numerals. */
+	.atelic-ui .link-columns {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+		gap: 24px 28px;
+	}
+	.atelic-ui * + .link-columns {
+		margin-top: var(--block-gap, 44px);
+	}
+	.atelic-ui .lc-col {
+		min-width: 0;
+	}
+	.atelic-ui .link-columns .lc-head {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		padding-bottom: 8px;
+		margin-bottom: 6px;
+		border-bottom: 2px solid var(--primary);
+	}
+	.atelic-ui .lc-head a:hover {
+		color: var(--primary);
+	}
+	.atelic-ui .lc-link {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 12px;
+		padding: 7px 0;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .lc-link:hover {
+		color: var(--primary);
+	}
+	.atelic-ui .lc-label {
+		min-width: 0;
+	}
+	.atelic-ui .lc-count {
+		flex: none;
+		margin-left: auto;
+		text-align: right;
+		font-size: 0.86rem;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		color: var(--neutral-600);
+	}
+
+	/* ---- CalloutPanel (callout-panel.css) ---- */
+	/* Short callouts on the primary field, four across and two by two below.
+	   Each item spans two rows of a subgrid, so every title in a row starts
+	   on one line and every subtitle on the next. A theme that wants the
+	   titles in a condensed face sets --font-condensed. */
+	.atelic-ui .callout-panel {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 22px 24px;
+		padding: clamp(20px, 3vw, 36px);
+		border-radius: var(--radius-lg);
+		background: var(--primary);
+		color: #fff;
+	}
+	.atelic-ui * + .callout-panel {
+		margin-top: var(--block-gap, 44px);
+	}
+	.atelic-ui .callout-panel li {
+		display: grid;
+		grid-row: span 2;
+		grid-template-rows: subgrid;
+		row-gap: 6px;
+		min-width: 0;
+	}
+	.atelic-ui .callout-panel-title {
+		font-family: var(--font-condensed, var(--font-heading, var(--font-sans)));
+		font-size: clamp(1.35rem, 2.15vw, 1.9rem);
+		font-weight: 800;
+		line-height: 1.04;
+		letter-spacing: -0.01em;
+		text-wrap: balance;
+	}
+	.atelic-ui .callout-panel-sub {
+		font-size: clamp(0.85rem, 1.1vw, 1rem);
+		line-height: 1.3;
+		color: color-mix(in srgb, #fff 88%, transparent);
+	}
+	@media (min-width: 1000px) {
+		.atelic-ui .callout-panel {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 0 28px;
+		}
+	}
+
 	/* ---- MenuList (menu-list.css) ---- */
 	/* A priced menu group, plus the two layouts that stack groups on a
 	   location or menu page. */
@@ -1691,7 +1952,8 @@
 	.atelic-ui .price-band {
 		background: var(--primary);
 		color: #fff;
-		padding-block: clamp(56px, 8vw, 100px);
+		/* Under the section spacing, as it always sat (100 of 120). */
+		padding-block: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.84);
 	}
 	.atelic-ui .price-band h2 {
 		color: #fff;
@@ -1869,7 +2131,7 @@
 	.atelic-ui .profile-cards {
 		display: grid;
 		gap: 16px;
-		margin-top: 44px;
+		margin-top: var(--block-gap, 44px);
 		grid-template-columns: 1fr;
 	}
 	@media (min-width: 900px) {

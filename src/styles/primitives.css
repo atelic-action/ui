@@ -35,6 +35,19 @@
 		box-shadow: var(--primary-shadow-hover);
 		transform: translateY(-1px);
 	}
+	/* On the primary field (a split hero's copy, a callout panel, a menu's
+	   feature card) the primary button would vanish into the band, so it
+	   turns to the page surface with primary words. The class is the band's,
+	   so a site's own band takes the same fix by wearing it. */
+	.atelic-ui .on-primary .btn-primary {
+		background: var(--surface);
+		color: var(--primary);
+		box-shadow: none;
+	}
+	.atelic-ui .on-primary .btn-primary:hover {
+		background: color-mix(in srgb, var(--surface) 86%, var(--primary));
+		box-shadow: none;
+	}
 	.atelic-ui .btn-dark {
 		background: var(--ink);
 		color: var(--surface);
@@ -213,6 +226,10 @@
 	}
 	.atelic-ui .eyebrow.center {
 		justify-content: center;
+	}
+	/* On the primary field the primary colored kicker would vanish. */
+	.atelic-ui .on-primary .eyebrow {
+		color: color-mix(in srgb, #fff 86%, transparent);
 	}
 	.atelic-ui .eyebrow::after {
 		content: "";

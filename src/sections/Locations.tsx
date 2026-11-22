@@ -22,6 +22,8 @@ export interface LocationsProps {
 	title: ReactNode;
 	lead?: ReactNode;
 	locations: LocationEntry[];
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /**
@@ -29,9 +31,18 @@ export interface LocationsProps {
  * cards (address, hours, call, directions). Reusable for any business that
  * runs more than one address.
  */
-export function Locations({ site, eyebrow = "Find us", title, lead, locations }: LocationsProps) {
+export function Locations({
+	site,
+	eyebrow = "Find us",
+	title,
+	lead,
+	locations,
+	surface = "default",
+}: LocationsProps) {
 	return (
-		<section className="section locs">
+		<section
+			className={["section locs", surface === "alt" && "surface-alt"].filter(Boolean).join(" ")}
+		>
 			<div className="wrap">
 				<Eyebrow>{eyebrow}</Eyebrow>
 				<h2>{title}</h2>

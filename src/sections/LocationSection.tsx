@@ -14,6 +14,8 @@ export interface LocationSectionProps {
 	eyebrow?: string;
 	title: ReactNode;
 	lead?: ReactNode;
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /** Joins service areas into readable prose: "A, B, and C". */
@@ -27,9 +29,17 @@ function areasSentence(areas: string[]): string {
  * map embed. Identical on every page that uses it — the service areas
  * render as plain prose (crawlable text) from the site config.
  */
-export function LocationSection({ site, eyebrow = "Find us", title, lead }: LocationSectionProps) {
+export function LocationSection({
+	site,
+	eyebrow = "Find us",
+	title,
+	lead,
+	surface = "default",
+}: LocationSectionProps) {
 	return (
-		<section className="section location">
+		<section
+			className={["section location", surface === "alt" && "surface-alt"].filter(Boolean).join(" ")}
+		>
 			<div className="wrap location-grid">
 				<div>
 					<Eyebrow>{eyebrow}</Eyebrow>
