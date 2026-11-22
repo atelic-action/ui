@@ -9,6 +9,7 @@ export type {
 	ContactDockItem,
 	FooterColumn,
 	FooterColumnLink,
+	FooterHoursPlacement,
 	FooterIcon,
 	HeaderPhone,
 	HoursRow,

@@ -1767,7 +1767,12 @@
 		.atelic-ui .footer-grid.has-brand-hours {
 			--_link-floor: 10em;
 			--_brand-floor: 17em;
-			--_links-need: calc(4 * var(--_link-floor) + 3 * 24px);
+			--_links-need: calc(
+				var(--_link-count, 4) *
+				var(--_link-floor) +
+				(var(--_link-count, 4) - 1) *
+				24px
+			);
 			--_row-need: calc(var(--_brand-floor) + 24px + var(--_links-need));
 			column-gap: 24px;
 		}
@@ -1775,6 +1780,11 @@
 			flex: var(--footer-brand-width, 1.4) 1
 				max(var(--_brand-floor), calc((var(--_row-need) - 100%) * 999));
 		}
+		/* min-width: max-content departs from Component Rules 5 (zero the
+		   min-width chain around wide content) on purpose: these labels are
+		   short words a design sets whole, and the floor is what keeps a label
+		   whole on a machine whose font runs a few percent wider; the row wraps
+		   a column instead, so nothing scrolls sideways. */
 		.atelic-ui .footer-grid.has-brand-hours > .footer-column {
 			flex: 1 1
 				min(calc(50% - 16px), max(var(--_link-floor), calc((var(--_links-need) - 100%) * 999)));

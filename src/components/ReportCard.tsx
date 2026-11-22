@@ -119,7 +119,7 @@ export function ReportCard({
 								<span className="rc-grade">
 									{row.before && (
 										<span className="rc-before">
-											<span className="visually-hidden">{`${labels.before}: ${gradeLabel[row.before]}. `}</span>
+											<span className="rc-sr visually-hidden">{`${labels.before}: ${gradeLabel[row.before]}. `}</span>
 											<span aria-hidden="true">
 												<GradeChip grade={row.before} />
 											</span>
@@ -127,14 +127,14 @@ export function ReportCard({
 									)}
 									{row.grade ? (
 										<>
-											<span className="visually-hidden">{`${labels.grade} ${gradeLabel[row.grade]}: `}</span>
+											<span className="rc-sr visually-hidden">{`${labels.grade} ${gradeLabel[row.grade]}: `}</span>
 											<span aria-hidden="true">
 												<GradeChip grade={row.grade} />
 											</span>
 										</>
 									) : (
 										<>
-											<span className="visually-hidden">{`${labels.notGraded}: `}</span>
+											<span className="rc-sr visually-hidden">{`${labels.notGraded}: `}</span>
 											<span className="rc-dash" aria-hidden="true" />
 										</>
 									)}

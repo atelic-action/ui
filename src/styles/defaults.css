@@ -201,7 +201,10 @@
 	/* Words a screen reader hears and the eye does not: the one visually
 	   hidden rule every component uses (a new tab's note, a control's own
 	   label, a grade's spoken words), here because every sheet needs it as
-	   it needs the defaults. It carries no token. */
+	   it needs the defaults. It carries no token. The elements that had a
+	   copy of their own keep its name beside this one (.rc-sr,
+	   .data-table-empty-label, .rw-select-label), so a site rule written
+	   against one still reaches it; the old names go in the next major. */
 	.atelic-ui .visually-hidden {
 		position: absolute;
 		width: 1px;

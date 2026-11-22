@@ -1,11 +1,12 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import type { ComponentProps, Ref } from "react";
+import type { ComponentProps, CSSProperties, Ref } from "react";
 import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
 import type {
 	Brand,
 	FooterColumn,
 	FooterColumnLink,
+	FooterHoursPlacement,
 	HoursRow,
 	Phone,
 	PostalAddress,
@@ -178,7 +179,7 @@ export interface FooterProps {
 	 * under the address, the phone, and the email, as a compact list of two
 	 * columns under a small label, so the link columns keep the row's room.
 	 */
-	hoursPlacement?: "column" | "brand";
+	hoursPlacement?: FooterHoursPlacement;
 	/**
 	 * The link columns beside the brand column. The default footer carries
 	 * four: Company, Resources, Social, and Legal. A column with no links is
@@ -290,6 +291,10 @@ export function Footer({
 						]
 							.filter(Boolean)
 							.join(" ")}
+						// The link columns drawn, which the brand placement's floors are
+						// measured for (chrome.css), so two or three columns keep the
+						// brand column beside them as long as theirs fit.
+						style={hoursInBrand ? ({ "--_link-count": shown.length } as CSSProperties) : undefined}
 					>
 						<div className="footer-brand">
 							{logo?.tile ? (

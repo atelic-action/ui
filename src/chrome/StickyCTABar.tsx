@@ -26,9 +26,10 @@ export interface StickyCTABarProps {
 	 * above its threshold, or on a desktop, where the stylesheet hides it).
 	 * `SiteShell` pads the page's closing bar by it, so the copyright and the
 	 * credit are never under the bar. A listener swapped in is told the
-	 * current height at once and the one it replaced gets 0; a listener made
-	 * anew on every render (an inline function that sets state) settles after
-	 * a render rather than looping.
+	 * current height at once and the one it replaced gets 0; no listener
+	 * hears one value twice. A listener made anew each render that sets state
+	 * should store a plain number (or be memoized): each new function hears
+	 * the height once, and a state equal to it stops the renders.
 	 */
 	onSpaceChange?: (pixels: number) => void;
 }
@@ -50,23 +51,12 @@ export function StickyCTABar({
 	const spaceRef = useRef(onSpaceChange);
 	spaceRef.current = onSpaceChange;
 	const listening = onSpaceChange !== undefined;
-	// The space's holder (the listener last told a height), the value last
-	// measured (-1 before any), what each listener was last told, and whether
-	// a listener arriving by itself has been told the current value already.
-	const heardRef = useRef<((pixels: number) => void) | undefined>(undefined);
-	const lastRef = useRef(-1);
+	// The height last measured (-1 before any, and after the bar goes), and
+	// what each listener was last told: no listener hears one value twice.
+	const heightRef = useRef(-1);
 	const toldRef = useRef(new WeakMap<(pixels: number) => void, number>());
-	const toldOnArrivalRef = useRef(false);
-
-	/** Tells a listener a value, handing the space back from the one that held it. */
 	const tell = (listener: ((pixels: number) => void) | undefined, pixels: number) => {
-		const held = heardRef.current;
-		if (held && held !== listener && toldRef.current.get(held) !== 0) {
-			toldRef.current.set(held, 0);
-			held(0);
-		}
-		heardRef.current = listener;
-		if (!listener) return;
+		if (!listener || toldRef.current.get(listener) === pixels) return;
 		toldRef.current.set(listener, pixels);
 		listener(pixels);
 	};
@@ -90,12 +80,9 @@ export function StickyCTABar({
 		const bar = barRef.current;
 		if (!bar || !listening) return;
 		const report = () => {
-			const next = show ? bar.offsetHeight : 0;
-			const listener = spaceRef.current;
-			if (next === lastRef.current && listener === heardRef.current) return;
-			lastRef.current = next;
-			toldOnArrivalRef.current = false;
-			tell(listener, next);
+			heightRef.current = show ? bar.offsetHeight : 0;
+			arrivalsRef.current = 0;
+			tell(spaceRef.current, heightRef.current);
 		};
 		report();
 		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(report);
@@ -104,37 +91,35 @@ export function StickyCTABar({
 		return () => {
 			sizes?.disconnect();
 			window.removeEventListener("resize", report);
-			// A final 0 on unmount, on hiding, and when the listener goes, to the
-			// listener that holds the space, so no foot padding outlives the bar.
-			const held = heardRef.current;
-			heardRef.current = undefined;
-			lastRef.current = -1;
-			if (held) {
-				toldRef.current.set(held, 0);
-				held(0);
-			}
+			// A final 0 on unmount, on hiding, and when the listener goes, so no
+			// foot padding outlives the bar.
+			heightRef.current = -1;
+			tell(spaceRef.current, 0);
 		};
 	}, [show, listening]);
 
-	// A listener that arrives on its own (a caller swapping listeners) is told
-	// the current height at once, unless it was last told that height. One
-	// arrival a measured value: a listener that sets state makes a new function
-	// on the render its own call causes, and that one is adopted quietly, so
-	// an inline listener settles after a render instead of looping. Any later
-	// measure tells whichever listener is current.
+	// A listener swapped in is told the current height, and the one it
+	// replaced gets 0, unless either already heard that value. A function made
+	// anew each render (an inline listener) hears the height once a function
+	// until the caller's state settles; a stable listener hears nothing here.
+	const previousRef = useRef(onSpaceChange);
+	// Arrivals told since the bar last measured. A listener that sets object
+	// state is a new function on every render its own call causes, which no
+	// test of identity tells from a real swap; past three arrivals in a row
+	// with nothing measured between, the rest wait for the next measure, so
+	// such a listener cannot loop. Three real swaps in a row are all told.
+	const arrivalsRef = useRef(0);
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the listener is the trigger; tell reads only refs
 	useEffect(() => {
-		const listener = spaceRef.current;
-		const value = lastRef.current;
-		if (!listener || value < 0 || heardRef.current === listener) return;
-		if (toldRef.current.get(listener) === value || toldOnArrivalRef.current) {
-			// Adopted quietly: the holder stays the one last told, so it is the
-			// one a later measure or the bar's going hands the space back from.
-			toldRef.current.set(listener, value);
-			return;
-		}
-		toldOnArrivalRef.current = true;
-		tell(listener, value);
+		const previous = previousRef.current;
+		previousRef.current = onSpaceChange;
+		if (previous === onSpaceChange) return;
+		if (onSpaceChange && arrivalsRef.current >= 3) return;
+		arrivalsRef.current += 1;
+		// The outgoing one gives its space back, the bar measured or not (a
+		// listener taken away leaves the measuring off by now).
+		tell(previous, 0);
+		if (heightRef.current >= 0) tell(onSpaceChange, heightRef.current);
 	}, [onSpaceChange]);
 
 	return (

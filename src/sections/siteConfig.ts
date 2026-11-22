@@ -11,6 +11,7 @@
 import type {
 	ContactDockConfig,
 	FooterColumn,
+	FooterHoursPlacement,
 	HeaderPhone,
 	MenuBurgerStyle,
 	NavFeature,
@@ -292,7 +293,7 @@ export interface SiteConfig {
 		 * their own beside the link columns, or "brand", a compact list inside
 		 * the brand column under the address, the phone, and the email.
 		 */
-		hoursPlacement?: "column" | "brand";
+		hoursPlacement?: FooterHoursPlacement;
 		/**
 		 * Whether the footer's hours drop a whole hour's minutes ("8a to 5p").
 		 * Defaults to true; false prints them as the hours table does

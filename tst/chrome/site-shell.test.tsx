@@ -261,7 +261,7 @@ describe("SiteShell", () => {
 				footer: { hoursShort: false, hoursPlacement: "brand" },
 			},
 		);
-		expect(ranges()).toEqual(["8:00 am to 5:00 pm"]);
+		expect(ranges()).toEqual(["8:00\u00a0am to 5:00\u00a0pm"]);
 		const footer = screen.getByRole("contentinfo");
 		// Inside the brand column: the address's block holds the hours' heading.
 		const nap = footer.querySelector("address") as HTMLElement;

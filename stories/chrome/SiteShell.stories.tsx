@@ -522,3 +522,70 @@ export const StickyBarSlidesInUnderASolidBar: Story = {
 		});
 	},
 };
+
+/** The footer's hours' ranges, as a reader finds them under their heading. */
+function footerRanges(canvas: ReturnType<typeof within>) {
+	const footer = within(canvas.getByRole("contentinfo"));
+	const hours = footer.getByRole("heading", { name: "Hours" }).parentElement as HTMLElement;
+	return within(hours)
+		.getAllByRole("definition")
+		.map((range) => range.textContent);
+}
+
+/** Whether the footer's hours sit inside the brand column, under the address. */
+function hoursInBrand(canvas: ReturnType<typeof within>) {
+	const footer = canvas.getByRole("contentinfo");
+	const heading = within(footer).getByRole("heading", { name: "Hours" });
+	const brand = footer.querySelector("address")?.parentElement;
+	return brand ? brand.contains(heading) : false;
+}
+
+/** `meridiem: "word"`: the footer's hours read "7 am to 3 pm", short, in their own column. */
+export const HoursWordMeridiemColumn: Story = {
+	args: { ...visitPage, site: { ...site, meridiem: "word" } },
+	play: async ({ canvas }) => {
+		await expect(footerRanges(canvas)).toEqual(["7 am to 3 pm", "8 am to 2 pm", "Closed"]);
+		await expect(hoursInBrand(canvas)).toBe(false);
+	},
+};
+
+/** The same in the brand column. */
+export const HoursWordMeridiemBrand: Story = {
+	args: {
+		...visitPage,
+		site: { ...site, meridiem: "word", footer: { ...site.footer, hoursPlacement: "brand" } },
+	},
+	play: async ({ canvas }) => {
+		await expect(footerRanges(canvas)).toEqual(["7 am to 3 pm", "8 am to 2 pm", "Closed"]);
+		await expect(hoursInBrand(canvas)).toBe(true);
+	},
+};
+
+/** `footer.hoursShort: false`: the footer's hours keep their minutes, "7:00a to 3:00p", in their own column. */
+export const HoursWholeColumn: Story = {
+	args: { ...visitPage, site: { ...site, footer: { ...site.footer, hoursShort: false } } },
+	play: async ({ canvas }) => {
+		await expect(footerRanges(canvas)).toEqual(["7:00a to 3:00p", "8:00a to 2:00p", "Closed"]);
+		await expect(hoursInBrand(canvas)).toBe(false);
+	},
+};
+
+/** The same in the brand column, with the word meridiem: "7:00 am to 3:00 pm". */
+export const HoursWholeBrand: Story = {
+	args: {
+		...visitPage,
+		site: {
+			...site,
+			meridiem: "word",
+			footer: { ...site.footer, hoursShort: false, hoursPlacement: "brand" },
+		},
+	},
+	play: async ({ canvas }) => {
+		await expect(footerRanges(canvas)).toEqual([
+			"7:00 am to 3:00 pm",
+			"8:00 am to 2:00 pm",
+			"Closed",
+		]);
+		await expect(hoursInBrand(canvas)).toBe(true);
+	},
+};

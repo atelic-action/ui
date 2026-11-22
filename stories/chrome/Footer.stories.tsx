@@ -903,3 +903,31 @@ export const HoursPhoneFourColumns: Story = {
 		await expectNoCellAlone(canvas, 4);
 	},
 };
+
+/** Two link columns and the hours in the brand column at 1280: the brand column and both columns share one row. */
+export const HoursInBrandTwoColumns: Story = {
+	args: { hours, columns: fullColumns.slice(0, 2), hoursPlacement: "brand" },
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "one row");
+	},
+};
+
+/** The same at 1024. */
+export const HoursInBrandTwoColumnsAt1024: Story = {
+	...HoursInBrandTwoColumns,
+	globals: pin("laptop"),
+};
+
+/** Three link columns at 1280: one row, the floors measured for three. */
+export const HoursInBrandThreeColumns: Story = {
+	args: { hours, columns: fullColumns.slice(0, 3), hoursPlacement: "brand" },
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "one row");
+	},
+};
+
+/** The same at 1024. */
+export const HoursInBrandThreeColumnsAt1024: Story = {
+	...HoursInBrandThreeColumns,
+	globals: pin("laptop"),
+};
