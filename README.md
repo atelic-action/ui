@@ -102,14 +102,16 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `SiteShell` | `@atelic-action/ui/chrome` | A marketing page's whole chrome: skip link, header, main, footer, sticky bar, the contact dock when configured, mounting the base path provider and setting the section density | [Chrome/SiteShell](https://ui.atelic.me/?path=/docs/chrome-siteshell--docs) |
 | `BasePathProvider`, `useBasePath`, `useWithBase`, `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing` | The base path a site is served under, read by Button, Chip, and every section that builds a link | none |
 | `joinBase`, `stripBase`, `hasBase`, `normalizeBasePath` | `@atelic-action/ui/routing/base-path` | The same four pure helpers, built, for what Node runs (a Playwright spec, a script) | none |
-| `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call | none |
+| `marketingConfig` | `@atelic-action/ui/vite` | A marketing site's whole Vite configuration as one call; with the three Sentry variables it uploads hidden source maps under the commit (8.1.0) | none |
+| `startErrorReporting`, `ErrorCatcherScript`, `errorCatcherScript`, `reportError`, `installCatcher`, `readCatcher`, `afterFirstPaint` | `@atelic-action/ui/monitoring` | Error reporting in the browser: the inline early catcher, and the start function that loads the Sentry SDK after first paint, errors only (8.1.0; see [Error Reporting](#error-reporting)) | none |
+| `reportServerError`, `withErrorReporting`, `parseDSN`, `parseStack`, `buildEnvelope` | `@atelic-action/ui/monitoring/server` | Error reporting from a function or the middleware, dependency free and built, for what Vercel runs uncompiled (8.1.0) | none |
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
 | `AppProvider`, `AppConfigProvider`, `useAppConfig`, `useNav`, `useUser`, `configureApp`, `getAppConfig`, `AppConfig`, `NavItem`, `AppUser`, `Register` | `@atelic-action/ui/app` | The app shell's seam: the app hands in its config and nav, registers its user type, and reads them back | [App/AppProvider](https://ui.atelic.me/?path=/docs/app-appprovider--docs) |
 | `AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `DesktopRail`, `MobileTabBar`, `MobileMenu`, `UserMenu`, `PageSkeleton`, `PageError`, `ActionButton`, `FormActionButtons`, `activeSection` | `@atelic-action/ui/app` | The app frame: the rails, the tab bar, the page scaffold with its toolbar and right rail | [App/AppLayout](https://ui.atelic.me/?path=/docs/app-applayout--docs) |
 | `AuthGuard`, `ErrorFallback`, `GoogleGlyph`, `useAuthStore`, `useUnitsStore`, `apiFetch`, `publicFetch`, `session`, the hooks and the wire types | `@atelic-action/ui/app` | Auth, transport, the two shell stores, and the helpers the shell runs on | [App/AuthGuard](https://ui.atelic.me/?path=/docs/app-authguard--docs) |
 | The shadcn kit (`Button`, `Dialog`, `Select`, `OptionSelect`, `SearchInput`, `BadgeList`, `Callout`, and the rest) | `@atelic-action/ui/app/ui` | The kit the shell is set in; a new kit component lands here, never in an app | [App/UI/Button](https://ui.atelic.me/?path=/docs/app-ui-button--docs) |
 | `app.css` | `@atelic-action/ui/styles/app.css` | The shell's Tailwind sheet: the token mapping, the default tokens, the base layer, the `ap-*` scaffold, and the `@source` that points Tailwind at the shell | none |
-| The eleven `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, and contact canary | none |
+| The `atelic-*` commands | the `bin` map | The build guard, health stamp, link and wall checks, reader link, static server, print, sealing, and the marketing site's sitemap clean, base path check, contact canary, and Sentry check (8.1.0) | none |
 
 
 ## Install
@@ -372,6 +374,77 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 
 `GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader `Watermark` uses and a site's own code can: empty during prerender, for a missing cookie, and for one that will not decode. `GateLogin` says so when an address is not an email, holds a second submit while the first is in flight, and announces each outcome to a screen reader.
 
+## Error Reporting
+
+Every site reports its errors to Sentry, errors only and never performance tracing, through three pieces the package owns (8.1.0). A site cannot launch without it: `atelic-check-sentry` stops a production build with no DSN.
+
+1. **The early catcher.** `ErrorCatcherScript`, first in the root route's `<head>`, is a 443 byte inline script (281 gzipped, ES5, no dependencies) that listens for `error` and `unhandledrejection` from the first moment and holds up to twenty in a buffer on `window.__atelicErrors`, counting the rest as dropped. An error thrown before the app's own JavaScript runs is held, not lost.
+2. **The start function.** `startErrorReporting({ dsn, release, environment })` from `@atelic-action/ui/monitoring` makes sure the catcher is listening (installing it when the page has none), then after first paint (falling back to the load event where the browser cannot report paints, and to ten seconds whatever happens) loads the Sentry browser SDK, replays what the catcher held, each tagged `early`, and takes the catcher's listeners off so nothing is reported twice. With no `dsn` it does nothing and loads nothing. The SDK chunk is the client set up by hand with six integrations (event filters, function to string, the global handlers, linked errors, dedupe, the page's URL and user agent): no tracing, no replay, no breadcrumbs. It weighs 69.9 KB raw, 24.6 KB gzipped, and 22.3 KB in brotli, where the old `@sentry/react` chunk with browser tracing weighed 136.2 KB, 47.0 KB, and 41.5 KB. `AppErrorBoundary` hands a render crash to the same buffer (`reportError`), since React keeps a caught crash from the window's handlers. The package carries `@sentry/browser`, so a site needs no Sentry dependency of its own.
+3. **The server reporter.** `@atelic-action/ui/monitoring/server`, built like the gate so a Vercel function imports it uncompiled: `reportServerError(error, { dsn?, request?, tags?, release?, environment? })` posts a Sentry envelope to the ingest the DSN names (`SENTRY_DSN`, then `VITE_SENTRY_DSN`), with the stack's frames, the runtime as a tag, and the release from `VERCEL_GIT_COMMIT_SHA`. It waits two seconds at most, never throws, and resolves whether or not the send worked. `withErrorReporting(handler)` reports a handler's throw and throws it again. The gate's middleware reports anything it throws, and passes and blocks exactly as before.
+
+Two noises are left out, the list kept short: an error whose top frame is a browser extension's (`chrome-extension://`, `moz-extension://`, `safari-extension://`, `safari-web-extension://`), and the in app webview bridges failing ("Java object is gone", "Error invoking postMessage").
+
+**What is captured:** uncaught errors and unhandled rejections in the browser, from before first paint on; render crashes an error boundary catches; a function's or the middleware's throw, and whatever a function reports by hand. **What is not:** performance, sessions, replays, breadcrumbs, console output, and the expected misses (a contact form's validation answer, a malformed or expired gate cookie). **Privacy:** a server report carries the request's method, its path with no query string, and its user agent, and nothing else from the request: never a body, never another header. A contact form's request holds a person's name, address, and message.
+
+| Variable | Where | What it does |
+|---|---|---|
+| `VITE_SENTRY_DSN` | the Vercel project, every environment | The browser's DSN, read by the start function; the server reporter falls back to it. Required for a production build |
+| `SENTRY_DSN` | the Vercel project, optional | The server's DSN when it should differ from the browser's |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | the Vercel project, production | With all three, `marketingConfig` adds the Sentry Vite plugin: it creates a release named by the commit, uploads hidden source maps (`build.sourcemap: "hidden"`, only then), and deletes every map from `dist/` once uploaded. With any missing, the build is unchanged |
+
+`marketingConfig` hands the browser the commit (`VERCEL_GIT_COMMIT_SHA`, else `GITHUB_SHA`) as `import.meta.env.VITE_RELEASE`, the same name the upload's release takes, so a stack trace meets its source maps.
+
+What a site changes. `src/router.tsx` drops its own Sentry import and its `afterFirstPaint`, and starts reporting where the lazy init was:
+
+```ts
+import { startErrorReporting } from "@atelic-action/ui/monitoring";
+
+if (typeof window !== "undefined") {
+	startErrorReporting({
+		dsn: env.VITE_SENTRY_DSN,
+		release: import.meta.env.VITE_RELEASE,
+		environment: import.meta.env.MODE,
+	});
+}
+```
+
+`src/routes/__root.tsx` puts the catcher first in `<head>`, and imports the boundary from the package in place of its own copy, so a render crash is reported (the site deletes its `src/shared/components/AppErrorBoundary.tsx` and `ErrorFallback.tsx`, whose package twins are the same page with a long message that wraps):
+
+```tsx
+import { AppErrorBoundary } from "@atelic-action/ui/artifact";
+import { ErrorCatcherScript } from "@atelic-action/ui/monitoring";
+
+<head>
+	<ErrorCatcherScript />
+	<HeadContent />
+</head>
+```
+
+`api/contact.ts` wraps its handler, and reports a refused send by hand, since that path answers rather than throws:
+
+```ts
+import { reportServerError, withErrorReporting } from "@atelic-action/ui/monitoring/server";
+
+export const POST = withErrorReporting(
+	async (request: Request): Promise<Response> => {
+		// ...the handler as it was, and where Resend refuses:
+		if (!response.ok) {
+			await reportServerError(new Error(`Resend answered ${response.status}`), { request, tags: { route: "contact" } });
+			return json(502, { ok: false, error: "Sending failed. Please try again in a moment." });
+		}
+	},
+	{ tags: { route: "contact" } },
+);
+```
+
+`package.json` runs the check first in `build` and drops its own `@sentry/react` dependency:
+
+```json
+"build": "atelic-check-sentry && atelic-check-images && tsc -b && vite build && ..."
+```
+
+A site with a real reason to launch without Sentry runs `atelic-check-sentry --allow-missing`, which lets the build through under a loud warning. `middleware.ts` changes nothing: the gate's middleware reports on its own.
+
 ## The Artifact Documents
 
 `@atelic-action/ui/artifact` is the pieces an artifact document is built from and the site around it, so a fix to a piece reaches every business's documents with one version bump. The composed documents themselves (`Writeup`, `Read`, `Report`, `Note`, and the sealed `Gate`, with their content types and their stylesheet) live in [`@atelic-action/artifact`](https://github.com/atelic-action/artifact) since 2.0.0, which depends on this package for everything below:
@@ -627,13 +700,14 @@ The space a section leaves above and below itself is one token, `--section-space
 
 ### Moving to 8.1.0
 
-Nothing breaks: every addition is an optional prop or config key. Three things change on a site that changes nothing, and two fixes land.
+Nothing breaks: every addition is an optional prop, config key, or entry. Three things change on a site that changes nothing, two fixes land, and error reporting arrives for a site to wire.
 
 - **The hours come back to the footer, on by default.** A site whose config holds `hours` (every site does, for the structured data) shows them in its footer as a column headed Hours, beside the link columns. To keep them out of the footer, and in the structured data and the sections that print them, set `footer: { showHours: false }` in the site config. Rendering `Footer` directly, a site passes `hours` (`HoursRow[]`, already formatted) and, if it wants other words, `hoursHeading`.
 - **The rating links to the Google profile.** With `footer.rating` set, the whole rating line (the stars and the words) is one link, opening in a new tab, to `footer.ratingHref`, else `mapLinkURL`. A site with no `mapLinkURL` and no `ratingHref` keeps the plain line. `footer.ratingLabel` (and `Footer`'s `ratingLabel`) gives the link a fuller accessible name; `Footer` takes `ratingHref` directly.
 - **The footer draws the header's lockup.** A brand with a mark image gets the mark with its wordmark beside it in the footer, as in the header, where 8.0.0 drew the image alone. `logo.wordmark: false` keeps the image alone, named by `logo.alt`. The header and the footer draw it from one composition (`LockupParts`, internal to `BrandLockup.tsx`), so the two never drift.
 - **Fixed: a crowded mega panel no longer breaks words.** A panel's sections wrap to a second row before any is squeezed below its longest word or its floor; no label in a panel breaks inside a word. A panel that already fit lays out as before.
 - **Fixed: the current entry over a hero.** On the transparent bar over a hero the current entry (a page, a group holding it, or a scroll spied stop) reads `--on-dark` with its siblings and is underlined, where it read `--primary` (a dark green primary read 1.64 to 1 over a dark hero). The solid bar is unchanged.
+- **Error reporting, optional but expected** (see [Error Reporting](#error-reporting)): the early catcher, `startErrorReporting` from `@atelic-action/ui/monitoring`, the server reporter from `@atelic-action/ui/monitoring/server`, the middleware reporting its throws, the `atelic-check-sentry` command, and the source map upload in `marketingConfig`. Nothing changes for a site until it wires them, with two exceptions: `marketingConfig` now defines `import.meta.env.VITE_RELEASE` whenever the build knows its commit, and with `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` all set it uploads hidden source maps and deletes them from `dist/`. The package now depends on `@sentry/browser` and `@sentry/vite-plugin`, so a site drops its own `@sentry/react`. `AppErrorBoundary` hands a caught render crash to error reporting, which holds it in a buffer on the window until the SDK loads; with no DSN it goes nowhere.
 - **Smaller fixes:** `FullBleedVideo` given a `placeholder` and no `poster` never requests its `src`; `LinkColumns` holds two links to one page in a column; on a page wearing the contact dock the hero's scroll cue moves to the middle of the hero's foot, out from under the launcher; `StickyCTABar` hands the space back to the listener it told when a caller swaps `onSpaceChange`; and the app's dark theme sets destructive words in their own `--destructive-ink` (red 400, `0 90.6% 70.8%`, 6.48 to 1 on the dark card), where they read the fill's deep red at 1.79.
 
 ### Moving to 8.0.0
