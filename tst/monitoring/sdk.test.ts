@@ -59,6 +59,16 @@ describe("the browser SDK, set up for errors alone", () => {
 		expect(
 			scrubRequest({ request: { headers: { Referer: "https://o.example/?x=1" } } }).request,
 		).toEqual({});
+		const framed = scrubRequest({
+			exception: {
+				values: [
+					{ stacktrace: { frames: [{ filename: "https://example.com/menu?email=a@b.c#x" }] } },
+				],
+			},
+		});
+		expect(framed.exception?.values?.[0]?.stacktrace?.frames?.[0]?.filename).toBe(
+			"https://example.com/menu",
+		);
 		expect(getClient()?.getOptions().beforeSend).toBe(scrubRequest);
 	});
 });

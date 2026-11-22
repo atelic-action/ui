@@ -46,8 +46,17 @@ export const IGNORE_ERRORS = [/Java object is gone/, /Error invoking postMessage
  * last step before an event leaves the page.
  */
 export function scrubRequest<
-	T extends { request?: { url?: string; headers?: Record<string, string> } },
+	T extends {
+		request?: { url?: string; headers?: Record<string, string> };
+		exception?: { values?: { stacktrace?: { frames?: { filename?: string }[] } }[] };
+	},
 >(event: T): T {
+	// A frame's file is the page itself for an inline script, query and all.
+	for (const value of event.exception?.values ?? []) {
+		for (const frame of value.stacktrace?.frames ?? []) {
+			if (frame.filename) frame.filename = frame.filename.replace(/[?#].*$/, "");
+		}
+	}
 	const request = event.request;
 	if (!request) return event;
 	if (request.url) {
