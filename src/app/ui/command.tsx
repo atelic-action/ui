@@ -1,9 +1,9 @@
 import type { DialogProps } from "@radix-ui/react-dialog";
-import { Command as CommandPrimitive } from "cmdk";
+import { Command as CommandPrimitive, useCommandState } from "cmdk";
 import { Search } from "lucide-react";
 import * as React from "react";
 import { cn } from "../lib/utils";
-import { Dialog, DialogContent } from "./dialog";
+import { Dialog, DialogContent, DialogTitle } from "./dialog";
 
 const Command = React.forwardRef<
 	React.ElementRef<typeof CommandPrimitive>,
@@ -20,10 +20,46 @@ const Command = React.forwardRef<
 ));
 Command.displayName = CommandPrimitive.displayName;
 
-const CommandDialog = ({ children, ...props }: DialogProps) => {
+export interface CommandDialogProps extends DialogProps {
+	/** The dialog's name, which a screen reader announces as it opens. Defaults to "Commands". */
+	title?: string;
+	/** Show the title above the search. Hidden by default, still read. */
+	showTitle?: boolean;
+}
+
+/**
+ * The command palette in a dialog. It is opened by state (a shortcut, a
+ * button's handler) rather than a trigger of its own, so it remembers what
+ * had focus as it opens and hands focus back there as it closes, which
+ * Radix does only for a `DialogTrigger`.
+ */
+const CommandDialog = ({
+	children,
+	title = "Commands",
+	showTitle = false,
+	...props
+}: CommandDialogProps) => {
+	const returnTo = React.useRef<HTMLElement | null>(null);
 	return (
 		<Dialog {...props}>
-			<DialogContent className="overflow-hidden p-0 shadow-lg">
+			<DialogContent
+				aria-describedby={undefined}
+				className="overflow-hidden p-0 shadow-lg"
+				onOpenAutoFocus={() => {
+					const active = document.activeElement;
+					returnTo.current =
+						active instanceof HTMLElement && active !== document.body ? active : null;
+				}}
+				onCloseAutoFocus={(event) => {
+					const target = returnTo.current;
+					returnTo.current = null;
+					if (target?.isConnected) {
+						event.preventDefault();
+						target.focus();
+					}
+				}}
+			>
+				<DialogTitle className={showTitle ? "px-4 pt-4 text-base" : "sr-only"}>{title}</DialogTitle>
 				<Command className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
 					{children}
 				</Command>
@@ -64,14 +100,32 @@ const CommandList = React.forwardRef<
 
 CommandList.displayName = CommandPrimitive.List.displayName;
 
-const CommandEmpty = React.forwardRef<
-	React.ElementRef<typeof CommandPrimitive.Empty>,
-	React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
->((props, ref) => (
-	<CommandPrimitive.Empty ref={ref} className="py-6 text-center text-sm" {...props} />
-));
+/**
+ * The line shown when nothing matches. It sits inside the list, which is a
+ * listbox and may hold only options, so it is drawn as one disabled option
+ * rather than cmdk's presentational block: a reader hears "No results" as the
+ * list's one entry instead of an empty list.
+ */
+const CommandEmpty = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+	({ className, ...props }, ref) => {
+		const empty = useCommandState((state) => state.filtered.count === 0);
+		if (!empty) return null;
+		return (
+			// biome-ignore lint/a11y/useFocusableInteractive: the list moves its highlight by aria-activedescendant, and this option is disabled
+			<div
+				ref={ref}
+				cmdk-empty=""
+				role="option"
+				aria-disabled="true"
+				aria-selected="false"
+				className={cn("py-6 text-center text-sm", className)}
+				{...props}
+			/>
+		);
+	},
+);
 
-CommandEmpty.displayName = CommandPrimitive.Empty.displayName;
+CommandEmpty.displayName = "CommandEmpty";
 
 const CommandGroup = React.forwardRef<
 	React.ElementRef<typeof CommandPrimitive.Group>,
@@ -89,17 +143,28 @@ const CommandGroup = React.forwardRef<
 
 CommandGroup.displayName = CommandPrimitive.Group.displayName;
 
+/**
+ * A rule between groups, hidden while a search is typed (as cmdk's own is)
+ * unless `alwaysRender`. It is drawn with no role, since the list it sits in
+ * is a listbox and may hold only options and groups; a rule is decoration.
+ */
 const CommandSeparator = React.forwardRef<
-	React.ElementRef<typeof CommandPrimitive.Separator>,
-	React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
->(({ className, ...props }, ref) => (
-	<CommandPrimitive.Separator
-		ref={ref}
-		className={cn("-mx-1 h-px bg-border", className)}
-		{...props}
-	/>
-));
-CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
+	HTMLDivElement,
+	React.HTMLAttributes<HTMLDivElement> & { alwaysRender?: boolean }
+>(({ className, alwaysRender = false, ...props }, ref) => {
+	const idle = useCommandState((state) => !state.search);
+	if (!alwaysRender && !idle) return null;
+	return (
+		<div
+			ref={ref}
+			cmdk-separator=""
+			role="none"
+			className={cn("-mx-1 h-px bg-border", className)}
+			{...props}
+		/>
+	);
+});
+CommandSeparator.displayName = "CommandSeparator";
 
 const CommandItem = React.forwardRef<
 	React.ElementRef<typeof CommandPrimitive.Item>,

@@ -19,22 +19,52 @@ const alertVariants = cva(
 	},
 );
 
-const Alert = React.forwardRef<
-	HTMLDivElement,
-	React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof alertVariants>
->(({ className, variant, ...props }, ref) => (
-	<div ref={ref} role="alert" className={cn(alertVariants({ variant }), className)} {...props} />
-));
-Alert.displayName = "Alert";
+export interface AlertProps
+	extends React.HTMLAttributes<HTMLDivElement>,
+		VariantProps<typeof alertVariants> {
+	/**
+	 * Announce the alert as it appears: "assertive" is `role="alert"`, which
+	 * interrupts, and "polite" is `role="status"`, which waits its turn. Unset,
+	 * the alert is a plain block read in its place, right for a notice that is
+	 * on the page as it loads. A `role` passed directly still wins.
+	 */
+	announce?: "assertive" | "polite";
+}
 
-const AlertTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-	({ className, ...props }, ref) => (
-		<h5
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
+	({ className, variant, announce, ...props }, ref) => (
+		<div
 			ref={ref}
-			className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+			role={announce === "assertive" ? "alert" : announce === "polite" ? "status" : undefined}
+			className={cn(alertVariants({ variant }), className)}
 			{...props}
 		/>
 	),
+);
+Alert.displayName = "Alert";
+
+type AlertTitleLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+	/**
+	 * Make the title a heading at this level, for an alert that opens a part
+	 * of the page. Unset, it is a paragraph styled as a title, since an alert
+	 * rarely starts a section and a fixed level skips levels on most pages.
+	 */
+	level?: AlertTitleLevel;
+}
+
+const AlertTitle = React.forwardRef<HTMLHeadingElement, AlertTitleProps>(
+	({ className, level, ...props }, ref) => {
+		const Tag = (level ? `h${level}` : "p") as "h2" | "p";
+		return (
+			<Tag
+				ref={ref}
+				className={cn("mb-1 font-medium leading-none tracking-tight", className)}
+				{...props}
+			/>
+		);
+	},
 );
 AlertTitle.displayName = "AlertTitle";
 

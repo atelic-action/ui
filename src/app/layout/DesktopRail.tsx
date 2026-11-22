@@ -35,8 +35,15 @@ function RailLink({
 		active && "bg-primary/10 text-primary font-medium",
 	);
 	const link = (
-		<Link to={item.href} className={className} aria-current={active ? "page" : undefined}>
-			<Icon className="h-5 w-5 flex-shrink-0" />
+		<Link
+			to={item.href}
+			className={className}
+			aria-current={active ? "page" : undefined}
+			// Collapsed, the label leaves the link and the tooltip only
+			// describes it, so the link carries the label as its name.
+			aria-label={collapsed ? item.label : undefined}
+		>
+			<Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
 			{!collapsed && <span>{item.label}</span>}
 		</Link>
 	);
