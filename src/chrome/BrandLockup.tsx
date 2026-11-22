@@ -8,6 +8,15 @@ export interface BrandLockupProps {
 	 * brand's name when they are its name in another case), then "home".
 	 */
 	ariaLabel?: string;
+	/**
+	 * The one ground the lockup sits on, for a place outside the header that
+	 * only ever wears one (the light phone menu's top row): that surface's
+	 * mark alone, as the footer draws its own. Left out, the header draws
+	 * both and its bar shows the one for its state.
+	 */
+	surface?: MarkSurface;
+	/** Called when the link is followed, before the browser navigates. */
+	onClick?: () => void;
 }
 
 /**
@@ -103,7 +112,7 @@ export function LockupParts({
  * every child, image alt included, and it always holds the words the link
  * shows, so what a reader sees is what a voice user can say.
  */
-export function BrandLockup({ brand, ariaLabel }: BrandLockupProps) {
+export function BrandLockup({ brand, ariaLabel, surface, onClick }: BrandLockupProps) {
 	const { name, href = "/", logo, recipient } = brand;
 	const wordmark = lockupWords(name, logo);
 	// The visible words lead the name. A wordmark that is the name in another
@@ -112,8 +121,8 @@ export function BrandLockup({ brand, ariaLabel }: BrandLockupProps) {
 		wordmark === null || name.toLowerCase().includes(wordmark.toLowerCase()) ? name : wordmark;
 	const label = ariaLabel ?? (recipient ? `${words} × ${recipient.alt} home` : `${words} home`);
 	return (
-		<a className="nav-logo" href={href} aria-label={label}>
-			<LockupParts name={name} logo={logo} />
+		<a className="nav-logo" href={href} aria-label={label} onClick={onClick}>
+			<LockupParts name={name} logo={logo} surface={surface} />
 			{recipient && (
 				<>
 					<span className="nav-x" aria-hidden="true">

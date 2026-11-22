@@ -15,6 +15,7 @@ import type {
 	NavFeature,
 	NavPanelSection,
 	SiteLink,
+	SiteMenuSurface,
 	SocialLink,
 } from "../types";
 
@@ -68,6 +69,12 @@ export interface CTA {
 	 * Defaults to `label`.
 	 */
 	stickyLabel?: string;
+	/**
+	 * The phone menu's own words, when they should differ from `label` (a
+	 * fuller "Order ahead for Saturday" where the bar says "Order
+	 * ahead"). Defaults to `label`.
+	 */
+	menuLabel?: string;
 }
 
 /** How opening hours print: "12h" reads "9a to 5p", "24h" reads "09:00 to 17:00". */
@@ -303,6 +310,17 @@ export interface SiteConfig {
 	 * name the button. Absent, the burger stands alone as it always has.
 	 */
 	menuLabel?: string;
+	/** The phone menu (the sheet the burger opens). */
+	menu?: {
+		/**
+		 * The sheet's look: `dark` (the default) is the full screen sheet on
+		 * the dark surface; `light` is the page's ground with the lockup and a
+		 * round close button across the top, the entries as rows, and the
+		 * call to action and the header's numbers in a foot on the alternate
+		 * ground.
+		 */
+		surface?: SiteMenuSurface;
+	};
 	/** What the header shows beyond the nav and the CTA. */
 	header?: {
 		/** Up to two numbers in the bar, each a tel link; the first is the phone's call button. */

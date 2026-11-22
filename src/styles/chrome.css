@@ -1093,6 +1093,170 @@
 		text-transform: uppercase;
 	}
 
+	/* The link to the page being read is marked for the eye as well as by
+	   aria-current, on either sheet: the 2px underline the bar marks its
+	   current entry with, under the words alone (a plain entry's number and
+	   a link's badge stay clear of it). */
+	.atelic-ui
+		.mobile-menu
+		:is(.mm-link, .mm-group-link, .mm-group-sub)[aria-current="page"]
+		.mm-label,
+	.atelic-ui .mobile-menu .mm-group-all[aria-current="page"] {
+		text-decoration-line: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 6px;
+	}
+
+	/* ---- The light menu sheet (SiteMenu surface="light") ----
+	   The page's own ground and ink: the lockup and a round close button
+	   across the top, the entries as rows under hairlines, and a foot on the
+	   alternate ground, pushed to the sheet's bottom when the list is short
+	   and following it when an open group runs long. Every rule restyles the
+	   dark sheet's own classes, so the two share their markup and behavior. */
+	.atelic-ui .mobile-menu.is-light {
+		background: var(--surface);
+		color: var(--ink);
+		padding: 0;
+	}
+	.atelic-ui .mobile-menu.is-light .mm-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		min-height: var(--nav-height);
+		padding: 8px var(--gutter);
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	/* The lockup's mark drawn for the light ground, flattened to ink when the
+	   brand gave only a light cut, as the light bar draws it. */
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to the light sheet, so it never meets the header bar's tint rules */
+	.atelic-ui .mobile-menu.is-light .nav-logo .mark.is-tinted {
+		filter: brightness(0) saturate(1);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-close {
+		position: static;
+		flex: none;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		margin-left: auto;
+		border-radius: 50%;
+		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
+		color: var(--ink);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-close:hover {
+		box-shadow: inset 0 0 0 1.5px var(--ink);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-list {
+		padding: 4px var(--gutter) 24px;
+	}
+	/* A row: the group's label (or a plain entry) bold in ink at a moderate
+	   size, a chevron at the right, a hairline under it. */
+	.atelic-ui .mobile-menu.is-light .mm-link {
+		min-height: 60px;
+		padding: 12px 0;
+		gap: 12px;
+		font-size: 1.3rem;
+		font-weight: var(--weight-bold);
+		letter-spacing: -0.01em;
+		border-bottom: 1px solid var(--hairline);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group {
+		border-bottom: 1px solid var(--hairline);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group-btn {
+		border-bottom: 0;
+	}
+	/* biome-ignore lint/style/noDescendingSpecificity: scoped to the light sheet, where it restyles the dark sheet's chevron */
+	.atelic-ui .mobile-menu.is-light .mm-chevron {
+		color: var(--ink-soft);
+	}
+	/* The open group's label and chevron take the primary's words. */
+	.atelic-ui .mobile-menu.is-light .mm-group-btn[aria-expanded="true"],
+	.atelic-ui .mobile-menu.is-light .mm-group-btn[aria-expanded="true"] .mm-chevron {
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group-panel {
+		gap: 14px;
+		padding: 0 0 18px;
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group-all {
+		font-size: 1.06rem;
+		font-weight: var(--weight-semibold);
+		color: var(--primary-ink, var(--primary));
+	}
+	/* A section's heading: a small quiet caps label. */
+	.atelic-ui .mobile-menu.is-light .mm-group-head {
+		color: var(--ink-soft);
+		font-size: 0.72rem;
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group-link {
+		font-size: 1.06rem;
+		color: var(--ink);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group-sub {
+		color: var(--ink-soft);
+		font-size: 1rem;
+	}
+	.atelic-ui .mobile-menu.is-light .mm-group-sub::before {
+		border-color: var(--neutral-300);
+	}
+	/* A quiet link (the towns under a region): the softer words and the
+	   regular weight, as the desktop panel sets it. */
+	.atelic-ui .mobile-menu.is-light .mm-group-link.is-quiet {
+		font-weight: var(--weight-regular);
+		color: var(--ink-soft);
+	}
+	/* The current page keeps the primary's words on the light ground, where
+	   the bright primary the dark sheet uses would vanish. */
+	.atelic-ui .mobile-menu.is-light .mm-group-link[aria-current="page"],
+	.atelic-ui .mobile-menu.is-light .mm-group-sub[aria-current="page"] {
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .mobile-menu.is-light .mm-foot {
+		margin-top: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 16px var(--gutter) max(24px, env(safe-area-inset-bottom));
+		background: var(--surface-alt);
+		border-top: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-cta {
+		width: 100%;
+		margin-top: 0;
+		justify-content: center;
+	}
+	/* A number's card: an outlined card, the number's words as a small caps
+	   line over the number, the whole card one tel link. */
+	.atelic-ui .mobile-menu.is-light .mm-phone-card {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 10px 14px;
+		border-radius: var(--radius-md);
+		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
+		background: var(--card);
+		color: var(--ink);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-phone-card:hover {
+		box-shadow: inset 0 0 0 1.5px var(--ink);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-phone-label {
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		font-weight: var(--weight-medium);
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .mobile-menu.is-light .mm-phone-number {
+		font-size: 1rem;
+		font-weight: var(--weight-bold);
+	}
+
 	/* ---- Sticky CTA bar (phones only) ---- */
 	.atelic-ui .sticky-cta {
 		position: fixed;
@@ -1139,6 +1303,12 @@
 		flex-direction: column;
 		align-items: flex-end;
 		gap: 12px;
+	}
+	/* The launcher steps aside while either phone menu sheet is open. The
+	   sheet already covers it from the top layer; hidden, it never shows
+	   through the slide in, and is out of reach as well as out of sight. */
+	.atelic-ui:has(dialog.mobile-menu[open]) .contact-dock {
+		visibility: hidden;
 	}
 	/* Positioned, so it paints over the phone's sheet, which is fixed. */
 	.atelic-ui .cd-launch {

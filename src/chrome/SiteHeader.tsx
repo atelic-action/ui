@@ -11,7 +11,14 @@ import {
 import { useDismiss } from "../hooks/useDismiss";
 import { type PageStop, useScrollSpy } from "../hooks/useScrollSpy";
 import { Button } from "../primitives/Button";
-import type { Brand, CallToAction, HeaderPhone, MenuContact, NavLink } from "../types";
+import type {
+	Brand,
+	CallToAction,
+	HeaderPhone,
+	MenuContact,
+	NavLink,
+	SiteMenuSurface,
+} from "../types";
 import { BrandLockup } from "./BrandLockup";
 import { NavMegaPanel } from "./NavMegaPanel";
 import { groupHrefs, isGroup } from "./navSections";
@@ -32,7 +39,10 @@ export interface SiteHeaderProps {
 	 * mega menu panel, and in the phone's menu an accordion.
 	 */
 	links?: NavLink[];
-	/** The primary action, in the bar on desktop and in the menu. */
+	/**
+	 * The primary action, in the bar on desktop and in the menu, where it
+	 * reads its `menuLabel` when it has one.
+	 */
 	primaryCTA?: CallToAction;
 	/** Defaults to `solid`. */
 	variant?: SiteHeaderVariant;
@@ -51,6 +61,8 @@ export interface SiteHeaderProps {
 	/**
 	 * Up to two numbers the bar shows on a desktop, each a tel link, with the
 	 * first as a call button beside the burger on a phone. A third is dropped.
+	 * A number's `label` sits over it in the bar's pill; the menu lists each
+	 * with its `menuLabel`, else its `label`, else "Call".
 	 */
 	phones?: HeaderPhone[];
 	/**
@@ -58,6 +70,8 @@ export interface SiteHeaderProps {
 	 * the burger is its three lines alone, named "Open menu" or "Close menu".
 	 */
 	menuLabel?: string;
+	/** The phone menu's sheet, `dark` (the default) or `light` (see `SiteMenu`). */
+	menuSurface?: SiteMenuSurface;
 }
 
 /** The keys that move focus along the bar and down into an open panel. */
@@ -108,6 +122,7 @@ export function SiteHeader({
 	contact,
 	phones,
 	menuLabel,
+	menuSurface = "dark",
 }: SiteHeaderProps) {
 	const [scrolled, setScrolled] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -381,6 +396,8 @@ export function SiteHeader({
 					contact={stops ? undefined : contact}
 					phones={barPhones.length > 0 ? barPhones : undefined}
 					currentPath={currentPath}
+					surface={menuSurface}
+					brand={brand}
 				/>
 			)}
 		</>

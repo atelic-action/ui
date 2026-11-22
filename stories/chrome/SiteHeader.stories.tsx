@@ -985,3 +985,54 @@ export const CurrentOnSolidBarDarkPrimary: Story = {
 		await expect(getComputedStyle(sibling).textDecorationLine).toBe("none");
 	},
 };
+
+/** The feature card's ground, as a reader finds it from its headline. */
+const featureCard = (canvas: ReturnType<typeof within>) =>
+	canvas.getByText("Skip the Saturday line.").closest(".nav-feature") as HTMLElement;
+
+/**
+ * The feature card's ground and words take `--menu-card-bg` and
+ * `--menu-card-ink`, so a theme can set the card apart from the deep
+ * primary; the eyebrow, the headline, the line, and the ticked points all
+ * read the card's words.
+ */
+export const FeatureCardTokens: Story = {
+	args: { links: sectionedLinks },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--menu-card-bg": "#1f2a36",
+						"--menu-card-ink": "#f4efe6",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		await openGroup(canvas, userEvent, "Menu");
+		const card = featureCard(canvas);
+		await expect(getComputedStyle(card).backgroundColor).toBe("rgb(31, 42, 54)");
+		for (const words of ["Order ahead", "Skip the Saturday line.", "Ready by eight"]) {
+			await expect(getComputedStyle(within(card).getByText(words)).color).toBe(
+				"rgb(244, 239, 230)",
+			);
+		}
+	},
+};
+
+/** With neither token set the card is the deep primary with the fill's words, as before. */
+export const FeatureCardDefaults: Story = {
+	args: { links: sectionedLinks },
+	play: async ({ canvas, userEvent }) => {
+		await openGroup(canvas, userEvent, "Menu");
+		const card = featureCard(canvas);
+		await expect(getComputedStyle(card).backgroundColor).toBe("rgb(214, 58, 16)");
+		await expect(getComputedStyle(within(card).getByText("Skip the Saturday line.")).color).toBe(
+			"rgb(255, 255, 255)",
+		);
+	},
+};

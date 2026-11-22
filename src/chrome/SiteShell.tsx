@@ -242,6 +242,7 @@ export function SiteShell({
 					contact={{ phone: site.phone, email: site.email, address: site.address }}
 					phones={site.header?.phones}
 					menuLabel={site.menuLabel}
+					menuSurface={site.menu?.surface}
 				/>
 				<main id="main" className={heroNav ? undefined : "clears-nav"}>
 					{children}

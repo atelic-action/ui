@@ -1,17 +1,33 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { telText } from "../lib/phoneText";
+import { Button } from "../primitives/Button";
 import type {
+	Brand,
 	CallToAction,
 	HeaderPhone,
 	MenuContact,
 	NavGroupChildLink,
 	NavLink,
 	NavPanelSection,
+	Phone,
+	SiteMenuSurface,
 } from "../types";
+import { BrandLockup } from "./BrandLockup";
 import { NavBadge } from "./NavBadge";
 import { isGroup, isLinkColumn, panelSections } from "./navSections";
+
+/** A number as the menu lists it: the header's, or the contact block's one phone. */
+type MenuPhone = Phone & { label?: string; menuLabel?: string };
+
+/**
+ * The words the menu sets with a number: its `menuLabel`, else its `label`,
+ * else "Call", which asserts nothing a business may not do (answer texts).
+ */
+export function menuPhoneLabel(phone: MenuPhone): string {
+	return phone.menuLabel ?? phone.label ?? "Call";
+}
 
 export interface SiteMenuProps {
 	/** Whether the menu is showing. The owner holds this state. */
@@ -27,20 +43,37 @@ export interface SiteMenuProps {
 	 * An entry with `columns` is a group, an accordion that opens one at a time.
 	 */
 	links: NavLink[];
-	/** The primary action, rendered as a standard button below the entries. */
+	/**
+	 * The primary action, rendered as a standard button below the entries, in
+	 * its `menuLabel` when it has one, else its `label`.
+	 */
 	primaryCTA?: CallToAction;
 	/** The phone, email, and address block at the foot. */
 	contact?: MenuContact;
 	/**
 	 * The numbers the header shows, each a tel link at the foot with its
-	 * label, in place of the contact block's one phone.
+	 * `menuLabel`, else its `label`, else "Call", in place of the contact
+	 * block's one phone.
 	 */
 	phones?: HeaderPhone[];
-	/** The path being read, marking the matching link with aria-current. */
+	/**
+	 * The path being read, marking the matching link with aria-current and,
+	 * for the eye, the 2px underline the bar marks its current entry with.
+	 */
 	currentPath?: string;
 	id?: string;
 	/** The dialog's accessible name. Defaults to "Menu". */
 	label?: string;
+	/**
+	 * The sheet's look. `dark` (the default) is the full screen sheet on the
+	 * dark surface. `light` sets the page's ground: the brand's lockup and a
+	 * round close button across the top, the entries as rows under hairlines,
+	 * and a foot on the alternate ground holding the call to action and a
+	 * card per number. The behavior is the same on both.
+	 */
+	surface?: SiteMenuSurface;
+	/** The identity the light sheet's top row draws, linking home. */
+	brand?: Brand;
 }
 
 /**
@@ -48,13 +81,18 @@ export interface SiteMenuProps {
  * `<dialog>`: the platform supplies Escape, focus containment, and focus
  * return to the burger. The dialog renders closed on the server and opens
  * only in an effect, so the menu stays safe to prerender. Page scroll holds
- * still through chrome.css while the dialog is open.
+ * still through chrome.css while the dialog is open, and the contact dock's
+ * launcher steps aside.
  *
  * A group is an accordion: its label is a control that opens the group's
  * columns under it and closes whichever group was open. Every group starts
  * closed each time the menu opens, the one holding the current page
  * included, so the menu always opens on the short list of entries. A closed
  * group's links stay in the HTML, `inert`.
+ *
+ * Two sheets share every behavior and differ in look alone (`surface`): the
+ * dark one, and the light one with the lockup across the top and the call to
+ * action and the numbers in a foot.
  */
 export function SiteMenu({
 	open,
@@ -66,16 +104,21 @@ export function SiteMenu({
 	currentPath,
 	id,
 	label = "Menu",
+	surface = "dark",
+	brand,
 }: SiteMenuProps) {
+	const light = surface === "light";
 	const [openGroup, setOpenGroup] = useState<number | null>(null);
 	const groupId = useId();
 	const dialogRef = useRef<HTMLDialogElement>(null);
+	const closeRef = useRef<HTMLButtonElement>(null);
 	// Whether the owner already knows the menu is closed. Escape fires cancel
 	// and then close, and a followed link closes the dialog and notifies
 	// directly, so every path runs through reportClosed and reports once.
 	const closedRef = useRef(true);
 	// Only a plain entry wears a number, so the numbers count those alone and
-	// run 01, 02, 03 down the menu whatever groups sit between them.
+	// run 01, 02, 03 down the menu whatever groups sit between them. The light
+	// sheet sets none.
 	const numbers: number[] = [];
 	let counted = 0;
 	for (const link of links) numbers.push(isGroup(link) ? 0 : ++counted);
@@ -86,9 +129,14 @@ export function SiteMenu({
 		closedRef.current = !open;
 		// No group is open when the menu opens, whatever page it opens on.
 		if (open) setOpenGroup(null);
-		if (open && !dialog.open) dialog.showModal();
+		if (open && !dialog.open) {
+			dialog.showModal();
+			// The light sheet's first stop is the lockup's home link, so focus
+			// starts on its close button, where the dark sheet's already does.
+			if (light) closeRef.current?.focus();
+		}
 		if (!open && dialog.open) dialog.close();
-	}, [open]);
+	}, [open, light]);
 
 	const reportClosed = () => {
 		if (closedRef.current) return;
@@ -105,6 +153,135 @@ export function SiteMenu({
 		reportClosed();
 	};
 
+	// The menu's own words for the action, else the bar's.
+	const menuCTA = primaryCTA && { ...primaryCTA, label: primaryCTA.menuLabel ?? primaryCTA.label };
+
+	const closeButton = (
+		<button
+			ref={closeRef}
+			type="button"
+			className="mm-close"
+			aria-label="Close menu"
+			onClick={close}
+		>
+			{light ? (
+				<X size={20} aria-hidden="true" />
+			) : (
+				<>
+					<span />
+					<span />
+				</>
+			)}
+		</button>
+	);
+
+	const entries = links.map((link, i) =>
+		isGroup(link) ? (
+			// biome-ignore lint/suspicious/noArrayIndexKey: a one page site points several entries at one page or anchor, so the place keeps the key unique; the menu never reorders
+			<div className="mm-group" key={i}>
+				<button
+					type="button"
+					className="mm-link mm-group-btn"
+					aria-expanded={openGroup === i}
+					aria-controls={`${groupId}${i}`}
+					onClick={() => setOpenGroup((current) => (current === i ? null : i))}
+				>
+					<span>{link.label}</span>
+					<ChevronDown className="mm-chevron" size={light ? 20 : 22} aria-hidden="true" />
+				</button>
+				<div
+					id={`${groupId}${i}`}
+					className={["mm-group-panel", openGroup === i && "is-open"].filter(Boolean).join(" ")}
+					inert={openGroup !== i}
+				>
+					{link.allLabel && (
+						<a
+							className="mm-group-all"
+							href={link.href}
+							onClick={close}
+							aria-current={currentPath === link.href ? "page" : undefined}
+						>
+							{link.allLabel}
+						</a>
+					)}
+					{panelSections(link).map((section, index) => (
+						<MenuSection
+							// biome-ignore lint/suspicious/noArrayIndexKey: a group's sections never reorder while the menu is open
+							key={index}
+							section={section}
+							currentPath={currentPath}
+							onNavigate={close}
+						/>
+					))}
+				</div>
+			</div>
+		) : (
+			<a
+				// biome-ignore lint/suspicious/noArrayIndexKey: as above, entries may share an href
+				key={i}
+				className="mm-link"
+				href={link.href}
+				onClick={close}
+				aria-current={currentPath === link.href ? "page" : undefined}
+			>
+				<span className="mm-label">{link.label}</span>
+				{!light && <span className="idx">{String(numbers[i]).padStart(2, "0")}</span>}
+			</a>
+		),
+	);
+
+	if (light) {
+		// A card per number the header shows, else the contact block's one phone.
+		const cards: MenuPhone[] = phones ?? (contact?.phone ? [contact.phone] : []);
+		return (
+			<dialog
+				ref={dialogRef}
+				id={id}
+				className="mobile-menu is-light"
+				aria-label={label}
+				onCancel={reportClosed}
+				onClose={reportClosed}
+			>
+				<div className="mm-top">
+					{brand && <BrandLockup brand={brand} surface="light" onClick={close} />}
+					{closeButton}
+				</div>
+				<div className="mm-list">{entries}</div>
+				{(menuCTA || cards.length > 0) && (
+					<div className="mm-foot">
+						{menuCTA && (
+							<Button
+								size="lg"
+								className="mm-cta"
+								href={menuCTA.href}
+								newTab={menuCTA.external}
+								arrow={menuCTA.arrow}
+								onClick={close}
+							>
+								{menuCTA.label}
+							</Button>
+						)}
+						{cards.map((line) => {
+							const words = menuPhoneLabel(line);
+							return (
+								// The words and the number are one name, spaced as they read.
+								<a
+									key={line.e164}
+									className="mm-phone-card"
+									href={`tel:${line.e164}`}
+									aria-label={`${words} ${line.display}`}
+								>
+									<span className="mm-phone-label">{words}</span>
+									<span className="mm-phone-number tel-number">{line.display}</span>
+								</a>
+							);
+						})}
+					</div>
+				)}
+			</dialog>
+		);
+	}
+
 	return (
 		<dialog
 			ref={dialogRef}
@@ -114,67 +291,16 @@ export function SiteMenu({
 			onCancel={reportClosed}
 			onClose={reportClosed}
 		>
-			<button type="button" className="mm-close" aria-label="Close menu" onClick={close}>
-				<span />
-				<span />
-			</button>
-			{links.map((link, i) =>
-				isGroup(link) ? (
-					// biome-ignore lint/suspicious/noArrayIndexKey: a one page site points several entries at one page or anchor, so the place keeps the key unique; the menu never reorders
-					<div className="mm-group" key={i}>
-						<button
-							type="button"
-							className="mm-link mm-group-btn"
-							aria-expanded={openGroup === i}
-							aria-controls={`${groupId}${i}`}
-							onClick={() => setOpenGroup((current) => (current === i ? null : i))}
-						>
-							<span>{link.label}</span>
-							<ChevronDown className="mm-chevron" size={22} aria-hidden="true" />
-						</button>
-						<div
-							id={`${groupId}${i}`}
-							className={["mm-group-panel", openGroup === i && "is-open"].filter(Boolean).join(" ")}
-							inert={openGroup !== i}
-						>
-							{link.allLabel && (
-								<a className="mm-group-all" href={link.href} onClick={close}>
-									{link.allLabel}
-								</a>
-							)}
-							{panelSections(link).map((section, index) => (
-								<MenuSection
-									// biome-ignore lint/suspicious/noArrayIndexKey: a group's sections never reorder while the menu is open
-									key={index}
-									section={section}
-									currentPath={currentPath}
-									onNavigate={close}
-								/>
-							))}
-						</div>
-					</div>
-				) : (
-					<a
-						// biome-ignore lint/suspicious/noArrayIndexKey: as above, entries may share an href
-						key={i}
-						className="mm-link"
-						href={link.href}
-						onClick={close}
-						aria-current={currentPath === link.href ? "page" : undefined}
-					>
-						<span>{link.label}</span>
-						<span className="idx">{String(numbers[i]).padStart(2, "0")}</span>
-					</a>
-				),
-			)}
-			{primaryCTA && (
+			{closeButton}
+			{entries}
+			{menuCTA && (
 				<a
 					className="btn btn-primary btn-lg mm-cta"
-					href={primaryCTA.href}
+					href={menuCTA.href}
 					onClick={close}
-					{...newTabProps(primaryCTA.href, primaryCTA.external)}
+					{...newTabProps(menuCTA.href, menuCTA.external)}
 				>
-					{primaryCTA.label}
+					{menuCTA.label}
 				</a>
 			)}
 			{(contact || phones) && <ContactBlock contact={contact ?? {}} phones={phones} />}
@@ -205,19 +331,19 @@ function MenuSection({
 	// A child may share its parent's href, and two rows may share one, so a
 	// link is keyed by its place, never its href alone.
 	const link = (
-		item: { label: string; href: string; external?: boolean; badge?: string },
+		item: { label: string; href: string; external?: boolean; badge?: string; quiet?: boolean },
 		className: string,
 		key: string,
 	) => (
 		<a
 			key={key}
-			className={className}
+			className={item.quiet ? `${className} is-quiet` : className}
 			href={item.href}
 			onClick={onNavigate}
 			aria-current={currentPath === item.href ? "page" : undefined}
 			{...newTabProps(item.href, item.external)}
 		>
-			{telText(item.href, item.label)}
+			<span className="mm-label">{telText(item.href, item.label)}</span>
 			<Badge text={item.badge} />
 		</a>
 	);
@@ -283,7 +409,7 @@ function ContactBlock({
 				? phones.map((line) => (
 						<span key={line.e164}>
 							<a className="mm-contact-link" href={`tel:${line.e164}`}>
-								{line.label ? line.label.toUpperCase() : "CALL / TEXT"}&nbsp;&nbsp;{line.display}
+								{menuPhoneLabel(line).toUpperCase()}&nbsp;&nbsp;{line.display}
 							</a>
 							<br />
 						</span>
@@ -291,7 +417,7 @@ function ContactBlock({
 				: phone && (
 						<>
 							<a className="mm-contact-link" href={`tel:${phone.e164}`}>
-								CALL / TEXT&nbsp;&nbsp;{phone.display}
+								{menuPhoneLabel(phone).toUpperCase()}&nbsp;&nbsp;{phone.display}
 							</a>
 							<br />
 						</>

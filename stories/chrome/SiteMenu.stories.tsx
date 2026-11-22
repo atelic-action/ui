@@ -2,8 +2,17 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { type CSSProperties, useState } from "react";
 import { expect, fn, type MockInstance, spyOn, waitFor, within } from "storybook/test";
 import { SiteMenu } from "../../src/chrome";
-import { contact, cta, flatLinks, groupedLinks, phones, sectionedLinks } from "../fixtures/bakery";
-import { textLeft } from "../support/geometry";
+import type { NavLink } from "../../src/types";
+import {
+	brand,
+	contact,
+	cta,
+	flatLinks,
+	groupedLinks,
+	phones,
+	sectionedLinks,
+} from "../fixtures/bakery";
+import { expectNoSidewaysScroll, textLeft } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -62,7 +71,7 @@ export const Flat: Story = {
 		await step("the entries, the CTA, and the contact block", async () => {
 			await expect(menu.getByRole("link", { name: /Menu/ })).toBeVisible();
 			await expect(menu.getByRole("link", { name: "Order ahead" })).toBeVisible();
-			await expect(menu.getByRole("link", { name: /CALL \/ TEXT/ })).toHaveAttribute(
+			await expect(menu.getByRole("link", { name: /^CALL\s/ })).toHaveAttribute(
 				"href",
 				"tel:+15555550142",
 			);
@@ -83,12 +92,39 @@ export const Flat: Story = {
 	},
 };
 
-/** The current page's link is marked for a screen reader. */
+/** Whether a link's words wear the 2px underline that marks the current page. */
+function underlined(link: HTMLElement): boolean {
+	// The words sit in the link's first child, so the number or a badge beside them stays clear.
+	const words = link.firstElementChild ?? link;
+	const style = getComputedStyle(words);
+	return style.textDecorationLine.includes("underline") && style.textDecorationThickness === "2px";
+}
+
+/**
+ * The current page's link is marked for a screen reader and for the eye, by
+ * the 2px underline the bar uses; the other entries carry neither.
+ */
 export const CurrentPage: Story = {
 	args: { currentPath: "/cakes" },
 	play: async ({ canvas, userEvent }) => {
 		const menu = within(await openMenu(canvas, userEvent));
-		await expect(menu.getByRole("link", { name: /Cakes/ })).toHaveAttribute("aria-current", "page");
+		const current = menu.getByRole("link", { name: /Cakes/ });
+		await expect(current).toHaveAttribute("aria-current", "page");
+		await expect(underlined(current)).toBe(true);
+		await expect(underlined(menu.getByRole("link", { name: /Visit/ }))).toBe(false);
+	},
+};
+
+/** Inside an open group, the current page's link is underlined too. */
+export const CurrentPageInAGroup: Story = {
+	args: { links: groupedLinks, currentPath: "/menu/buns" },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		const current = menu.getByRole("link", { name: "Morning buns" });
+		await expect(current).toHaveAttribute("aria-current", "page");
+		await expect(underlined(current)).toBe(true);
+		await expect(underlined(menu.getByRole("link", { name: "Croissants" }))).toBe(false);
 	},
 };
 
@@ -385,5 +421,256 @@ export const BadgeAndCTADefaults: Story = {
 		const badge = menu.getByText("Popular");
 		await expect(getComputedStyle(badge).backgroundColor).toBe("rgb(214, 58, 16)");
 		await expect(getComputedStyle(badge).color).toBe("rgb(255, 255, 255)");
+	},
+};
+
+/**
+ * A light sheet's nav: a group with a linked heading, a badge, and nested
+ * children; a group of towns set quiet; and a plain page.
+ */
+const lightLinks: NavLink[] = [
+	sectionedLinks[0] as NavLink,
+	{
+		label: "Where we deliver",
+		href: "/delivery",
+		allLabel: "Every town we deliver to",
+		columns: [
+			{
+				heading: "North of the river",
+				links: [
+					{ label: "Fairhaven", href: "/delivery/fairhaven", quiet: true },
+					{ label: "Old Mill", href: "/delivery/old-mill", quiet: true },
+				],
+			},
+			{
+				heading: "South of the river",
+				links: [{ label: "Riverside", href: "/delivery/riverside", quiet: true }],
+			},
+		],
+	},
+	{ label: "Visit", href: "/visit" },
+];
+
+/** The light sheet's arguments: the bakery's lockup, its two numbers, and the arrow. */
+const light = {
+	surface: "light" as const,
+	brand,
+	links: lightLinks,
+	phones,
+	primaryCTA: { ...cta, arrow: true, menuLabel: "Order ahead for Saturday" },
+};
+
+/**
+ * The light sheet with every group closed: the lockup linking home and a
+ * round close button across the top, the entries as rows under hairlines,
+ * and the foot at the bottom of the screen on the alternate ground, the call
+ * to action across it in its menu words and a card per number.
+ */
+export const Light: Story = {
+	args: light,
+	play: async ({ canvas, userEvent, step }) => {
+		const dialog = await openMenu(canvas, userEvent);
+		const menu = within(dialog);
+		const close = menu.getByRole("button", { name: "Close menu" });
+		const action = menu.getByRole("link", { name: /Order ahead for Saturday/ });
+		const shop = menu.getByRole("link", { name: "The shop (555) 555-0142" });
+		await step("the lockup links home, beside the close button, where focus starts", async () => {
+			const home = menu.getByRole("link", { name: "Kestrel Hollow Bakehouse home" });
+			await expect(home).toHaveAttribute("href", "/");
+			const middle = (element: Element) => {
+				const box = element.getBoundingClientRect();
+				return box.top + box.height / 2;
+			};
+			await expect(Math.abs(middle(home) - middle(close))).toBeLessThan(4);
+			await expect(close).toHaveFocus();
+		});
+		await step("every group starts closed, each a row with its chevron", async () => {
+			for (const name of ["Menu", "Where we deliver"]) {
+				await expect(menu.getByRole("button", { name })).toHaveAttribute("aria-expanded", "false");
+			}
+			await expect(menu.getByRole("link", { name: "Visit" })).toHaveTextContent(/^Visit$/);
+		});
+		await step("the foot sits at the bottom of the screen, the action across it", async () => {
+			const foot = action.parentElement as HTMLElement;
+			// The sheet slides down as it opens, so the foot is measured once it lands.
+			await waitFor(() =>
+				expect(Math.round(foot.getBoundingClientRect().bottom)).toBe(window.innerHeight),
+			);
+			await expect(getComputedStyle(foot).backgroundColor).not.toBe(
+				getComputedStyle(dialog).backgroundColor,
+			);
+			const width = action.getBoundingClientRect().width;
+			await expect(Math.abs(width - shop.getBoundingClientRect().width)).toBeLessThan(1);
+			await expect(action.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+				shop.getBoundingClientRect().top,
+			);
+		});
+		await step("each number is a card that dials, named by its words and the number", async () => {
+			await expect(shop).toHaveAttribute("href", "tel:+15555550142");
+			await expect(menu.getByRole("link", { name: "Wholesale (555) 555-0143" })).toHaveAttribute(
+				"href",
+				"tel:+15555550143",
+			);
+		});
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * One group open on the light sheet: its label and chevron take the
+ * primary's words, its link to the group's own page first, section headings
+ * as small caps labels, a link's children indented under it with their
+ * badges, and the quiet towns in the softer words and the regular weight.
+ * The current page is underlined.
+ */
+export const LightGroupOpen: Story = {
+	args: { ...light, currentPath: "/menu/sourdough/loaf" },
+	play: async ({ canvas, userEvent, step }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		const group = menu.getByRole("button", { name: "Menu" });
+		const closedColor = getComputedStyle(group).color;
+		await step("the group opens, its label taking the primary's words", async () => {
+			await userEvent.click(group);
+			await expect(group).toHaveAttribute("aria-expanded", "true");
+			await expect(getComputedStyle(group).color).not.toBe(closedColor);
+			await expect(menu.getByRole("link", { name: "The whole menu" })).toBeVisible();
+		});
+		await step(
+			"children sit under their parent, badges kept, the current one underlined",
+			async () => {
+				const parent = menu.getByRole("link", { name: /Country sourdough\s*Popular/ });
+				const child = menu.getByRole("link", { name: "Whole loaf" });
+				await expect(textLeft(child)).toBeGreaterThan(textLeft(parent));
+				await expect(menu.getByRole("link", { name: /Half loaf\s*New/ })).toBeVisible();
+				await expect(child).toHaveAttribute("aria-current", "page");
+				await expect(underlined(child)).toBe(true);
+			},
+		);
+		await step("a quiet link reads lighter than a plain one", async () => {
+			await userEvent.click(menu.getByRole("button", { name: "Where we deliver" }));
+			const quiet = menu.getByRole("link", { name: "Fairhaven" });
+			await expect(quiet).toBeVisible();
+			const all = menu.getByRole("link", { name: "Every town we deliver to" });
+			await expect(Number(getComputedStyle(quiet).fontWeight)).toBeLessThan(
+				Number(getComputedStyle(all).fontWeight),
+			);
+		});
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * The light sheet behaves as the dark one does: the page behind it is out
+ * of reach and holds still, Escape closes it and reports once, and focus
+ * returns to the control that opened it.
+ */
+export const LightClosedByEscape: Story = {
+	args: light,
+	play: async ({ canvas, userEvent, args, step }) => {
+		const opener = canvas.getByRole("button", { name: "Open the menu" });
+		const dialog = (await openMenu(canvas, userEvent)) as HTMLDialogElement & {
+			requestClose: () => void;
+		};
+		await step("the page behind is out of reach and holds still", async () => {
+			opener.focus();
+			await expect(opener).not.toHaveFocus();
+			await expect(getComputedStyle(document.documentElement).overflow).toBe("hidden");
+		});
+		await step("Escape closes it, reports once, and focus returns", async () => {
+			dialog.requestClose();
+			await waitFor(() => expect(canvas.queryByRole("dialog")).toBeNull());
+			await expect(args.onClose).toHaveBeenCalledOnce();
+			await expect(opener).toHaveFocus();
+			await expect(getComputedStyle(document.documentElement).overflow).not.toBe("hidden");
+		});
+	},
+};
+
+/** Following the lockup home, as any link, closes the light sheet. */
+export const LightClosedByFollowingALink: Story = {
+	args: light,
+	play: async ({ canvas, userEvent, args }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await userEvent.click(menu.getByRole("link", { name: "Kestrel Hollow Bakehouse home" }));
+		await expect(canvas.queryByRole("dialog")).toBeNull();
+		await expect(args.onClose).toHaveBeenCalledOnce();
+	},
+};
+
+/**
+ * With no header numbers the foot holds the contact block's one phone, its
+ * card saying the neutral "Call", and the call to action in its own words
+ * with no arrow when the site sets none.
+ */
+export const LightOnePhone: Story = {
+	args: { ...light, phones: undefined, contact, primaryCTA: cta },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await expect(menu.getByRole("link", { name: "Call (555) 555-0142" })).toHaveAttribute(
+			"href",
+			"tel:+15555550142",
+		);
+		await expect(menu.getByRole("link", { name: cta.label })).toBeVisible();
+	},
+};
+
+/**
+ * A theme with a dark primary (a deep plum) on the light sheet, a group
+ * open: the open label, the group's own link, and the current page in the
+ * primary's words on the page's ground, and the call to action on its fill,
+ * each holding its contrast in the accessibility check. The theme sits on
+ * its own `.atelic-ui` root, as a site's theme does.
+ */
+export const LightOnDarkPrimary: Story = {
+	args: { ...light, currentPath: "/menu/rye" },
+	decorators: [
+		(Story) => (
+			<div
+				className="atelic-ui"
+				style={
+					{
+						"--primary": "#4a2360",
+						"--primary-fill": "#4a2360",
+						"--primary-ink": "#4a2360",
+						"--primary-deep": "#331747",
+						"--primary-bright": "#d9b8ee",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await userEvent.click(menu.getByRole("button", { name: "Menu" }));
+		await expect(menu.getByRole("link", { name: "Seeded rye" })).toHaveAttribute(
+			"aria-current",
+			"page",
+		);
+		const action = menu.getByRole("link", { name: /Order ahead for Saturday/ });
+		await expect(getComputedStyle(action).backgroundColor).toBe("rgb(74, 35, 96)");
+	},
+};
+
+/** The dark sheet's default: a number with no label says the neutral "CALL". */
+export const DarkNumberWithoutALabel: Story = {
+	args: { contact: { phone: contact.phone } },
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await expect(menu.getByRole("link", { name: /^CALL\s+\(555\) 555-0142$/ })).toBeVisible();
+	},
+};
+
+/** The menu's call to action and a number take their menu words on the dark sheet too. */
+export const DarkMenuLabels: Story = {
+	args: {
+		primaryCTA: { ...cta, menuLabel: "Order ahead for Saturday" },
+		phones: [{ e164: "+15555550142", display: "(555) 555-0142", menuLabel: "Call or text" }],
+	},
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await expect(menu.getByRole("link", { name: "Order ahead for Saturday" })).toBeVisible();
+		await expect(menu.getByRole("link", { name: /^CALL OR TEXT/ })).toBeVisible();
 	},
 };

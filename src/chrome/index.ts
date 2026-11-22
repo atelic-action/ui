@@ -28,6 +28,7 @@ export type {
 	Phone,
 	PostalAddress,
 	SiteLink,
+	SiteMenuSurface,
 	SocialLink,
 } from "../types";
 export { BrandLockup, type BrandLockupProps } from "./BrandLockup";
