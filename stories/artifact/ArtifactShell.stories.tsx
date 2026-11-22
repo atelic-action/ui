@@ -46,7 +46,7 @@ type Story = StoryObj<typeof meta>;
 
 /** The sender's mark the header shows: the lockup draws one per surface and hides the other. */
 function shownMark(lockup: HTMLElement) {
-	const marks = Array.from(lockup.querySelectorAll("img.mark")) as HTMLImageElement[];
+	const marks = Array.from(lockup.querySelectorAll("img")) as HTMLImageElement[];
 	return marks.find((img) => getComputedStyle(img).display !== "none") as HTMLImageElement;
 }
 

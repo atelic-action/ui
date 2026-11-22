@@ -42,9 +42,8 @@ export const Priority: Story = {
 /** The frame holds its aspect ratio whatever the file's own shape. */
 export const Portrait: Story = {
 	args: { aspectRatio: "4/5", maxWidth: "320px" },
-	play: async ({ canvasElement }) => {
-		const frame = canvasElement.querySelector(".imgframe") as HTMLElement;
-		const { width, height } = frame.getBoundingClientRect();
+	play: async ({ canvas }) => {
+		const { width, height } = canvas.getByRole("img").getBoundingClientRect();
 		await expect(Math.abs(width / height - 0.8)).toBeLessThan(0.01);
 	},
 };

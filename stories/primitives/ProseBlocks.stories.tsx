@@ -70,7 +70,8 @@ export const HeadingLevelThree: Story = {
 export const Empty: Story = {
 	args: { blocks: [] },
 	play: async ({ canvasElement }) => {
-		await expect(canvasElement.querySelector(".prose-blocks")?.childElementCount).toBe(0);
+		await expect(canvasElement.textContent?.trim()).toBe("");
+		await expect(canvasElement.querySelector("img, video")).toBeNull();
 	},
 };
 

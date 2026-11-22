@@ -32,9 +32,11 @@ export const Loud: Story = {
 	tags: ["known-issue"],
 	...quietWords,
 
-	play: async ({ canvas, canvasElement }) => {
-		const figures = Array.from(canvasElement.querySelectorAll(".stat")) as HTMLElement[];
-		await expect(new Set(figures.map((f) => f.getBoundingClientRect().top)).size).toBe(1);
+	play: async ({ canvas }) => {
+		const tops = ["3,948", "6", "4.1", "12"].map(
+			(figure) => canvas.getByText(figure).getBoundingClientRect().top,
+		);
+		await expect(new Set(tops).size).toBe(1);
 		await expect(canvas.getAllByRole("img", { name: "Up" }).length).toBeGreaterThanOrEqual(2);
 		await expect(canvas.getAllByRole("img", { name: "Down" }).length).toBeGreaterThanOrEqual(2);
 		await expect(canvas.getByTitle("year over year")).toHaveTextContent("YoY");
@@ -54,8 +56,9 @@ export const OutOf: Story = {
 	parameters: { ...knownIssues("muted-text-contrast") },
 
 	args: { stats: [{ value: "6", outOf: "7", label: "Pages in the index" }] },
-	play: async ({ canvasElement }) => {
-		await expect(canvasElement.querySelector(".stat .num")).toHaveTextContent("6/7");
+	play: async ({ canvas }) => {
+		await expect(canvas.getByText("Pages in the index")).toBeVisible();
+		await expect(canvas.getByText("/7")).toBeVisible();
 	},
 };
 
@@ -90,7 +93,7 @@ export const Single: Story = {
 export const Empty: Story = {
 	args: { stats: [] },
 	play: async ({ canvasElement }) => {
-		await expect(canvasElement.querySelectorAll(".stat")).toHaveLength(0);
+		await expect(canvasElement.textContent?.trim()).toBe("");
 	},
 };
 
@@ -100,12 +103,10 @@ export const Phone: Story = {
 	...quietWords,
 
 	globals: pin("phone"),
-	play: async ({ canvasElement }) => {
-		const [a, b, c] = Array.from(canvasElement.querySelectorAll(".stat")) as HTMLElement[];
-		await expect(a?.getBoundingClientRect().top).toBe(b?.getBoundingClientRect().top);
-		await expect(c?.getBoundingClientRect().top).toBeGreaterThan(
-			a?.getBoundingClientRect().top ?? 0,
-		);
+	play: async ({ canvas }) => {
+		const top = (name: string) => canvas.getByText(name).getBoundingClientRect().top;
+		await expect(top("3,948")).toBe(top("6"));
+		await expect(top("4.1")).toBeGreaterThan(top("3,948"));
 		await expectNoSidewaysScroll();
 	},
 };
