@@ -38,14 +38,16 @@ export function LinkColumns({ columns, className }: LinkColumnsProps) {
 	const withBase = useWithBase();
 	return (
 		<div className={["link-columns", className].filter(Boolean).join(" ")}>
-			{columns.map((column) => (
-				<div className="lc-col" key={column.heading}>
+			{columns.map((column, place) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: two columns may share a heading, so the place keeps the key unique; columns never reorder
+				<div className="lc-col" key={`${place} ${column.heading}`}>
 					<h3 className="lc-head">
 						{column.href ? <a href={withBase(column.href)}>{column.heading}</a> : column.heading}
 					</h3>
 					<ul>
-						{column.links.map((link) => (
-							<li key={link.href}>
+						{column.links.map((link, at) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: a column may link one page twice, so the place keeps the key unique; links never reorder
+							<li key={`${at} ${link.href}`}>
 								<a
 									className="lc-link"
 									href={withBase(link.href)}

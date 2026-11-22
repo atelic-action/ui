@@ -100,7 +100,7 @@ export function UserMenu({ user, onLogout, collapsed = false }: UserMenuProps) {
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={onLogout} className="cursor-pointer text-destructive">
+				<DropdownMenuItem onClick={onLogout} className="cursor-pointer text-destructive-ink">
 					<LogOut className="mr-2 h-4 w-4" />
 					<span>Log out</span>
 				</DropdownMenuItem>

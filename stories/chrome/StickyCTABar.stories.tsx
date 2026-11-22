@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor } from "storybook/test";
+import { useState } from "react";
+import { expect, fn, waitFor } from "storybook/test";
 import { StickyCTABar } from "../../src/chrome";
 import { cta, phone } from "../fixtures/bakery";
 import { PageBehind } from "../support/page";
@@ -94,5 +95,49 @@ export const LongLabel: Story = {
 	args: {
 		fromTop: true,
 		primaryCTA: { label: "Order a cake for Saturday pickup", href: "/order" },
+	},
+};
+
+const first = fn();
+const second = fn();
+
+/** A caller that swaps the bar's listener at a button press. */
+function SwappingCaller() {
+	const [listener, setListener] = useState(() => first);
+	return (
+		<>
+			<button type="button" onClick={() => setListener(() => second)}>
+				Swap the listener
+			</button>
+			<StickyCTABar primaryCTA={cta} phone={phone} fromTop onSpaceChange={listener} />
+		</>
+	);
+}
+
+/**
+ * A caller that swaps listeners: the one that was told the bar's height
+ * gives its space back, and the new one is told the height, at the bar's
+ * next measure (a resize), so no stale padding outlives the swap.
+ */
+export const SwappedListener: Story = {
+	beforeEach: () => {
+		first.mockClear();
+		second.mockClear();
+	},
+	render: () => <SwappingCaller />,
+	play: async ({ canvas, userEvent, step }) => {
+		await step("the first listener hears the bar's height", async () => {
+			await waitFor(() => expect(first).toHaveBeenLastCalledWith(expect.any(Number)));
+			await expect(first.mock.lastCall?.[0]).toBeGreaterThan(0);
+		});
+		await step(
+			"after the swap, the first gives its space back and the second takes it",
+			async () => {
+				await userEvent.click(canvas.getByRole("button", { name: "Swap the listener" }));
+				window.dispatchEvent(new Event("resize"));
+				await waitFor(() => expect(first).toHaveBeenLastCalledWith(0));
+				await expect(second.mock.lastCall?.[0]).toBeGreaterThan(0);
+			},
+		);
 	},
 };

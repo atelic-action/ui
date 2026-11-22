@@ -160,7 +160,10 @@ export const Controls: Story = {
 	},
 };
 
-/** Before the footage exists: the shot brief as a labeled block, at the height asked for. */
+/**
+ * Before the footage exists: the shot brief as a labeled block, at the height
+ * asked for, and the clip never requested, on screen or not.
+ */
 export const Placeholder: Story = {
 	args: {
 		poster: undefined,
@@ -171,6 +174,10 @@ export const Placeholder: Story = {
 		const block = canvas.getByRole("img", { name: "The ovens warming before the first bake" });
 		await expect(block).toHaveTextContent("Video: the ovens at dawn, one slow pan, no people");
 		await expect(Math.round(block.getBoundingClientRect().height)).toBe(220);
+		// On screen from the start, so a band that had footage would fetch it now.
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		await expect(block.parentElement?.querySelector("video") ?? null).toBeNull();
+		await expect(play).not.toHaveBeenCalled();
 	},
 };
 

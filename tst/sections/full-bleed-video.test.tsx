@@ -106,6 +106,18 @@ describe("FullBleedVideo", () => {
 		);
 	});
 
+	it("never requests the clip when it has only a shot brief, even on screen", () => {
+		stubMotion(false);
+		const { container } = render(
+			<FullBleedVideo src="/clip.mp4" label="Crews at work" placeholder="Crew on a ridge, wide" />,
+		);
+		act(() => nearing());
+		act(() => observe([{ isIntersecting: true }]));
+		expect(container.querySelector("video")).toBeNull();
+		expect(container.querySelector("source")).toBeNull();
+		expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+	});
+
 	it("offers a pause button only when asked, which holds the video still", () => {
 		stubMotion(false);
 		const { container, rerender } = render(

@@ -66,15 +66,19 @@ export function StickyCTABar({
 		const bar = barRef.current;
 		if (!bar || !listening) return;
 		let last = -1;
-		// The listener last told a height, so the cleanup can hand it back its
-		// space even when the cleanup runs because that listener was taken
-		// away (spaceRef is already empty by then).
+		// The listener last told a height: the one holding the space, which
+		// the cleanup hands back. Never the caller's latest, which after a
+		// swap is a listener that was never told anything.
 		let heard: ((pixels: number) => void) | undefined;
 		const report = () => {
 			const next = show ? bar.offsetHeight : 0;
-			if (next === last) return;
+			const listener = spaceRef.current;
+			if (next === last && listener === heard) return;
+			// A caller swapped listeners since the last report: the old one
+			// gives its space back before the new one is told the height.
+			if (heard && heard !== listener) heard(0);
 			last = next;
-			heard = spaceRef.current;
+			heard = listener;
 			heard?.(next);
 		};
 		report();
@@ -84,9 +88,9 @@ export function StickyCTABar({
 		return () => {
 			sizes?.disconnect();
 			window.removeEventListener("resize", report);
-			// A final 0 on unmount, on hiding, and when the listener goes, so no
-			// foot padding outlives the bar.
-			(spaceRef.current ?? heard)?.(0);
+			// A final 0 on unmount, on hiding, and when the listener goes, to the
+			// listener that holds the space, so no foot padding outlives the bar.
+			heard?.(0);
 		};
 	}, [show, listening]);
 

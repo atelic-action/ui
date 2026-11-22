@@ -178,3 +178,28 @@ export const LongestContent: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/** One page linked twice in a column, under two names: both links stand. */
+export const SamePageTwice: Story = {
+	args: {
+		columns: [
+			{
+				heading: "Fairhaven",
+				links: [
+					{ label: "Alder Street", href: "/areas/alder-street" },
+					{ label: "The old mill blocks", href: "/areas/alder-street" },
+				],
+			},
+		],
+	},
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("link", { name: "Alder Street" })).toHaveAttribute(
+			"href",
+			"/areas/alder-street",
+		);
+		await expect(canvas.getByRole("link", { name: "The old mill blocks" })).toHaveAttribute(
+			"href",
+			"/areas/alder-street",
+		);
+	},
+};

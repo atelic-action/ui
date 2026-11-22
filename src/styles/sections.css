@@ -1142,6 +1142,14 @@
 			display: inline-flex;
 		}
 	}
+	/* The contact dock holds the screen's bottom right corner, where the cue
+	   sits, so on a page that wears the dock the cue moves to the middle of
+	   the hero's foot. A page without the dock keeps it at the right. */
+	.atelic-ui:has(.contact-dock) .hero-scroll {
+		right: auto;
+		left: 50%;
+		margin-left: -23px;
+	}
 
 	/* The split layout: the copy and its actions on the primary field on one
 	   side, the photo on the other, at the height the copy needs. The copy

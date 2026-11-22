@@ -22,9 +22,9 @@ export function PageError({ message, title = "Error", className }: PageErrorProp
 	return (
 		<Card role="alert" className={cn("border-destructive/50", className)}>
 			<CardContent className="flex items-center gap-3 py-6">
-				<AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive" aria-hidden="true" />
+				<AlertCircle className="h-5 w-5 flex-shrink-0 text-destructive-ink" aria-hidden="true" />
 				<div>
-					<p className="font-medium text-destructive">{title}</p>
+					<p className="font-medium text-destructive-ink">{title}</p>
 					<p className="text-sm text-muted-foreground">{message}</p>
 				</div>
 			</CardContent>

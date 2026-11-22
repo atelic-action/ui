@@ -32,6 +32,19 @@ describe("LinkColumns", () => {
 			"/areas/north",
 		);
 	});
+
+	it("holds two links to one page in a column, each its own row", () => {
+		const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+		const column = (labels: string[]) => [
+			{ heading: "North", links: labels.map((label) => ({ label, href: "/areas/north" })) },
+		];
+		const { rerender } = render(<LinkColumns columns={column(["Northtown", "The north end"])} />);
+		expect(screen.getAllByRole("link")).toHaveLength(2);
+		rerender(<LinkColumns columns={column(["The north end"])} />);
+		expect(screen.getAllByRole("link").map((link) => link.textContent)).toEqual(["The north end"]);
+		expect(errors).not.toHaveBeenCalled();
+		errors.mockRestore();
+	});
 });
 
 describe("CalloutPanel", () => {
