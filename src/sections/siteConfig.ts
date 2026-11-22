@@ -40,8 +40,8 @@ export interface NavItem {
 /**
  * How much room the sections leave above and below themselves, set on the
  * `.atelic-ui` root as `data-density`. `default` is the trades site rhythm
- * (`--section-space` runs 36 to 64px), `comfortable` the roomier one every
- * site had before 8.0.0 (56 to 120px), and `compact` tighter still (24 to
+ * (`--section-space` runs 36 to 64px), `comfortable` the roomier one sites
+ * had before 8.0.0, approximately (56 to 120px), and `compact` tighter still (24 to
  * 44px). README.md, Density, holds the companion values.
  */
 export type Density = "default" | "comfortable" | "compact";

@@ -170,11 +170,12 @@ export function ContactDock({
 		<div
 			ref={rootRef}
 			className={["contact-dock", open && "is-open"].filter(Boolean).join(" ")}
-			// The phone's open panel is a sheet at the screen's foot that reserves room
-			// for the launcher there, so the launcher drops to the corner while open.
+			// While open the dock sits in the corner: the phone's panel is a sheet that
+			// reserves room for the launcher there, and a desktop panel opens upward
+			// and would run off the top if the dock were riding above the footer.
 			style={{
 				right: place.inset,
-				bottom: open && place.inset === 16 ? place.inset : place.bottom,
+				bottom: open ? place.inset : place.bottom,
 			}}
 		>
 			<section

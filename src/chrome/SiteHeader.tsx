@@ -84,8 +84,8 @@ function phoneName(phone: HeaderPhone): string {
  * A nav group opens its panel on a mouse hover or a keyboard focus, and a
  * click on its control pins it open (a second click closes it). Escape, a
  * click outside the header, the pointer leaving the header, and focus
- * leaving the group close an unpinned panel; Escape and an outside click
- * close a pinned one too. Left and right arrows walk the bar, the down arrow
+ * leaving the group close an unpinned panel; Escape, an outside click, and
+ * focus leaving the group close a pinned one too. Left and right arrows walk the bar, the down arrow
  * steps into a panel, and up and down walk the panel's links. A closed panel
  * stays in the HTML, `inert`, so its links are crawlable and out of the tab
  * order.

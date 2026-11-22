@@ -61,7 +61,7 @@ export interface SiteShellProps {
 	/**
 	 * The section spacing, set on the `.atelic-ui` root as `data-density`.
 	 * Defaults to `site.density`, then `default`; `comfortable` is the roomier
-	 * spacing every site had before 8.0.0.
+	 * spacing sites had before 8.0.0, close to it though not to the pixel.
 	 */
 	density?: Density;
 	/**
