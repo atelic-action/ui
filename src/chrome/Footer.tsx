@@ -1,5 +1,5 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import type { ComponentProps, CSSProperties } from "react";
+import type { ComponentProps, CSSProperties, Ref } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import type { Brand, FooterColumn, FooterColumnLink, Phone, PostalAddress } from "../types";
 import { ClosingBar } from "./ClosingBar";
@@ -157,6 +157,8 @@ export interface FooterProps {
 	 * prints either way.
 	 */
 	credit?: boolean;
+	/** The footer element, for a caller that measures it (`SiteShell` hands it to the contact dock). */
+	ref?: Ref<HTMLElement>;
 }
 
 /**
@@ -175,9 +177,13 @@ export function Footer({
 	attribution,
 	note,
 	credit = true,
+	ref,
 }: FooterProps) {
 	const { name, logo } = brand;
-	const wordmark = logo?.wordmark ?? name;
+	// The footer always names the business when it draws no image.
+	const wordmark = logo?.wordmark === false ? name : (logo?.wordmark ?? name);
+	// The band is dark, so the mark cut for a dark surface leads.
+	const mark = logo?.onDark ?? logo?.src ?? logo?.onLight;
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
 	const addressLines = address && (
 		<>
@@ -193,7 +199,7 @@ export function Footer({
 
 	return (
 		<>
-			<footer className="footer">
+			<footer ref={ref} className="footer">
 				<div className="wrap">
 					<div
 						className="footer-grid"
@@ -208,8 +214,8 @@ export function Footer({
 									{wordmark}
 									{logo.run && <span className="wordmark-run" aria-hidden="true" />}
 								</p>
-							) : logo?.src ? (
-								<img src={logo.src} alt={logo.alt ?? name} />
+							) : mark ? (
+								<img src={mark} alt={logo?.alt ?? name} />
 							) : (
 								<p className="footer-wordmark">
 									{wordmark}

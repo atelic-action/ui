@@ -26,8 +26,11 @@ export interface FullBleedVideoProps {
 /**
  * A silent, looping video band that runs edge to edge. The poster (the
  * first frame) shows at once as a plain picture, so the page never waits on
- * the video; the video loads in the background and starts as soon as it
- * is on screen (an iPhone buffers nothing until play is asked for), fading in over the picture, and only while it is on screen.
+ * the video. The video element, and with it the clip's download, arrives
+ * only once the band comes within a screen's height of the viewport,
+ * wherever on the page it sits; it then starts as soon as it is on screen
+ * (an iPhone buffers nothing until play is asked for), fading in over the
+ * picture, and plays only while it is on screen.
  * Under `prefers-reduced-motion` it never loads and stays on the poster.
  * Muted, looping, and inline, with no controls unless asked for.
  */
@@ -45,9 +48,13 @@ export function FullBleedVideo({
 }: FullBleedVideoProps) {
 	const withBase = useWithBase();
 	const ref = useRef<HTMLVideoElement>(null);
+	const bandRef = useRef<HTMLElement>(null);
 	// Off until the effect has asked the reader's device: a reduced motion
 	// reader never gets the video's source at all.
 	const [load, setLoad] = useState(false);
+	// Whether the band has come near the viewport, which is when the clip is
+	// fetched. Once near, the video stays, so scrolling back never fetches again.
+	const [near, setNear] = useState(false);
 	const [visible, setVisible] = useState(false);
 	const [playing, setPlaying] = useState(false);
 	// A pause the reader asked for holds until they ask to play again.
@@ -59,8 +66,27 @@ export function FullBleedVideo({
 	}, []);
 
 	useEffect(() => {
+		const band = bandRef.current;
+		if (!load || !band) return;
+		if (typeof IntersectionObserver === "undefined") {
+			setNear(true);
+			return;
+		}
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((entry) => entry.isIntersecting)) return;
+				setNear(true);
+				observer.disconnect();
+			},
+			{ rootMargin: "100% 0px" },
+		);
+		observer.observe(band);
+		return () => observer.disconnect();
+	}, [load]);
+
+	useEffect(() => {
 		const video = ref.current;
-		if (!load || !video) return;
+		if (!load || !near || !video) return;
 		// React sets muted as a property and never renders the attribute, and an
 		// iPhone browser's autoplay check reads the attribute, so set both.
 		video.muted = true;
@@ -75,7 +101,7 @@ export function FullBleedVideo({
 		);
 		observer.observe(video);
 		return () => observer.disconnect();
-	}, [load]);
+	}, [load, near]);
 
 	useEffect(() => {
 		const video = ref.current;
@@ -93,7 +119,7 @@ export function FullBleedVideo({
 	}, [visible, held]);
 
 	return (
-		<section className="fbv" id={id} style={{ height }}>
+		<section ref={bandRef} className="fbv" id={id} style={{ height }}>
 			{poster ? (
 				<img className="fbv-poster" src={withBase(poster)} alt={label} decoding="async" />
 			) : (
@@ -101,7 +127,7 @@ export function FullBleedVideo({
 					{placeholder ?? label}
 				</div>
 			)}
-			{load && (
+			{load && near && (
 				<video
 					ref={ref}
 					className={["fbv-video", playing && "is-on"].filter(Boolean).join(" ")}
@@ -117,7 +143,7 @@ export function FullBleedVideo({
 					<source src={withBase(src)} type={type} />
 				</video>
 			)}
-			{controls && load && (
+			{controls && load && near && (
 				<button
 					type="button"
 					className="fbv-toggle"

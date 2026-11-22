@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SectionHeading } from "../primitives";
 import { useWithBase } from "../routing/BasePathProvider";
+import type { Surface } from "./siteConfig";
 
 export interface ProfileItem {
 	name: string;
@@ -24,7 +25,7 @@ export interface ProfileCardsProps {
 	lead?: ReactNode;
 	items: ProfileItem[];
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /**

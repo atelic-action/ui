@@ -304,6 +304,15 @@ body {
 	border-radius: 12px;
 	background: var(--surface);
 }
+/* A frame that runs the page's full width, at a wrap as wide as a site's,
+   so the open mega menu shows at the size a site gives it. */
+.atelic-ui .gallery-pane-wide {
+	--max-width: 1360px;
+	width: 100vw;
+	margin-left: calc(50% - 50vw);
+	border-radius: 0;
+	border-inline: 0;
+}
 .atelic-ui .gallery-frame-page {
 	padding: calc(var(--nav-height) + 24px) 24px 24px;
 	color: var(--ink-soft);

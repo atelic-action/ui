@@ -14,12 +14,14 @@ export interface ProcessStepsProps {
 	image?: { src: string; alt: string };
 	/** Placeholder label rendered in the media frame until a real image exists. */
 	placeholder?: string;
+	/** The band's id, so a nav entry or a jump link can land on it. */
+	id?: string;
 }
 
 /** Dark band with numbered steps and supporting media. */
-export function ProcessSteps({ eyebrow, title, steps, image, placeholder }: ProcessStepsProps) {
+export function ProcessSteps({ eyebrow, title, steps, image, placeholder, id }: ProcessStepsProps) {
 	return (
-		<section className="section process">
+		<section className="section process" id={id}>
 			<div className="wrap process-grid">
 				<div>
 					{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}

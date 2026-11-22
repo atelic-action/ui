@@ -15,21 +15,84 @@
    `--primary` and `--card` hold something else (shadcn keeps bare HSL
    channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
+	/* ---- Token defaults: every token the package's sheets read beyond the
+	   theme contract, each at the value the sheets used before it was a
+	   token, so a theme sets one only to change it. They sit on
+	   :where(.atelic-ui), which weighs nothing, so a theme's own .atelic-ui
+	   rule, base.css's density settings, and any band that restates one all
+	   win. Every consumer imports this sheet (an app imports it alone), so
+	   this is the one place they are declared; README.md, Tokens, documents
+	   each. A raw color anywhere else in a layered sheet fails
+	   tst/no-raw-colors.test.ts. ---- */
+	:where(.atelic-ui) {
+		/* Anything set on the primary color: a primary button's words, the
+		   dock's head, the split hero's copy, a badge. */
+		--on-primary: #fff;
+		/* Anything set on a dark band or over a photograph: the footer's
+		   headings, the transparent header, a hero's headline. */
+		--on-dark: #fff;
+		/* A chip's words on a dark band, a warm off white. */
+		--on-dark-chip: #efe7da;
+		/* Quiet body text on a dark band, such as a process step's line. */
+		--on-dark-quiet: rgb(248 244 237 / 0.74);
+		/* Pure shadow: a lightbox's backdrop, a caption's wash, a headline's
+		   text shadow, a darker press on a dark button. */
+		--shade: #000;
+		/* The warm wash a hero lays over its photograph. */
+		--scrim: #140f0b;
+		/* The hatching of a placeholder before photography exists. */
+		--placeholder-ink: #8a7c68;
+		/* The light bar's hover behind a nav entry. */
+		--hover-tint: rgb(33 28 23 / 0.06);
+		/* The footer rating's stars when the theme sets no --star-fill. */
+		--review-gold: #f5b301;
+		/* The four grades, A to D: green, yellow, orange, red, whatever the
+		   brand is, each as words, a rule, and a ground. */
+		--grade-a: #1b7f3b;
+		--grade-a-line: #1b7f3b;
+		--grade-a-bg: #eaf6ee;
+		--grade-b: #9a6b00;
+		--grade-b-line: #c99a1a;
+		--grade-b-bg: #fdf5dc;
+		--grade-c: #a84500;
+		--grade-c-line: #e8650a;
+		--grade-c-bg: #fff0e3;
+		--grade-d: #b3261e;
+		--grade-d-line: #b3261e;
+		--grade-d-bg: #fdecea;
+		/* The weights every sheet asks for, by name. A font kit with only 400
+		   and 700 maps each to one of those (medium to 400, semibold and
+		   heavy to 700, say), so the browser synthesizes nothing. Strong is
+		   the report components' in between weight for a label that has to
+		   stand out of semibold text; light is a stat row's large figure. */
+		--weight-light: 300;
+		--weight-regular: 400;
+		--weight-medium: 500;
+		--weight-semibold: 600;
+		--weight-strong: 650;
+		--weight-bold: 700;
+		--weight-heavy: 800;
+		/* The header mark's height; its width follows the image's ratio. */
+		--brand-mark-height: 30px;
+		/* The section spacing where no base sheet sets it (an app importing
+		   this sheet alone): the roomier rhythm sites had before 8.0.0.
+		   base.css's density settings outrank this. */
+		--section-space: clamp(56px, 9vw, 120px);
+		--block-gap: 44px;
+		--card-min: 240px;
+	}
+
 	/* The opener's padding is a share of the section spacing (base.css), with
 	   the spacing it had before 8.0.0 where no base sheet sets the token. */
 	.atelic-ui .not-found-hero {
-		padding-top: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.72);
-		padding-bottom: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.5);
+		padding-top: calc(var(--section-space) * 0.72);
+		padding-bottom: calc(var(--section-space) * 0.5);
 	}
 	/* SiteShell's main clears the fixed header for the page. A shell that does
 	   not (ArtifactShell, whose documents clear it in their own sheet) leaves
 	   the 404 to clear it here, or its heading sits under the header. */
 	.atelic-ui main:not(.clears-nav) .not-found-hero {
-		padding-top: calc(
-			var(--nav-height, 72px) +
-			var(--section-space, clamp(56px, 9vw, 120px)) *
-			0.72
-		);
+		padding-top: calc(var(--nav-height, 72px) + var(--section-space) * 0.72);
 	}
 	.atelic-ui .not-found-hero h1 {
 		margin: 16px 0 0;
@@ -96,6 +159,10 @@
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		}
 	}
+	/* A stat's track may be narrower than its figure (rule 5). */
+	.atelic-ui .stat {
+		min-width: 0;
+	}
 	.atelic-ui .stat-row.is-center .stat {
 		text-align: center;
 	}
@@ -105,19 +172,25 @@
 		align-items: center;
 		gap: 0.12em;
 		font-size: clamp(2.2rem, 5vw, 3rem);
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		letter-spacing: -0.03em;
 		color: var(--tone, var(--ui-primary, var(--primary)));
 		line-height: 1;
 		font-variant-numeric: tabular-nums;
 	}
-	/* The figure with its denominator and unit never breaks; the change
-	   beside it is the one piece that may wrap under it on a narrow phone. */
+	/* The figure with its denominator and unit stays one group: they are its
+	   flex items, and a flex line never wraps. A figure given as words
+	   ("Since 1981") wraps between them inside its own item instead of
+	   pushing the page wider than a phone, and a single word too long for
+	   the column breaks. The change beside it is the one piece that may wrap
+	   under it on a narrow phone. */
 	.atelic-ui .stat-figure {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.12em;
-		white-space: nowrap;
+		min-width: 0;
+		max-width: 100%;
+		overflow-wrap: break-word;
 	}
 	.atelic-ui .stat-row.is-center .stat .num {
 		justify-content: center;
@@ -129,13 +202,13 @@
 	}
 	.atelic-ui .stat .lbl {
 		font-size: 0.95rem;
-		font-weight: 650;
+		font-weight: var(--weight-strong);
 		color: var(--ink);
 		margin-top: 8px;
 	}
 	.atelic-ui .stat-period {
 		margin-left: 0.5em;
-		font-weight: 400;
+		font-weight: var(--weight-regular);
 		color: var(--neutral-500);
 	}
 	.atelic-ui .stat-delta {
@@ -153,7 +226,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 2px;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		color: var(--tone);
 	}
 	.atelic-ui .stat-delta-change svg {
@@ -175,7 +248,7 @@
 		margin-left: 0.2em;
 		margin-bottom: 0.08em;
 		font-size: 0.42em;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		letter-spacing: 0;
 		color: var(--neutral-500);
 	}
@@ -185,7 +258,7 @@
 		align-self: flex-end;
 		margin-bottom: 0.08em;
 		font-size: 0.42em;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		letter-spacing: 0;
 		color: var(--neutral-500);
 	}
@@ -200,7 +273,7 @@
 		margin-left: 0.4em;
 		margin-bottom: 0.14em;
 		font-size: 0.34em;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		letter-spacing: 0;
 		color: var(--tone, var(--neutral-500));
 	}
@@ -234,7 +307,7 @@
 	.atelic-ui .stat-row.is-quiet .stat .num {
 		align-items: baseline;
 		gap: 4px;
-		font: 300 var(--stat-size, 28px) / 1 var(--font-sans);
+		font: var(--weight-light) var(--stat-size, 28px) / 1 var(--font-sans);
 		/* After the shorthand, which would otherwise reset it. */
 		font-variant-numeric: tabular-nums;
 		letter-spacing: -0.02em;
@@ -252,11 +325,11 @@
 		align-self: baseline;
 		margin-bottom: 0;
 		margin-left: 0;
-		font: 500 12px / 1 var(--font-mono);
+		font: var(--weight-medium) 12px / 1 var(--font-mono);
 	}
 	.atelic-ui .stat-row.is-quiet .stat .lbl {
 		margin-top: 7px;
-		font: 500 10px / 1.2 var(--font-sans);
+		font: var(--weight-medium) 10px / 1.2 var(--font-sans);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--neutral-500);
@@ -290,7 +363,7 @@
 		background: transparent;
 		padding: 0;
 		text-align: left;
-		font: 500 17px / 1 var(--font-sans);
+		font: var(--weight-medium) 17px / 1 var(--font-sans);
 		letter-spacing: -0.01em;
 		color: var(--ink);
 		cursor: pointer;
@@ -355,7 +428,7 @@
 		min-width: 0;
 	}
 	.atelic-ui .disclosure-label {
-		font-weight: 650;
+		font-weight: var(--weight-strong);
 		color: var(--ink);
 	}
 	.atelic-ui .disclosure-summary {
@@ -416,7 +489,7 @@
 		border: 0;
 		border-bottom: 2px solid transparent;
 		background: transparent;
-		font: 500 16px / 1.2 var(--font-sans);
+		font: var(--weight-medium) 16px / 1.2 var(--font-sans);
 		color: var(--ink-soft);
 		/* Stays on one line until a label is wider than the row, then wraps. */
 		max-width: 100%;
@@ -489,7 +562,7 @@
 		flex: none;
 	}
 	.atelic-ui .callout-title {
-		font-weight: 650;
+		font-weight: var(--weight-strong);
 		color: var(--ink);
 		text-wrap: pretty;
 	}
@@ -532,7 +605,7 @@
 	}
 	.atelic-ui .checklist-label {
 		display: block;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		color: var(--ink);
 	}
 	.atelic-ui .checklist li[data-tone="bad"] .checklist-label {
@@ -584,7 +657,7 @@
 		border-radius: 999px;
 		font-family: var(--font-mono);
 		font-size: 7pt;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--ink-soft);
@@ -595,24 +668,24 @@
 	/* The orange sits between the yellow's hue and the red's so the four
 	   stay apart on paper, and its letter clears AA on its own tint. */
 	.atelic-ui .op-grade[data-grade="a"] {
-		color: #1b7f3b;
-		border-color: #1b7f3b;
-		background: #eaf6ee;
+		color: var(--grade-a);
+		border-color: var(--grade-a-line);
+		background: var(--grade-a-bg);
 	}
 	.atelic-ui .op-grade[data-grade="b"] {
-		color: #9a6b00;
-		border-color: #c99a1a;
-		background: #fdf5dc;
+		color: var(--grade-b);
+		border-color: var(--grade-b-line);
+		background: var(--grade-b-bg);
 	}
 	.atelic-ui .op-grade[data-grade="c"] {
-		color: #a84500;
-		border-color: #e8650a;
-		background: #fff0e3;
+		color: var(--grade-c);
+		border-color: var(--grade-c-line);
+		background: var(--grade-c-bg);
 	}
 	.atelic-ui .op-grade[data-grade="d"] {
-		color: #b3261e;
-		border-color: #b3261e;
-		background: #fdecea;
+		color: var(--grade-d);
+		border-color: var(--grade-d-line);
+		background: var(--grade-d-bg);
 	}
 	@media screen and (max-width: 899px) {
 		.atelic-ui .op-grade {
@@ -637,7 +710,7 @@
 		margin: 0;
 		font-family: var(--font-mono);
 		font-size: 13px;
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--neutral-500);
@@ -689,7 +762,7 @@
 		background: var(--surface-alt, var(--neutral-100));
 		font-family: var(--font-mono);
 		font-size: 11.5px;
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--ink-soft);
@@ -747,7 +820,7 @@
 	.atelic-ui .rc-name {
 		grid-column: 2;
 		font-size: 16px;
-		font-weight: 650;
+		font-weight: var(--weight-strong);
 		letter-spacing: -0.01em;
 		line-height: 1.35;
 		color: var(--ink);
@@ -871,7 +944,7 @@
 		gap: 7px;
 	}
 	.atelic-ui .chart-key b {
-		font-weight: 650;
+		font-weight: var(--weight-strong);
 		color: var(--ink);
 		font-variant-numeric: tabular-nums;
 	}
@@ -974,7 +1047,7 @@
 		font-family: var(--font-sans);
 		font-size: 0.8rem;
 		letter-spacing: 0;
-		font-weight: 650;
+		font-weight: var(--weight-strong);
 		color: var(--ink);
 		font-variant-numeric: tabular-nums;
 	}
@@ -1022,7 +1095,7 @@
 		box-shadow: 0 0 0 1.5px var(--tone-fill);
 	}
 	.atelic-ui .threshold-scale-value {
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-variant-numeric: tabular-nums;
 		color: var(--tone);
 		text-align: right;
@@ -1036,7 +1109,7 @@
 	}
 	.atelic-ui .threshold-scale-axis > span {
 		color: var(--tone);
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -1094,11 +1167,11 @@
 		border: 1px solid var(--neutral-200);
 		border-radius: var(--radius-sm);
 		background: var(--ui-card, var(--card));
-		box-shadow: var(--shadow-md, 0 6px 20px rgb(0 0 0 / 0.1));
+		box-shadow: var(--shadow-md, 0 6px 20px color-mix(in srgb, var(--shade) 10%, transparent));
 		color: var(--ink);
 		font-family: var(--font-sans, inherit);
 		font-size: 0.8rem;
-		font-weight: 400;
+		font-weight: var(--weight-regular);
 		line-height: 1.45;
 		letter-spacing: normal;
 		text-transform: none;
@@ -1179,7 +1252,7 @@
 	.atelic-ui .data-table tbody th {
 		width: 100%;
 		text-align: left;
-		font-weight: 400;
+		font-weight: var(--weight-regular);
 	}
 	.atelic-ui .data-table td {
 		display: inline-flex;
@@ -1249,7 +1322,7 @@
 			border-bottom: 1px solid var(--neutral-100);
 			text-align: left;
 			vertical-align: middle;
-			font-weight: 400;
+			font-weight: var(--weight-regular);
 		}
 		.atelic-ui .data-table tbody th {
 			width: auto;

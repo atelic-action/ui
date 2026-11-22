@@ -8,7 +8,6 @@
 // The provider, the config, and the frame
 export { AppProvider, type AppProviderProps } from "./AppProvider";
 export { AuthGuard } from "./AuthGuard";
-export { CardErrorBoundary } from "./CardErrorBoundary";
 export { type AppConfig, getAppConfig } from "./config";
 export { configureApp } from "./configure";
 export {

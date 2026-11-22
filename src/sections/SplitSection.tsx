@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Surface } from "./siteConfig";
 
 export interface SplitSectionProps {
 	left: ReactNode;
@@ -13,7 +14,7 @@ export interface SplitSectionProps {
 	ratio?: "even" | "narrow-first" | "media";
 	align?: "start" | "center";
 	/** Section background band. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 	/** Compact top padding for sections directly under a page hero. */
 	tightTop?: boolean;
 	/**

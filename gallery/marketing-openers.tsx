@@ -1,11 +1,9 @@
 import { ImageFrame, QuoteCard, StarRow } from "../src/primitives";
 import {
-	CTABanner,
 	CTASection,
 	FullBleedVideo,
 	Hero,
 	LogoMarquee,
-	MediaBand,
 	PageHero,
 	PricingBand,
 	ProofStrip,
@@ -191,35 +189,6 @@ export function MarketingOpeners() {
 					label="The ovens warming before the first bake"
 					placeholder="Video: the ovens at dawn, one slow pan, no people"
 					height="220px"
-				/>
-			</Specimen>
-
-			<Specimen
-				id="media-band"
-				name="MediaBand"
-				lead="A plain full bleed image, edge to edge, cropped from the center."
-			>
-				<MediaBand
-					image={{ src: "/images/bakery-band.svg", alt: "Loaves cooling on a rack" }}
-					aspectRatio="8/3"
-				/>
-			</Specimen>
-
-			<Specimen
-				id="cta-banner"
-				name="CTABanner"
-				lead="A mid page banner behind a directional wash; shown here on its token gradient, before any photography exists."
-			>
-				<CTABanner
-					eyebrow="Cakes to order"
-					title={
-						<>
-							A birthday deserves a <em className="serif">real</em> cake.
-						</>
-					}
-					lead="Two days' notice for most cakes, a week for anything tiered."
-					primaryCTA={{ label: "Order a cake", href: "#cta-banner" }}
-					secondaryCTA={{ label: "See flavors", href: "#cta-banner" }}
 				/>
 			</Specimen>
 

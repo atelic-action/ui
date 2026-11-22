@@ -13,7 +13,7 @@ import type {
 	FooterColumn,
 	HeaderPhone,
 	NavFeature,
-	NavGroupColumn,
+	NavPanelSection,
 	SiteLink,
 	SocialLink,
 } from "../types";
@@ -29,8 +29,11 @@ export type { SiteLink, SocialLink };
 export interface NavItem {
 	label: string;
 	to: string;
-	/** The group's link columns, each a heading over its links. */
-	columns?: NavGroupColumn[];
+	/**
+	 * The group's panel, left to right: link columns (a heading over its
+	 * links), and the picture, icon row, and card sections beside them.
+	 */
+	columns?: NavPanelSection[];
 	/** The card beside a group's columns on a desktop. */
 	feature?: NavFeature;
 	/** The words of a link to `to` set first inside the group, e.g. "All services". */
@@ -45,6 +48,12 @@ export interface NavItem {
  * 44px). README.md, Density, holds the companion values.
  */
 export type Density = "default" | "comfortable" | "compact";
+
+/**
+ * The band a section sits on: the page's own `--surface`, or the alternate
+ * `--surface-alt`. Every section that takes `surface` takes this one type.
+ */
+export type Surface = "default" | "alt";
 
 export interface CTA {
 	label: string;
@@ -148,7 +157,20 @@ export interface SiteConfig {
 	 * (e.g. a lowercase brand treatment); `run` appends the trailing fade bar
 	 * after the wordmark (the Eyebrow's signature, worn by the brand itself).
 	 */
-	logo: { src?: string; alt: string; tile?: string; wordmark?: string; run?: boolean };
+	/**
+	 * The mark. `onLight` and `onDark` are the brand's own artwork for each
+	 * surface, drawn as given; `src` alone is a light mark the header tints
+	 * to ink on a light bar. `wordmark: false` drops the live name beside it.
+	 */
+	logo: {
+		src?: string;
+		alt: string;
+		tile?: string;
+		wordmark?: string | false;
+		run?: boolean;
+		onLight?: string;
+		onDark?: string;
+	};
 	/** Google Fonts stylesheet URL for the theme's font stack. */
 	fontsHref?: string;
 	nav: NavItem[];

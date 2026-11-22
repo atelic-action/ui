@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Eyebrow, Lead } from "../primitives";
 import { useWithBase } from "../routing/BasePathProvider";
+import type { Surface } from "./siteConfig";
 
 export interface GalleryPhoto {
 	src?: string;
@@ -20,7 +21,7 @@ export interface GalleryProps {
 	photos: GalleryPhoto[];
 	/** Tiles per row at desktop width (default 3). */
 	columns?: 2 | 3;
-	surface?: "default" | "alt";
+	surface?: Surface;
 	/** Small note under the grid, e.g. photo provenance. */
 	footnote?: ReactNode;
 }

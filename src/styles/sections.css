@@ -16,11 +16,11 @@
 	}
 
 	.atelic-ui .bi-item {
-		border-top: 1px solid var(--hairline, rgb(0 0 0 / 10%));
+		border-top: 1px solid var(--hairline, color-mix(in srgb, var(--shade) 10%, transparent));
 	}
 
 	.atelic-ui .bi-item:last-child {
-		border-bottom: 1px solid var(--hairline, rgb(0 0 0 / 10%));
+		border-bottom: 1px solid var(--hairline, color-mix(in srgb, var(--shade) 10%, transparent));
 	}
 
 	/* The whole row is the target: a small archive should not make anyone aim
@@ -114,83 +114,13 @@
 	}
 
 	.atelic-ui .bp-author {
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		color: var(--neutral-700);
 	}
 
 	.atelic-ui .bp-updated::before {
 		content: "·";
 		margin-right: 14px;
-	}
-
-	/* ---- CTABanner (cta-banner.css) ---- */
-	/* Mid-page full-bleed CTA banner: image backdrop, overlaid copy and actions. */
-	.atelic-ui .cta-banner {
-		position: relative;
-		overflow: hidden;
-	}
-	.atelic-ui .cta-banner-media {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-	/* Token gradient backdrop when no image is provided (mirrors .hero-media-fallback). */
-	.atelic-ui .cta-banner-fallback {
-		background: linear-gradient(
-			160deg,
-			var(--surface-dark) 0%,
-			var(--primary-deep) 70%,
-			var(--primary) 110%
-		);
-	}
-	.atelic-ui .cta-banner-wash {
-		position: absolute;
-		inset: 0;
-	}
-	.atelic-ui .cta-banner.dark .cta-banner-wash {
-		background: linear-gradient(
-			90deg,
-			rgba(20, 15, 11, 0.85) 0%,
-			rgba(20, 15, 11, 0.62) 48%,
-			rgba(20, 15, 11, 0.22) 100%
-		);
-	}
-	.atelic-ui .cta-banner.light .cta-banner-wash {
-		background: linear-gradient(
-			90deg,
-			color-mix(in srgb, var(--surface) 94%, transparent) 0%,
-			color-mix(in srgb, var(--surface) 72%, transparent) 48%,
-			color-mix(in srgb, var(--surface) 18%, transparent) 100%
-		);
-	}
-	.atelic-ui .cta-banner .wrap {
-		position: relative;
-		z-index: 1;
-		/* A shade under the section spacing, as it always sat (110 of 120). */
-		padding-block: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.92);
-	}
-	.atelic-ui .cta-banner-content {
-		max-width: 620px;
-	}
-	.atelic-ui .cta-banner-content h2 {
-		margin: 10px 0 0;
-	}
-	.atelic-ui .cta-banner-content .lead {
-		margin-top: 16px;
-	}
-	.atelic-ui .cta-banner.dark .cta-banner-content {
-		color: #fff;
-	}
-	.atelic-ui .cta-banner.dark .cta-banner-content .lead {
-		color: rgba(255, 255, 255, 0.88);
-	}
-	.atelic-ui .cta-banner-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 12px;
-		margin-top: 28px;
 	}
 
 	/* ---- CTASection (cta-section.css) ---- */
@@ -240,7 +170,7 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 		color: var(--neutral-500);
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		text-align: left;
 		padding: 10px var(--cmp-gutter) 10px 0;
 		border-bottom: 1px solid var(--hairline-strong);
@@ -255,7 +185,7 @@
 	}
 	.atelic-ui .cmp-table tbody th {
 		color: var(--ink);
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 	}
 	/* A linked row label reads as the label, with a quiet underline for the
 	   link, so the column of names stays a column of names. */
@@ -302,12 +232,12 @@
 	}
 	.atelic-ui .cmp-grade.is-letter {
 		font-size: 1.15rem;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		min-width: 1.1em;
 	}
 	.atelic-ui .cmp-grade.is-note {
 		font-size: 0.72rem;
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 	}
 	.atelic-ui .cmp-grade.is-moved {
 		color: var(--primary);
@@ -408,7 +338,7 @@
 		color: var(--secondary);
 		padding: 20px 22px;
 		border-radius: var(--radius-md);
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		margin-bottom: 18px;
 	}
 	.atelic-ui .form-error {
@@ -417,7 +347,7 @@
 		color: var(--primary-deep);
 		padding: 20px 22px;
 		border-radius: var(--radius-md);
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		margin-bottom: 18px;
 	}
 	/* Honeypot: off-canvas rather than display:none so naive bots still fill it. */
@@ -437,7 +367,7 @@
 		padding: clamp(28px, 5vw, 40px);
 	}
 	.atelic-ui .contact-info-card h3 {
-		color: #fff;
+		color: var(--on-dark);
 	}
 	.atelic-ui .contact-info-card .ci-rows {
 		margin-top: 18px;
@@ -447,7 +377,7 @@
 		gap: 14px;
 		align-items: flex-start;
 		padding: 16px 0;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		border-bottom: 1px solid color-mix(in srgb, var(--on-dark) 10%, transparent);
 	}
 	.atelic-ui .contact-info-card .ci-row.last {
 		border-bottom: none;
@@ -462,8 +392,8 @@
 		padding-top: 3px;
 	}
 	.atelic-ui .contact-info-card a {
-		color: #fff;
-		font-weight: 600;
+		color: var(--on-dark);
+		font-weight: var(--weight-semibold);
 	}
 	.atelic-ui .contact-info-card .ci-row .v {
 		color: var(--neutral-200);
@@ -503,7 +433,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
 		color: var(--primary);
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		padding-top: 2px;
 	}
 	.atelic-ui .cert-list strong {
@@ -512,81 +442,6 @@
 	.atelic-ui .cert-list small {
 		color: var(--neutral-600);
 		font-size: 0.9rem;
-	}
-
-	/* ---- DeviceShowcase (device-showcase.css) ---- */
-	/* Device mockups: a desktop browser window with a phone overlapping its
-	   lower-left. Tokens only. */
-	.atelic-ui .devices {
-		position: relative;
-		width: 100%;
-		max-width: 640px;
-		padding-bottom: 42px;
-		padding-left: 40px;
-		perspective: 1600px;
-	}
-
-	/* Desktop browser window */
-	.atelic-ui .dv-desktop {
-		border-radius: 14px;
-		overflow: hidden;
-		background: var(--card);
-		box-shadow: var(--shadow-lg);
-		border: 1px solid var(--hairline-strong);
-	}
-	.atelic-ui .dv-bar {
-		height: 34px;
-		background: var(--surface-alt);
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		padding: 0 14px;
-		border-bottom: 1px solid var(--hairline-strong);
-	}
-	.atelic-ui .dv-bar i {
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: var(--neutral-300);
-	}
-	.atelic-ui .dv-screen {
-		line-height: 0;
-	}
-	.atelic-ui .dv-screen img {
-		width: 100%;
-		height: auto;
-		display: block;
-	}
-
-	/* Phone, overlapping the lower-left corner, tilted out for a 3D feel. */
-	.atelic-ui .dv-phone {
-		position: absolute;
-		left: 0;
-		bottom: 0;
-		width: 30%;
-		max-width: 172px;
-		border-radius: 26px;
-		border: 5px solid var(--ink);
-		background: var(--ink);
-		overflow: hidden;
-		line-height: 0;
-		transform: rotateY(-20deg) rotateX(3deg) rotateZ(-1deg);
-		transform-origin: center center;
-		box-shadow: -22px 26px 46px rgba(20, 16, 12, 0.4);
-	}
-	.atelic-ui .dv-phone img {
-		width: 100%;
-		height: auto;
-		display: block;
-		border-radius: 21px;
-	}
-
-	@media (max-width: 900px) {
-		.atelic-ui .devices {
-			max-width: 460px;
-			margin-inline: auto;
-			padding-left: 20px;
-		}
 	}
 
 	/* ---- ExpandList (expand-list.css) ---- */
@@ -614,14 +469,14 @@
 	.atelic-ui .xl-num {
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		color: var(--primary);
 		letter-spacing: 0.08em;
 	}
 	.atelic-ui .xl-title {
 		flex: 1;
 		min-width: 0;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		font-size: 1.02rem;
 	}
 	.atelic-ui .xl-chevron {
@@ -681,7 +536,7 @@
 	.atelic-ui .jump-rail a {
 		flex: 0 0 auto;
 		padding: 15px 0 13px;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		font-size: 0.95rem;
 		color: var(--ink-soft);
 		border-bottom: 2px solid transparent;
@@ -699,8 +554,8 @@
 
 	/* ---- PageHero (page-hero.css) ---- */
 	.atelic-ui .page-hero {
-		padding-top: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.72);
-		padding-bottom: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.5);
+		padding-top: calc(var(--section-space) * 0.72);
+		padding-bottom: calc(var(--section-space) * 0.5);
 		background: var(--surface-alt);
 	}
 	.atelic-ui .page-hero.surface-default {
@@ -787,7 +642,7 @@
 	.atelic-ui .faq-browse-all {
 		display: inline-block;
 		margin-top: 16px;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 0.95rem;
 		color: var(--primary);
 	}
@@ -881,7 +736,7 @@
 	.atelic-ui .faq-row-q {
 		flex: 1;
 		text-align: left;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 1.02rem;
 		letter-spacing: -0.01em;
 		padding: 20px 0 20px 22px;
@@ -909,9 +764,12 @@
 		width: 16px;
 		height: 16px;
 	}
+	/* A wash of the text color, not the alternate band's own color, so the
+	   hover shows on whatever ground the card is set on, alternate bands
+	   and a theme whose card matches them included. */
 	.atelic-ui .faq-icon-btn:hover {
 		color: var(--ink);
-		background: var(--surface-alt);
+		background: color-mix(in srgb, var(--ink) 8%, transparent);
 	}
 	.atelic-ui .faq-link-btn {
 		color: var(--primary);
@@ -937,7 +795,7 @@
 		align-items: center;
 		gap: 6px;
 		margin-top: 14px;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 0.95rem;
 		color: var(--primary);
 	}
@@ -948,7 +806,7 @@
 		align-items: center;
 		gap: 6px;
 		margin-top: 20px;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 0.95rem;
 		color: var(--primary);
 	}
@@ -969,7 +827,7 @@
 	}
 	.atelic-ui .faq-empty a {
 		color: var(--primary);
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 	}
 
 	/* ---- FeatureDetail (feature-detail.css) ---- */
@@ -978,7 +836,7 @@
 		display: grid;
 		gap: 36px;
 		align-items: center;
-		padding-block: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.6);
+		padding-block: calc(var(--section-space) * 0.6);
 		border-top: 1px solid var(--neutral-200);
 		scroll-margin-top: calc(var(--nav-height) + 20px);
 	}
@@ -1018,7 +876,7 @@
 	.atelic-ui .feature-grid {
 		display: grid;
 		gap: 16px;
-		margin-top: var(--block-gap, 44px);
+		margin-top: var(--block-gap);
 		grid-template-columns: 1fr;
 	}
 	@media (min-width: 560px) {
@@ -1041,7 +899,7 @@
 		display: flex;
 		flex-direction: column;
 		/* The least a card stands, by density: 240px comfortable, none tighter. */
-		min-height: var(--card-min, 240px);
+		min-height: var(--card-min);
 		transition:
 			transform 0.25s ease,
 			box-shadow 0.25s ease;
@@ -1066,7 +924,7 @@
 	}
 	.atelic-ui .feature-link {
 		margin-top: 18px;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		color: var(--primary);
 		font-size: 0.95rem;
 		display: inline-flex;
@@ -1090,7 +948,7 @@
 	.atelic-ui .gallery-grid {
 		list-style: none;
 		/* Its old 34px against the block gap's 44px, kept in proportion. */
-		margin: calc(var(--block-gap, 44px) * 0.77) 0 0;
+		margin: calc(var(--block-gap) * 0.77) 0 0;
 		padding: 0;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -1133,7 +991,7 @@
 	   `.ph`'s own regardless of bundle order. */
 	.atelic-ui .gallery-frame.ph {
 		border-radius: var(--radius-md);
-		box-shadow: inset 0 0 0 1px rgba(138, 124, 104, 0.2);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--placeholder-ink) 20%, transparent);
 	}
 
 	.atelic-ui .gallery-item figcaption {
@@ -1155,7 +1013,7 @@
 		min-height: 100svh;
 		display: flex;
 		align-items: flex-end;
-		color: #fff;
+		color: var(--on-dark);
 		overflow: hidden;
 	}
 	.atelic-ui .hero-media {
@@ -1184,10 +1042,10 @@
 		inset: 0;
 		background: linear-gradient(
 			180deg,
-			rgba(20, 15, 11, 0.45) 0%,
-			rgba(20, 15, 11, 0.12) 30%,
-			rgba(20, 15, 11, 0.55) 78%,
-			rgba(20, 15, 11, 0.86) 100%
+			color-mix(in srgb, var(--scrim) 45%, transparent) 0%,
+			color-mix(in srgb, var(--scrim) 12%, transparent) 30%,
+			color-mix(in srgb, var(--scrim) 55%, transparent) 78%,
+			color-mix(in srgb, var(--scrim) 86%, transparent) 100%
 		);
 	}
 	.atelic-ui .hero-content {
@@ -1197,9 +1055,9 @@
 		padding-top: calc(var(--nav-height) + 30px);
 	}
 	.atelic-ui .hero h1 {
-		color: #fff;
+		color: var(--on-dark);
 		margin: 18px 0 0;
-		text-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+		text-shadow: 0 2px 30px color-mix(in srgb, var(--shade) 25%, transparent);
 	}
 	.atelic-ui .hero h1 .serif {
 		color: var(--primary-bright);
@@ -1208,7 +1066,7 @@
 		font-size: clamp(1.05rem, 2.2vw, 1.35rem);
 		max-width: 52ch;
 		margin-top: 22px;
-		color: rgba(255, 255, 255, 0.92);
+		color: color-mix(in srgb, var(--on-dark) 92%, transparent);
 		line-height: 1.55;
 	}
 	.atelic-ui .hero-trust {
@@ -1223,7 +1081,7 @@
 	}
 	.atelic-ui .hero-trust strong {
 		font-size: 1.7rem;
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		letter-spacing: -0.02em;
 		line-height: 1;
 	}
@@ -1231,7 +1089,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
 		letter-spacing: 0.04em;
-		color: rgba(255, 255, 255, 0.72);
+		color: color-mix(in srgb, var(--on-dark) 72%, transparent);
 		margin-top: 5px;
 		text-transform: uppercase;
 	}
@@ -1247,8 +1105,8 @@
 		align-items: center;
 		justify-content: center;
 		font-size: 1.1rem;
-		color: #fff;
-		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.4);
+		color: var(--on-dark);
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-dark) 40%, transparent);
 		animation: bob 2.4s ease-in-out infinite;
 	}
 	@keyframes bob {
@@ -1268,10 +1126,12 @@
 
 	/* The split layout: the copy and its actions on the primary field on one
 	   side, the photo on the other, at the height the copy needs. The copy
-	   column holds half the site's width against the page's edge, so the
-	   words line up with the sections under it; a phone stacks the photo
-	   first. */
+	   starts where a .wrap's content starts at any width, so the words line
+	   up with the sections under it: the hero is a size container, and the
+	   copy's edge is half of what the hero has beyond the site's width, plus
+	   the gutter. A phone stacks the photo first. */
 	.atelic-ui .hero.is-split {
+		container-type: inline-size;
 		min-height: 0;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -1282,18 +1142,19 @@
 		display: flex;
 		align-items: center;
 		background: var(--primary);
-		color: #fff;
+		color: var(--on-primary);
 	}
 	.atelic-ui .hero-split-inner {
+		--hero-split-edge: max(var(--gutter), calc((100cqw - var(--max-width)) / 2 + var(--gutter)));
 		width: 100%;
-		padding: var(--section-space, clamp(56px, 9vw, 120px)) var(--gutter);
+		padding: var(--section-space) var(--hero-split-edge);
 	}
 	/* From 900px the copy sits beside the photo under the transparent header;
 	   below it the photo stacks first and takes the header, so the copy needs
 	   no clearance. */
 	@media (min-width: 900px) {
 		.atelic-ui main:not(.clears-nav) .hero.is-split .hero-split-inner {
-			padding-top: calc(var(--nav-height, 72px) + var(--section-space, clamp(56px, 9vw, 120px)));
+			padding-top: calc(var(--nav-height, 72px) + var(--section-space));
 		}
 	}
 	.atelic-ui .hero.is-split h1 {
@@ -1303,7 +1164,7 @@
 		text-shadow: none;
 	}
 	.atelic-ui .hero.is-split .hero-sub {
-		color: color-mix(in srgb, #fff 92%, transparent);
+		color: color-mix(in srgb, var(--on-primary) 92%, transparent);
 	}
 	.atelic-ui .hero.is-split .cta-row {
 		margin-top: 26px;
@@ -1327,8 +1188,7 @@
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
 		}
 		.atelic-ui .hero-split-inner {
-			max-width: calc(var(--max-width) / 2.15);
-			margin-left: auto;
+			padding-right: var(--gutter);
 		}
 		.atelic-ui .hero-split-media {
 			order: 0;
@@ -1383,7 +1243,7 @@
 		color: var(--neutral-500);
 	}
 	.atelic-ui .hours-row .day {
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 	}
 	.atelic-ui .hours-row .time {
 		font-family: var(--font-mono);
@@ -1439,7 +1299,7 @@
 	}
 	.atelic-ui .map-facade-address {
 		font-size: 15px;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		color: var(--ink);
 		max-width: 24ch;
 	}
@@ -1490,9 +1350,9 @@
 		gap: 6px;
 		font-family: var(--font-sans);
 		font-size: 0.82rem;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		line-height: 1;
-		color: #fff;
+		color: var(--on-primary);
 		background: var(--primary);
 		padding: 9px 14px;
 		border-radius: var(--radius-pill);
@@ -1631,7 +1491,7 @@
 		align-items: center;
 		gap: 6px;
 		font-size: 0.9rem;
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		color: var(--ink);
 	}
 	.atelic-ui .loc-links a:hover {
@@ -1648,9 +1508,9 @@
 		padding-block: 22px;
 	}
 	.atelic-ui .creds .chip {
-		background: rgba(255, 255, 255, 0.06);
-		color: #efe7da;
-		box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+		background: color-mix(in srgb, var(--on-dark) 6%, transparent);
+		color: var(--on-dark-chip);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 14%, transparent);
 	}
 	.atelic-ui .marquee {
 		overflow: hidden;
@@ -1675,19 +1535,6 @@
 			width: auto;
 			justify-content: center;
 		}
-	}
-
-	/* ---- MediaBand (media-band.css) ---- */
-	/* Full-bleed image band: spans the viewport, crops from center. */
-	.atelic-ui .media-band {
-		width: 100%;
-		max-height: 72vh;
-		overflow: hidden;
-	}
-	.atelic-ui .media-band img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
 	}
 
 	/* ---- FullBleedVideo (full-bleed-video.css) ---- */
@@ -1750,14 +1597,14 @@
 		gap: 24px 28px;
 	}
 	.atelic-ui * + .link-columns {
-		margin-top: var(--block-gap, 44px);
+		margin-top: var(--block-gap);
 	}
 	.atelic-ui .lc-col {
 		min-width: 0;
 	}
 	.atelic-ui .link-columns .lc-head {
 		font-size: 1.1rem;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		letter-spacing: 0;
 		padding-bottom: 8px;
 		margin-bottom: 6px;
@@ -1802,10 +1649,10 @@
 		padding: clamp(20px, 3vw, 36px);
 		border-radius: var(--radius-lg);
 		background: var(--primary);
-		color: #fff;
+		color: var(--on-primary);
 	}
 	.atelic-ui * + .callout-panel {
-		margin-top: var(--block-gap, 44px);
+		margin-top: var(--block-gap);
 	}
 	.atelic-ui .callout-panel li {
 		display: grid;
@@ -1817,7 +1664,7 @@
 	.atelic-ui .callout-panel-title {
 		font-family: var(--font-condensed, var(--font-heading, var(--font-sans)));
 		font-size: clamp(1.35rem, 2.15vw, 1.9rem);
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		line-height: 1.04;
 		letter-spacing: -0.01em;
 		text-wrap: balance;
@@ -1825,7 +1672,7 @@
 	.atelic-ui .callout-panel-sub {
 		font-size: clamp(0.85rem, 1.1vw, 1rem);
 		line-height: 1.3;
-		color: color-mix(in srgb, #fff 88%, transparent);
+		color: color-mix(in srgb, var(--on-primary) 88%, transparent);
 	}
 	@media (min-width: 1000px) {
 		.atelic-ui .callout-panel {
@@ -1834,134 +1681,23 @@
 		}
 	}
 
-	/* ---- MenuList (menu-list.css) ---- */
-	/* A priced menu group, plus the two layouts that stack groups on a
-	   location or menu page. */
-	.atelic-ui .menu-list h3 {
-		margin: 0 0 6px;
-		font-size: 16px;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--ink);
-		border-bottom: 2px solid var(--primary);
-		padding-bottom: 8px;
-	}
-	.atelic-ui .menu-list ul {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-	.atelic-ui .menu-list li {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		gap: 20px;
-		padding: 8px 0;
-		border-bottom: 1px dotted var(--neutral-300);
-	}
-	.atelic-ui .ml-item {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-	.atelic-ui .ml-name {
-		font-weight: 600;
-		font-size: 14px;
-		color: var(--ink);
-	}
-	.atelic-ui .ml-note {
-		color: var(--neutral-500);
-		font-size: 12px;
-		line-height: 1.45;
-	}
-	.atelic-ui .ml-price {
-		color: var(--primary);
-		font-weight: 600;
-		font-size: 13px;
-		white-space: nowrap;
-		text-align: right;
-	}
-	.atelic-ui .ml-foot {
-		color: var(--neutral-500);
-		font-size: 12px;
-		font-style: italic;
-		margin: 8px 0 0;
-	}
-	.atelic-ui .menu-stack {
-		display: flex;
-		flex-direction: column;
-		gap: 36px;
-	}
-	/* Two column menu layout for a fuller board; collapses to one column on
-	   phones. Each column track zeroes its min-width so a long dish note can't
-	   force the grid wider than the viewport. */
-	.atelic-ui .menu-cols {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 36px 56px;
-		margin-top: 40px;
-	}
-	@media (max-width: 720px) {
-		.atelic-ui .menu-cols {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	/* ---- PressQuotes (press-quotes.css) ---- */
-	.atelic-ui .press-quotes {
-		list-style: none;
-		margin: 8px 0 0;
-		padding: 0;
-	}
-	.atelic-ui .press-quotes li {
-		border-bottom: 1px solid var(--hairline-strong);
-	}
-	.atelic-ui .press-quotes .pq-row {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-		padding: 18px 0;
-		color: inherit;
-		text-decoration: none;
-	}
-	.atelic-ui .press-quotes .pq-quote {
-		font-family: var(--font-serif);
-		font-size: 1.2rem;
-		font-weight: 600;
-		font-style: italic;
-		transition: color 0.15s ease;
-	}
-	.atelic-ui .press-quotes a.pq-row:hover .pq-quote,
-	.atelic-ui .press-quotes a.pq-row:focus-visible .pq-quote {
-		color: var(--primary);
-	}
-	.atelic-ui .press-quotes .pq-src {
-		font-family: var(--font-mono);
-		font-size: 0.78rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--neutral-600);
-	}
-
 	/* ---- PricingBand (pricing-band.css) ---- */
 	/* Brand-colored pricing band. */
 	.atelic-ui .price-band {
 		background: var(--primary);
-		color: #fff;
+		color: var(--on-primary);
 		/* Under the section spacing, as it always sat (100 of 120). */
-		padding-block: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.84);
+		padding-block: calc(var(--section-space) * 0.84);
 	}
 	.atelic-ui .price-band h2 {
-		color: #fff;
+		color: var(--on-primary);
 	}
 	.atelic-ui .price-band .price-lead {
-		color: rgba(255, 255, 255, 0.82);
+		color: color-mix(in srgb, var(--on-primary) 82%, transparent);
 		max-width: 48ch;
 	}
 	.atelic-ui .price-band .eyebrow.on-dark {
-		color: #fff;
+		color: var(--on-primary);
 	}
 	.atelic-ui .price-inner {
 		display: grid;
@@ -1975,8 +1711,8 @@
 		}
 	}
 	.atelic-ui .price-card {
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.22);
+		background: color-mix(in srgb, var(--on-primary) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--on-primary) 22%, transparent);
 		border-radius: var(--radius-xl);
 		padding: 38px 32px;
 		text-align: center;
@@ -1988,14 +1724,14 @@
 	}
 	.atelic-ui .price-fig {
 		font-size: clamp(3.4rem, 9vw, 5rem);
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		letter-spacing: -0.03em;
 		line-height: 1;
 	}
 	.atelic-ui .price-unit {
 		font-family: var(--font-mono);
 		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.8);
+		color: color-mix(in srgb, var(--on-primary) 80%, transparent);
 		letter-spacing: 0.06em;
 		margin-bottom: 20px;
 	}
@@ -2004,7 +1740,7 @@
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
 		letter-spacing: 0.04em;
-		color: rgba(255, 255, 255, 0.85);
+		color: color-mix(in srgb, var(--on-primary) 85%, transparent);
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}
@@ -2031,7 +1767,7 @@
 	}
 	.atelic-ui .cost-card .big {
 		font-size: clamp(4rem, 12vw, 6rem);
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		letter-spacing: -0.04em;
 		line-height: 1;
 		margin: 10px 0 2px;
@@ -2065,7 +1801,7 @@
 		color: var(--surface);
 	}
 	.atelic-ui .process h2 {
-		color: #fff;
+		color: var(--on-dark);
 	}
 	.atelic-ui .process-grid {
 		display: grid;
@@ -2099,18 +1835,18 @@
 		display: grid;
 		place-items: center;
 		font-family: var(--font-mono);
-		font-weight: 600;
+		font-weight: var(--weight-semibold);
 		font-size: 1.05rem;
 		color: var(--primary-bright);
-		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.22);
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-dark) 22%, transparent);
 	}
 	.atelic-ui .steps h4 {
-		color: #fff;
+		color: var(--on-dark);
 		margin-bottom: 6px;
 		font-size: 1.25rem;
 	}
 	.atelic-ui .steps p {
-		color: rgba(248, 244, 237, 0.74);
+		color: var(--on-dark-quiet);
 		max-width: 46ch;
 	}
 	.atelic-ui .process-media .imgframe,
@@ -2129,7 +1865,7 @@
 	.atelic-ui .profile-cards {
 		display: grid;
 		gap: 16px;
-		margin-top: var(--block-gap, 44px);
+		margin-top: var(--block-gap);
 		grid-template-columns: 1fr;
 	}
 	@media (min-width: 900px) {
@@ -2210,7 +1946,7 @@
 	.atelic-ui .profile-link {
 		margin-top: auto;
 		padding-top: 14px;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 0.92rem;
 		color: var(--primary);
 	}
@@ -2313,13 +2049,13 @@
 	}
 	.atelic-ui .rslider-label-before {
 		left: 14px;
-		background: rgba(20, 16, 12, 0.62);
-		color: #fff;
+		background: color-mix(in srgb, var(--scrim) 62%, transparent);
+		color: var(--on-dark);
 	}
 	.atelic-ui .rslider-label-after {
 		right: 14px;
 		background: var(--primary);
-		color: #fff;
+		color: var(--on-primary);
 	}
 	.atelic-ui .rslider-line {
 		position: absolute;
@@ -2327,8 +2063,8 @@
 		bottom: 0;
 		width: 3px;
 		margin-left: -1.5px;
-		background: #fff;
-		box-shadow: 0 0 0 1px rgba(20, 16, 12, 0.15);
+		background: var(--on-dark);
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--scrim) 15%, transparent);
 		z-index: 4;
 		pointer-events: none;
 	}
@@ -2341,7 +2077,7 @@
 		height: 46px;
 		border-radius: var(--radius-pill);
 		border: none;
-		background: #fff;
+		background: var(--on-dark);
 		color: var(--ink);
 		box-shadow: var(--shadow-md);
 		display: grid;
@@ -2547,7 +2283,7 @@
 		color: var(--primary);
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		letter-spacing: 0.04em;
 	}
 	.atelic-ui .rw-name-block {
@@ -2557,7 +2293,7 @@
 		min-width: 0;
 	}
 	.atelic-ui .rw-name {
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 0.92rem;
 		color: var(--ink);
 	}
@@ -2596,14 +2332,14 @@
 	}
 	.atelic-ui .rvc-score-num {
 		font-size: clamp(4.2rem, 8vw, 6.6rem);
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		line-height: 0.95;
 		letter-spacing: -0.045em;
 		color: var(--ink);
 	}
 	.atelic-ui .rvc-score-out {
 		font-size: clamp(1.2rem, 2vw, 1.7rem);
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		color: var(--neutral-300);
 	}
 	.atelic-ui .rvc-rating {
@@ -2667,7 +2403,7 @@
 	}
 	.atelic-ui .rvc-stat-value {
 		font-size: 1.35rem;
-		font-weight: 800;
+		font-weight: var(--weight-heavy);
 		letter-spacing: -0.02em;
 		color: var(--ink);
 	}
@@ -2724,7 +2460,7 @@
 	.atelic-ui .rvc-quote {
 		margin: 0;
 		font-size: clamp(1.15rem, 1.5vw, 1.42rem);
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		line-height: 1.5;
 		letter-spacing: -0.01em;
 		color: var(--ink);
@@ -2756,7 +2492,7 @@
 		margin-bottom: clamp(18px, 2.2vw, 24px);
 	}
 	.atelic-ui .rvc-name {
-		font-weight: 700;
+		font-weight: var(--weight-bold);
 		font-size: 1rem;
 		color: var(--ink);
 	}
@@ -2852,73 +2588,6 @@
 	.atelic-ui .rvc-dot:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 3px;
-	}
-
-	/* ---- SocialStrip (social-strip.css) ---- */
-	/* SocialStrip — a static grid of the business's own social photos. */
-
-	/* A 2x2 anchor photo plus four square tiles fills the 4-column grid exactly;
-	   pass five photos for a clean rectangle. */
-	.atelic-ui .social-strip {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 14px;
-		margin-top: 34px;
-	}
-
-	.atelic-ui .social-strip .social-tile:first-child {
-		grid-column: span 2;
-		grid-row: span 2;
-	}
-
-	@media (min-width: 760px) {
-		.atelic-ui .social-strip {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-		}
-	}
-
-	.atelic-ui .social-tile {
-		display: block;
-		position: relative;
-		overflow: hidden;
-		border-radius: var(--radius-md);
-		background: var(--surface-inset);
-		aspect-ratio: 1;
-		box-shadow: var(--shadow-sm);
-		transition:
-			transform 180ms ease,
-			box-shadow 180ms ease;
-	}
-
-	.atelic-ui .social-tile img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		display: block;
-	}
-
-	.atelic-ui .social-tile:hover,
-	.atelic-ui .social-tile:focus-visible {
-		transform: translateY(-3px);
-		box-shadow: var(--shadow-md);
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .social-tile,
-		.atelic-ui .social-tile:hover {
-			transition: none;
-			transform: none;
-		}
-	}
-
-	.atelic-ui .social-follow {
-		display: flex;
-		justify-content: center;
-		margin-top: 30px;
-	}
-
-	.atelic-ui .social-follow .btn svg {
-		margin-right: 8px;
 	}
 
 	/* ---- SplitSection (split-section.css) ---- */

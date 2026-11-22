@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { Copyright } from "./Copyright";
 import { Credit } from "./Credit";
 
@@ -15,6 +15,8 @@ export interface ClosingBarProps {
 	 * it; anything else renders as given.
 	 */
 	right?: ReactNode;
+	/** The bar's element, for a caller that measures it. */
+	ref?: Ref<HTMLDivElement>;
 }
 
 /**
@@ -25,7 +27,7 @@ export interface ClosingBarProps {
  * sent document closes the way a site does); with nothing on the left, the
  * right side sits centered.
  */
-export function ClosingBar({ name, left, right }: ClosingBarProps) {
+export function ClosingBar({ name, left, right, ref }: ClosingBarProps) {
 	const leftSide = left === undefined ? name ? <Copyright name={name} /> : null : left;
 	const rightSide = right === undefined ? <Credit /> : right;
 	const hasLeft = leftSide !== null && leftSide !== false;
@@ -33,7 +35,7 @@ export function ClosingBar({ name, left, right }: ClosingBarProps) {
 	if (!hasLeft && !hasRight) return null;
 
 	return (
-		<div className={hasLeft ? "closing-bar" : "closing-bar is-solo"}>
+		<div ref={ref} className={hasLeft ? "closing-bar" : "closing-bar is-solo"}>
 			<div className="wrap closing-bar-line">
 				{hasLeft && <div className="closing-bar-left">{leftSide}</div>}
 				{hasRight && <div className="closing-bar-right">{rightSide}</div>}

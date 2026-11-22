@@ -41,7 +41,7 @@
 		white-space: nowrap;
 	}
 	.atelic-ui .op-who b {
-		font-weight: 500;
+		font-weight: var(--weight-medium);
 		color: var(--ink);
 	}
 	.atelic-ui .op-sign {

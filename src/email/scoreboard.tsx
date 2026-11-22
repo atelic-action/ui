@@ -143,50 +143,6 @@ export function Scoreboard({ children }: ScoreboardProps) {
 	);
 }
 
-export type WhatMovedItem = { subject: string; event: string };
-export type WhatMovedProps = { items: WhatMovedItem[]; note?: string };
-
-/** The note bar on the cream ground under the scoreboard. */
-export function WhatMoved({ items, note }: WhatMovedProps) {
-	const { palette, fonts } = useEmailTheme();
-	return (
-		<tr>
-			<td style={{ padding: "22px 26px 26px" }}>
-				<table
-					{...tableReset}
-					width="100%"
-					style={{ background: palette.ground, borderRadius: "10px" }}
-				>
-					<tbody>
-						<tr>
-							<td
-								style={{
-									padding: "16px 18px",
-									fontFamily: fonts.sans,
-									fontSize: "14px",
-									lineHeight: "1.6",
-									color: palette.ink,
-								}}
-							>
-								<span style={{ ...eyebrowStyle(fonts), color: palette.faint }}>What Moved</span>
-								<br />
-								{items.map((item, i) => (
-									// biome-ignore lint/suspicious/noArrayIndexKey: an item's position is its identity
-									<Fragment key={i}>
-										<b style={{ fontWeight: "600" }}>{item.subject}</b> {item.event}
-										<br />
-									</Fragment>
-								))}
-								{note ? <span style={{ color: palette.dim }}>{note}</span> : null}
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</td>
-		</tr>
-	);
-}
-
 export type ReadBlockProps = { text: string; divider: boolean };
 
 /** A model written read at the top of a section card. */
@@ -331,91 +287,6 @@ export function DayStrip({ days, last }: DayStripProps) {
 	);
 }
 
-export type StatStripEntry = {
-	n: string | number;
-	label: string;
-	/**
-	 * A change beside the number, small under the label: "+3 (12%)". One that
-	 * opens on "+" wears the palette's `up`, one that opens on "-" its `down`,
-	 * anything else stays muted.
-	 */
-	delta?: string;
-};
-
-/** The color a delta wears, read off its sign. */
-export function deltaColor(delta: string, palette: Palette): string {
-	if (delta.startsWith("+")) return palette.up ?? atelicPalette.up ?? palette.faint;
-	if (delta.startsWith("-") || delta.startsWith("\u2212")) {
-		return palette.down ?? atelicPalette.down ?? palette.faint;
-	}
-	return palette.faint;
-}
-export type StatStripProps = { stats: StatStripEntry[] };
-
-/**
- * A strip of big numbers over eyebrow labels. Each stat is an inline block
- * cell with a floor on its width inside one centered cell, so six or seven
- * stats flow onto a second row on a phone instead of shrinking to nothing.
- */
-export function StatStrip({ stats }: StatStripProps) {
-	const { palette, fonts } = useEmailTheme();
-	const share = `${Math.floor(100 / Math.max(stats.length, 1))}%`;
-	return (
-		<table {...tableReset} width="100%">
-			<tbody>
-				<tr>
-					<td align="center" style={{ textAlign: "center" }}>
-						{stats.map((entry, i) => (
-							<div
-								// biome-ignore lint/suspicious/noArrayIndexKey: a stat's position is its identity
-								key={i}
-								style={{
-									display: "inline-block",
-									width: share,
-									minWidth: "88px",
-									boxSizing: "border-box",
-									verticalAlign: "top",
-									padding: "12px 6px 10px",
-									borderTop: `2px solid ${palette.ink}`,
-									textAlign: "center",
-								}}
-							>
-								<span
-									style={{
-										fontFamily: fonts.sans,
-										fontSize: "22px",
-										fontWeight: "600",
-										letterSpacing: "-0.02em",
-										color: palette.ink,
-									}}
-								>
-									{String(entry.n)}
-								</span>
-								<br />
-								<span style={{ ...eyebrowStyle(fonts), color: palette.faint }}>{entry.label}</span>
-								{entry.delta ? (
-									<>
-										<br />
-										<span
-											style={{
-												fontFamily: fonts.mono,
-												fontSize: "11px",
-												color: deltaColor(entry.delta, palette),
-											}}
-										>
-											{entry.delta}
-										</span>
-									</>
-								) : null}
-							</div>
-						))}
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	);
-}
-
 type RecordBadgeProps = { text: string; tone?: RecordBadgeTone };
 
 /**
@@ -551,31 +422,6 @@ export function RecordTimelineStrip({ timeline }: RecordTimelineStripProps) {
 				</tr>
 			</tbody>
 		</table>
-	);
-}
-
-export type RecordTimelineLegendProps = { days: number };
-
-/** What the marks on a timeline are, once above a list of records: the square, the dot, and the span. */
-export function RecordTimelineLegend({ days }: RecordTimelineLegendProps) {
-	const { palette, fonts } = useEmailTheme();
-	const mark = (style: CSSProperties) => (
-		<span
-			style={{ display: "inline-block", verticalAlign: "middle", marginRight: "5px", ...style }}
-		/>
-	);
-	return (
-		<div
-			style={{ fontFamily: fonts.mono, fontSize: "11px", lineHeight: "16px", color: palette.faint }}
-		>
-			{mark({ width: "8px", height: "8px", background: palette.ink })}
-			touch
-			<span style={{ display: "inline-block", width: "14px" }} />
-			{mark({ width: "5px", height: "5px", borderRadius: "50%", background: palette.accent })}
-			open
-			<span style={{ display: "inline-block", width: "14px" }} />
-			{`${days} days to today`}
-		</div>
 	);
 }
 

@@ -21,23 +21,19 @@ import {
 	List,
 	ListRow,
 	Masthead,
-	MonoTable,
 	Note,
 	ReadBlock,
 	RecordStack,
 	Records,
-	RecordTimelineLegend,
 	RecordTimelineStrip,
 	Row,
 	Scoreboard,
 	Stat,
-	StatStrip,
 	StatsRow,
 	SubEyebrow,
 	TargetRow,
 	TitleCard,
 	TitleLine,
-	WhatMoved,
 } from "../../src/email";
 import { fadeStop } from "../../src/email/theme";
 import { atelicPalette } from "../../src/tokens";
@@ -270,18 +266,6 @@ describe("atoms", () => {
 			</FoldRow>,
 			"fold-row-last",
 		));
-
-	it("MonoTable", () =>
-		expectInline(
-			<MonoTable
-				headers={["Type", "Complete", "Target", "%", "Details"]}
-				rows={[
-					["Bumps", "0", "4", "0", "two shops & a cafe"],
-					["Intros", "0", "6", "0", ""],
-				]}
-			/>,
-			"mono-table",
-		));
 });
 
 describe("the scoreboard", () => {
@@ -332,24 +316,6 @@ describe("the scoreboard", () => {
 			"scoreboard",
 		));
 
-	it("WhatMoved", () =>
-		expectRows(
-			<WhatMoved
-				items={[
-					{ subject: "Pinewood Cabinetry", event: "replied to the audit." },
-					{ subject: "Alder & Co", event: "went quiet." },
-				]}
-				note="Nothing else changed."
-			/>,
-			"what-moved",
-		));
-
-	it("WhatMoved without a note", () =>
-		expectRows(
-			<WhatMoved items={[{ subject: "Birch Millwork", event: "booked a visit." }]} note="" />,
-			"what-moved-nonote",
-		));
-
 	it("ReadBlock with a divider", () =>
 		expectRows(<ReadBlock text="Two lifts and one long run." divider />, "read-block-divider"));
 
@@ -387,88 +353,6 @@ describe("the scoreboard", () => {
 			/>,
 			"day-strip-last",
 		));
-
-	it("StatStrip", () =>
-		expectInline(
-			<StatStrip
-				stats={[
-					{ n: 6, label: "Lead" },
-					{ n: 2, label: "MQL" },
-					{ n: 1, label: "Closed" },
-				]}
-			/>,
-			"stat-strip",
-		));
-
-	it("StatStrip floors its cell width", () =>
-		expectInline(
-			<StatStrip
-				stats={[
-					{ n: 1, label: "A" },
-					{ n: 2, label: "B" },
-					{ n: 3, label: "C" },
-					{ n: 4, label: "D" },
-					{ n: 5, label: "E" },
-					{ n: 6, label: "F" },
-					{ n: 7, label: "G" },
-				]}
-			/>,
-			"stat-strip-seven",
-		));
-
-	it("StatStrip wraps seven stats as inline blocks and shows a delta under its label", () => {
-		const markup = renderInline(
-			<StatStrip
-				stats={[
-					{ n: 1, label: "A" },
-					{ n: 2, label: "B" },
-					{ n: 3, label: "C", delta: "+3 · +12%" },
-					{ n: 4, label: "D" },
-					{ n: 5, label: "E" },
-					{ n: 6, label: "F" },
-					{ n: 7, label: "G" },
-				]}
-			/>,
-		);
-		const cells = markup.match(/<div style="display:inline-block;[^"]*"/g) ?? [];
-		expect(cells).toHaveLength(7);
-		for (const cell of cells) {
-			expect(cell).toContain("min-width:88px");
-			expect(cell).toContain("vertical-align:top");
-		}
-		expect(markup.match(/<td/g)).toHaveLength(1);
-		expect(markup).toMatch(/>C<\/span><br\/><span style="[^"]*">\+3 · \+12%<\/span>/);
-	});
-
-	it("StatStrip colors a delta by its sign", () => {
-		const markup = renderInline(
-			<StatStrip
-				stats={[
-					{ n: 15, label: "MQL", delta: "+3 (12%)" },
-					{ n: 4, label: "SQL", delta: "-2 (5%)" },
-					{ n: 1, label: "Won", delta: "0" },
-				]}
-			/>,
-		);
-		const deltas =
-			markup.match(/<span style="[^"]*font-size:11px;color:[^"]*">[^<]*<\/span>/g) ?? [];
-		expect(deltas).toHaveLength(3);
-		expect(deltas[0]).toContain(`color:${atelicPalette.up}`);
-		expect(deltas[0]).toContain(">+3 (12%)<");
-		expect(deltas[1]).toContain(`color:${atelicPalette.down}`);
-		expect(deltas[1]).toContain(">-2 (5%)<");
-		expect(deltas[2]).toContain(`color:${atelicPalette.faint}`);
-	});
-
-	it("StatStrip falls back to the Atelic up and down for a palette without them", () => {
-		const { up: _up, down: _down, ...bare } = atelicPalette;
-		const markup = renderToStaticMarkup(
-			<EmailThemeProvider palette={{ ...bare, faint: "#777777" }}>
-				<StatStrip stats={[{ n: 1, label: "A", delta: "+1" }]} />
-			</EmailThemeProvider>,
-		);
-		expect(markup).toContain(`color:${atelicPalette.up}`);
-	});
 
 	it("RecordStack puts a badge in its own right aligned cell and keeps the title whole", () => {
 		const title = "Blue Heron Plumbing and Drain Cleaning of Wheat Ridge";
@@ -567,13 +451,6 @@ describe("the scoreboard", () => {
 		expect(markup).toMatch(
 			/<td valign="bottom" style="[^"]*">The pipeline<\/td><td valign="bottom" align="right" style="text-align:right"><span>legend<\/span><\/td>/,
 		);
-	});
-
-	it("RecordTimelineLegend names the two marks and the span", () => {
-		const markup = renderInline(<RecordTimelineLegend days={30} />);
-		expect(markup).toContain(`background:${atelicPalette.ink}`);
-		expect(markup).toContain(`border-radius:50%;background:${atelicPalette.accent}`);
-		expect(markup).toContain("30 days to today");
 	});
 
 	it("RecordStack without a badge or a callout renders as it did before", () => {

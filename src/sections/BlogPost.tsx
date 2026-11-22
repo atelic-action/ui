@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { displayDate } from "../lib/displayDate";
 import { type ProseBlock, ProseBlocks } from "../primitives/ProseBlocks";
 import { useWithBase } from "../routing/BasePathProvider";
+import type { Surface } from "./siteConfig";
 
 export interface BlogPostDoc {
 	title: string;
@@ -20,7 +21,7 @@ export interface BlogPostProps {
 	id?: string;
 	className?: string;
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /**

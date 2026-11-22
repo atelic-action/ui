@@ -50,42 +50,47 @@ const contact: MenuContact = {
 	address: { street: "1420 Alder Street", locality: "Denver", region: "CO", postalCode: "80205" },
 };
 
-/** The bakery's nav with two groups: what it bakes, and who it bakes for. */
+/**
+ * The bakery's nav with three groups: what it bakes (link columns with
+ * nested links, badges, and the ticked feature card), who it bakes for, and
+ * the visit (a picture, icon rows, and cards).
+ */
 const groupedLinks: NavLink[] = [
 	{
 		label: "Menu",
 		href: "#menu",
-		allLabel: "The whole menu",
 		columns: [
 			{
 				heading: "Bread",
 				href: "#bread",
 				links: [
-					{ label: "Country sourdough", href: "#sourdough", description: "The daily loaf" },
-					{ label: "Seeded rye", href: "#rye", description: "Thursdays and Saturdays" },
-					{ label: "Baguettes", href: "#baguettes" },
+					{
+						label: "Country sourdough",
+						href: "#sourdough",
+						children: [
+							{ label: "Seeded", href: "#seeded" },
+							{ label: "Olive and herb", href: "#olive" },
+							{ label: "Half loaves", href: "#half" },
+						],
+					},
+					{ label: "Rye", href: "#rye", children: [{ label: "Caraway", href: "#caraway" }] },
+					{ label: "Baguettes", href: "#baguettes", badge: "New" },
 				],
 			},
 			{
 				heading: "Pastry",
 				links: [
-					{ label: "Morning buns", href: "#buns", description: "Gone by ten" },
+					{ label: "Morning buns", href: "#buns", badge: "Popular" },
 					{ label: "Croissants", href: "#croissants" },
 					{ label: "Seasonal tarts", href: "#tarts" },
-				],
-			},
-			{
-				heading: "Cakes",
-				links: [
 					{ label: "Cakes to order", href: "#cakes", description: "Two days ahead" },
-					{ label: "Allergens", href: "#allergens" },
 				],
 			},
 		],
 		feature: {
 			eyebrow: "Order ahead",
 			title: "Skip the Saturday line.",
-			text: "Order by Friday noon and the loaf waits for you at the counter.",
+			points: ["Order by Friday noon", "Pick a pickup time", "Pay at the counter"],
 			cta: { label: "Order Ahead", href: "#site-header" },
 			image: { src: "/images/bakery-loop-first-frame.jpg", alt: "The bakery's ovens at dawn" },
 		},
@@ -107,7 +112,71 @@ const groupedLinks: NavLink[] = [
 			},
 		],
 	},
-	{ label: "Visit", href: "#visit" },
+	{
+		label: "Visit",
+		href: "#visit",
+		columns: [
+			{
+				kind: "picture",
+				image: { src: "/images/bakery-loop-first-frame.jpg" },
+				caption: "Bread from the back of the shop, since 2014.",
+				href: "#visit",
+			},
+			{
+				kind: "rows",
+				heading: "Plan a visit",
+				rows: [
+					{
+						label: "Order ahead",
+						description: "Pick a loaf and a time",
+						icon: "calendar",
+						href: "#order",
+						highlight: true,
+					},
+					{ label: "Find the shop", description: "1420 Alder Street", icon: "pin", href: "#find" },
+					{
+						label: "Catering",
+						description: "Trays for an office",
+						icon: "truck",
+						href: "#catering",
+					},
+					{
+						label: "Allergens",
+						description: "What is in each bake",
+						icon: "shield",
+						href: "#allergens",
+					},
+					{ label: "Questions", description: "Plain answers", icon: "help", href: "#faq" },
+					{
+						label: "Call the shop",
+						description: "Seven to three",
+						icon: "phone",
+						href: "tel:+15555550123",
+					},
+				],
+			},
+			{
+				kind: "cards",
+				heading: "Latest",
+				cards: [
+					{
+						kicker: "From the blog",
+						title: "Why the rye takes three days",
+						meta: "4 min read",
+						href: "#blog",
+					},
+					{
+						kicker: "This week",
+						title: "Pear and almond tart",
+						meta: "Saturdays only",
+						image: { src: "/images/bakery-loop-first-frame.jpg" },
+						href: "#tarts",
+					},
+				],
+			},
+		],
+	},
+	{ label: "About", href: "#about" },
 ];
 
 const phones: HeaderPhone[] = [
@@ -139,18 +208,20 @@ const dockItems: ContactDockItem[] = [
 ];
 
 /**
- * The grouped header with its first group open, the way a hover leaves it.
- * The gallery clicks the control once on mount, which pins the panel; a click
- * anywhere else on the page closes it again, as on a site.
+ * The grouped header with one group open, the way a hover leaves it. The
+ * gallery clicks the group's control once on mount, which pins the panel; a
+ * click anywhere else on the page closes it again, as on a site. The frame
+ * runs the page's full width at the design's own wrap, so the panel shows at
+ * the size a site gives it.
  */
-function OpenGroupHeader() {
+function OpenGroupHeader({ group = 0 }: { group?: number }) {
 	const frame = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		frame.current?.querySelector<HTMLButtonElement>(".nav-group-btn")?.click();
-	}, []);
+		frame.current?.querySelectorAll<HTMLButtonElement>(".nav-group-btn")[group]?.click();
+	}, [group]);
 	return (
 		<div ref={frame}>
-			<Frame height={780}>
+			<Frame height={640} className="gallery-pane-wide">
 				<SiteHeader
 					brand={bakery}
 					links={groupedLinks}
@@ -272,8 +343,11 @@ export function ChromePieces() {
 						<FramePage />
 					</Frame>
 				</Example>
-				<Example caption="Groups: an entry with columns opens a mega menu panel on a hover, a keyboard focus, or a click, here pinned open on the Menu group, with its feature card and the bar's two numbers. Below 1180px the burger carries it all.">
+				<Example caption="Groups: an entry with columns opens a mega menu panel on a hover, a keyboard focus, or a click, here pinned open on the Menu group: link columns with nested links and badges, a linked column heading, and the feature card with its ticked points, beside the bar's two numbers. Below 1180px the burger carries it all.">
 					<OpenGroupHeader />
+				</Example>
+				<Example caption="The other section kinds, on the Visit group: a picture linked by its caption, icon rows with one highlighted, and cards with and without a picture">
+					<OpenGroupHeader group={2} />
 				</Example>
 			</Piece>
 
@@ -285,7 +359,7 @@ export function ChromePieces() {
 				<Example caption="Opens over the page; Escape or the close button shuts it">
 					<MenuDemo />
 				</Example>
-				<Example caption="Groups: each opens as an accordion, one at a time, and every group starts closed, even the one holding the current page; the numbers sit at the foot">
+				<Example caption="Groups: each opens as an accordion, one at a time, and every group starts closed, even the one holding the current page. Children sit indented under their parent with the badges kept; icon rows and cards become plain links and the picture is a link of its caption; the plain entries are numbered, and the phone numbers sit at the foot">
 					<GroupedMenuDemo />
 				</Example>
 			</Piece>

@@ -1,14 +1,15 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
 import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
 import type { Density, NavItem, SiteConfig } from "../sections/siteConfig";
-import type { FooterColumn, NavLink } from "../types";
+import type { FooterColumn, NavLink, NavPanelSection } from "../types";
 import { ClosingBar } from "./ClosingBar";
 import { ContactDock } from "./ContactDock";
 import { Copyright } from "./Copyright";
 import { Footer } from "./Footer";
+import { isLinkColumn } from "./navSections";
 import { SiteHeader, type SiteHeaderVariant } from "./SiteHeader";
 import { SkipLink } from "./SkipLink";
 import { StickyCTABar } from "./StickyCTABar";
@@ -101,24 +102,62 @@ export function SiteShell({
 	// the root). The current path is compared against those hrefs, so it is
 	// put in the same form whether or not the router reports it with the base.
 	const pathname = withBase(stripBase(base, currentPath));
+	const ownBase = (src: string | undefined) => (src === undefined ? undefined : withBase(src));
 	const brand = {
 		name: site.name,
 		href: withBase("/"),
-		logo: { ...site.logo, src: site.logo.src === undefined ? undefined : withBase(site.logo.src) },
+		logo: {
+			...site.logo,
+			src: ownBase(site.logo.src),
+			onLight: ownBase(site.logo.onLight),
+			onDark: ownBase(site.logo.onDark),
+		},
 	};
+	// The contact dock rides above the shell's own footer, or the closing bar
+	// standing in for it, held by ref rather than found by a selector.
+	const footerRef = useRef<HTMLElement>(null);
+	const closingRef = useRef<HTMLDivElement>(null);
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
 	const based = <T extends { href: string }>(items: T[] | undefined) =>
 		items?.map((item) => ({ ...item, href: withBase(item.href) }));
-	// A group carries its columns and its card into the header, every link based.
+	const image = <T extends { src: string }>(picture: T | undefined) =>
+		picture && { ...picture, src: withBase(picture.src) };
+	// Every link and picture a panel section holds, based.
+	const section = (part: NavPanelSection): NavPanelSection => {
+		if (isLinkColumn(part)) {
+			return {
+				...part,
+				href: part.href === undefined ? undefined : withBase(part.href),
+				links: part.links.map((link) => ({
+					...link,
+					href: withBase(link.href),
+					children: based(link.children),
+				})),
+			};
+		}
+		if (part.kind === "picture") {
+			return {
+				...part,
+				href: withBase(part.href),
+				image: { ...part.image, src: withBase(part.image.src) },
+			};
+		}
+		if (part.kind === "rows") return { ...part, rows: based(part.rows) ?? [] };
+		return {
+			...part,
+			cards: part.cards.map((card) => ({
+				...card,
+				href: withBase(card.href),
+				image: image(card.image),
+			})),
+		};
+	};
+	// A group carries its sections and its card into the header, every link based.
 	const headerLinks: NavLink[] = (nav ?? site.nav).map((item) => ({
 		label: item.label,
 		href: withBase(item.to),
 		allLabel: item.allLabel,
-		columns: item.columns?.map((column) => ({
-			...column,
-			href: column.href === undefined ? undefined : withBase(column.href),
-			links: based(column.links) ?? [],
-		})),
+		columns: item.columns?.map(section),
 		feature: item.feature && {
 			...item.feature,
 			cta: { ...item.feature.cta, href: withBase(item.feature.cta.href) },
@@ -187,9 +226,11 @@ export function SiteShell({
 						attribution={site.attribution}
 						note={site.footer?.note}
 						credit={credit}
+						ref={footerRef}
 					/>
 				) : (
 					<ClosingBar
+						ref={closingRef}
 						left={<Copyright name={brand.name} attribution={site.attribution} />}
 						right={site.footer?.note ?? (credit ? undefined : null)}
 					/>
@@ -199,7 +240,7 @@ export function SiteShell({
 						{...dock}
 						// The shell's own footer, or the closing bar standing in for it, never
 						// a footer element some section on the page holds.
-						avoid={footer ? ".atelic-ui > footer" : ".atelic-ui > .closing-bar"}
+						avoid={footer ? footerRef : closingRef}
 						items={dock.items.map((item) =>
 							item.href === undefined ? item : { ...item, href: withBase(item.href) },
 						)}

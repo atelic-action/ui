@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Eyebrow, Lead } from "../primitives";
 import { PrimaryButton, SecondaryButton } from "../primitives/CallToAction";
-import type { SiteConfig } from "./siteConfig";
+import type { SiteConfig, Surface } from "./siteConfig";
 
 export interface CTASectionProps {
 	/** The site's primary action, `site.cta`; a whole `SiteConfig` passes as it is. */
@@ -17,7 +17,7 @@ export interface CTASectionProps {
 	primary?: { label: string; href: string; newTab?: boolean };
 	/** Page-contextual secondary action; always a ghost button, always second. */
 	secondary?: { label: string; href: string; newTab?: boolean };
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /** The standard closing CTA: primary action from the site config, ghost secondary. */

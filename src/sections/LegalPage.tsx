@@ -1,4 +1,5 @@
 import { type ProseBlock, ProseBlocks } from "../primitives/ProseBlocks";
+import type { Surface } from "./siteConfig";
 
 /**
  * Legal documents are prose blocks like any other ported document, so the
@@ -21,7 +22,7 @@ export interface LegalPageProps {
 	id?: string;
 	className?: string;
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
-	surface?: "default" | "alt";
+	surface?: Surface;
 }
 
 /**

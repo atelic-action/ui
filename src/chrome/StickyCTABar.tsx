@@ -45,7 +45,13 @@ export function StickyCTABar({
 
 	return (
 		// Inert while offscreen, so its links take no keyboard focus before it slides in.
-		<div className={show ? "sticky-cta show" : "sticky-cta"} inert={!show}>
+		// data-dock-lift and data-showing tell the contact dock to ride above it.
+		<div
+			className={show ? "sticky-cta show" : "sticky-cta"}
+			inert={!show}
+			data-dock-lift=""
+			data-showing={show ? "true" : "false"}
+		>
 			<a
 				className="btn btn-primary"
 				href={primaryCTA.href}

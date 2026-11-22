@@ -3,7 +3,19 @@ import { FullBleedVideo } from "../../src/sections";
 
 type Observed = (entries: { isIntersecting: boolean }[]) => void;
 
-let observe: Observed | undefined;
+/** Each observer the component makes, by its root margin: the wide one fetches, the tight one plays. */
+let observers: { margin: string; callback: Observed }[] = [];
+
+/** The band comes within a screen of the viewport, so the clip is fetched. */
+function nearing() {
+	for (const o of observers.filter((o) => o.margin === "100% 0px"))
+		o.callback([{ isIntersecting: true }]);
+}
+
+/** The video comes on screen, or leaves it. */
+function observe(entries: { isIntersecting: boolean }[]) {
+	for (const o of observers.filter((o) => o.margin !== "100% 0px")) o.callback(entries);
+}
 
 function stubMotion(reduce: boolean) {
 	vi.stubGlobal(
@@ -15,12 +27,12 @@ function stubMotion(reduce: boolean) {
 }
 
 beforeEach(() => {
-	observe = undefined;
+	observers = [];
 	vi.stubGlobal(
 		"IntersectionObserver",
 		class {
-			constructor(callback: Observed) {
-				observe = callback;
+			constructor(callback: Observed, options?: { rootMargin?: string }) {
+				observers.push({ margin: options?.rootMargin ?? "", callback });
 			}
 			observe() {}
 			disconnect() {}
@@ -62,6 +74,9 @@ describe("FullBleedVideo", () => {
 		const { container } = render(
 			<FullBleedVideo src="/clip.mp4" poster="/first-frame.jpg" label="Crews at work" />,
 		);
+		// Far from the viewport, nothing is fetched: no video element at all.
+		expect(container.querySelector("video")).toBeNull();
+		act(() => nearing());
 		const video = container.querySelector("video") as HTMLVideoElement;
 		expect(video).toHaveAttribute("preload", "auto");
 		expect(video.muted).toBe(true);
@@ -69,12 +84,14 @@ describe("FullBleedVideo", () => {
 		expect(video).toHaveAttribute("playsinline");
 		expect(video).not.toHaveAttribute("controls");
 
-		act(() => observe?.([{ isIntersecting: true }]));
+		act(() => observe([{ isIntersecting: true }]));
 		expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1);
 		expect(video).toHaveClass("is-on");
 
 		Object.defineProperty(video, "paused", { configurable: true, value: false });
-		act(() => observe?.([{ isIntersecting: false }]));
+		act(() => observe([{ isIntersecting: false }]));
+		// Scrolled past, it stays loaded rather than fetching again on the way back.
+		expect(container.querySelector("video")).toBe(video);
 		expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
 		expect(video).not.toHaveClass("is-on");
 	});
@@ -97,8 +114,9 @@ describe("FullBleedVideo", () => {
 		expect(screen.queryByRole("button")).toBeNull();
 
 		rerender(<FullBleedVideo src="/clip.mp4" poster="/f.jpg" label="Crews at work" controls />);
+		act(() => nearing());
 		const video = container.querySelector("video") as HTMLVideoElement;
-		act(() => observe?.([{ isIntersecting: true }]));
+		act(() => observe([{ isIntersecting: true }]));
 		Object.defineProperty(video, "paused", { configurable: true, value: false });
 		fireEvent.click(screen.getByRole("button", { name: "Pause the video" }));
 		expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();

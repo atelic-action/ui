@@ -29,9 +29,7 @@ export {
 	type ContactPhone,
 } from "./ContactInfoCard";
 export { type Credential, CredentialList, type CredentialListProps } from "./CredentialList";
-export { CTABanner, type CTABannerCTA, type CTABannerProps } from "./CTABanner";
 export { CTASection, type CTASectionProps } from "./CTASection";
-export { type DeviceImage, DeviceShowcase, type DeviceShowcaseProps } from "./DeviceShowcase";
 export { ExpandList, type ExpandListItem, type ExpandListProps } from "./ExpandList";
 export {
 	FAQBrowser,
@@ -62,10 +60,7 @@ export {
 export { type LocationEntry, Locations, type LocationsProps } from "./Locations";
 export { LogoMarquee, type LogoMarqueeProps } from "./LogoMarquee";
 export { MapEmbed, type MapEmbedProps, type MapEmbedSite } from "./MapEmbed";
-export { MediaBand, type MediaBandProps } from "./MediaBand";
-export { MenuList, type MenuListItem, type MenuListProps } from "./MenuList";
 export { PageHero, type PageHeroProps } from "./PageHero";
-export { type PressItem, PressQuotes, type PressQuotesProps, sortPress } from "./PressQuotes";
 export { PricingBand, type PricingBandProps } from "./PricingBand";
 export { PricingCard, type PricingCardProps } from "./PricingCard";
 export { type ProcessStep, ProcessSteps, type ProcessStepsProps } from "./ProcessSteps";
@@ -74,7 +69,6 @@ export { type ProofItem, ProofStrip, type ProofStripProps } from "./ProofStrip";
 export { type RevealSlide, RevealSlider, type RevealSliderProps } from "./RevealSlider";
 export { ReviewCarousel, type ReviewCarouselProps, type ReviewStat } from "./ReviewCarousel";
 export { type ReviewItem, ReviewWall, type ReviewWallProps } from "./ReviewWall";
-export { type SocialPhoto, SocialStrip, type SocialStripProps } from "./SocialStrip";
 export { SplitSection, type SplitSectionProps } from "./SplitSection";
 export type {
 	Address,
@@ -88,4 +82,5 @@ export type {
 	SiteConfig,
 	SiteLink,
 	SocialLink,
+	Surface,
 } from "./siteConfig";

@@ -167,12 +167,15 @@
 		letter-spacing: 0.03em;
 		background: var(--surface-dark);
 		color: var(--surface);
-		box-shadow: var(--shadow-md, 0 8px 24px -10px rgba(0, 0, 0, 0.5));
+		box-shadow: var(
+			--shadow-md,
+			0 8px 24px -10px color-mix(in srgb, var(--shade) 50%, transparent)
+		);
 		pointer-events: none;
 	}
 	.atelic-ui .gate-wm b {
-		color: #fff;
-		font-weight: 600;
+		color: var(--on-dark);
+		font-weight: var(--weight-semibold);
 	}
 	.atelic-ui .gate-wm-dot {
 		width: 7px;

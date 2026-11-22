@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { ContactDock } from "../../src/chrome";
 import { dockPlacement } from "../../src/chrome/ContactDock";
@@ -126,10 +126,80 @@ describe("ContactDock", () => {
 		expect(launcher()).toHaveAttribute("aria-expanded", "false");
 	});
 
-	it("holds its inset when told not to track the page", () => {
+	it("leaves its corner to the stylesheet when told not to track, so a phone gets its own inset", () => {
 		const { container } = render(<ContactDock label="Talk to us" items={items} track={false} />);
 		const dock = container.querySelector(".contact-dock") as HTMLElement;
-		expect(dock.style.right).toBe("24px");
-		expect(dock.style.bottom).toBe("24px");
+		// chrome.css sets 24px, and 16px below 900px; an inline value would pin 24 on a phone.
+		expect(dock.style.right).toBe("");
+		expect(dock.style.bottom).toBe("");
+	});
+});
+
+describe("ContactDock tracking", () => {
+	const width = window.innerWidth;
+	const height = window.innerHeight;
+	beforeEach(() => {
+		Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+		Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+	});
+	afterEach(() => {
+		Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+		Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
+		document.body.querySelectorAll("[data-test-bar]").forEach((node) => {
+			node.remove();
+		});
+	});
+
+	function bar(showing: boolean): HTMLElement {
+		const element = document.createElement("div");
+		element.setAttribute("data-dock-lift", "");
+		element.setAttribute("data-test-bar", "");
+		element.dataset.showing = showing ? "true" : "false";
+		element.getBoundingClientRect = () => ({ height: 72 }) as DOMRect;
+		return element;
+	}
+
+	it("sits at the phone's corner once measured", async () => {
+		const { container } = render(<ContactDock label="Talk to us" items={items} avoid={null} />);
+		const dock = container.querySelector(".contact-dock") as HTMLElement;
+		await waitFor(() => expect(dock.style.bottom).toBe("16px"));
+		expect(dock.style.right).toBe("16px");
+	});
+
+	it("lifts over a sticky bar that mounts after it, and again when the bar shows", async () => {
+		const { container } = render(<ContactDock label="Talk to us" items={items} avoid={null} />);
+		const dock = container.querySelector(".contact-dock") as HTMLElement;
+		await waitFor(() => expect(dock.style.bottom).toBe("16px"));
+
+		const late = bar(false);
+		document.body.append(late);
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(dock.style.bottom).toBe("16px");
+
+		late.dataset.showing = "true";
+		await waitFor(() => expect(dock.style.bottom).toBe("88px"));
+	});
+
+	it("rides above the element it is handed by ref", async () => {
+		const footer = document.createElement("footer");
+		footer.getBoundingClientRect = () => ({ top: 500 }) as DOMRect;
+		const ref = { current: footer };
+		const { container } = render(<ContactDock label="Talk to us" items={items} avoid={ref} />);
+		const dock = container.querySelector(".contact-dock") as HTMLElement;
+		// 844 - 500 covered, plus the 16 inset.
+		await waitFor(() => expect(dock.style.bottom).toBe("360px"));
+	});
+
+	it("finds the bar and the footer once, never on a scroll frame", async () => {
+		const { container } = render(<ContactDock label="Talk to us" items={items} />);
+		const dock = container.querySelector(".contact-dock") as HTMLElement;
+		await waitFor(() => expect(dock.style.bottom).toBe("16px"));
+		const query = vi.spyOn(document, "querySelector");
+		for (let i = 0; i < 5; i += 1) {
+			fireEvent.scroll(window);
+			await new Promise((resolve) => setTimeout(resolve, 20));
+		}
+		expect(query).not.toHaveBeenCalled();
+		query.mockRestore();
 	});
 });
