@@ -6,14 +6,20 @@ import { PageBehind } from "../support/page";
 
 const viewer = "rosa@quillandfern.example.com";
 
+/** Writes one cookie the way the gate's verify step leaves it readable. */
+function setCookie(cookie: string) {
+	// biome-ignore lint/suspicious/noDocumentCookie: the watermark reads document.cookie, so the story writes it the same way
+	document.cookie = cookie;
+}
+
 /** Sets the gate's readable cookies for a story and clears them after. */
 function signedIn(mode?: "pill" | "tiled") {
 	return () => {
-		document.cookie = `gate_email=${encodeURIComponent(viewer)}; path=/`;
-		if (mode) document.cookie = `gate_wm=${mode}; path=/`;
+		setCookie(`gate_email=${encodeURIComponent(viewer)}; path=/`);
+		if (mode) setCookie(`gate_wm=${mode}; path=/`);
 		return () => {
-			document.cookie = "gate_email=; path=/; max-age=0";
-			document.cookie = "gate_wm=; path=/; max-age=0";
+			setCookie("gate_email=; path=/; max-age=0");
+			setCookie("gate_wm=; path=/; max-age=0");
 		};
 	};
 }
