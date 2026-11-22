@@ -4,11 +4,18 @@ export type {
 	Brand,
 	BrandLogo,
 	CallToAction,
+	ContactDockConfig,
+	ContactDockIcon,
+	ContactDockItem,
 	FooterColumn,
 	FooterColumnLink,
 	FooterIcon,
+	HeaderPhone,
 	HoursRow,
 	MenuContact,
+	NavFeature,
+	NavGroupColumn,
+	NavGroupLink,
 	NavLink,
 	Phone,
 	PostalAddress,
@@ -17,6 +24,7 @@ export type {
 } from "../types";
 export { BrandLockup, type BrandLockupProps } from "./BrandLockup";
 export { ClosingBar, type ClosingBarProps } from "./ClosingBar";
+export { ContactDock, type ContactDockProps } from "./ContactDock";
 export { Copyright, type CopyrightProps } from "./Copyright";
 export { Credit } from "./Credit";
 export { Footer, type FooterProps } from "./Footer";

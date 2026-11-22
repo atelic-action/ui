@@ -1,12 +1,14 @@
-import { ImageFrame, QuoteCard } from "../src/primitives";
+import { ImageFrame, QuoteCard, StarRow } from "../src/primitives";
 import {
 	CTABanner,
 	CTASection,
+	FullBleedVideo,
 	Hero,
 	LogoMarquee,
 	MediaBand,
 	PageHero,
 	PricingBand,
+	ProofStrip,
 	SplitSection,
 } from "../src/sections";
 import { bakery } from "./marketing-data";
@@ -41,6 +43,46 @@ export function MarketingOpeners() {
 						{ value: "11", label: "Cafes we supply" },
 					]}
 					scrollTarget="#page-hero"
+				/>
+			</Specimen>
+
+			<Specimen
+				id="hero-split"
+				name="Hero, layout split"
+				lead="The same opener with the copy and its actions on the primary field beside the photo, at the height the copy needs; a phone stacks the photo first. The primary button turns light on the field."
+			>
+				<Hero
+					layout="split"
+					eyebrow="Alder Street, since 2014"
+					title="Bread worth the early line."
+					subtitle="Sourdough, morning buns, and cakes to order, baked in the back of the shop every day but Monday."
+					image={{ src: "/images/bakery-band.svg", alt: "Loaves cooling on a rack" }}
+					primaryCTA={{ label: "Order ahead", href: "#hero-split" }}
+					secondaryCTA={{ label: "Call (555) 555-0142", href: "tel:+15555550142" }}
+				/>
+			</Specimen>
+
+			<Specimen
+				id="proof-strip"
+				name="ProofStrip"
+				lead="One row of short proof facts under a hero, a figure over its label each, wrapping to a clean grid on a phone."
+			>
+				<ProofStrip
+					ariaLabel="Why the line is long"
+					items={[
+						{
+							value: (
+								<>
+									4.9 <StarRow rating={5} size={15} />
+								</>
+							),
+							label: "212 reviews",
+						},
+						{ value: "Since 2014", label: "On Alder Street" },
+						{ value: "1,200 loaves", label: "Baked every week" },
+						{ value: "11 cafes", label: "Carry the morning bake" },
+						{ value: "Two days", label: "Notice for a cake" },
+					]}
 				/>
 			</Specimen>
 
@@ -130,6 +172,25 @@ export function MarketingOpeners() {
 					price="$9"
 					unit="/ week"
 					detail={{ label: "How the club works", href: "#pricing-band" }}
+				/>
+			</Specimen>
+
+			<Specimen
+				id="full-bleed-video"
+				name="FullBleedVideo"
+				lead="A silent looping clip edge to edge. The first frame shows at once as a picture; the clip loads behind it, starts once it can play through, plays only while on screen, and stays on the picture under reduced motion. Shown with its pause button on, then as the shot brief before the footage exists."
+			>
+				<FullBleedVideo
+					src="/video/bakery-loop.mp4"
+					poster="/images/bakery-loop-first-frame.jpg"
+					label="The ovens warming before the first bake"
+					controls
+				/>
+				<FullBleedVideo
+					src="/video/bakery-loop.mp4"
+					label="The ovens warming before the first bake"
+					placeholder="Video: the ovens at dawn, one slow pan, no people"
+					height="220px"
 				/>
 			</Specimen>
 

@@ -46,6 +46,8 @@ export interface ReviewCarouselProps {
 	ariaLabel?: string;
 	id?: string;
 	className?: string;
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /**
@@ -93,6 +95,7 @@ export function ReviewCarousel({
 	ariaLabel = "Customer reviews",
 	id,
 	className,
+	surface = "default",
 }: ReviewCarouselProps) {
 	const [rawIndex, setIndex] = useState(0);
 	const count = items.length;
@@ -120,7 +123,9 @@ export function ReviewCarousel({
 
 	return (
 		<section
-			className={["section", "review-carousel", className].filter(Boolean).join(" ")}
+			className={["section", "review-carousel", surface === "alt" && "surface-alt", className]
+				.filter(Boolean)
+				.join(" ")}
 			id={id}
 		>
 			<div className="wrap rvc-grid">

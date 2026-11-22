@@ -36,6 +36,30 @@
 	body:has(.atelic-ui) {
 		overflow-x: hidden;
 	}
+	/* ---- Density ----
+	   How much room a section leaves above and below itself, one setting for
+	   the whole page on the root's data-density (SiteShell's density, from
+	   the site config). --section-space pads every section band, and the
+	   in between steps are multiples of it; --block-gap is the space between
+	   a section's heading and the grid under it; --card-min is the least a
+	   feature card stands. The default is the trades site rhythm; comfortable
+	   is the roomier spacing every site had before 8.0.0. A site that wants
+	   its own value sets the property on .atelic-ui, outside the layer. */
+	.atelic-ui {
+		--section-space: clamp(36px, 4.6vw, 64px);
+		--block-gap: 28px;
+		--card-min: 0px;
+	}
+	.atelic-ui[data-density="comfortable"] {
+		--section-space: clamp(56px, 9vw, 120px);
+		--block-gap: 44px;
+		--card-min: 240px;
+	}
+	.atelic-ui[data-density="compact"] {
+		--section-space: clamp(24px, 3.2vw, 44px);
+		--block-gap: 20px;
+		--card-min: 0px;
+	}
 	.atelic-ui {
 		font-family: var(--font-sans);
 		background: var(--surface);
@@ -126,25 +150,26 @@
 		padding-inline: var(--gutter);
 	}
 	.atelic-ui .section {
-		padding-block: clamp(56px, 9vw, 120px);
+		padding-block: var(--section-space);
 	}
 	/* A middle step, for a page whose alternating bands do the separating and
-	   whose default rhythm reads too airy as a result. */
+	   whose default rhythm reads too airy as a result. The two steps keep
+	   their old proportion to the section (84 and 72 of 120). */
 	.atelic-ui .section-md {
-		padding-block: clamp(44px, 6.5vw, 84px);
+		padding-block: calc(var(--section-space) * 0.7);
 	}
 	.atelic-ui .section-sm {
-		padding-block: clamp(40px, 6vw, 72px);
+		padding-block: calc(var(--section-space) * 0.6);
 	}
 	/* Section band modifiers, global because routes across chunks use them. */
 	.atelic-ui .section.surface-alt {
 		background: var(--surface-alt);
 	}
 	.atelic-ui .section.tight-top {
-		padding-top: clamp(20px, 3vw, 40px);
+		padding-top: calc(var(--section-space) / 3);
 	}
 	.atelic-ui .section.tight-bottom {
-		padding-bottom: clamp(20px, 3vw, 40px);
+		padding-bottom: calc(var(--section-space) / 3);
 	}
 	.atelic-ui .stack-sm > * + * {
 		margin-top: 0.75rem;

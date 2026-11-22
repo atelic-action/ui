@@ -36,6 +36,13 @@ export interface HeroProps {
 	trust?: HeroTrustItem[];
 	/** Anchor target for the scroll-down affordance, e.g. "#pain". */
 	scrollTarget?: string;
+	/**
+	 * `overlay`, the default, sets the copy over a full bleed photo a screen
+	 * tall. `split` sets the copy and its actions on the primary field on one
+	 * side and the photo on the other, at the height the copy needs, stacking
+	 * with the photo first on a phone; the scroll cue is left out.
+	 */
+	layout?: "overlay" | "split";
 }
 
 /** Full-bleed image hero with scrim, headline, CTA pair, and trust stats. */
@@ -48,6 +55,7 @@ export function Hero({
 	secondaryCTA,
 	trust,
 	scrollTarget,
+	layout = "overlay",
 }: HeroProps) {
 	const withBase = useWithBase();
 	const ctaProps = (cta: HeroCTA, extra: Partial<ButtonProps>) => ({
@@ -56,50 +64,66 @@ export function Hero({
 		...extra,
 	});
 
+	const copy = (
+		<>
+			{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}
+			<h1>{title}</h1>
+			{subtitle && <p className="hero-sub">{subtitle}</p>}
+			{(primaryCTA || secondaryCTA) && (
+				<div className="cta-row">
+					{primaryCTA && (
+						<Button {...ctaProps(primaryCTA, { size: "lg", arrow: true })}>
+							{primaryCTA.label}
+						</Button>
+					)}
+					{secondaryCTA && (
+						<Button {...ctaProps(secondaryCTA, { variant: "ghost", size: "lg", onDark: true })}>
+							{secondaryCTA.label}
+						</Button>
+					)}
+				</div>
+			)}
+			{trust && trust.length > 0 && (
+				<ul className="hero-trust">
+					{trust.map((item) => (
+						<li key={item.label}>
+							<strong>{item.value}</strong>
+							<span>{item.label}</span>
+						</li>
+					))}
+				</ul>
+			)}
+		</>
+	);
+	const media = image ? (
+		<img
+			src={withBase(image.src)}
+			alt={image.alt}
+			fetchPriority="high"
+			{...(image.position ? { style: { objectPosition: image.position } } : {})}
+		/>
+	) : (
+		<div className="hero-media-fallback" />
+	);
+
+	if (layout === "split") {
+		return (
+			<section className="hero is-split">
+				<div className="hero-split-copy on-primary">
+					<div className="hero-split-inner">{copy}</div>
+				</div>
+				<div className="hero-split-media">{media}</div>
+			</section>
+		);
+	}
+
 	return (
 		<section className="hero">
 			<div className="hero-media">
-				{image ? (
-					<img
-						src={withBase(image.src)}
-						alt={image.alt}
-						fetchPriority="high"
-						{...(image.position ? { style: { objectPosition: image.position } } : {})}
-					/>
-				) : (
-					<div className="hero-media-fallback" />
-				)}
+				{media}
 				<div className="hero-scrim" />
 			</div>
-			<div className="wrap hero-content">
-				{eyebrow && <Eyebrow onDark>{eyebrow}</Eyebrow>}
-				<h1>{title}</h1>
-				{subtitle && <p className="hero-sub">{subtitle}</p>}
-				{(primaryCTA || secondaryCTA) && (
-					<div className="cta-row">
-						{primaryCTA && (
-							<Button {...ctaProps(primaryCTA, { size: "lg", arrow: true })}>
-								{primaryCTA.label}
-							</Button>
-						)}
-						{secondaryCTA && (
-							<Button {...ctaProps(secondaryCTA, { variant: "ghost", size: "lg", onDark: true })}>
-								{secondaryCTA.label}
-							</Button>
-						)}
-					</div>
-				)}
-				{trust && trust.length > 0 && (
-					<ul className="hero-trust">
-						{trust.map((item) => (
-							<li key={item.label}>
-								<strong>{item.value}</strong>
-								<span>{item.label}</span>
-							</li>
-						))}
-					</ul>
-				)}
-			</div>
+			<div className="wrap hero-content">{copy}</div>
 			{scrollTarget && (
 				<a className="hero-scroll" href={withBase(scrollTarget)} aria-label="Scroll down">
 					↓

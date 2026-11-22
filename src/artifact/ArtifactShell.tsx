@@ -34,8 +34,11 @@ export function ArtifactShell({ site, currentPath, stops, children }: ArtifactSh
 	// and run, then the recipient's mark after a times sign (ui 0.6.0).
 	const recipient = site.recipient.logo;
 
+	// Pinned to the roomier spacing every page had before 8.0.0, so a
+	// document's shell (its 404 included) reads as close as the one token allows to how it did when the
+	// marketing default tightened.
 	return (
-		<div className="atelic-ui">
+		<div className="atelic-ui" data-density="comfortable">
 			<SkipLink />
 			<SiteHeader
 				brand={{ name, href, logo, recipient }}

@@ -19,6 +19,8 @@ export interface BlogPostProps {
 	backLabel?: string;
 	id?: string;
 	className?: string;
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /**
@@ -33,6 +35,7 @@ export interface BlogPostProps {
  * has touched.
  */
 export function BlogPost({
+	surface = "default",
 	doc,
 	basePath = "/blog",
 	backLabel = "All posts",
@@ -41,7 +44,12 @@ export function BlogPost({
 }: BlogPostProps) {
 	const withBase = useWithBase();
 	return (
-		<article className={["section", "blog-post", className].filter(Boolean).join(" ")} id={id}>
+		<article
+			className={["section", "blog-post", surface === "alt" && "surface-alt", className]
+				.filter(Boolean)
+				.join(" ")}
+			id={id}
+		>
 			<div className="wrap bp-wrap">
 				<a className="bp-back" href={withBase(basePath)}>
 					<ArrowLeft size={15} strokeWidth={2} aria-hidden="true" />

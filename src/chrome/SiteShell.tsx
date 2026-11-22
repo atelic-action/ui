@@ -3,9 +3,10 @@ import { Watermark } from "../components/Watermark";
 import type { PageStop } from "../hooks/useScrollSpy";
 import { BasePathProvider } from "../routing/BasePathProvider";
 import { joinBase, normalizeBasePath, stripBase } from "../routing/basePath";
-import type { NavItem, SiteConfig } from "../sections/siteConfig";
-import type { FooterColumn } from "../types";
+import type { Density, NavItem, SiteConfig } from "../sections/siteConfig";
+import type { FooterColumn, NavLink } from "../types";
 import { ClosingBar } from "./ClosingBar";
+import { ContactDock } from "./ContactDock";
 import { Copyright } from "./Copyright";
 import { Footer } from "./Footer";
 import { SiteHeader, type SiteHeaderVariant } from "./SiteHeader";
@@ -57,6 +58,17 @@ export interface SiteShellProps {
 	 * side empty unless the site gives a note. The copyright prints either way.
 	 */
 	credit?: boolean;
+	/**
+	 * The section spacing, set on the `.atelic-ui` root as `data-density`.
+	 * Defaults to `site.density`, then `default`; `comfortable` is the roomier
+	 * spacing sites had before 8.0.0, close to it though not to the pixel.
+	 */
+	density?: Density;
+	/**
+	 * Mounts the contact dock when the config supplies `contactDock`.
+	 * Defaults on; a page that closes on its own ask turns it off.
+	 */
+	contactDock?: boolean;
 	children: ReactNode;
 }
 
@@ -79,6 +91,8 @@ export function SiteShell({
 	navOnDark = false,
 	hideNavCTA = false,
 	credit = true,
+	density,
+	contactDock = true,
 	children,
 }: SiteShellProps) {
 	const base = normalizeBasePath(basePath ?? site.basePath);
@@ -92,10 +106,32 @@ export function SiteShell({
 		href: withBase("/"),
 		logo: { ...site.logo, src: site.logo.src === undefined ? undefined : withBase(site.logo.src) },
 	};
-	const links = (nav ?? site.nav).map((item) => ({ label: item.label, href: withBase(item.to) }));
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
 	const based = <T extends { href: string }>(items: T[] | undefined) =>
 		items?.map((item) => ({ ...item, href: withBase(item.href) }));
+	// A group carries its columns and its card into the header, every link based.
+	const headerLinks: NavLink[] = (nav ?? site.nav).map((item) => ({
+		label: item.label,
+		href: withBase(item.to),
+		allLabel: item.allLabel,
+		columns: item.columns?.map((column) => ({
+			...column,
+			href: column.href === undefined ? undefined : withBase(column.href),
+			links: based(column.links) ?? [],
+		})),
+		feature: item.feature && {
+			...item.feature,
+			cta: { ...item.feature.cta, href: withBase(item.feature.cta.href) },
+			image: item.feature.image && {
+				...item.feature.image,
+				src: withBase(item.feature.image.src),
+			},
+		},
+	}));
+	// The footer's Company column lists the entries themselves, never a group's links.
+	const links = headerLinks.map(({ label, href }) => ({ label, href }));
+	const setting = density ?? site.density;
+	const dock = contactDock ? site.contactDock : undefined;
 	// The default footer's four columns, drawn from what the config already
 	// holds; a site that wants other columns names them in `footer.columns`.
 	const footerColumns: FooterColumn[] = site.footer?.columns?.map((column) => ({
@@ -117,17 +153,21 @@ export function SiteShell({
 
 	return (
 		<BasePathProvider base={base}>
-			<div className="atelic-ui">
+			<div
+				className="atelic-ui"
+				data-density={setting && setting !== "default" ? setting : undefined}
+			>
 				<SkipLink />
 				<SiteHeader
 					brand={brand}
-					links={links}
+					links={headerLinks}
 					primaryCTA={cta}
 					variant={variant}
 					currentPath={pathname}
 					stops={pageNav}
 					hideCTA={hideNavCTA}
 					contact={{ phone: site.phone, email: site.email, address: site.address }}
+					phones={site.header?.phones}
 				/>
 				<main id="main" className={heroNav ? undefined : "clears-nav"}>
 					{children}
@@ -152,6 +192,17 @@ export function SiteShell({
 					<ClosingBar
 						left={<Copyright name={brand.name} attribution={site.attribution} />}
 						right={site.footer?.note ?? (credit ? undefined : null)}
+					/>
+				)}
+				{dock && (
+					<ContactDock
+						{...dock}
+						// The shell's own footer, or the closing bar standing in for it, never
+						// a footer element some section on the page holds.
+						avoid={footer ? ".atelic-ui > footer" : ".atelic-ui > .closing-bar"}
+						items={dock.items.map((item) =>
+							item.href === undefined ? item : { ...item, href: withBase(item.href) },
+						)}
 					/>
 				)}
 				<Watermark />

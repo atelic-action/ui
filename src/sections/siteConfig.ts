@@ -8,14 +8,43 @@
  * render from it, so standing up a new site means writing one of these plus
  * a theme.css, never touching the components themselves.
  */
-import type { FooterColumn, SiteLink, SocialLink } from "../types";
+import type {
+	ContactDockConfig,
+	FooterColumn,
+	HeaderPhone,
+	NavFeature,
+	NavGroupColumn,
+	SiteLink,
+	SocialLink,
+} from "../types";
 
 export type { SiteLink, SocialLink };
 
+/**
+ * An entry in the site's nav: a page, or a group of pages. An entry with
+ * `columns` is a group; the header opens it as a mega menu panel on a
+ * desktop and an accordion on a phone, and `to` is the group's own page.
+ * The footer's Company column lists only the entries, never a group's links.
+ */
 export interface NavItem {
 	label: string;
 	to: string;
+	/** The group's link columns, each a heading over its links. */
+	columns?: NavGroupColumn[];
+	/** The card beside a group's columns on a desktop. */
+	feature?: NavFeature;
+	/** The words of a link to `to` set first inside the group, e.g. "All services". */
+	allLabel?: string;
 }
+
+/**
+ * How much room the sections leave above and below themselves, set on the
+ * `.atelic-ui` root as `data-density`. `default` is the trades site rhythm
+ * (`--section-space` runs 36 to 64px), `comfortable` the roomier one sites
+ * had before 8.0.0, approximately (56 to 120px), and `compact` tighter still (24 to
+ * 44px). README.md, Density, holds the companion values.
+ */
+export type Density = "default" | "comfortable" | "compact";
 
 export interface CTA {
 	label: string;
@@ -220,4 +249,16 @@ export interface SiteConfig {
 	};
 	/** Copy for the access-gate login screen (see GateConfig). */
 	gate?: GateConfig;
+	/** The section spacing every page wears (see Density). Defaults to `default`. */
+	density?: Density;
+	/** What the header shows beyond the nav and the CTA. */
+	header?: {
+		/** Up to two numbers in the bar, each a tel link; the first is the phone's call button. */
+		phones?: HeaderPhone[];
+	};
+	/**
+	 * The floating Get in Touch launcher. Present, `SiteShell` mounts the
+	 * dock on every page; absent, there is none.
+	 */
+	contactDock?: ContactDockConfig;
 }

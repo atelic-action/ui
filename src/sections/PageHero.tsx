@@ -8,12 +8,25 @@ export interface PageHeroProps {
 	center?: boolean;
 	/** Extra content under the lead (e.g. jump-link chips). */
 	children?: ReactNode;
+	/** The band's background. Defaults to `alt`, the band an interior page opens on. */
+	surface?: "default" | "alt";
 }
 
 /** Interior page opener on the alternate surface band. */
-export function PageHero({ eyebrow, title, lead, center = false, children }: PageHeroProps) {
+export function PageHero({
+	eyebrow,
+	title,
+	lead,
+	center = false,
+	children,
+	surface = "alt",
+}: PageHeroProps) {
 	return (
-		<section className={["page-hero", center && "center"].filter(Boolean).join(" ")}>
+		<section
+			className={["page-hero", center && "center", surface === "default" && "surface-default"]
+				.filter(Boolean)
+				.join(" ")}
+		>
 			<div className="wrap">
 				{eyebrow && <Eyebrow center={center}>{eyebrow}</Eyebrow>}
 				<h1>{title}</h1>

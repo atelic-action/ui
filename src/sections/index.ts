@@ -11,6 +11,11 @@ export { type EventParams, trackEvent } from "../lib/trackEvent";
 export { BlogIndex, type BlogIndexItem, type BlogIndexProps } from "./BlogIndex";
 export { BlogPost, type BlogPostDoc, type BlogPostProps } from "./BlogPost";
 export {
+	CalloutPanel,
+	type CalloutPanelItem,
+	type CalloutPanelProps,
+} from "./CalloutPanel";
+export {
 	type ComparisonRow,
 	type ComparisonState,
 	ComparisonTable,
@@ -37,11 +42,18 @@ export {
 } from "./FAQBrowser";
 export { FeatureDetail, type FeatureDetailProps } from "./FeatureDetail";
 export { type FeatureCard, FeatureGrid, type FeatureGridProps } from "./FeatureGrid";
+export { FullBleedVideo, type FullBleedVideoProps } from "./FullBleedVideo";
 export { Gallery, type GalleryPhoto, type GalleryProps } from "./Gallery";
 export { Hero, type HeroCTA, type HeroProps, type HeroTrustItem } from "./Hero";
 export { HoursTable, type HoursTableProps } from "./HoursTable";
 export { JumpRail, type JumpRailItem, type JumpRailProps } from "./JumpRail";
 export { type LegalBlock, type LegalDoc, LegalPage, type LegalPageProps } from "./LegalPage";
+export {
+	type LinkColumn,
+	type LinkColumnLink,
+	LinkColumns,
+	type LinkColumnsProps,
+} from "./LinkColumns";
 export {
 	LocationSection,
 	type LocationSectionProps,
@@ -58,6 +70,7 @@ export { PricingBand, type PricingBandProps } from "./PricingBand";
 export { PricingCard, type PricingCardProps } from "./PricingCard";
 export { type ProcessStep, ProcessSteps, type ProcessStepsProps } from "./ProcessSteps";
 export { ProfileCards, type ProfileCardsProps, type ProfileItem } from "./ProfileCards";
+export { type ProofItem, ProofStrip, type ProofStripProps } from "./ProofStrip";
 export { type RevealSlide, RevealSlider, type RevealSliderProps } from "./RevealSlider";
 export { ReviewCarousel, type ReviewCarouselProps, type ReviewStat } from "./ReviewCarousel";
 export { type ReviewItem, ReviewWall, type ReviewWallProps } from "./ReviewWall";
@@ -67,6 +80,7 @@ export type {
 	Address,
 	Clock,
 	CTA,
+	Density,
 	Founder,
 	GateConfig,
 	NavItem,

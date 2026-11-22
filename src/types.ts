@@ -42,10 +42,60 @@ export interface Brand {
 	recipient?: BrandRecipient;
 }
 
-/** An entry in a site's primary nav. */
+/**
+ * An entry in a site's primary nav: a plain link, or a group. A group is an
+ * entry with `columns`: on a desktop its label is a control that opens a
+ * mega menu panel holding the columns (and the `feature` card when it has
+ * one), and on a phone the menu opens it as an accordion. `href` is the
+ * group's own page, which `allLabel` links to from inside the group.
+ */
 export interface NavLink {
 	label: string;
 	href: string;
+	/** The group's link columns. An entry with none is a plain link. */
+	columns?: NavGroupColumn[];
+	/** A card beside the columns on a desktop: a headline, a line, a button, and a picture. */
+	feature?: NavFeature;
+	/**
+	 * The words of a link to the group's own page (`href`), set first in the
+	 * group, e.g. "All services". Omit and the group links only its columns.
+	 */
+	allLabel?: string;
+}
+
+/** One link in a nav group's column, with a short line under it when it has one. */
+export interface NavGroupLink {
+	label: string;
+	href: string;
+	/** A short line under the link, e.g. what the page covers. */
+	description?: string;
+	/** Opens in a new tab, except on mailto, tel, and sms links. */
+	external?: boolean;
+}
+
+/** One column of a nav group: a heading, itself a link when it has an `href`, over its links. */
+export interface NavGroupColumn {
+	heading: string;
+	href?: string;
+	links: NavGroupLink[];
+}
+
+/** The card a nav group can carry beside its columns on a desktop. */
+export interface NavFeature {
+	/** A small label over the headline. */
+	eyebrow?: string;
+	title: string;
+	/** One line under the headline. */
+	text?: string;
+	cta: CallToAction;
+	/** The picture that fills the card above the words. */
+	image?: { src: string; alt: string };
+}
+
+/** A number the header shows, with the words that say whose line it is. */
+export interface HeaderPhone extends Phone {
+	/** Printed small over the number and read with it, e.g. "Mountain office". */
+	label?: string;
 }
 
 /** A conversion action rendered as a button link. */
@@ -121,4 +171,48 @@ export interface MenuContact {
 	phone?: Phone;
 	email?: string;
 	address?: PostalAddress;
+}
+
+/** The pictures a dock item can lead with. */
+export type ContactDockIcon =
+	| "chat"
+	| "phone"
+	| "calendar"
+	| "mail"
+	| "form"
+	| "calculator"
+	| "map";
+
+/**
+ * One way to reach the business. An item with an `href` is a link (a `tel:`
+ * dials, a form page opens); an item with `onSelect` is a button that hands
+ * off to something already on the page, such as a chat vendor's own window.
+ * A prototype never implies a system the business does not run, so an item
+ * always points at the business's existing flow.
+ */
+export interface ContactDockItem {
+	label: string;
+	/** One short line under the label. */
+	description?: string;
+	icon?: ContactDockIcon;
+	href?: string;
+	/** Opens in a new tab, except on mailto, tel, and sms links. */
+	external?: boolean;
+	/** Called on select in place of following a link; the dock closes first. */
+	onSelect?: () => void;
+	/** Sets the item apart on a tinted ground, as the way most people should take. */
+	lead?: boolean;
+}
+
+/** What a site's config gives the dock; `SiteShell` mounts it when present. */
+export interface ContactDockConfig {
+	/** The launcher's words, e.g. "Talk to us". On a phone the launcher shows its icon alone. */
+	label: string;
+	/** The panel's heading. Defaults to the launcher's words. */
+	title?: string;
+	/** One line under the heading. */
+	subtitle?: string;
+	items: ContactDockItem[];
+	/** A small line at the panel's foot, such as the hours someone answers. */
+	footnote?: string;
 }

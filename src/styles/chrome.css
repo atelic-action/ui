@@ -133,7 +133,10 @@
 		align-items: center;
 		gap: 4px;
 	}
-	.atelic-ui .nav-links a {
+	/* The bar's own entries only: a direct link or a group's control, never a
+	   link inside an open panel, which keeps its own styling (rule 7). */
+	.atelic-ui .nav-links > a,
+	.atelic-ui .nav-links .nav-group-btn {
 		padding: 8px 14px;
 		border-radius: var(--radius-pill);
 		font-weight: 600;
@@ -142,11 +145,14 @@
 			background 0.15s,
 			color 0.15s;
 	}
-	.atelic-ui .nav-links a:hover {
+	.atelic-ui .nav-links > a:hover,
+	.atelic-ui .nav-links .nav-group-btn:hover,
+	.atelic-ui .nav-links .nav-group-btn[aria-expanded="true"] {
 		background: rgba(33, 28, 23, 0.06);
 	}
 	/* A page's own stops: the scroll spied active one. */
-	.atelic-ui .nav-links a.active {
+	.atelic-ui .nav-links > a.active,
+	.atelic-ui .nav-links .nav-group-btn.is-current {
 		color: var(--primary);
 	}
 	/* Desktop only, and hidden until the bar is solid: on small screens the
@@ -156,6 +162,7 @@
 	   that hid the button itself. */
 	.atelic-ui .nav .nav-cta {
 		display: none;
+		white-space: nowrap;
 	}
 	.atelic-ui .nav-burger {
 		display: inline-flex;
@@ -200,10 +207,13 @@
 	.atelic-ui .nav.nav-dark .nav-logo .mark {
 		filter: none;
 	}
-	.atelic-ui .nav.nav-dark .nav-links a:hover {
+	.atelic-ui .nav.nav-dark .nav-links > a:hover,
+	.atelic-ui .nav.nav-dark .nav-links .nav-group-btn:hover,
+	.atelic-ui .nav.nav-dark .nav-links .nav-group-btn[aria-expanded="true"] {
 		background: rgba(255, 255, 255, 0.08);
 	}
-	.atelic-ui .nav.nav-dark .nav-links a.active {
+	.atelic-ui .nav.nav-dark .nav-links > a.active,
+	.atelic-ui .nav.nav-dark .nav-links .nav-group-btn.is-current {
 		color: var(--primary-bright);
 	}
 	@media (min-width: 900px) {
@@ -217,6 +227,263 @@
 			display: inline-flex;
 		}
 	}
+	/* ---- Header: groups, the mega menu, and the numbers ----
+	   A bar holding nav groups or numbers (.is-wide) needs more room, so the
+	   burger keeps the phone and tablet widths up to 1180px and the bar's
+	   entries show from there. A plain bar keeps the 900px step above. */
+	.atelic-ui .nav-item {
+		display: flex;
+	}
+	.atelic-ui .nav-links .nav-group-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		white-space: nowrap;
+	}
+	.atelic-ui .nav-group-btn .nav-chevron {
+		flex: none;
+		opacity: 0.7;
+		transition: transform 0.2s ease;
+	}
+	.atelic-ui .nav-group-btn[aria-expanded="true"] .nav-chevron {
+		transform: rotate(180deg);
+		opacity: 1;
+	}
+	.atelic-ui .nav-links > a:focus-visible,
+	.atelic-ui .nav-group-btn:focus-visible,
+	.atelic-ui .nav-mega a:not(.btn):focus-visible,
+	.atelic-ui .nav-phone:focus-visible,
+	.atelic-ui .nav-call:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	/* The feature card's button sits on the primary field, so its ring is the
+	   page surface. */
+	.atelic-ui .nav-feature-cta:focus-visible {
+		outline: 2px solid var(--surface);
+		outline-offset: 2px;
+	}
+	/* The panel hangs from the bar itself: the item is never a positioned
+	   box, so the fixed header is the panel's containing block and the card
+	   spans the bar's width. The padding above the card is the pointer's
+	   bridge from the control down into the panel. */
+	.atelic-ui .nav-mega {
+		display: none;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 100%;
+		padding: 10px var(--gutter) 0;
+		color: var(--ink);
+		max-height: calc(100vh - var(--nav-height));
+		overflow-y: auto;
+	}
+	.atelic-ui .nav-mega.is-open {
+		display: block;
+	}
+	.atelic-ui .nav-mega-card {
+		max-width: calc(var(--max-width) - 2 * var(--gutter));
+		margin-inline: auto;
+		display: flex;
+		gap: 32px;
+		padding: 32px 36px;
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg, var(--shadow-md));
+	}
+	.atelic-ui .nav-mega-cols {
+		flex: 1;
+		min-width: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+		gap: 8px 32px;
+		align-content: start;
+	}
+	.atelic-ui .nav-mega-all {
+		grid-column: 1 / -1;
+		justify-self: start;
+		margin-bottom: 8px;
+		font-weight: 700;
+		color: var(--primary);
+	}
+	.atelic-ui .nav-mega-col {
+		min-width: 0;
+	}
+	.atelic-ui .nav-mega-head {
+		display: block;
+		margin: 0 0 8px;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+	}
+	.atelic-ui a.nav-mega-head:hover {
+		color: var(--primary);
+	}
+	.atelic-ui .nav-mega-link {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 8px 0;
+		color: var(--ink);
+	}
+	.atelic-ui .nav-mega-label {
+		font-weight: 600;
+		font-size: 1rem;
+		line-height: 1.3;
+	}
+	.atelic-ui .nav-mega-desc {
+		font-size: 0.86rem;
+		line-height: 1.35;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .nav-mega-link:hover .nav-mega-label,
+	.atelic-ui .nav-mega-link[aria-current="page"] .nav-mega-label {
+		color: var(--primary);
+	}
+	/* The feature card: the picture takes the height the words leave, so the
+	   button lands in the same place in every group that carries one. */
+	.atelic-ui .nav-feature {
+		flex: none;
+		width: 320px;
+		min-height: 360px;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		border-radius: var(--radius-md);
+		background: var(--primary);
+		color: #fff;
+	}
+	.atelic-ui .nav-feature-img {
+		flex: 1 1 0;
+		min-height: 0;
+		width: 100%;
+		object-fit: cover;
+	}
+	.atelic-ui .nav-feature-body {
+		flex: none;
+		margin-top: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 20px 22px 22px;
+	}
+	.atelic-ui .nav-feature-eyebrow {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, #fff 78%, transparent);
+	}
+	.atelic-ui .nav-feature-title {
+		font-size: 1.3rem;
+		font-weight: 700;
+		line-height: 1.2;
+		text-wrap: balance;
+	}
+	.atelic-ui .nav-feature-text {
+		font-size: 0.95rem;
+		line-height: 1.45;
+		color: color-mix(in srgb, #fff 88%, transparent);
+	}
+	.atelic-ui .nav-feature-cta {
+		margin-top: 8px;
+	}
+	/* The numbers: up to two tel links in the bar on a desktop, and the first
+	   as a round call button beside the burger below. */
+	.atelic-ui .nav-phones {
+		display: none;
+		gap: 8px;
+	}
+	.atelic-ui .nav-phone {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 16px 6px 12px;
+		border-radius: var(--radius-pill);
+		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
+		white-space: nowrap;
+		transition: box-shadow 0.15s ease;
+	}
+	.atelic-ui .nav-phone:hover {
+		box-shadow: inset 0 0 0 1.5px currentColor;
+	}
+	.atelic-ui .nav-phone svg {
+		flex: none;
+	}
+	.atelic-ui .nav-phone-text {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.15;
+	}
+	.atelic-ui .nav-phone-label {
+		font-family: var(--font-mono);
+		font-size: 0.64rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		opacity: 0.72;
+	}
+	.atelic-ui .nav-phone-number {
+		font-weight: 700;
+		font-size: 0.95rem;
+	}
+	.atelic-ui .nav-call {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		flex: none;
+		border-radius: 50%;
+		box-shadow: inset 0 0 0 1.5px var(--neutral-300);
+	}
+	.atelic-ui .nav.is-wide .nav-inner {
+		justify-content: flex-start;
+	}
+	.atelic-ui .nav.is-wide .nav-logo {
+		margin-right: auto;
+	}
+	@media (min-width: 900px) and (max-width: 1179px) {
+		.atelic-ui .nav.is-wide .nav-links {
+			display: none;
+		}
+		.atelic-ui .nav.is-wide .nav-burger {
+			display: inline-flex;
+		}
+	}
+	/* The second number waits for the room to hold it; the menu lists both. */
+	.atelic-ui .nav-phone + .nav-phone {
+		display: none;
+	}
+	@media (min-width: 1360px) {
+		.atelic-ui .nav-phone + .nav-phone {
+			display: inline-flex;
+		}
+	}
+	@media (min-width: 1180px) {
+		.atelic-ui .nav.is-wide .nav-logo {
+			margin-right: 8px;
+		}
+		.atelic-ui .nav.is-wide .nav-links {
+			flex: 1;
+		}
+		.atelic-ui .nav-phones {
+			display: flex;
+		}
+		.atelic-ui .nav-call {
+			display: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .nav-group-btn .nav-chevron,
+		.atelic-ui .mobile-menu .mm-chevron {
+			transition: none;
+		}
+	}
+
 	/* The burger folds into an X while the menu is open. State lives on the
 	   button's own aria-expanded, so no extra class plumbing. */
 	.atelic-ui .nav-burger[aria-expanded="true"] span:nth-child(1) {
@@ -328,6 +595,60 @@
 		text-decoration: none;
 	}
 
+	/* A group in the menu is an accordion: its control is an entry like the
+	   rest, and its links open under it. The rule above the group carries the
+	   hairline, so the control drops its own. */
+	.atelic-ui .mobile-menu .mm-group {
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	}
+	.atelic-ui .mobile-menu .mm-group-btn {
+		width: 100%;
+		border-bottom: 0;
+		text-align: left;
+	}
+	.atelic-ui .mobile-menu .mm-chevron {
+		flex: none;
+		color: var(--primary-bright);
+		transition: transform 0.2s ease;
+	}
+	.atelic-ui .mobile-menu .mm-group-btn[aria-expanded="true"] .mm-chevron {
+		transform: rotate(180deg);
+	}
+	.atelic-ui .mobile-menu .mm-group-panel {
+		display: none;
+		flex-direction: column;
+		gap: 16px;
+		padding: 0 0 20px;
+	}
+	.atelic-ui .mobile-menu .mm-group-panel.is-open {
+		display: flex;
+	}
+	.atelic-ui .mobile-menu .mm-group-all {
+		font-weight: 700;
+		font-size: 1.1rem;
+		color: var(--primary-bright);
+	}
+	.atelic-ui .mobile-menu .mm-group-col {
+		display: flex;
+		flex-direction: column;
+	}
+	.atelic-ui .mobile-menu .mm-group-head {
+		margin: 0 0 4px;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--neutral-300);
+	}
+	.atelic-ui .mobile-menu .mm-group-link {
+		padding: 9px 0;
+		font-size: 1.12rem;
+		font-weight: 600;
+	}
+	.atelic-ui .mobile-menu .mm-group-link[aria-current="page"] {
+		color: var(--primary-bright);
+	}
+
 	/* ---- Sticky CTA bar (phones only) ---- */
 	.atelic-ui .sticky-cta {
 		position: fixed;
@@ -357,6 +678,201 @@
 	@media (min-width: 900px) {
 		.atelic-ui .sticky-cta {
 			display: none;
+		}
+	}
+
+	/* ---- Contact dock ----
+	   The corner launcher and its panel. The dock sets its own right and
+	   bottom inline as it tracks the sticky bar and the footer; these are the
+	   first paint's. On a phone the launcher is its icon and the panel a
+	   sheet across the bottom. */
+	.atelic-ui .contact-dock {
+		position: fixed;
+		right: 24px;
+		bottom: 24px;
+		z-index: 96;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 12px;
+	}
+	/* Positioned, so it paints over the phone's sheet, which is fixed. */
+	.atelic-ui .cd-launch {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		height: 52px;
+		padding: 0 20px 0 16px;
+		border-radius: var(--radius-pill);
+		background: var(--primary);
+		color: #fff;
+		font-weight: 600;
+		/* A ring of the page surface keeps the button apart from a band of its
+		   own color behind it, such as a primary footer. */
+		box-shadow:
+			0 0 0 2px var(--surface),
+			var(--shadow-md);
+		transition: background 0.2s ease;
+	}
+	.atelic-ui .cd-launch:hover {
+		background: var(--primary-deep);
+	}
+	.atelic-ui .cd-launch:focus-visible,
+	.atelic-ui .cd-item:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	.atelic-ui .cd-panel {
+		width: min(380px, calc(100vw - 32px));
+		max-height: min(620px, calc(100vh - 100px));
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		background: var(--card);
+		color: var(--ink);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg, var(--shadow-md));
+	}
+	.atelic-ui .cd-panel[hidden] {
+		display: none;
+	}
+	.atelic-ui .cd-head {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		padding: 16px 12px 16px 18px;
+		background: var(--primary);
+		color: #fff;
+	}
+	.atelic-ui .cd-head-text {
+		flex: 1;
+		min-width: 0;
+	}
+	.atelic-ui .cd-close {
+		flex: none;
+		width: 40px;
+		height: 40px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		color: #fff;
+	}
+	.atelic-ui .cd-close:hover {
+		background: color-mix(in srgb, #fff 14%, transparent);
+	}
+	.atelic-ui .cd-close:focus-visible {
+		outline: 2px solid #fff;
+		outline-offset: -2px;
+	}
+	.atelic-ui .cd-panel .cd-title {
+		font-family: var(--font-sans);
+		font-size: 1.15rem;
+		font-weight: 700;
+		letter-spacing: 0;
+		line-height: 1.2;
+		color: #fff;
+	}
+	.atelic-ui .cd-sub {
+		margin-top: 2px;
+		font-size: 0.92rem;
+		line-height: 1.35;
+		color: color-mix(in srgb, #fff 90%, transparent);
+	}
+	.atelic-ui .cd-items {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		padding: 8px;
+		overflow-y: auto;
+	}
+	.atelic-ui .cd-item {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: 12px;
+		border-radius: var(--radius-md);
+		color: var(--ink);
+		text-align: left;
+	}
+	.atelic-ui .cd-item:hover,
+	.atelic-ui .cd-item.is-lead {
+		background: var(--primary-tint, var(--surface-alt));
+	}
+	.atelic-ui .cd-item-icon {
+		flex: none;
+		width: 42px;
+		height: 42px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--card);
+		color: var(--primary);
+		border: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .cd-item.is-lead .cd-item-icon {
+		background: var(--primary);
+		border-color: var(--primary);
+		color: #fff;
+	}
+	.atelic-ui .cd-item-text {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.atelic-ui .cd-item-label {
+		font-weight: 700;
+		line-height: 1.25;
+	}
+	.atelic-ui .cd-item-desc {
+		font-size: 0.9rem;
+		line-height: 1.35;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .cd-item-go {
+		flex: none;
+		color: var(--neutral-600);
+	}
+	.atelic-ui .cd-foot {
+		padding: 12px 20px 14px;
+		border-top: 1px solid var(--hairline);
+		font-size: 0.86rem;
+		color: var(--ink-soft);
+	}
+	@media (max-width: 899px) {
+		.atelic-ui .cd-launch {
+			width: 52px;
+			padding: 0;
+			justify-content: center;
+		}
+		.atelic-ui .cd-launch-text {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
+		/* The sheet leaves room at its foot for the launcher, which floats
+		   over it as the close button. */
+		.atelic-ui .cd-panel {
+			position: fixed;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			width: auto;
+			max-height: 86vh;
+			padding-bottom: 72px;
+			border-width: 1px 0 0;
+			border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .cd-launch {
+			transition: none;
 		}
 	}
 
@@ -401,10 +917,12 @@
 		font-weight: 500;
 		margin-bottom: 10px;
 	}
+	/* The stars read --star-fill, the token StarRating's filled star reads, so
+	   one line in a theme recolors both; the review gold is the fallback. */
 	.atelic-ui .footer-stars {
 		display: inline-flex;
 		gap: 2px;
-		color: #f5b301;
+		color: var(--star-fill, #f5b301);
 	}
 	.atelic-ui .footer nav a {
 		display: flex;

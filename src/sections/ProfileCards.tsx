@@ -23,6 +23,8 @@ export interface ProfileCardsProps {
 	title: ReactNode;
 	lead?: ReactNode;
 	items: ProfileItem[];
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /**
@@ -30,10 +32,17 @@ export interface ProfileCardsProps {
  * numbering. For rosters and teams where every member carries the same
  * weight (contrast FeatureGrid, whose numbered cards imply an ordering).
  */
-export function ProfileCards({ id, eyebrow, title, lead, items }: ProfileCardsProps) {
+export function ProfileCards({
+	id,
+	eyebrow,
+	title,
+	lead,
+	items,
+	surface = "default",
+}: ProfileCardsProps) {
 	const withBase = useWithBase();
 	return (
-		<section className="section" id={id}>
+		<section className={surface === "alt" ? "section surface-alt" : "section"} id={id}>
 			<div className="wrap">
 				<SectionHeading eyebrow={eyebrow} title={title} lead={lead} />
 				<ul className="profile-cards">

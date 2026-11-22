@@ -20,6 +20,8 @@ export interface LegalPageProps {
 	doc: LegalDoc;
 	id?: string;
 	className?: string;
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /**
@@ -31,9 +33,14 @@ export interface LegalPageProps {
  * uses capitals to make a clause conspicuous, which carries actual legal
  * weight in some jurisdictions, so it is never normalised away here.
  */
-export function LegalPage({ doc, id, className }: LegalPageProps) {
+export function LegalPage({ doc, id, className, surface = "default" }: LegalPageProps) {
 	return (
-		<section className={["section", "legal", className].filter(Boolean).join(" ")} id={id}>
+		<section
+			className={["section", "legal", surface === "alt" && "surface-alt", className]
+				.filter(Boolean)
+				.join(" ")}
+			id={id}
+		>
 			<div className="wrap">
 				{doc.lastUpdated && <p className="legal-updated">Last updated: {doc.lastUpdated}</p>}
 				<ProseBlocks blocks={doc.blocks} />

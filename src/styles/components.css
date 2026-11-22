@@ -15,15 +15,21 @@
    `--primary` and `--card` hold something else (shadcn keeps bare HSL
    channels there) sets the `--ui-` names and leaves its own alone. */
 @layer atelic-ui {
+	/* The opener's padding is a share of the section spacing (base.css), with
+	   the spacing it had before 8.0.0 where no base sheet sets the token. */
 	.atelic-ui .not-found-hero {
-		padding-top: clamp(40px, 7vw, 86px);
-		padding-bottom: clamp(28px, 5vw, 60px);
+		padding-top: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.72);
+		padding-bottom: calc(var(--section-space, clamp(56px, 9vw, 120px)) * 0.5);
 	}
 	/* SiteShell's main clears the fixed header for the page. A shell that does
 	   not (ArtifactShell, whose documents clear it in their own sheet) leaves
 	   the 404 to clear it here, or its heading sits under the header. */
 	.atelic-ui main:not(.clears-nav) .not-found-hero {
-		padding-top: calc(var(--nav-height, 72px) + clamp(40px, 7vw, 86px));
+		padding-top: calc(
+			var(--nav-height, 72px) +
+			var(--section-space, clamp(56px, 9vw, 120px)) *
+			0.72
+		);
 	}
 	.atelic-ui .not-found-hero h1 {
 		margin: 16px 0 0;

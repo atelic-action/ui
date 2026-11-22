@@ -1,8 +1,10 @@
+import { SectionHeading } from "../src/primitives";
 import {
 	ContactForm,
 	ContactInfoCard,
 	FAQBrowser,
 	HoursTable,
+	LinkColumns,
 	LocationSection,
 	Locations,
 	MapEmbed,
@@ -28,6 +30,48 @@ export function MarketingVisit() {
 					title="On Alder Street, by the old mill."
 					lead="Street parking out front, and the bike rack is ours."
 				/>
+			</Specimen>
+
+			<Specimen
+				id="link-columns"
+				name="LinkColumns"
+				lead="Columns of links under a section's heading, as many across as fit: service areas by region, here with each neighborhood's count of standing orders set right aligned in tabular numerals."
+			>
+				<Band alt>
+					<SectionHeading
+						eyebrow="Where we deliver"
+						title="Every morning, before the doors open"
+						lead="The counts are the standing wholesale orders in each neighborhood."
+					/>
+					<LinkColumns
+						columns={[
+							{
+								heading: "Fairhaven",
+								href: "#link-columns",
+								links: [
+									{ label: "Alder Street", href: "#link-columns", count: "14 orders" },
+									{ label: "Old Mill", href: "#link-columns", count: "9" },
+									{ label: "Birch Row", href: "#link-columns", count: "6" },
+								],
+							},
+							{
+								heading: "Riverside",
+								links: [
+									{ label: "The Riverside blocks", href: "#link-columns", count: "11" },
+									{ label: "Lantern Square", href: "#link-columns", count: "102" },
+									{ label: "Ferry Landing", href: "#link-columns" },
+								],
+							},
+							{
+								heading: "Out of town",
+								links: [
+									{ label: "Kestrel Ridge", href: "#link-columns", count: "3" },
+									{ label: "Hollow Creek", href: "#link-columns", count: "1" },
+								],
+							},
+						]}
+					/>
+				</Band>
 			</Specimen>
 
 			<Specimen

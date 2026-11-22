@@ -54,7 +54,7 @@ export function Frame({
 }) {
 	const style: CSSProperties | undefined = height ? { height } : undefined;
 	return (
-		<div className={["gallery-frame", className].filter(Boolean).join(" ")} style={style}>
+		<div className={["gallery-pane", className].filter(Boolean).join(" ")} style={style}>
 			{children}
 		</div>
 	);

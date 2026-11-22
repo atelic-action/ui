@@ -16,6 +16,8 @@ export interface BlogIndexProps {
 	basePath?: string;
 	id?: string;
 	className?: string;
+	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
+	surface?: "default" | "alt";
 }
 
 /**
@@ -28,10 +30,21 @@ export interface BlogIndexProps {
  * the build's link crawler discover the posts without an explicit page
  * list in the vite config.
  */
-export function BlogIndex({ items, basePath = "/blog", id, className }: BlogIndexProps) {
+export function BlogIndex({
+	items,
+	basePath = "/blog",
+	id,
+	className,
+	surface = "default",
+}: BlogIndexProps) {
 	const withBase = useWithBase();
 	return (
-		<section className={["section", "blog-index", className].filter(Boolean).join(" ")} id={id}>
+		<section
+			className={["section", "blog-index", surface === "alt" && "surface-alt", className]
+				.filter(Boolean)
+				.join(" ")}
+			id={id}
+		>
 			<div className="wrap">
 				<ol className="bi-list">
 					{items.map((item) => (
