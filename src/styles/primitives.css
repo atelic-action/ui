@@ -341,7 +341,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: var(--neutral-600);
+		/* Soft words on the inset well read --ink-inset, which a theme may
+		   set; --neutral-600 read 4.4 to 1 there on the practice's palette. */
+		color: var(--ink-inset, var(--ink-soft));
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 		letter-spacing: 0.08em;

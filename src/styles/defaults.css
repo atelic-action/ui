@@ -43,7 +43,7 @@
 		   warning, and broken read green, amber, and red whatever the brand
 		   is. A site's theme may restate any of them. A component sets
 		   data-tone, and --tone, --tone-fill, and --tone-bg follow (below). */
-		--tone-good: #1b7f3b;
+		--tone-good: #197538;
 		--tone-good-fill: #37a35c;
 		--tone-good-bg: #eaf6ee;
 		--tone-warn: #a84500;
@@ -58,7 +58,7 @@
 		--grade-a: var(--tone-good);
 		--grade-a-line: var(--tone-good);
 		--grade-a-bg: var(--tone-good-bg);
-		--grade-b: #9a6b00;
+		--grade-b: #8a5f00;
 		--grade-b-line: #c99a1a;
 		--grade-b-bg: #fdf5dc;
 		--grade-c: var(--tone-warn);

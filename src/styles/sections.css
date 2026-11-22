@@ -321,8 +321,10 @@
 		background-repeat: no-repeat;
 		background-position: right 16px center;
 	}
+	/* The error words read the primary's ink, which clears 4.5 to 1 on the
+	   surface and on the tint (--primary-deep, a fill, read 4.17 and 3.96). */
 	.atelic-ui .field .err {
-		color: var(--primary-deep);
+		color: var(--primary-ink, var(--primary));
 		font-size: 0.82rem;
 		display: none;
 	}
@@ -347,9 +349,10 @@
 		margin-bottom: 18px;
 	}
 	.atelic-ui .form-error {
+		display: block;
 		background: var(--primary-tint);
 		border: 1.5px solid var(--primary);
-		color: var(--primary-deep);
+		color: var(--primary-ink, var(--primary));
 		padding: 20px 22px;
 		border-radius: var(--radius-md);
 		font-weight: var(--weight-semibold);
@@ -1317,7 +1320,7 @@
 	}
 	.atelic-ui .map-facade-hint {
 		font-size: 13px;
-		color: var(--neutral-600);
+		color: var(--ink-inset, var(--ink-soft));
 		border-bottom: 1px solid currentColor;
 		padding-bottom: 1px;
 	}
@@ -1988,7 +1991,7 @@
 	.atelic-ui .profile-placeholder {
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
-		color: var(--neutral-500);
+		color: var(--ink-inset, var(--ink-soft));
 		text-align: center;
 		padding: 12px;
 		background: repeating-linear-gradient(
@@ -2103,7 +2106,7 @@
 		background:
 			repeating-linear-gradient(135deg, var(--hairline-strong) 0 10px, transparent 10px 20px),
 			var(--surface-inset);
-		color: var(--neutral-600);
+		color: var(--ink-inset, var(--ink-soft));
 	}
 	.atelic-ui .rslider-ph.is-after {
 		justify-items: end;
@@ -2111,7 +2114,7 @@
 		background:
 			repeating-linear-gradient(135deg, var(--primary-focus-ring) 0 10px, transparent 10px 20px),
 			var(--primary-tint);
-		color: var(--primary-deep);
+		color: var(--primary-ink, var(--primary));
 	}
 	.atelic-ui .rslider-label {
 		position: absolute;
@@ -2419,7 +2422,10 @@
 	.atelic-ui .rvc-score-out {
 		font-size: clamp(1.2rem, 2vw, 1.7rem);
 		font-weight: var(--weight-medium);
-		color: var(--neutral-300);
+		/* The quiet gray, the faintest words the theme promises to read: the
+		   denominator is display size on a wide screen but body size on a
+		   phone, so it keeps the 4.5 to 1 floor (it read --neutral-300, 2.05). */
+		color: var(--neutral-500);
 	}
 	.atelic-ui .rvc-rating {
 		display: flex;
