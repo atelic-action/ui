@@ -39,8 +39,35 @@ jobs:
       - name: Run tests
         run: bun run test:run
 
+      - name: Read the Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('playwright/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright's Chromium
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      # The browser comes from the cache when the version is unchanged; its
+      # system libraries are apt packages, which the cache cannot hold.
+      - name: Install Playwright's Chromium and its system libraries
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: bunx playwright install --with-deps chromium
+
+      - name: Install Chromium's system libraries
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright install-deps chromium
+
+      - name: Run the stories as tests
+        run: bun run test:stories
+
       - name: Build the gate, then load it the way a Vercel function does
         run: bun run build && bun run build:smoke
 
       - name: Build the gallery
         run: bun run gallery:build
+
+      - name: Build Storybook
+        run: bun run storybook:build
