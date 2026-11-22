@@ -79,6 +79,16 @@
 		--weight-strong: 650;
 		--weight-bold: 700;
 		--weight-heavy: 800;
+		/* Three theme tokens every template's theme sets, given the
+		   template's own values here so a theme without them still draws
+		   them: the raised shadow (an image frame, the map's chip, a card),
+		   the higher one (a lifted frame, a panel), and the script face of
+		   a sign off. The script face names Yellowtail, which a template
+		   self hosts; the package bundles no font, so where none is loaded
+		   the line falls to a system script. */
+		--shadow-md: 0 4px 14px rgb(33 28 23 / 0.08), 0 12px 32px rgb(33 28 23 / 0.06);
+		--shadow-lg: 0 10px 30px rgb(33 28 23 / 0.12), 0 30px 70px rgb(33 28 23 / 0.1);
+		--font-script: "Yellowtail", "Brush Script MT", cursive;
 		/* The header mark's height; its width follows the image's ratio. */
 		--brand-mark-height: 30px;
 		/* The section spacing where no base sheet sets it (an app importing

@@ -55,7 +55,7 @@
 		margin: 0;
 		font-size: 0.98rem;
 		line-height: 1.65;
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	@media (max-width: 600px) {
@@ -116,7 +116,7 @@
 
 	.atelic-ui .bp-author {
 		font-weight: var(--weight-semibold);
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	.atelic-ui .bp-updated::before {

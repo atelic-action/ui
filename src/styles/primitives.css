@@ -519,14 +519,14 @@
 		margin: 10px 0 0;
 		text-align: center;
 		font-size: 0.9rem;
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	.atelic-ui .pb-body {
 		margin: 0 0 16px;
 		font-size: 1rem;
 		line-height: 1.75;
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	/* The base reset strips list markers site wide, which suits nav and card
@@ -536,7 +536,7 @@
 		margin: 0 0 16px;
 		padding-left: 22px;
 		list-style: disc outside;
-		color: var(--neutral-700);
+		color: var(--neutral-700, var(--ink));
 	}
 
 	.atelic-ui .pb-list li {
