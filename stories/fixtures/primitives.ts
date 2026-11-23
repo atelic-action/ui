@@ -9,7 +9,12 @@ import type {
 	ThresholdReading,
 	ThresholdZone,
 } from "../../src/components";
-import type { ProseBlock } from "../../src/primitives";
+import type {
+	AddressParts,
+	AddressProvider,
+	AddressSuggestion,
+	ProseBlock,
+} from "../../src/primitives";
 import { email } from "./bakery";
 
 /*
@@ -25,6 +30,54 @@ export const longWord = "Vollkornroggensauerteigbrotmitsonnenblumenkernen";
 /** The longest unbroken URL a page is likely to print. */
 export const longURL =
 	"https://kestrelhollow.example.com/menu/seasonal/autumn/the-whole-list-of-tarts-loaves-and-buns-for-every-saturday";
+
+// ---- Addresses ----
+
+/** The made up Fairhaven addresses the example address provider knows. */
+export const exampleAddresses: (AddressParts & { id: string })[] = [
+	{ id: "alder", street: "418 Alder Street", city: "Fairhaven", state: "CO", zip: "80000" },
+	{ id: "birch", street: "12 Birch Lane", city: "Fairhaven", state: "CO", zip: "80001" },
+	{ id: "cedar", street: "4180 Cedar Hollow Road", city: "Fairhaven", state: "WY", zip: "82000" },
+];
+
+/**
+ * An address provider over `exampleAddresses`, matching any address whose
+ * street holds the typed words, the way a site's wrapper over a real
+ * lookup service behaves. `delay` holds each answer, by the query when it
+ * is a function, so a story can answer an earlier question after a later
+ * one.
+ */
+export function exampleProvider(delay: number | ((query: string) => number) = 0): AddressProvider {
+	const wait = (ms: number, signal: AbortSignal) =>
+		new Promise<void>((resolve) => {
+			const timer = setTimeout(resolve, ms);
+			signal.addEventListener("abort", () => {
+				clearTimeout(timer);
+				resolve();
+			});
+		});
+	return {
+		async suggest(query, { signal }) {
+			await wait(typeof delay === "function" ? delay(query) : delay, signal);
+			const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+			return exampleAddresses
+				.filter((place) => words.every((word) => place.street.toLowerCase().includes(word)))
+				.map(
+					(place): AddressSuggestion => ({
+						id: place.id,
+						text: place.street,
+						secondary: `${place.city}, ${place.state} ${place.zip}`,
+					}),
+				);
+		},
+		async resolve(suggestion) {
+			const place = exampleAddresses.find((candidate) => candidate.id === suggestion.id);
+			if (!place) throw new Error(`no address ${suggestion.id}`);
+			const { id: _id, ...parts } = place;
+			return parts;
+		},
+	};
+}
 
 // ---- Prose ----
 

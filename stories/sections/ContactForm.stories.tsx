@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, type Mock, spyOn, waitFor, within } from "storybook/test";
-import { ContactForm } from "../../src/sections";
+import { ContactForm, type ContactFormProps } from "../../src/sections";
+import { exampleProvider } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../support/geometry";
+import { layerOpened } from "../support/settle";
 import { pin } from "../support/viewports";
 
 /*
@@ -354,6 +356,266 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async () => {
+		await expectNoSidewaysScroll();
+	},
+};
+
+// ---- A service business's shape (8.5.0) ----
+
+const consentText =
+	"By checking this box, you agree that Kestrel Hollow Bakehouse may text you about this order: when it is ready, a change to its pickup time, and nothing else. We never share your number for marketing. You can opt out at any time by replying STOP. Message and data rates may apply. Consent is not a condition of any order.";
+
+/** Every opt in prop on, in the bakery's own words. */
+const serviceShape = {
+	splitName: true,
+	phone: "required" as const,
+	address: {
+		provider: exampleProvider(),
+		attribution: "Suggestions by Example Maps",
+		states: ["CO", "WY", "NM"],
+	},
+	services: ["Sandwich loaves", "Celebration cakes", "Wholesale", "Catering"],
+	consent: {
+		text: consentText,
+		links: [
+			{ label: "Terms", href: "/terms" },
+			{ label: "Privacy policy", href: "/privacy" },
+		],
+	},
+	labels: {
+		addressSearch: "Delivery address",
+		services: "What can we bake for you?",
+		servicesHint: "(check all that apply)",
+		servicesCount: (count) => `${count} kinds chosen`,
+		message: "Tell us about the order",
+	},
+	placeholders: { addressSearch: "Start typing your address", services: "Choose any" },
+	errorSummary: (count) =>
+		count === 1
+			? "One thing needs fixing before we can send this."
+			: `${count} things need fixing before we can send this.`,
+	footnote: (
+		<>
+			Need it today? <a href="tel:+15555550142">Call (555) 555-0142</a>
+		</>
+	),
+	topics: undefined,
+} satisfies Partial<ContactFormProps>;
+
+const thanks: ContactFormProps["thanks"] = {
+	title: (values) => `We have your order, ${values.firstName}.`,
+	lead: (values) => `A copy is on its way to ${values.email}.`,
+	summary: { address: "Deliver to", contact: "Reach you" },
+	stepsHeading: "What happens next",
+	steps: ["You get an email with a copy of the order.", "We call within a day to settle the date."],
+};
+
+async function fillService(canvas: Canvas, userEvent: User) {
+	await userEvent.type(canvas.getByLabelText("First name"), "Robin");
+	await userEvent.type(canvas.getByLabelText("Last name"), "Ash");
+	await userEvent.type(canvas.getByLabelText("Phone"), "(555) 555-0199");
+	await userEvent.type(canvas.getByLabelText("Email"), "robin@example.com");
+	await userEvent.type(canvas.getByLabelText("Tell us about the order"), "Two tiers, lemon.");
+}
+
+/**
+ * The whole shape: a split name, a phone beside the email, the address
+ * search over the four address fields, the services picker, and the
+ * consent line. A pick fills the fields, and the relay gets every new key
+ * beside the five it always got.
+ */
+export const ServiceBusiness: Story = {
+	args: serviceShape,
+	play: async ({ canvas, userEvent, step }) => {
+		await step("the names share a line, as do the phone and the email", async () => {
+			const first = canvas.getByLabelText("First name").getBoundingClientRect();
+			const last = canvas.getByLabelText("Last name").getBoundingClientRect();
+			await expect(Math.round(first.top)).toBe(Math.round(last.top));
+			const phone = canvas.getByLabelText("Phone").getBoundingClientRect();
+			const email = canvas.getByLabelText("Email").getBoundingClientRect();
+			await expect(Math.round(phone.top)).toBe(Math.round(email.top));
+		});
+		await step("filled in", async () => {
+			await fillService(canvas, userEvent);
+		});
+		await step("a picked address fills street, city, state, and ZIP", async () => {
+			await userEvent.type(canvas.getByRole("combobox", { name: /Delivery address/ }), "Cedar");
+			await userEvent.click(await canvas.findByRole("option", { name: /4180 Cedar Hollow Road/ }));
+			await waitFor(() =>
+				expect(canvas.getByLabelText("Street address")).toHaveValue("4180 Cedar Hollow Road"),
+			);
+			await expect(canvas.getByLabelText("City")).toHaveValue("Fairhaven");
+			await expect(canvas.getByLabelText("State")).toHaveValue("WY");
+			await expect(canvas.getByLabelText("ZIP")).toHaveValue("82000");
+		});
+		await step("two services chosen, and the consent ticked", async () => {
+			await userEvent.click(canvas.getByRole("button", { name: /What can we bake/ }));
+			await layerOpened(() => canvas.getByRole("dialog", { name: /What can we bake/ }));
+			await userEvent.click(canvas.getByRole("checkbox", { name: "Celebration cakes" }));
+			await userEvent.click(canvas.getByRole("checkbox", { name: "Catering" }));
+			await userEvent.keyboard("{Escape}");
+			await userEvent.click(canvas.getByRole("checkbox", { name: /By checking this box/ }));
+		});
+		await step("sent: the relay gets the five keys and every new one", async () => {
+			await userEvent.click(send(canvas));
+			await waitFor(() => expect(relay).toHaveBeenCalledOnce());
+			await expect(sent()).toEqual({
+				name: "Robin Ash",
+				email: "robin@example.com",
+				topic: "Celebration cakes, Catering",
+				message: "Two tiers, lemon.",
+				company: "",
+				firstName: "Robin",
+				lastName: "Ash",
+				phone: "(555) 555-0199",
+				address: { street: "4180 Cedar Hollow Road", city: "Fairhaven", state: "WY", zip: "82000" },
+				services: ["Celebration cakes", "Catering"],
+				consent: true,
+			});
+			await expect(onLead).toHaveBeenCalledOnce();
+		});
+		await step("by default the thanks shows over the cleared form", async () => {
+			await expect(await canvas.findByText(/Thank you. We answer within a day/)).toBeVisible();
+			await expect(canvas.getByLabelText("Street address")).toHaveValue("");
+			await expect(canvas.getByRole("button", { name: /What can we bake/ })).toHaveTextContent(
+				"Choose any",
+			);
+		});
+	},
+};
+
+/**
+ * Sent empty: a count of the fields to fix over the form, a message under
+ * each, focus on the first, and nothing sent. A bad phone is refused on its
+ * own once the rest is right.
+ */
+export const ServiceBusinessRefused: Story = {
+	args: serviceShape,
+	play: async ({ canvas, userEvent, step }) => {
+		await step("sent empty", async () => {
+			await userEvent.click(send(canvas));
+			await expect(canvas.getByRole("alert")).toHaveTextContent(
+				"5 things need fixing before we can send this.",
+			);
+			await expect(canvas.getByLabelText("First name")).toHaveFocus();
+			await expect(canvas.getByLabelText("Phone")).toHaveAccessibleDescription(
+				"Please enter a 10 digit phone number.",
+			);
+			await expect(canvas.getByLabelText("Street address")).not.toHaveAttribute("aria-invalid");
+			await expect(relay).not.toHaveBeenCalled();
+		});
+		await step("all but the phone fixed: one thing, and focus on the phone", async () => {
+			await fillService(canvas, userEvent);
+			await userEvent.clear(canvas.getByLabelText("Phone"));
+			await userEvent.type(canvas.getByLabelText("Phone"), "555-0199");
+			await userEvent.click(send(canvas));
+			await expect(canvas.getByRole("alert")).toHaveTextContent(
+				"One thing needs fixing before we can send this.",
+			);
+			await expect(canvas.getByLabelText("Phone")).toHaveFocus();
+			await expect(relay).not.toHaveBeenCalled();
+		});
+	},
+};
+
+/**
+ * With `thanks`, the form is replaced once sent: the heading greets by
+ * name and takes focus, what was sent is read back, the next steps follow,
+ * and Send another message brings back an empty form, focus on its first
+ * field.
+ */
+export const ServiceBusinessThanks: Story = {
+	args: { ...serviceShape, thanks },
+	play: async ({ canvas, userEvent, step }) => {
+		await step("filled in, with an address typed by hand, and sent", async () => {
+			await fillService(canvas, userEvent);
+			await userEvent.type(canvas.getByLabelText("Street address"), "418 Alder Street");
+			await userEvent.type(canvas.getByLabelText("City"), "Fairhaven");
+			await userEvent.type(canvas.getByLabelText("ZIP"), "80000");
+			await userEvent.click(send(canvas));
+		});
+		await step("the thanks replaces the form, its heading focused", async () => {
+			const title = await canvas.findByRole("heading", { name: "We have your order, Robin." });
+			await expect(title).toHaveFocus();
+			await expect(canvas.queryByRole("button", { name: /Send Message/ })).toBeNull();
+			await expect(canvas.getByText("A copy is on its way to robin@example.com.")).toBeVisible();
+		});
+		await step("what was sent, read back, and what happens next", async () => {
+			await expect(canvas.getByText("Deliver to")).toBeVisible();
+			await expect(canvas.getByText("418 Alder Street, Fairhaven, CO 80000")).toBeVisible();
+			await expect(canvas.getByText("(555) 555-0199, robin@example.com")).toBeVisible();
+			await expect(canvas.queryByText("Services")).toBeNull();
+			await expect(canvas.getByRole("heading", { name: "What happens next" })).toBeVisible();
+			await expect(canvas.getAllByRole("listitem")).toHaveLength(2);
+		});
+		await step("Send another message brings the form back, empty", async () => {
+			await userEvent.click(canvas.getByRole("button", { name: "Send another message" }));
+			await waitFor(() => expect(canvas.getByLabelText("First name")).toHaveFocus());
+			await expect(canvas.getByLabelText("First name")).toHaveValue("");
+			await expect(canvas.getByLabelText("Street address")).toHaveValue("");
+		});
+	},
+};
+
+/**
+ * The consent line shows two lines and a Show more; opened, the whole
+ * wording and its links show. The checkbox is named by every word either way.
+ */
+export const ConsentOpens: Story = {
+	args: serviceShape,
+	play: async ({ canvas, userEvent }) => {
+		const box = canvas.getByRole("checkbox", { name: /By checking this box/ });
+		await expect(box).toHaveAccessibleName(consentText);
+		await expect(canvas.queryByRole("link", { name: "Terms" })).toBeNull();
+		const more = canvas.getByRole("button", { name: "Show more" });
+		await expect(more).toHaveAttribute("aria-expanded", "false");
+		await userEvent.click(more);
+		await expect(more).toHaveAttribute("aria-expanded", "true");
+		await expect(canvas.getByRole("link", { name: "Privacy policy" })).toHaveAttribute(
+			"href",
+			"/privacy",
+		);
+		await expect(box).not.toBeChecked();
+	},
+};
+
+/** An address with no provider: the four fields alone, the street marked optional. */
+export const AddressWithoutSearch: Story = {
+	args: { address: {}, phone: "optional" },
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByRole("combobox", { name: /address/i })).toBeNull();
+		await expect(canvas.getByLabelText(/Street address/)).toHaveAccessibleName(
+			"Street address (optional)",
+		);
+		await expect(canvas.getByLabelText(/Phone/)).toHaveAccessibleName("Phone (optional)");
+		await expect(canvas.getByLabelText("State")).toHaveValue("");
+	},
+};
+
+/** The whole shape on a phone: one field to a line, and the page never scrolls sideways. */
+export const ServiceBusinessPhone: Story = {
+	args: serviceShape,
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const first = canvas.getByLabelText("First name").getBoundingClientRect();
+		const last = canvas.getByLabelText("Last name").getBoundingClientRect();
+		await expect(last.top).toBeGreaterThan(first.bottom);
+		const city = canvas.getByLabelText("City").getBoundingClientRect();
+		const zip = canvas.getByLabelText("ZIP").getBoundingClientRect();
+		await expect(Math.round(zip.right)).toBeLessThanOrEqual(Math.round(window.innerWidth));
+		await expect(city.width).toBeGreaterThan(0);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** The thanks on a phone: the read back wraps and the page never scrolls sideways. */
+export const ServiceBusinessThanksPhone: Story = {
+	args: { ...serviceShape, thanks },
+	globals: pin("phone"),
+	play: async ({ canvas, userEvent }) => {
+		await fillService(canvas, userEvent);
+		await userEvent.click(send(canvas));
+		await canvas.findByRole("heading", { name: "We have your order, Robin." });
 		await expectNoSidewaysScroll();
 	},
 };

@@ -119,3 +119,44 @@ export const PhoneLabel: Story = {
 		await expect(canvas.queryByText("Call")).toBeNull();
 	},
 };
+
+/**
+ * `layout="stacked"`: each label over its number in the body face, the
+ * numbers set large, for lines labeled by the places they serve.
+ */
+export const Stacked: Story = {
+	args: {
+		title: "Call Us",
+		layout: "stacked",
+		showAddress: false,
+		phones: [
+			{ role: "Fairhaven and the valley", display: "(555) 555-0142", e164: "+15555550142" },
+			{
+				role: "Wholesale and the cafes up the canyon",
+				display: "(555) 555-0143",
+				e164: "+15555550143",
+			},
+		],
+	},
+	play: async ({ canvas }) => {
+		const label = canvas.getByText("Fairhaven and the valley");
+		const call = canvas.getByRole("link", { name: "(555) 555-0142" });
+		await expect(call).toHaveAttribute("href", "tel:+15555550142");
+		await expect(label.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+			call.getBoundingClientRect().top + 1,
+		);
+		await expect(Number.parseFloat(getComputedStyle(call).fontSize)).toBeGreaterThan(
+			Number.parseFloat(getComputedStyle(label).fontSize),
+		);
+		await expect(canvas.queryByText("Visit")).toBeNull();
+	},
+};
+
+/** Stacked on a phone: a long place name wraps and the page never scrolls sideways. */
+export const StackedPhone: Story = {
+	...Stacked,
+	globals: pin("phone"),
+	play: async () => {
+		await expectNoSidewaysScroll();
+	},
+};

@@ -126,7 +126,10 @@
 		   --footer-link-hover (--on-dark), --closing-link (--neutral-300),
 		   and --closing-link-hover (--surface mixed with --on-dark);
 		   --menu-rule (--hairline), on the light sheet; --hero-split-pad-block
-		   (--section-space). --hero-stack-gap and the three gaps under it
+		   (--section-space); a form field's --field-label-font (--font-mono),
+		   --field-label-color (--neutral-600), --field-label-weight (the
+		   inherited weight), and --field-border (--neutral-200), each read by
+		   .field and by the pickers' own fields. --hero-stack-gap and the three gaps under it
 		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
 		   default of their own: unset, each gap in the hero keeps the value
 		   it always had, in place; so has --footer-brand-width, the brand
@@ -167,6 +170,10 @@
 		--closing-rule-inset: 0px;
 		/* The gap between the hero's actions, side by side or stacked. */
 		--hero-actions-gap: 14px;
+		/* A form field's label: its size, its case, and its tracking (8.5.0). */
+		--field-label-size: 0.74rem;
+		--field-label-case: uppercase;
+		--field-label-tracking: 0.1em;
 	}
 
 	/* ---- Long words ----

@@ -25,6 +25,7 @@ export {
 export { GateLogin, type GateLoginProps } from "./GateLogin";
 export { Hint, type HintProps } from "./Hint";
 export { IconList, type IconListItem, type IconListProps } from "./IconList";
+export { MultiSelect, type MultiSelectOption, type MultiSelectProps } from "./MultiSelect";
 export { NotFound, type NotFoundProps } from "./NotFound";
 export { Rank, type RankProps } from "./Rank";
 export {

@@ -35,6 +35,14 @@ export interface ContactInfoCardProps {
 	 * so here ("Call or text").
 	 */
 	phoneLabel?: string;
+	/**
+	 * How each row sets its label beside its value. `inline`, the default, is
+	 * the small mono label in a column of its own; `stacked` (8.5.0) puts the
+	 * label over the value in the body face and sets each number large, for a
+	 * card of several labeled lines where the label is a place ("Downtown")
+	 * and too long for the column.
+	 */
+	layout?: "inline" | "stacked";
 }
 
 /** Dark card with direct contact rows: call, email, visit, portal. */
@@ -44,11 +52,17 @@ export function ContactInfoCard({
 	phones,
 	showAddress = true,
 	phoneLabel = "Call",
+	layout = "inline",
 }: ContactInfoCardProps) {
 	const withBase = useWithBase();
 	const portal = site.footerLinks?.find((link) => link.label.toLowerCase().includes("portal"));
 	return (
-		<div className="contact-info-card" data-ground="dark">
+		<div
+			className={["contact-info-card", layout === "stacked" && "is-stacked"]
+				.filter(Boolean)
+				.join(" ")}
+			data-ground="dark"
+		>
 			<h3>{title}</h3>
 			<div className="ci-rows">
 				{phones?.length
