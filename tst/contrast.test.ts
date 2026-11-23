@@ -71,7 +71,14 @@ describe("the token each quiet word reads", () => {
 	const sections = sheet("sections.css");
 
 	it("sets the contact form's error words in the primary's ink, never the deep fill", () => {
-		expect(sections).toMatch(/\.field \.err \{[^}]*color: var\(--primary-ink, var\(--primary\)\);/);
+		// The words read --field-error first (8.5.0), and unset fall back to
+		// exactly the primary's ink, as they always did.
+		expect(sections).toMatch(
+			/\.field \.err \{[^}]*color: var\(--field-error, var\(--primary-ink, var\(--primary\)\)\);/,
+		);
+		expect(sections).toMatch(
+			/\.form-alert \{[^}]*color: var\(--field-error, var\(--primary-ink, var\(--primary\)\)\);/,
+		);
 		expect(sections).toMatch(/\.form-error \{[^}]*color: var\(--primary-ink, var\(--primary\)\);/);
 		expect(sections).not.toMatch(/\.field \.err \{[^}]*color: var\(--primary-deep\)/);
 	});

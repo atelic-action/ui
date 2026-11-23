@@ -14,6 +14,11 @@ const SHARED_ON_PURPOSE: Record<string, string> = {
 	nav: "artifact.css",
 	"nav-logo": "artifact.css",
 	"skip-link": "artifact.css",
+	// The field label rule the three field sheets share, held once in a sheet
+	// they each import (8.5.0); its components keep the rest of their rules.
+	field: "fields.css",
+	"address-search": "fields.css",
+	"multi-select": "fields.css",
 };
 
 const STYLES = join(import.meta.dirname, "..", "src", "styles");

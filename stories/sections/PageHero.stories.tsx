@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect } from "storybook/test";
 import { PageHero } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
+import { resolvedColor } from "../support/color";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
@@ -101,5 +103,88 @@ export const UnbrokenWord: Story = {
 	args: { title: `The ${unbroken}` },
 	play: async () => {
 		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * `surface="primary"`: the band on the primary fill, the kicker, the
+ * headline, its accent, and the lead each in --on-primary.
+ */
+export const OnPrimary: Story = {
+	args: { surface: "primary" },
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { level: 1 });
+		const band = title.closest("section") as HTMLElement;
+		await expect(band).toHaveAttribute("data-ground", "primary");
+		const onPrimary = resolvedColor(band, "var(--on-primary)");
+		await expect(getComputedStyle(band).backgroundColor).toBe(
+			resolvedColor(band, "var(--primary-fill, var(--primary))"),
+		);
+		for (const words of [
+			title,
+			canvas.getByText("day itself"),
+			canvas.getByText("Cakes to order"),
+			canvas.getByText(/Two days for a round cake/),
+		]) {
+			await expect(getComputedStyle(words).color).toBe(onPrimary);
+		}
+	},
+};
+
+/** `eyebrowRule={false}`: the kicker alone, without its trailing rule, as the hero's can be. */
+export const KickerAlone: Story = {
+	args: { eyebrowRule: false },
+	play: async ({ canvas }) => {
+		const kicker = canvas.getByText("Cakes to order");
+		await expect(getComputedStyle(kicker, "::after").display).toBe("none");
+	},
+};
+
+/** Unset, the kicker keeps its rule and the eyebrow's own type. */
+export const KickerDefault: Story = {
+	play: async ({ canvas }) => {
+		const kicker = canvas.getByText("Cakes to order");
+		await expect(getComputedStyle(kicker, "::after").display).not.toBe("none");
+		await expect(getComputedStyle(kicker).fontSize).toBe(`${0.74 * 16}px`);
+		await expect(getComputedStyle(kicker).textTransform).toBe("uppercase");
+	},
+};
+
+/** A design's page hero: the kicker in the body face, its own headline size, and a tighter band. */
+export const Tokens: Story = {
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--page-hero-kicker-font": "var(--font-sans)",
+						"--page-hero-kicker-size": "13px",
+						"--page-hero-kicker-weight": "700",
+						"--page-hero-kicker-tracking": "0.08em",
+						"--page-hero-title-size": "40px",
+						"--page-hero-pad-block": "36px",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const kicker = getComputedStyle(canvas.getByText("Cakes to order"));
+		const title = canvas.getByRole("heading", { level: 1 });
+		const band = getComputedStyle(title.closest("section") as HTMLElement);
+		await expect(kicker.fontSize).toBe("13px");
+		await expect(kicker.fontWeight).toBe("700");
+		await expect(kicker.letterSpacing).toBe(`${13 * 0.08}px`);
+		const probe = document.createElement("span");
+		probe.style.fontFamily = "var(--font-sans)";
+		title.appendChild(probe);
+		const sans = getComputedStyle(probe).fontFamily;
+		probe.remove();
+		await expect(kicker.fontFamily).toBe(sans);
+		await expect(getComputedStyle(title).fontSize).toBe("40px");
+		await expect(band.paddingTop).toBe("36px");
+		await expect(band.paddingBottom).toBe("36px");
 	},
 };

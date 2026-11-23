@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "8.4.0",
+	"version": "8.5.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -58,6 +58,10 @@
 			"types": "./dist/routing/basePath.d.ts",
 			"default": "./dist/routing/basePath.js"
 		},
+		"./scripts/contacts": {
+			"types": "./dist/scripts/check-contacts.d.ts",
+			"default": "./dist/scripts/check-contacts.js"
+		},
 		"./sections": "./src/sections/index.ts",
 		"./tokens": "./src/tokens/index.ts",
 		"./styles/app.css": "./src/styles/app.css",
@@ -97,7 +101,7 @@
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.server.json",
-		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path', 'monitoring/server']) await import('@atelic-action/ui/' + entry)\"",
+		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path', 'monitoring/server', 'scripts/contacts']) await import('@atelic-action/ui/' + entry)\"",
 		"prepack": "bun run build",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
@@ -108,20 +112,21 @@
 		"storybook:build": "storybook build --output-dir storybook-static"
 	},
 	"dependencies": {
+		"@radix-ui/react-checkbox": "^1.1.2",
+		"@radix-ui/react-popover": "^1.1.15",
 		"@radix-ui/react-tabs": "^1.2.1",
 		"@sentry/browser": "^11.16.0",
 		"@sentry/vite-plugin": "^11.16.0",
-		"jose": "^6.2.12"
+		"jose": "^6.2.12",
+		"libphonenumber-js": "^1.13.17"
 	},
 	"peerDependencies": {
 		"@radix-ui/react-accordion": "^1.2.12",
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@radix-ui/react-avatar": "^1.1.11",
-		"@radix-ui/react-checkbox": "^1.1.2",
 		"@radix-ui/react-dialog": "^1.1.15",
 		"@radix-ui/react-dropdown-menu": "^2.1.16",
 		"@radix-ui/react-label": "^2.1.8",
-		"@radix-ui/react-popover": "^1.1.15",
 		"@radix-ui/react-progress": "^1.1.8",
 		"@radix-ui/react-select": "^2.2.6",
 		"@radix-ui/react-separator": "^1.1.0",
@@ -158,9 +163,6 @@
 		"@radix-ui/react-avatar": {
 			"optional": true
 		},
-		"@radix-ui/react-checkbox": {
-			"optional": true
-		},
 		"@radix-ui/react-dialog": {
 			"optional": true
 		},
@@ -168,9 +170,6 @@
 			"optional": true
 		},
 		"@radix-ui/react-label": {
-			"optional": true
-		},
-		"@radix-ui/react-popover": {
 			"optional": true
 		},
 		"@radix-ui/react-progress": {
@@ -245,11 +244,9 @@
 		"@radix-ui/react-accordion": "^1.2.12",
 		"@radix-ui/react-alert-dialog": "^1.1.15",
 		"@radix-ui/react-avatar": "^1.1.11",
-		"@radix-ui/react-checkbox": "^1.1.2",
 		"@radix-ui/react-dialog": "^1.1.15",
 		"@radix-ui/react-dropdown-menu": "^2.1.16",
 		"@radix-ui/react-label": "^2.1.8",
-		"@radix-ui/react-popover": "^1.1.15",
 		"@radix-ui/react-progress": "^1.1.8",
 		"@radix-ui/react-select": "^2.2.6",
 		"@radix-ui/react-separator": "^1.1.0",

@@ -2,6 +2,7 @@ import { Navigation, Phone } from "lucide-react";
 import type { ReactNode } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow, Lead } from "../primitives";
+import { PhoneLink } from "../primitives/PhoneLink";
 import { MapEmbed, type MapEmbedSite } from "./MapEmbed";
 import type { Surface } from "./siteConfig";
 
@@ -65,10 +66,10 @@ export function Locations({
 									))}
 								</div>
 								<div className="loc-links">
-									<a href={`tel:${loc.phoneE164}`}>
+									<PhoneLink phone={{ e164: loc.phoneE164, display: loc.phoneDisplay }}>
 										<Phone size={14} aria-hidden />
 										<span className="tel-number">{loc.phoneDisplay}</span>
-									</a>
+									</PhoneLink>
 									<a href={loc.mapLink} {...newTabProps(loc.mapLink, true)}>
 										<Navigation size={14} aria-hidden />
 										Directions

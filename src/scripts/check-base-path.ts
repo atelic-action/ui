@@ -9,6 +9,10 @@
  * override, but vercel.json still describes the committed config, so a
  * rewrite mismatch only warns, except on Vercel, where it would ship.
  *
+ * It checks the config's phone numbers and email addresses first
+ * (`contactProblems`, ./check-contacts.ts), since this is the build step
+ * that reads the config.
+ *
  * Usage: atelic-check-base-path   (from the site's root)
  * Exits 1 on any problem.
  */
@@ -23,6 +27,7 @@ import {
 	unbasedRefs,
 } from "../lib/basePathAudit";
 import { normalizeBasePath } from "../routing/basePath";
+import { contactProblems } from "./check-contacts";
 import { SITE_CONFIG, siteConfigPath } from "./site-config";
 
 /** Where the build writes the pages, from the site's root. */
@@ -101,6 +106,16 @@ export async function main(cwd: string = process.cwd()): Promise<void> {
 	const { site } = (await import(pathToFileURL(configPath).href)) as {
 		site?: { basePath?: string };
 	};
+	// Every number and address the config gives the package to link: a dead
+	// call link ships on every page, so it stops the build here (8.5.0).
+	const contacts = contactProblems(site);
+	if (contacts.length > 0) {
+		for (const problem of contacts) console.error(`[contacts] ${problem}`);
+		console.error(
+			`[contacts] ${contacts.length} problem${contacts.length === 1 ? "" : "s"} in ${SITE_CONFIG}`,
+		);
+		process.exit(1);
+	}
 	const root = resolve(cwd, BUILD_ROOT);
 	if (!existsSync(root)) {
 		console.error(`[base-path] no ${BUILD_ROOT} in ${cwd}. Build the site first.`);

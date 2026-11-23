@@ -11,6 +11,7 @@ import {
 import { useDismiss } from "../hooks/useDismiss";
 import { type PageStop, useScrollSpy } from "../hooks/useScrollSpy";
 import { Button } from "../primitives/Button";
+import { PhoneLink } from "../primitives/PhoneLink";
 import type {
 	Brand,
 	CallToAction,
@@ -325,10 +326,10 @@ export function SiteHeader({
 					{barPhones.length > 0 && (
 						<div className="nav-phones">
 							{barPhones.map((phone) => (
-								<a
+								<PhoneLink
 									key={phone.e164}
 									className="nav-phone"
-									href={`tel:${phone.e164}`}
+									phone={phone}
 									aria-label={phoneName(phone)}
 								>
 									<PhoneIcon size={17} aria-hidden="true" />
@@ -336,7 +337,7 @@ export function SiteHeader({
 										{phone.label && <span className="nav-phone-label">{phone.label}</span>}
 										<span className="nav-phone-number tel-number">{phone.display}</span>
 									</span>
-								</a>
+								</PhoneLink>
 							))}
 						</div>
 					)}
@@ -351,16 +352,16 @@ export function SiteHeader({
 						</span>
 					)}
 					{barPhones[0] && (
-						<a
+						<PhoneLink
 							className="nav-call"
-							href={`tel:${barPhones[0].e164}`}
+							phone={barPhones[0]}
 							// An icon alone: a number with no label is named "Call" and the number.
 							aria-label={
 								barPhones[0].label ? phoneName(barPhones[0]) : `Call ${barPhones[0].display}`
 							}
 						>
 							<PhoneIcon size={19} aria-hidden="true" />
-						</a>
+						</PhoneLink>
 					)}
 					{hasMenu && (
 						<button

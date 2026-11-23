@@ -23,6 +23,7 @@
     "src/monitoring/server.ts",
     "src/vite/*.ts",
     "src/artifact/readers.ts",
-    "src/routing/basePath.ts"
+    "src/routing/basePath.ts",
+    "src/scripts/check-contacts.ts"
   ]
 }

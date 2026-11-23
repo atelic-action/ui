@@ -1,4 +1,5 @@
 @import "./defaults.css";
+@import "./fields.css";
 /* The marketing sections under src/sections, one block each, the sheets that
    lived beside each component in template-marketing until 0.19.0 (ATE-643).
    A section that composes another comes after it, the order the template's
@@ -290,20 +291,15 @@
 		gap: 7px;
 		margin-bottom: 18px;
 	}
-	.atelic-ui .field label {
-		font-family: var(--font-mono);
-		font-size: 0.74rem;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--neutral-600);
-	}
+	/* A field's label and the note beside it are in fields.css, with the
+	   pickers' labels (8.5.0). */
 	.atelic-ui .field input,
 	.atelic-ui .field textarea,
 	.atelic-ui .field select {
 		font: inherit;
-		padding: 14px 16px;
+		padding: var(--field-padding-block) var(--field-padding-inline);
 		border-radius: var(--radius-md);
-		border: 1.5px solid var(--neutral-200);
+		border: 1.5px solid var(--field-border, var(--neutral-200));
 		background: var(--card);
 		color: var(--ink);
 		transition:
@@ -333,17 +329,168 @@
 	}
 	/* The error words read the primary's ink, which clears 4.5 to 1 on the
 	   surface and on the tint (--primary-deep, a fill, read 4.17 and 3.96). */
+	/* --field-error, --field-error-border, and --field-error-bg (8.5.0) let a
+	   theme set the errors in its own color (the tone palette's bad, say);
+	   unset, each reads in place what it always did. */
 	.atelic-ui .field .err {
-		color: var(--primary-ink, var(--primary));
-		font-size: 0.82rem;
+		color: var(--field-error, var(--primary-ink, var(--primary)));
+		font-size: var(--field-error-size);
+		font-weight: var(--field-error-weight, inherit);
 		display: none;
 	}
 	.atelic-ui .field.invalid .err {
 		display: block;
 	}
 	.atelic-ui .field.invalid input,
-	.atelic-ui .field.invalid textarea {
-		border-color: var(--primary-deep);
+	.atelic-ui .field.invalid textarea,
+	.atelic-ui .field.invalid select {
+		border-color: var(--field-error-border, var(--primary-deep));
+		border-width: var(--field-error-border-width);
+	}
+	/* Fields that share a line where there is room: a first and a last name,
+	   a phone and an email (two up), a city, a state, and a ZIP (three up).
+	   Each wraps to its own line before it would go narrower than it reads. */
+	.atelic-ui .field-row {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+		gap: 0 14px;
+	}
+	.atelic-ui .field-row > * {
+		min-width: 0;
+	}
+	.atelic-ui .field-row.field-row-3 {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 104px), 1fr));
+	}
+	/* The line under the send button (footnote): its size and space, its
+	   alignment, and its links' weight and color, each by token (8.5.0). */
+	.atelic-ui .form-footnote {
+		margin-top: 14px;
+		font-size: var(--form-footnote-size);
+		text-align: var(--form-footnote-align, inherit);
+	}
+	.atelic-ui .form-footnote a {
+		font-weight: var(--form-footnote-link-weight, inherit);
+		color: var(--form-footnote-link-color, inherit);
+	}
+	/* The count of fields to fix, over the form after a refused send. */
+	.atelic-ui .form-alert {
+		background: var(--field-error-bg, var(--primary-tint));
+		border: 1.5px solid var(--field-error-border, var(--primary-deep));
+		color: var(--field-error, var(--primary-ink, var(--primary)));
+		padding: 14px 16px;
+		border-radius: var(--radius-md);
+		font-weight: var(--weight-semibold);
+		margin-bottom: 18px;
+	}
+	/* The consent line: a checkbox beside its wording, which opens behind Show more. */
+	.atelic-ui .contact-consent {
+		display: flex;
+		gap: 10px;
+		align-items: flex-start;
+		margin: 0 0 18px;
+		font-size: 0.9rem;
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .contact-consent-box {
+		flex: none;
+		width: 20px;
+		height: 20px;
+		margin: 1px 0 0;
+		accent-color: var(--primary);
+	}
+	.atelic-ui .contact-consent > .expandable-text {
+		min-width: 0;
+		flex: 1;
+	}
+	.atelic-ui .contact-consent .expandable-text-body {
+		cursor: pointer;
+	}
+	.atelic-ui .contact-consent-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px 16px;
+	}
+	.atelic-ui .contact-consent-links a {
+		color: var(--primary-ink, var(--primary));
+	}
+	/* The thanks that replaces the form once it is sent (thanks). */
+	.atelic-ui .contact-thanks-mark {
+		width: 48px;
+		height: 48px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--tone-good-bg);
+		color: var(--tone-good);
+	}
+	.atelic-ui .contact-thanks-title {
+		margin: 14px 0 0;
+		font-size: clamp(1.35rem, 2.4vw, 1.7rem);
+		font-weight: var(--weight-bold);
+		line-height: 1.2;
+		color: var(--primary-ink, var(--primary));
+	}
+	/* Focus lands on the heading so a screen reader reads it; it is not a
+	   control, so it draws no ring. */
+	.atelic-ui .contact-thanks-title:focus {
+		outline: none;
+	}
+	.atelic-ui .contact-thanks-lead {
+		margin: 8px 0 0;
+		line-height: 1.5;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .contact-thanks-summary {
+		margin: 20px 0 0;
+		padding: 4px 16px;
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-md);
+	}
+	.atelic-ui .contact-thanks-summary > div {
+		display: flex;
+		gap: 14px;
+		padding: 11px 0;
+		border-bottom: 1px solid var(--hairline);
+		line-height: 1.4;
+	}
+	.atelic-ui .contact-thanks-summary > div:last-child {
+		border-bottom: 0;
+	}
+	.atelic-ui .contact-thanks-summary dt {
+		flex: 0 0 96px;
+		font-weight: var(--weight-bold);
+	}
+	.atelic-ui .contact-thanks-summary dd {
+		margin: 0;
+		min-width: 0;
+	}
+	.atelic-ui .contact-thanks-steps-head {
+		margin: 22px 0 0;
+		font-weight: var(--weight-bold);
+	}
+	.atelic-ui .contact-thanks-steps {
+		margin: 8px 0 0;
+		padding-left: 22px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		line-height: 1.45;
+	}
+	.atelic-ui .contact-thanks-again {
+		margin-top: 20px;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: var(--primary-ink, var(--primary));
+		font: inherit;
+		font-weight: var(--weight-bold);
+		text-decoration: underline;
+		cursor: pointer;
+	}
+	.atelic-ui .contact-thanks-again:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
 	}
 	.atelic-ui .form-status {
 		display: block;
@@ -420,6 +567,125 @@
 		   the card into the package, 0.19.0). */
 		min-width: 0;
 		overflow-wrap: anywhere;
+	}
+	/* layout="stacked" (8.5.0): the label over its value in the body face,
+	   and each number set large, for labels that are places. */
+	.atelic-ui .contact-info-card.is-stacked .ci-row {
+		flex-direction: column;
+		gap: 2px;
+		padding: 14px 0;
+	}
+	.atelic-ui .contact-info-card.is-stacked .ci-row .k {
+		flex: none;
+		padding: 0;
+		font-family: inherit;
+		font-size: 0.9rem;
+		letter-spacing: normal;
+		text-transform: none;
+		color: var(--on-dark);
+	}
+	.atelic-ui .contact-info-card.is-stacked .ci-row .v {
+		color: var(--on-dark);
+		line-height: 1.4;
+	}
+	.atelic-ui .contact-info-card.is-stacked .ci-row .v a[href^="tel:"] {
+		font-size: 1.3rem;
+		font-weight: var(--weight-bold);
+		text-decoration: none;
+	}
+	.atelic-ui .contact-info-card.is-stacked .ci-row .v a[href^="tel:"]:hover {
+		text-decoration: underline;
+	}
+
+	/* ---- InfoRows ---- */
+	/* A title over a few lines, with one action on the right, the way a map
+	   pack lists a place: an office and its directions. */
+	.atelic-ui .info-rows {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.atelic-ui .info-row {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 18px 0;
+		border-bottom: 1px solid var(--hairline);
+	}
+	.atelic-ui .info-row:first-child {
+		padding-top: 0;
+	}
+	/* A row with more under its lines (an office's hours) keeps its action
+	   beside its title and address, not centered on the whole row. */
+	.atelic-ui .info-row.has-detail {
+		align-items: flex-start;
+	}
+	.atelic-ui .info-row-icon {
+		flex: none;
+		align-self: flex-start;
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .info-row-text {
+		flex: 1;
+		min-width: 0;
+	}
+	.atelic-ui .info-row-title {
+		margin: 0 0 4px;
+		font-family: var(--font-heading, inherit);
+		font-size: 1.15rem;
+		font-weight: var(--weight-bold);
+		line-height: 1.25;
+		color: var(--ink);
+	}
+	.atelic-ui .info-row-lines {
+		margin: 0;
+		line-height: 1.5;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .info-row-lines > span {
+		display: block;
+	}
+	.atelic-ui .info-row-detail {
+		margin-top: 8px;
+	}
+	.atelic-ui .info-row-action {
+		flex: none;
+		width: 84px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		font-size: 0.84rem;
+		font-weight: var(--weight-bold);
+		line-height: 1.2;
+		color: var(--primary-ink, var(--primary));
+		text-align: center;
+		text-decoration: none;
+	}
+	.atelic-ui .info-row-action-icon {
+		width: 48px;
+		height: 48px;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--primary-fill, var(--primary));
+		color: var(--on-primary);
+		transition: background 0.15s;
+	}
+	.atelic-ui .info-row-action:hover .info-row-action-icon {
+		background: var(--primary-deep);
+	}
+	.atelic-ui .info-row-action:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+		border-radius: var(--radius-sm);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .info-row-action-icon {
+			transition: none;
+		}
 	}
 
 	/* ---- CredentialList (credential-list.css) ---- */
@@ -571,21 +837,41 @@
 	}
 
 	/* ---- PageHero (page-hero.css) ---- */
+	/* --page-hero-pad-block (8.5.0) sets the band's top and bottom padding
+	   alike; unset, each keeps its own, read in place. */
 	.atelic-ui .page-hero {
-		padding-top: calc(var(--section-space) * 0.72);
-		padding-bottom: calc(var(--section-space) * 0.5);
+		padding-top: var(--page-hero-pad-block, calc(var(--section-space) * 0.72));
+		padding-bottom: var(--page-hero-pad-block, calc(var(--section-space) * 0.5));
 		background: var(--surface-alt);
 	}
 	.atelic-ui .page-hero.surface-default {
 		background: var(--surface);
 	}
 	.atelic-ui .page-hero h1 {
-		font-size: clamp(2.4rem, 7vw, 4.2rem);
+		font-size: var(--page-hero-title-size);
 		margin: 16px 0 0;
 	}
 	.atelic-ui .page-hero .lead {
 		margin-top: 22px;
 		max-width: 56ch;
+	}
+	/* The kicker, at the eyebrow primitive's own look (its private
+	   properties, primitives.css) unless a theme sets the page hero's kicker
+	   tokens, as the hero's are set (8.5.0). */
+	.atelic-ui .page-hero .eyebrow {
+		font-family: var(--page-hero-kicker-font, var(--font-mono));
+		font-size: var(--page-hero-kicker-size, var(--_eyebrow-size));
+		font-weight: var(--page-hero-kicker-weight, var(--_eyebrow-weight));
+		letter-spacing: var(--page-hero-kicker-tracking, var(--_eyebrow-tracking));
+	}
+	/* surface="primary" (8.5.0): the band on the primary fill, every word in
+	   --on-primary (the kicker by .on-primary, the heading by the ground). */
+	.atelic-ui .page-hero[data-ground="primary"] {
+		background: var(--primary-fill, var(--primary));
+		color: var(--on-primary);
+	}
+	.atelic-ui .page-hero[data-ground="primary"] .lead {
+		color: var(--on-primary);
 	}
 
 	/* ---- FAQBrowser (faq-browser.css) ---- */
@@ -1306,7 +1592,8 @@
 		justify-content: space-between;
 		gap: 16px;
 		padding: 9px 0;
-		border-bottom: 1px dashed var(--neutral-200);
+		/* --hours-rule (8.5.0): the line under each row, dashed unless set. */
+		border-bottom: var(--hours-rule, 1px dashed var(--neutral-200));
 		font-size: 0.95rem;
 	}
 	.atelic-ui .hours-row.closed {
@@ -1316,8 +1603,8 @@
 		font-weight: var(--weight-semibold);
 	}
 	.atelic-ui .hours-row .time {
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
+		font-family: var(--hours-time-font, var(--font-mono));
+		font-size: var(--hours-time-size);
 	}
 
 	/* ---- LegalPage (legal-page.css) ---- */

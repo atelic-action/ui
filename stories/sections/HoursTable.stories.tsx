@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect } from "storybook/test";
 import { HoursTable } from "../../src/sections";
 import { site } from "../fixtures/bakery";
@@ -96,5 +97,41 @@ export const LongestContent: Story = {
 	play: async ({ canvas }) => {
 		await expect(canvas.getAllByText("6:30a to 3:30p")).toHaveLength(5);
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** Unset, the rows keep their dashed rule and the times their mono face at 0.85rem. */
+export const RuleAndTimeDefault: Story = {
+	play: async ({ canvas }) => {
+		const time = canvas.getAllByText(/\d{1,2}:\d{2}/)[0] as HTMLElement;
+		const row = time.parentElement as HTMLElement;
+		await expect(getComputedStyle(row).borderBottomStyle).toBe("dashed");
+		await expect(getComputedStyle(time).fontSize).toBe(`${0.85 * 16}px`);
+	},
+};
+
+/** A design's hours: a solid hairline under each row, the times in the body face at its size. */
+export const RuleAndTimeTokens: Story = {
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--hours-rule": "1px solid var(--hairline)",
+						"--hours-time-font": "var(--font-sans)",
+						"--hours-time-size": "1rem",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const time = canvas.getAllByText(/\d{1,2}:\d{2}/)[0] as HTMLElement;
+		const row = time.parentElement as HTMLElement;
+		await expect(getComputedStyle(row).borderBottomStyle).toBe("solid");
+		await expect(getComputedStyle(time).fontSize).toBe("16px");
+		await expect(getComputedStyle(time).fontFamily).toBe(getComputedStyle(row).fontFamily);
 	},
 };

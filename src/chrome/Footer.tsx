@@ -1,7 +1,8 @@
 import { Mail, Star, UserRound } from "lucide-react";
 import type { ComponentProps, CSSProperties, ReactNode, Ref } from "react";
-import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
+import { EmailLink } from "../primitives/EmailLink";
+import { PhoneLink } from "../primitives/PhoneLink";
 import type {
 	Brand,
 	FooterColumn,
@@ -353,8 +354,8 @@ export function Footer({
 										) : (
 											<span className="nap-address">{addressLines}</span>
 										))}
-									{phone && <a href={`tel:${phone.e164}`}>{phone.display}</a>}
-									{email && <a href={`mailto:${email}`}>{breakableEmail(email)}</a>}
+									{phone && <PhoneLink phone={phone} />}
+									{email && <EmailLink email={email} />}
 								</address>
 							)}
 							{hoursInBrand && (

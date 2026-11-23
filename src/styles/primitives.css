@@ -1,4 +1,5 @@
 @import "./defaults.css";
+@import "./fields.css";
 /* The primitives under src/primitives: the button, the chip, the bubble, the
    eyebrow, the lead paragraph, and the section heading. Every value is a theme token.
    They sit in the package's layer like every sheet here, so any rule a site
@@ -624,5 +625,169 @@
 		display: grid;
 		place-items: center;
 		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--primary) 45%, transparent);
+	}
+
+	/* ---- AddressSearch: a text field with a pin that offers addresses as
+	   they are typed, the suggestions dropping beneath it. Specific enough to
+	   hold its padding against a form's .field input rule. ---- */
+	.atelic-ui .address-search {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+		min-width: 0;
+	}
+	.atelic-ui .address-search-bar {
+		position: relative;
+	}
+	.atelic-ui .address-search-pin {
+		position: absolute;
+		left: 14px;
+		top: 50%;
+		transform: translateY(-50%);
+		color: var(--primary-ink, var(--primary));
+		pointer-events: none;
+	}
+	.atelic-ui .address-search .address-search-input {
+		box-sizing: border-box;
+		width: 100%;
+		font: inherit;
+		padding: var(--field-padding-block) var(--field-padding-inline) var(--field-padding-block) 44px;
+		border: 1.5px solid var(--field-border, var(--neutral-200));
+		border-radius: var(--radius-md);
+		background: var(--card);
+		color: var(--ink);
+	}
+	.atelic-ui .address-search .address-search-input:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px var(--primary-focus-ring);
+	}
+	.atelic-ui .address-search-popup:not([hidden]) {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 100%;
+		z-index: 20;
+		margin-top: 4px;
+		padding: 6px;
+		display: flex;
+		flex-direction: column;
+		background: var(--card);
+		border: 1.5px solid var(--field-border, var(--neutral-200));
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-md);
+	}
+	.atelic-ui .address-search-list {
+		display: flex;
+		flex-direction: column;
+	}
+	.atelic-ui .address-search-option {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		padding: 10px 12px;
+		border-radius: var(--radius-sm);
+		line-height: 1.35;
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.atelic-ui .address-search-option:hover,
+	.atelic-ui .address-search-option[aria-selected="true"] {
+		background: var(--primary-tint);
+	}
+	.atelic-ui .address-search-option-secondary {
+		font-size: 0.92em;
+		color: var(--ink-soft);
+	}
+	/* Google's attribution, as its terms set it: never wrapped, a regular
+	   weight, 12 to 16 pixels, 4.5 to 1 against the list. */
+	.atelic-ui .google-maps-attribution {
+		white-space: nowrap;
+		font-size: 13px;
+		font-weight: var(--weight-regular);
+		color: var(--neutral-600);
+	}
+	.atelic-ui .address-search-attribution {
+		padding: 8px 12px 4px;
+		font-size: 0.8rem;
+		color: var(--neutral-600);
+		text-align: right;
+	}
+
+	/* ---- ExpandableText: long text drawn to a few lines, the rest a Show
+	   more away. The cut is a line clamp, so every word stays in the page. ---- */
+	.atelic-ui .expandable-text {
+		min-width: 0;
+	}
+	.atelic-ui .expandable-text-body {
+		display: block;
+	}
+	.atelic-ui .expandable-text-body.is-clamped {
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: var(--expandable-lines, 3);
+		line-clamp: var(--expandable-lines, 3);
+		overflow: hidden;
+	}
+	.atelic-ui .expandable-text-more:not([hidden]) {
+		display: block;
+		margin-top: 4px;
+	}
+	.atelic-ui .expandable-text-toggle {
+		margin-top: 2px;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		color: inherit;
+		cursor: pointer;
+	}
+	/* The words carry the link look, so an inline control's ellipsis (below)
+	   reads in the text's own color. */
+	.atelic-ui .expandable-text-toggle-label {
+		font-weight: var(--weight-bold);
+		color: var(--primary-ink, var(--primary));
+		text-decoration: underline;
+	}
+	/* inline (8.5.0). Closed: the control sits over the end of the last
+	   clamped line, on a fade of the ground, after an ellipsis whose empty
+	   alternative text keeps it out of the control's name. */
+	.atelic-ui .expandable-text.is-inline {
+		position: relative;
+	}
+	.atelic-ui .expandable-text.is-inline .expandable-text-body.is-clamped + .expandable-text-toggle {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		margin: 0;
+		padding-left: 1.25em;
+		background: linear-gradient(
+			to right,
+			transparent,
+			var(--expandable-ground, var(--surface)) 1em
+		);
+	}
+	.atelic-ui
+		.expandable-text.is-inline
+		.expandable-text-body.is-clamped
+		+ .expandable-text-toggle::before {
+		content: "\2026\00a0" / "";
+		display: inline-block;
+	}
+	/* Open: the text runs inline and the control follows its last word. */
+	.atelic-ui .expandable-text.is-inline .expandable-text-body:not(.is-clamped) {
+		display: inline;
+	}
+	.atelic-ui
+		.expandable-text.is-inline
+		.expandable-text-body:not(.is-clamped)
+		+ .expandable-text-toggle {
+		margin: 0 0 0 0.35em;
+	}
+	.atelic-ui .expandable-text-toggle:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+		border-radius: 2px;
 	}
 }

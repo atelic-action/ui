@@ -126,7 +126,21 @@
 		   --footer-link-hover (--on-dark), --closing-link (--neutral-300),
 		   and --closing-link-hover (--surface mixed with --on-dark);
 		   --menu-rule (--hairline), on the light sheet; --hero-split-pad-block
-		   (--section-space). --hero-stack-gap and the three gaps under it
+		   (--section-space); a form field's --field-label-font (--font-mono),
+		   --field-label-color (--neutral-600), --field-label-weight (the
+		   inherited weight), and --field-border (--neutral-200), each read by
+		   .field and by the pickers' own fields; a form's --field-error
+		   (--primary-ink, then --primary), --field-error-border
+		   (--primary-deep), and --field-error-bg (--primary-tint), on a refused
+		   field's words and border and the count over the form;
+		   --field-error-weight, --form-footnote-align, and the footnote's
+		   --form-footnote-link-weight and --form-footnote-link-color (each
+		   the inherited value); HoursTable's --hours-rule (1px dashed
+		   --neutral-200) and --hours-time-font (--font-mono); the page hero's
+		   --page-hero-pad-block (its own top and bottom, from
+		   --section-space), --page-hero-kicker-font (--font-mono), and its
+		   kicker's size, weight, and tracking (the eyebrow's own, on
+		   .eyebrow). --hero-stack-gap and the three gaps under it
 		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
 		   default of their own: unset, each gap in the hero keeps the value
 		   it always had, in place; so has --footer-brand-width, the brand
@@ -167,6 +181,22 @@
 		--closing-rule-inset: 0px;
 		/* The gap between the hero's actions, side by side or stacked. */
 		--hero-actions-gap: 14px;
+		/* An HoursTable time's size (8.5.0). */
+		--hours-time-size: 0.85rem;
+		/* A refused field's message size and border width (8.5.0). */
+		--field-error-size: 0.82rem;
+		--field-error-border-width: 1.5px;
+		/* A form field's padding, the pickers' with it, and the contact form's
+		   footnote size (8.5.0). */
+		--field-padding-block: 14px;
+		--field-padding-inline: 16px;
+		--form-footnote-size: 0.82rem;
+		/* The page hero's headline size (8.5.0). */
+		--page-hero-title-size: clamp(2.4rem, 7vw, 4.2rem);
+		/* A form field's label: its size, its case, and its tracking (8.5.0). */
+		--field-label-size: 0.74rem;
+		--field-label-case: uppercase;
+		--field-label-tracking: 0.1em;
 	}
 
 	/* ---- Long words ----
