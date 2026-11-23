@@ -12,7 +12,7 @@ export interface GooglePlacesOptions {
 	regionCodes?: string[];
 	/**
 	 * Prefer addresses near a point, a soft bias rather than a limit: a center
-	 * and a radius in meters (up to 50000).
+	 * and a radius in meters, held to Google's most, 50000.
 	 */
 	near?: { lat: number; lng: number; radius: number };
 	/** The kinds of place offered, up to five. Defaults to addresses: `street_address`, `premise`, and `subpremise` (a unit). */
@@ -131,6 +131,13 @@ export function placesProvider(
 		prepare() {
 			library(true).catch(() => {});
 		},
+		// Leaving the field without a pick abandons the session: Google gives
+		// no lifetime for one, so the next search starts a new token rather
+		// than reusing an old one.
+		abandon() {
+			token = null;
+			predictions = new Map();
+		},
 		async suggest(query, { signal }) {
 			try {
 				const places = await honoring(signal, () => library(false));
@@ -143,7 +150,9 @@ export function placesProvider(
 				if (options.regionCodes?.length) request.includedRegionCodes = options.regionCodes;
 				if (options.near) {
 					const { lat, lng, radius } = options.near;
-					request.locationBias = { center: { lat, lng }, radius };
+					// Google refuses a bias past 50000 meters, which would leave every
+					// search empty; a wider one is held to the most it takes.
+					request.locationBias = { center: { lat, lng }, radius: Math.min(radius, 50_000) };
 				}
 				if (options.language) request.language = options.language;
 				if (options.region) request.region = options.region;
@@ -237,7 +246,9 @@ function libraryOnPage(): Promise<PlacesLibrary> | null {
 function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
 	return new Promise<PlacesLibrary>((resolve, reject) => {
 		const started = Date.now();
+		let stopped = false;
 		const check = () => {
+			if (stopped) return;
 			const ready = placesReady();
 			if (ready) {
 				ready.then(resolve, reject);
@@ -257,10 +268,12 @@ function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
 		};
 		script.addEventListener(
 			"error",
-			() => reject(new Error("The Maps JavaScript API did not load.")),
-			{
-				once: true,
+			() => {
+				// A tag that failed is done: the poll stops with the refusal.
+				stopped = true;
+				reject(new Error("The Maps JavaScript API did not load."));
 			},
+			{ once: true },
 		);
 		check();
 	});

@@ -45,6 +45,8 @@ export interface AddressProvider {
 	 * again on a later focus when a load failed.
 	 */
 	prepare?(): void;
+	/** Called when the visitor leaves the field without a pick, so a provider can end its session. */
+	abandon?(): void;
 }
 
 export interface AddressSearchProps {
@@ -138,6 +140,9 @@ export function AddressSearch({
 	latestProvider.current = provider;
 	const latestCount = useRef(countLabel);
 	latestCount.current = countLabel;
+	// The provider whose answer the offered suggestions are, which a pick
+	// resolves through even if the site has passed a new one since.
+	const offeredBy = useRef<AddressProvider | null>(null);
 	// The pause before a lookup, held so a blur can stop it.
 	const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const hasProvider = Boolean(provider);
@@ -162,6 +167,7 @@ export function AddressSearch({
 				.then(
 					(answer) => {
 						if (answer.stale) return;
+						offeredBy.current = source;
 						setSuggestions(answer.value);
 						setActive(-1);
 						// Never opens under a field the visitor has left.
@@ -212,8 +218,9 @@ export function AddressSearch({
 		setSuggestions([]);
 		setOpen(false);
 		setActive(-1);
+		const source = offeredBy.current ?? provider;
 		resolves
-			.run((signal) => provider.resolve(suggestion, { signal }))
+			.run((signal) => source.resolve(suggestion, { signal }))
 			.then(
 				(answer) => {
 					if (!answer.stale) latestPick.current(answer.value);
@@ -290,6 +297,7 @@ export function AddressSearch({
 						// so no answer reopens the list behind the visitor.
 						clearTimeout(pending.current);
 						lookups.cancel();
+						latestProvider.current?.abandon?.();
 						// Nothing stale is offered after the visitor leaves; typing again asks anew.
 						setSuggestions([]);
 						setOpen(false);

@@ -137,6 +137,28 @@ describe("the Google provider over the places library", () => {
 		expect(fake.requests[2]?.sessionToken).not.toBe(fake.tokens[0]);
 	});
 
+	it("holds a bias radius past Google's 50000 meters to 50000, rather than every search failing", async () => {
+		const fake = fakeLibrary();
+		const provider = placesProvider(async () => fake.library, {
+			near: { lat: 39.74, lng: -104.99, radius: 80_467 },
+		});
+		await expect(provider.suggest("418", { signal: signal() })).resolves.toHaveLength(1);
+		expect(fake.requests[0]?.locationBias).toEqual({
+			center: { lat: 39.74, lng: -104.99 },
+			radius: 50_000,
+		});
+	});
+
+	it("starts a new session after an abandoned one", async () => {
+		const fake = fakeLibrary();
+		const provider = placesProvider(async () => fake.library, {});
+		await provider.suggest("418", { signal: signal() });
+		provider.abandon?.();
+		await provider.suggest("418", { signal: signal() });
+		expect(fake.tokens).toHaveLength(2);
+		expect(fake.requests[1]?.sessionToken).toBe(fake.tokens[1]);
+	});
+
 	it("offers nothing when the search fails, and when the library fails to load", async () => {
 		const fake = fakeLibrary();
 		fake.answerWith(() => Promise.reject(new Error("REQUEST_DENIED")));
@@ -312,6 +334,36 @@ describe("loadPlacesLibrary", () => {
 			expect(head()).toHaveLength(1);
 		} finally {
 			vi.useRealTimers();
+		}
+	});
+
+	it("stops waiting on a script the moment it fails", async () => {
+		vi.useFakeTimers();
+		try {
+			const theirs = document.createElement("script");
+			theirs.src = "https://maps.googleapis.com/maps/api/js?key=their-own";
+			document.head.appendChild(theirs);
+			let reads = 0;
+			Object.defineProperty(window, "google", {
+				configurable: true,
+				get: () => {
+					reads += 1;
+					return undefined;
+				},
+			});
+			const loading = loadPlacesLibrary("test-key-j");
+			theirs.dispatchEvent(new Event("error"));
+			await expect(loading).rejects.toThrow("did not load");
+			const after = reads;
+			vi.advanceTimersByTime(2000);
+			expect(reads).toBe(after);
+		} finally {
+			vi.useRealTimers();
+			Object.defineProperty(window, "google", {
+				configurable: true,
+				writable: true,
+				value: undefined,
+			});
 		}
 	});
 

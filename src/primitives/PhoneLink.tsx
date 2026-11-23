@@ -1,5 +1,5 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { toE164 } from "../lib/contactLinks";
+import { dialable, toE164 } from "../lib/contactLinks";
 import type { Phone } from "../types";
 
 export interface PhoneLinkProps
@@ -30,14 +30,14 @@ const hasDigits = (value: string) => /\d/.test(value);
  * phone links its `e164` exactly as given, as every link drew it before
  * 8.5.0: the browser is never stricter than it was, and a loose `e164` is
  * the build guard's to catch (`contactProblems`). A typed number is read
- * into E.164 (`toE164`), or failing that dials its digits; one with no
- * digit at all has no href.
+ * into E.164 (`toE164`), or failing that dials what a dialer can take
+ * (`dialable`: the digits, a typed + kept, an extension dropped); one with
+ * no digit at all has no href.
  */
 export function phoneHref(phone: Pick<Phone, "e164"> | string): string | undefined {
 	if (typeof phone !== "string") return `tel:${phone.e164}`;
-	const e164 = toE164(phone);
-	if (e164) return `tel:${e164}`;
-	return hasDigits(phone) ? `tel:${phone.replace(/\D/g, "")}` : undefined;
+	const number = toE164(phone) ?? dialable(phone);
+	return number ? `tel:${number}` : undefined;
 }
 
 /**

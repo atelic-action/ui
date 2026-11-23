@@ -21,7 +21,7 @@ export function isE164(value: string): boolean {
 }
 
 /** An extension after the number ("x12", "ext. 12", "extension 12"), which no dialer takes in E.164. */
-const EXTENSION = /\s*(?:,|;|#|x|ext\.?|extension)\s*\d+\s*$/i;
+export const EXTENSION = /\s*(?:,|;|#|x|ext\.?|extension)\s*\d+\s*$/i;
 
 /**
  * A typed number in E.164, or null when it is not one to dial. A number
@@ -42,4 +42,16 @@ export function toE164(value: string): string | null {
 	if (/^[2-9]\d{9}$/.test(digits)) return `+1${digits}`;
 	if (/^1[2-9]\d{9}$/.test(digits)) return `+${digits}`;
 	return null;
+}
+
+/**
+ * What a dialer can still take from a typed number `toE164` cannot read:
+ * its digits, its extension dropped and a typed leading + kept. Null when
+ * there is no digit to dial.
+ */
+export function dialable(value: string): string | null {
+	const number = value.trim().replace(EXTENSION, "");
+	const digits = number.replace(/\D/g, "");
+	if (!digits) return null;
+	return number.startsWith("+") ? `+${digits}` : digits;
 }

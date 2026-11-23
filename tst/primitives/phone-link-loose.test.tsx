@@ -86,6 +86,18 @@ describe("what stays unlinked", () => {
 		expect(screen.getByRole("link")).toHaveAttribute("href", "tel:5550142");
 	});
 
+	it("dials what a dialer can take from a typed number it cannot read: extension dropped, + kept", () => {
+		render(<PhoneLink phone="555-0142 ext. 9" />);
+		render(<PhoneLink phone="+12 34" />);
+		expect(hrefs()).toEqual(["tel:5550142", "tel:+1234"]);
+	});
+
+	it("an address that is not a string draws no link and never throws", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		expect(() => render(<EmailLink email={undefined as unknown as string} />)).not.toThrow();
+		expect(screen.queryByRole("link")).toBeNull();
+	});
+
 	it("an address links as given, loose or not, and only an empty one is words", () => {
 		vi.spyOn(console, "warn").mockImplementation(() => {});
 		render(<EmailLink email="hello@shop">hello@shop</EmailLink>);

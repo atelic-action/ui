@@ -13,18 +13,29 @@ const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
 	exports: Record<string, string | { default: string }>;
 };
 
-/** The entries a page imports: the ones pointing at source, outside the commands. */
-const browserEntries = Object.entries(pkg.exports)
+/** An entry's source file: the file itself, or for a built entry the source it is built from. */
+const sourceOf = (target: string) =>
+	resolve(ROOT, target.replace(/^\.\/dist\//, "./src/").replace(/\.js$/, ".ts"));
+
+const entries = Object.entries(pkg.exports)
 	.map(([name, target]) => [name, typeof target === "string" ? target : target.default] as const)
-	.filter(([name, target]) => /\.tsx?$/.test(target) && !name.startsWith("./scripts"))
-	.map(([, target]) => resolve(ROOT, target));
+	.filter(([, target]) => /\.(tsx?|js)$/.test(target));
+
+/** Every entry but the contacts check: the page entries, and the built ones a site runs or tests. */
+const browserEntries = entries
+	.filter(([name]) => name !== "./scripts/contacts")
+	.map(([, target]) => sourceOf(target))
+	.filter((file) => existsSync(file));
 
 /** `import ... from "x"`, `export ... from "x"`, a bare `import "x"`, and `import("x")`. */
 const IMPORT = /(?:import|export)[^"'`;]*?from\s*["']([^"']+)["']|import\s*\(?\s*["']([^"']+)["']/g;
 
 function resolveImport(from: string, spec: string): string | null {
 	const base = resolve(dirname(from), spec);
+	// A built file's relative imports carry .js and name the .ts beside them.
+	const source = base.replace(/\.js$/, ".ts");
 	for (const candidate of [
+		source,
 		base,
 		`${base}.ts`,
 		`${base}.tsx`,
@@ -65,6 +76,14 @@ describe("Google's phone number library", () => {
 		expect([...files].map((file) => relative(ROOT, file))).not.toContain(
 			"src/scripts/check-contacts.ts",
 		);
+	});
+
+	it("is reached by the built contacts entry alone, which the walk follows from dist to its source", () => {
+		const contacts = entries.find(([name]) => name === "./scripts/contacts");
+		expect(contacts?.[1]).toBe("./dist/scripts/check-contacts.js");
+		const { packages } = reach([sourceOf(contacts?.[1] ?? "")]);
+		expect([...packages.keys()]).toContain("libphonenumber-js/max");
+		expect(browserEntries).toContain(join(ROOT, "src/artifact/readers.ts"));
 	});
 
 	it("is reached by the build step that checks the config, so the walk would see it", () => {

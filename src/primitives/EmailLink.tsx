@@ -30,7 +30,8 @@ function warnOnce(email: string) {
  * guard's to catch (`contactProblems`). An empty one has no href.
  */
 export function emailHref(email: string): string | undefined {
-	return email.trim() ? `mailto:${email}` : undefined;
+	// A config written in plain JavaScript can hand over anything; only words link.
+	return typeof email === "string" && email.trim() ? `mailto:${email}` : undefined;
 }
 
 /**
@@ -41,9 +42,9 @@ export function emailHref(email: string): string | undefined {
  */
 export function EmailLink({ email, children, className, ...anchor }: EmailLinkProps) {
 	const href = emailHref(email);
-	const words = children ?? breakableEmail(email);
+	const words = children ?? (typeof email === "string" ? breakableEmail(email) : null);
 	if (!href) {
-		warnOnce(email);
+		warnOnce(String(email));
 		return <span className={className}>{words}</span>;
 	}
 	return (

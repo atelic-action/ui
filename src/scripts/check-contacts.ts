@@ -23,16 +23,40 @@
  *   import { contactProblems } from "@atelic-action/ui/scripts/contacts";
  *   expect(contactProblems({ phones })).toEqual([]);
  */
-import parsePhoneNumber from "libphonenumber-js/max";
-import { isEmail } from "../lib/contactLinks";
+import parsePhoneNumber, {
+	type CountryCode,
+	isSupportedCountry,
+	type PhoneNumber,
+} from "libphonenumber-js/max";
+import { isEmail } from "../lib/contactLinks.js";
+
+/** A number read against a country, or undefined when it is not one; never throws. */
+function parse(text: string, country: CountryCode): PhoneNumber | undefined {
+	try {
+		return parsePhoneNumber(text, country);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * The country a number written without its + is read against: the
+ * config's own (`address.country`, a two letter code), else the US, where
+ * every site so far does business.
+ */
+function countryOf(value: unknown): CountryCode {
+	const country = isRecord(value) && isRecord(value.address) ? value.address.country : undefined;
+	const code = typeof country === "string" ? country.trim().toUpperCase() : "";
+	return isSupportedCountry(code) ? code : "US";
+}
 
 /** The problem with one number, or null when it is sound. */
-function phoneProblem(e164: string, display: string): string | null {
-	const number = e164.startsWith("+") ? parsePhoneNumber(e164) : undefined;
+function phoneProblem(e164: string, display: string, country: CountryCode): string | null {
+	const number = e164.startsWith("+") ? parse(e164, country) : undefined;
 	if (!number?.isValid() || number.number !== e164) {
 		return `e164 "${e164}" is not a valid number in E.164 (a + and the country code, digits only)`;
 	}
-	const shown = parsePhoneNumber(display, number.country ?? undefined);
+	const shown = parse(display, number.country ?? country);
 	if (shown?.number !== e164) {
 		return `display "${display}" does not read as ${e164}`;
 	}
@@ -56,12 +80,11 @@ const EMAIL_PATHS = new Set([
 ]);
 
 /**
- * A `tel:` href's number, with RFC 3966's visual separators (- . ( ) and
- * spaces) and any parameters (";ext=12") taken out.
+ * A `tel:` href's number, decoded, with RFC 3966's visual separators (- .
+ * ( ) and spaces) and any parameters (";ext=12") taken out.
  */
 const telNumber = (href: string) =>
-	href
-		.slice("tel:".length)
+	decoded(href.slice("tel:".length))
 		.split(";")[0]
 		?.replace(/[-.()\s]/g, "") ?? "";
 
@@ -91,18 +114,25 @@ function decoded(address: string): string {
  * A value seen twice (a config that refers to itself) is walked once.
  */
 export function contactProblems(value: unknown, path = "site"): string[] {
-	return walk(value, path, "", new WeakSet());
+	return walk(value, path, "", new WeakSet(), countryOf(value));
 }
 
-function walk(value: unknown, path: string, at: string, seen: WeakSet<object>): string[] {
+function walk(
+	value: unknown,
+	path: string,
+	at: string,
+	seen: WeakSet<object>,
+	country: CountryCode,
+): string[] {
 	if (typeof value === "object" && value !== null) {
 		if (seen.has(value)) return [];
 		seen.add(value);
 	}
 	if (Array.isArray(value)) {
-		return value.flatMap((item, index) => walk(item, `${path}[${index}]`, at, seen));
+		return value.flatMap((item, index) => walk(item, `${path}[${index}]`, at, seen, country));
 	}
-	if (!isRecord(value)) return [];
+	// A React element (words a config may hold as JSX) is copy, never a contact.
+	if (!isRecord(value) || "$$typeof" in value) return [];
 	const problems: string[] = [];
 	for (const [e164Key, displayKey] of [
 		["e164", "display"],
@@ -111,7 +141,7 @@ function walk(value: unknown, path: string, at: string, seen: WeakSet<object>): 
 		const e164 = value[e164Key];
 		const display = value[displayKey];
 		if (typeof e164 === "string" && typeof display === "string") {
-			const problem = phoneProblem(e164, display);
+			const problem = phoneProblem(e164, display, country);
 			if (problem) problems.push(`${path}: ${problem}`);
 		}
 	}
@@ -120,19 +150,25 @@ function walk(value: unknown, path: string, at: string, seen: WeakSet<object>): 
 		const where = at ? `${at}.${key}` : key;
 		if (typeof item !== "string") {
 			// An array keeps its parent's place: header.phones[0] is under header.phones.
-			problems.push(...walk(item, field, where, seen));
+			problems.push(...walk(item, field, where, seen, country));
 			continue;
 		}
-		if (EMAIL_PATHS.has(where) && !isEmail(item)) {
+		// An empty address is none (a site without a public one), not a bad one.
+		if (EMAIL_PATHS.has(where) && item.trim() && !isEmail(item)) {
 			problems.push(`${field}: "${item}" is not an email address`);
 		}
 		if (item.startsWith("tel:")) {
-			const number = parsePhoneNumber(telNumber(item));
-			if (!number?.isValid()) problems.push(`${field}: "${item}" does not dial a valid number`);
+			// A national number (no +) is read against the config's country, as a
+			// dialer reads it; only one that is not a plausible number fails.
+			const number = parse(telNumber(item), country);
+			if (!number?.isPossible()) problems.push(`${field}: "${item}" does not dial a number`);
 		}
 		if (item.startsWith("mailto:")) {
-			const address = item.slice("mailto:".length).split("?")[0] ?? "";
-			if (!isEmail(decoded(address))) {
+			// RFC 6068: one address or several, comma separated, before the query,
+			// or in its to= when nothing comes before it.
+			const [head = "", query = ""] = item.slice("mailto:".length).split("?");
+			const to = decoded(head) || (new URLSearchParams(query).get("to") ?? "");
+			if (!to.split(",").every((address) => isEmail(address))) {
 				problems.push(`${field}: "${item}" does not write to an address`);
 			}
 		}

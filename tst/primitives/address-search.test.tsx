@@ -245,6 +245,44 @@ describe("AddressSearch", () => {
 		expect(screen.queryAllByRole("option")).toHaveLength(0);
 	});
 
+	it("resolves a pick through the provider that offered it, even after the site passed a new one", async () => {
+		/** A provider that can resolve only what it offered itself, as Google's does. */
+		const makeProvider = () => {
+			const offered = new Set<string>();
+			const provider: AddressProvider = {
+				suggest: async () => {
+					offered.add(ALDER.id);
+					return [ALDER];
+				},
+				resolve: async (suggestion) => {
+					if (!offered.has(suggestion.id)) throw new Error("That suggestion is no longer offered.");
+					return ALDER_PARTS;
+				},
+			};
+			return provider;
+		};
+		const onPick = vi.fn();
+		const { rerender } = render(
+			<AddressSearch provider={makeProvider()} label="Address" onPick={onPick} />,
+		);
+		type("418");
+		act(() => vi.advanceTimersByTime(250));
+		await settle();
+		rerender(<AddressSearch provider={makeProvider()} label="Address" onPick={onPick} />);
+		fireEvent.click(screen.getByRole("option"));
+		await settle();
+		expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+	});
+
+	it("tells the provider it was abandoned when the field is left", () => {
+		const { provider } = heldProvider();
+		const abandon = vi.fn();
+		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />);
+		field().focus();
+		fireEvent.blur(field());
+		expect(abandon).toHaveBeenCalledOnce();
+	});
+
 	it("drops a pick still being read when the visitor types again", async () => {
 		const { provider, asked } = heldProvider();
 		let finish: (parts: AddressParts) => void = () => {};
