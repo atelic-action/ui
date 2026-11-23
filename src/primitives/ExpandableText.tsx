@@ -30,6 +30,14 @@ export interface ExpandableTextProps {
 	labelFor?: string;
 	/** Open on first render. */
 	defaultExpanded?: boolean;
+	/**
+	 * Sets the control at the end of the last line rather than under the
+	 * text (8.5.0): closed, over the line's end on a fade of
+	 * `--expandable-ground` (the page surface unless set), after an
+	 * ellipsis; open, straight after the last word. It stays a sibling of
+	 * the text, so a checkbox the text labels never hears its words.
+	 */
+	inline?: boolean;
 	className?: string;
 }
 
@@ -54,6 +62,7 @@ export function ExpandableText({
 	lessLabel = "Show less",
 	labelFor,
 	defaultExpanded = false,
+	inline = false,
 	className,
 }: ExpandableTextProps) {
 	const minted = useId();
@@ -80,8 +89,22 @@ export function ExpandableText({
 	const style = { "--expandable-lines": lines } as CSSProperties;
 	const bodyClass = ["expandable-text-body", !open && "is-clamped"].filter(Boolean).join(" ");
 
+	const control = showControl && (
+		<button
+			type="button"
+			className="expandable-text-toggle"
+			aria-expanded={open}
+			aria-controls={hasMore ? `${bodyId} ${moreId}` : bodyId}
+			onClick={() => setOpen((was) => !was)}
+		>
+			<span className="expandable-text-toggle-label">{open ? lessLabel : moreLabel}</span>
+		</button>
+	);
+
 	return (
-		<div className={["expandable-text", className].filter(Boolean).join(" ")}>
+		<div
+			className={["expandable-text", inline && "is-inline", className].filter(Boolean).join(" ")}
+		>
 			{labelFor ? (
 				<label
 					ref={bodyRef as RefObject<HTMLLabelElement>}
@@ -102,22 +125,13 @@ export function ExpandableText({
 					{children}
 				</div>
 			)}
+			{inline && control}
 			{hasMore && (
 				<div id={moreId} className="expandable-text-more" hidden={!open} inert={!open}>
 					{more}
 				</div>
 			)}
-			{showControl && (
-				<button
-					type="button"
-					className="expandable-text-toggle"
-					aria-expanded={open}
-					aria-controls={hasMore ? `${bodyId} ${moreId}` : bodyId}
-					onClick={() => setOpen((was) => !was)}
-				>
-					{open ? lessLabel : moreLabel}
-				</button>
-			)}
+			{!inline && control}
 		</div>
 	);
 }

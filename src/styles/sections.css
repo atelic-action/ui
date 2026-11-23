@@ -358,7 +358,8 @@
 	   unset, each reads in place what it always did. */
 	.atelic-ui .field .err {
 		color: var(--field-error, var(--primary-ink, var(--primary)));
-		font-size: 0.82rem;
+		font-size: var(--field-error-size);
+		font-weight: var(--field-error-weight, inherit);
 		display: none;
 	}
 	.atelic-ui .field.invalid .err {
@@ -368,6 +369,7 @@
 	.atelic-ui .field.invalid textarea,
 	.atelic-ui .field.invalid select {
 		border-color: var(--field-error-border, var(--primary-deep));
+		border-width: var(--field-error-border-width);
 	}
 	/* Fields that share a line where there is room: a first and a last name,
 	   a phone and an email (two up), a city, a state, and a ZIP (three up).
@@ -382,6 +384,17 @@
 	}
 	.atelic-ui .field-row.field-row-3 {
 		grid-template-columns: repeat(auto-fit, minmax(min(100%, 104px), 1fr));
+	}
+	/* The line under the send button (footnote): its size and space, its
+	   alignment, and its links' weight and color, each by token (8.5.0). */
+	.atelic-ui .form-footnote {
+		margin-top: 14px;
+		font-size: 0.82rem;
+		text-align: var(--form-footnote-align, inherit);
+	}
+	.atelic-ui .form-footnote a {
+		font-weight: var(--form-footnote-link-weight, inherit);
+		color: var(--form-footnote-link-color, inherit);
 	}
 	/* The count of fields to fix, over the form after a refused send. */
 	.atelic-ui .form-alert {
@@ -863,6 +876,15 @@
 	.atelic-ui .page-hero .lead {
 		margin-top: 22px;
 		max-width: 56ch;
+	}
+	/* surface="primary" (8.5.0): the band on the primary fill, every word in
+	   --on-primary (the kicker by .on-primary, the heading by the ground). */
+	.atelic-ui .page-hero[data-ground="primary"] {
+		background: var(--primary-fill, var(--primary));
+		color: var(--on-primary);
+	}
+	.atelic-ui .page-hero[data-ground="primary"] .lead {
+		color: var(--on-primary);
 	}
 
 	/* ---- FAQBrowser (faq-browser.css) ---- */
@@ -1583,7 +1605,8 @@
 		justify-content: space-between;
 		gap: 16px;
 		padding: 9px 0;
-		border-bottom: 1px dashed var(--neutral-200);
+		/* --hours-rule (8.5.0): the line under each row, dashed unless set. */
+		border-bottom: var(--hours-rule, 1px dashed var(--neutral-200));
 		font-size: 0.95rem;
 	}
 	.atelic-ui .hours-row.closed {
@@ -1593,8 +1616,8 @@
 		font-weight: var(--weight-semibold);
 	}
 	.atelic-ui .hours-row .time {
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
+		font-family: var(--hours-time-font, var(--font-mono));
+		font-size: var(--hours-time-size);
 	}
 
 	/* ---- LegalPage (legal-page.css) ---- */

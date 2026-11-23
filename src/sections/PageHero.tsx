@@ -9,11 +9,15 @@ export interface PageHeroProps {
 	center?: boolean;
 	/** Extra content under the lead (e.g. jump-link chips). */
 	children?: ReactNode;
-	/** The band's background. Defaults to `alt`, the band an interior page opens on. */
-	surface?: Surface;
+	/**
+	 * The band's background. Defaults to `alt`, the band an interior page
+	 * opens on; `primary` (8.5.0) sets it on the primary fill, its words in
+	 * `--on-primary`, as the callout panel and the price band are.
+	 */
+	surface?: Surface | "primary";
 }
 
-/** Interior page opener on the alternate surface band. */
+/** Interior page opener on the alternate surface band, the page surface, or the primary fill. */
 export function PageHero({
 	eyebrow,
 	title,
@@ -24,9 +28,15 @@ export function PageHero({
 }: PageHeroProps) {
 	return (
 		<section
-			className={["page-hero", center && "center", surface === "default" && "surface-default"]
+			className={[
+				"page-hero",
+				center && "center",
+				surface === "default" && "surface-default",
+				surface === "primary" && "on-primary",
+			]
 				.filter(Boolean)
 				.join(" ")}
+			data-ground={surface === "primary" ? "primary" : undefined}
 		>
 			<div className="wrap">
 				{eyebrow && <Eyebrow center={center}>{eyebrow}</Eyebrow>}

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PageHero } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
+import { resolvedColor } from "../support/color";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
@@ -101,5 +102,30 @@ export const UnbrokenWord: Story = {
 	args: { title: `The ${unbroken}` },
 	play: async () => {
 		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * `surface="primary"`: the band on the primary fill, the kicker, the
+ * headline, its accent, and the lead each in --on-primary.
+ */
+export const OnPrimary: Story = {
+	args: { surface: "primary" },
+	play: async ({ canvas }) => {
+		const title = canvas.getByRole("heading", { level: 1 });
+		const band = title.closest("section") as HTMLElement;
+		await expect(band).toHaveAttribute("data-ground", "primary");
+		const onPrimary = resolvedColor(band, "var(--on-primary)");
+		await expect(getComputedStyle(band).backgroundColor).toBe(
+			resolvedColor(band, "var(--primary-fill, var(--primary))"),
+		);
+		for (const words of [
+			title,
+			canvas.getByText("day itself"),
+			canvas.getByText("Cakes to order"),
+			canvas.getByText(/Two days for a round cake/),
+		]) {
+			await expect(getComputedStyle(words).color).toBe(onPrimary);
+		}
 	},
 };

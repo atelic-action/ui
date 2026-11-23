@@ -761,10 +761,50 @@
 		border: 0;
 		background: none;
 		font: inherit;
+		color: inherit;
+		cursor: pointer;
+	}
+	/* The words carry the link look, so an inline control's ellipsis (below)
+	   reads in the text's own color. */
+	.atelic-ui .expandable-text-toggle-label {
 		font-weight: var(--weight-bold);
 		color: var(--primary-ink, var(--primary));
 		text-decoration: underline;
-		cursor: pointer;
+	}
+	/* inline (8.5.0). Closed: the control sits over the end of the last
+	   clamped line, on a fade of the ground, after an ellipsis whose empty
+	   alternative text keeps it out of the control's name. */
+	.atelic-ui .expandable-text.is-inline {
+		position: relative;
+	}
+	.atelic-ui .expandable-text.is-inline .expandable-text-body.is-clamped + .expandable-text-toggle {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		margin: 0;
+		padding-left: 1.25em;
+		background: linear-gradient(
+			to right,
+			transparent,
+			var(--expandable-ground, var(--surface)) 1em
+		);
+	}
+	.atelic-ui
+		.expandable-text.is-inline
+		.expandable-text-body.is-clamped
+		+ .expandable-text-toggle::before {
+		content: "\2026\00a0" / "";
+		display: inline-block;
+	}
+	/* Open: the text runs inline and the control follows its last word. */
+	.atelic-ui .expandable-text.is-inline .expandable-text-body:not(.is-clamped) {
+		display: inline;
+	}
+	.atelic-ui
+		.expandable-text.is-inline
+		.expandable-text-body:not(.is-clamped)
+		+ .expandable-text-toggle {
+		margin: 0 0 0 0.35em;
 	}
 	.atelic-ui .expandable-text-toggle:focus-visible {
 		outline: 2px solid var(--primary);

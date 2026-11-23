@@ -111,6 +111,8 @@ export function AddressSearch({
 	const minted = useId();
 	const inputId = id ?? `${minted}-input`;
 	const listId = `${minted}-list`;
+	const labelTextId = `${minted}-label`;
+	const hintId = `${minted}-hint`;
 	const optionId = (index: number) => `${minted}-option-${index}`;
 	const inputRef = useRef<HTMLInputElement>(null);
 	const [query, setQuery] = useState("");
@@ -241,11 +243,11 @@ export function AddressSearch({
 	return (
 		<div className={["address-search", className].filter(Boolean).join(" ")}>
 			<label htmlFor={inputId} className="address-search-label">
-				{label}
+				<span id={labelTextId}>{label}</span>
 				{hint && (
 					<>
 						{" "}
-						<small>{hint}</small>
+						<small id={hintId}>{hint}</small>
 					</>
 				)}
 			</label>
@@ -260,6 +262,8 @@ export function AddressSearch({
 					aria-expanded={open}
 					aria-controls={listId}
 					aria-autocomplete="list"
+					// The words and the hint named apart, so the name always has the space between them.
+					aria-labelledby={hint ? `${labelTextId} ${hintId}` : labelTextId}
 					aria-activedescendant={open && active >= 0 ? optionId(active) : undefined}
 					autoComplete="off"
 					placeholder={placeholder}

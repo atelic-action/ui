@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { expect, fn, type Mock, spyOn, waitFor, within } from "storybook/test";
 import { ContactForm, type ContactFormProps } from "../../src/sections";
 import { exampleProvider } from "../fixtures/primitives";
+import { resolvedColor } from "../support/color";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { layerOpened, settled } from "../support/settle";
 import { pin } from "../support/viewports";
@@ -621,16 +622,6 @@ export const ServiceBusinessThanksPhone: Story = {
 	},
 };
 
-/** The color a custom property resolves to on an element, as the browser computes it. */
-function resolved(element: Element, value: string): string {
-	const probe = document.createElement("span");
-	probe.style.color = value;
-	element.appendChild(probe);
-	const color = getComputedStyle(probe).color;
-	probe.remove();
-	return color;
-}
-
 /**
  * Unset, the error tokens read exactly what they always did: the message in
  * the primary's ink, the border in the deep primary, the count on the tint.
@@ -645,13 +636,13 @@ export const ErrorsInTheDefaultColors: Story = {
 		const message = canvas.getByText("Please enter your name.");
 		const alert = canvas.getByRole("alert");
 		await expect(getComputedStyle(message).color).toBe(
-			resolved(message, "var(--primary-ink, var(--primary))"),
+			resolvedColor(message, "var(--primary-ink, var(--primary))"),
 		);
 		await expect(getComputedStyle(name).borderTopColor).toBe(
-			resolved(message, "var(--primary-deep)"),
+			resolvedColor(message, "var(--primary-deep)"),
 		);
 		await expect(getComputedStyle(alert).backgroundColor).toBe(
-			resolved(alert, "var(--primary-tint)"),
+			resolvedColor(alert, "var(--primary-tint)"),
 		);
 	},
 };
@@ -684,13 +675,131 @@ export const ErrorsInTheThemesColors: Story = {
 		await settled();
 		const message = canvas.getByText("Please enter your name.");
 		const alert = canvas.getByRole("alert");
-		const bad = resolved(message, "var(--tone-bad)");
-		await expect(bad).not.toBe(resolved(message, "var(--primary-ink, var(--primary))"));
+		const bad = resolvedColor(message, "var(--tone-bad)");
+		await expect(bad).not.toBe(resolvedColor(message, "var(--primary-ink, var(--primary))"));
 		await expect(getComputedStyle(message).color).toBe(bad);
 		await expect(getComputedStyle(alert).color).toBe(bad);
 		await expect(getComputedStyle(name).borderTopColor).toBe(bad);
 		await expect(getComputedStyle(alert).backgroundColor).toBe(
-			resolved(alert, "var(--tone-bad-bg)"),
+			resolvedColor(alert, "var(--tone-bad-bg)"),
 		);
+	},
+};
+
+/**
+ * The error tokens' type and border, unset: the message at 0.82rem in the
+ * inherited weight, the refused border 1.5px, as before 8.5.0.
+ */
+export const ErrorTypeDefault: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(send(canvas));
+		await settled();
+		const message = getComputedStyle(canvas.getByText("Please enter your name."));
+		await expect(message.fontSize).toBe(`${0.82 * 16}px`);
+		// The refused border keeps every field's own width (1.5px, which a
+		// one to one screen draws as 1px): the topic select is never refused.
+		await expect(getComputedStyle(canvas.getByLabelText("Email")).borderTopWidth).toBe(
+			getComputedStyle(canvas.getByLabelText("What can we help with?")).borderTopWidth,
+		);
+	},
+};
+
+/** A design's error type: the message larger and bold, the refused border 2px. */
+export const ErrorTypeTokens: Story = {
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--field-error-size": "14.5px",
+						"--field-error-weight": "700",
+						"--field-error-border-width": "2px",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(send(canvas));
+		await settled();
+		const message = getComputedStyle(canvas.getByText("Please enter your name."));
+		await expect(message.fontSize).toBe("14.5px");
+		await expect(message.fontWeight).toBe("700");
+		await expect(getComputedStyle(canvas.getByLabelText("Email")).borderTopWidth).toBe("2px");
+	},
+};
+
+/** The footnote by class, as it was inline: 0.82rem, 14px above, its link the line's own color. */
+export const FootnoteDefault: Story = {
+	args: {
+		footnote: (
+			<>
+				Need it today? <a href="tel:+15555550142">Call (555) 555-0142</a>
+			</>
+		),
+	},
+	play: async ({ canvas }) => {
+		const line = canvas.getByText(/Need it today/);
+		const link = canvas.getByRole("link", { name: "Call (555) 555-0142" });
+		await expect(line).not.toHaveAttribute("style");
+		await expect(getComputedStyle(line).fontSize).toBe(`${0.82 * 16}px`);
+		await expect(getComputedStyle(line).marginTop).toBe("14px");
+		await expect(getComputedStyle(link).color).toBe(getComputedStyle(line).color);
+	},
+};
+
+/** A design's footnote: centered, its link bold in the primary's ink. */
+export const FootnoteTokens: Story = {
+	args: FootnoteDefault.args,
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--form-footnote-align": "center",
+						"--form-footnote-link-weight": "700",
+						"--form-footnote-link-color": "var(--primary-ink, var(--primary))",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const line = canvas.getByText(/Need it today/);
+		const link = canvas.getByRole("link", { name: "Call (555) 555-0142" });
+		await expect(getComputedStyle(line).textAlign).toBe("center");
+		await expect(getComputedStyle(link).fontWeight).toBe("700");
+		await expect(getComputedStyle(link).color).toBe(
+			resolvedColor(line, "var(--primary-ink, var(--primary))"),
+		);
+	},
+};
+
+/**
+ * The consent with Show more at the end of its one clamped line: the
+ * checkbox is named by the wording alone, and the control sits on the
+ * line's end, over a fade of the form's ground.
+ */
+export const ConsentInline: Story = {
+	args: { ...serviceShape, consent: { ...serviceShape.consent, lines: 1, inline: true } },
+	play: async ({ canvas, userEvent }) => {
+		const box = canvas.getByRole("checkbox", { name: /By checking this box/ });
+		await expect(box).toHaveAccessibleName(consentText);
+		const words = canvas.getByText(/By checking this box/);
+		const more = canvas.getByRole("button", { name: "Show more" });
+		const wordsBox = words.getBoundingClientRect();
+		const moreBox = more.getBoundingClientRect();
+		await expect(Math.round(moreBox.bottom)).toBe(Math.round(wordsBox.bottom));
+		await expect(Math.round(moreBox.right)).toBe(Math.round(wordsBox.right));
+		await userEvent.click(more);
+		const less = canvas.getByRole("button", { name: "Show less" });
+		await expect(less.getBoundingClientRect().top).toBeLessThan(
+			words.getBoundingClientRect().bottom,
+		);
+		await expect(box).toHaveAccessibleName(consentText);
 	},
 };

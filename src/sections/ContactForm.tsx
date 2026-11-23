@@ -101,6 +101,8 @@ export interface ContactFormConsent {
 	links?: { label: string; href: string; newTab?: boolean }[];
 	/** The lines shown while closed. Defaults to 2. */
 	lines?: number;
+	/** Show more at the end of the last line rather than under the wording (`ExpandableText`'s `inline`). */
+	inline?: boolean;
 }
 
 /** The thanks that replaces the form once a message is sent. */
@@ -653,6 +655,7 @@ export function ContactForm({
 					<ExpandableText
 						labelFor={idOf("consent")}
 						lines={consent.lines ?? 2}
+						inline={consent.inline}
 						moreLabel={labels.showMore}
 						lessLabel={labels.showLess}
 						more={
@@ -684,11 +687,7 @@ export function ContactForm({
 			<Button type="submit" size="lg" arrow style={{ width: "100%" }}>
 				{status === "sending" ? labels.sending : labels.submit}
 			</Button>
-			{footnote && (
-				<p className="muted form-footnote" style={{ fontSize: "0.82rem", marginTop: 14 }}>
-					{footnote}
-				</p>
-			)}
+			{footnote && <p className="muted form-footnote">{footnote}</p>}
 		</form>
 	);
 }

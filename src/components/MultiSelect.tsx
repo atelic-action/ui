@@ -84,7 +84,11 @@ export function MultiSelect({
 }: MultiSelectProps) {
 	const minted = useId();
 	const buttonId = id ?? `${minted}-button`;
-	const labelId = `${minted}-label`;
+	const labelTextId = `${minted}-label`;
+	const hintId = `${minted}-hint`;
+	// The label's words and its hint are named apart, so the name joins them
+	// with a space even where a page's HTML has dropped the one between them.
+	const labelledBy = hint ? `${labelTextId} ${hintId}` : labelTextId;
 	const valueId = `${minted}-value`;
 	const buttonRef = useRef<HTMLButtonElement>(null);
 	const listRef = useRef<HTMLDivElement>(null);
@@ -154,12 +158,12 @@ export function MultiSelect({
 
 	return (
 		<div className={["multi-select", className].filter(Boolean).join(" ")}>
-			<label id={labelId} htmlFor={buttonId} className="multi-select-label">
-				{label}
+			<label htmlFor={buttonId} className="multi-select-label">
+				<span id={labelTextId}>{label}</span>
 				{hint && (
 					<>
 						{" "}
-						<small>{hint}</small>
+						<small id={hintId}>{hint}</small>
 					</>
 				)}
 			</label>
@@ -171,7 +175,7 @@ export function MultiSelect({
 						type="button"
 						className="multi-select-button"
 						data-empty={chosenLabels.length === 0 || undefined}
-						aria-labelledby={`${labelId} ${valueId}`}
+						aria-labelledby={`${labelledBy} ${valueId}`}
 						onKeyDown={(event) => {
 							if (event.key === "ArrowDown" && !open) {
 								event.preventDefault();
@@ -191,7 +195,7 @@ export function MultiSelect({
 					side="bottom"
 					align="start"
 					sideOffset={4}
-					aria-labelledby={labelId}
+					aria-labelledby={labelledBy}
 					onKeyDown={onListKey}
 				>
 					{choices.map((choice) => {

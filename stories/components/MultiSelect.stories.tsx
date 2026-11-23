@@ -252,3 +252,20 @@ export const LongestContent: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/**
+ * The button's name keeps the space between the label and its hint even
+ * when a page's HTML has lost the space between them (a minifier dropping a
+ * whitespace text node): the two are named apart.
+ */
+export const NameKeepsItsSpaces: Story = {
+	play: async ({ canvas }) => {
+		const label = canvas.getByText("What can we bake for you?").closest("label") as HTMLElement;
+		for (const node of Array.from(label.childNodes)) {
+			if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) node.remove();
+		}
+		await expect(button(canvas)).toHaveAccessibleName(
+			"What can we bake for you? (check all that apply) Choose any",
+		);
+	},
+};

@@ -300,7 +300,7 @@ import { Button, SectionHeading } from "@atelic-action/ui/primitives";
 
 **Google's attribution.** Google's Places policies ask for attribution wherever its content shows without a Google map: the Google Maps logo where there is room, or else the text "Google Maps", unmodified, never translated (`translate="no"`), never wrapped, 12 to 16 pixels in a regular weight, at 4.5 to 1 contrast, inside the same container as the content, near its top or bottom. "Google" alone is accepted for now as the older form; "Powered by Google" does not appear in the current policy. `GoogleMapsAttribution` draws the text form, and `AddressSearch` sets it under the suggestions; a site that wants the logo passes its own node as `attribution`.
 
-`ExpandableText` clamps prose to `lines` with a Show more under it (`aria-expanded`, its words by prop); the cut is a line clamp, so every word stays in the page and a checkbox it labels (`labelFor`) is named by the whole text, and anything a reader acts on goes in `more`, hidden and `inert` while closed. The multi select beside them is a component, `MultiSelect` in `@atelic-action/ui/components`, since an app draws it too.
+`ExpandableText` clamps prose to `lines` with a Show more under it (`aria-expanded`, its words by prop); the cut is a line clamp, so every word stays in the page and a checkbox it labels (`labelFor`) is named by the whole text, and anything a reader acts on goes in `more`, hidden and `inert` while closed. With `inline` the control sits at the end of the last line instead: closed, over the line's end on a fade of `--expandable-ground` after an ellipsis drawn with empty alternative text; open, after the last word. It stays a sibling of the text, so a checkbox the text labels is never named with the control's words. The multi select beside them is a component, `MultiSelect` in `@atelic-action/ui/components`, since an app draws it too.
 
 `Bubble` (3.11.0) is the round tile set beside a heading or a numbered step, holding either a lucide icon the caller sizes (`icon`) or a short mono index (`num`, such as "01"); given both, the icon sits inside and the number rides a small badge on the lower right rim, the way an unread count sits on an app icon. It comes in three sizes (`sm`, `md`, `lg`: 36, 48, and 60 pixels across, `md` by default) and lifts its fill for a dark band with `onDark`, the way `Chip` does. It is decoration and wears `aria-hidden`, so the heading beside it carries the meaning, the step's number included.
 
@@ -755,7 +755,9 @@ No API breaks, and nothing moves on a site that changes nothing: every addition 
 
 **The field label's tokens.** `.field label` reads `--field-label-font`, `--field-label-size`, `--field-label-weight`, `--field-label-case`, `--field-label-tracking`, and `--field-label-color`, as do the pickers' labels, and every field's border reads `--field-border`; a theme restyles every label in one place. A quiet note beside a label (`(optional)`) is `.field-hint`, in the body face. The errors read `--field-error`, `--field-error-border`, and `--field-error-bg`, each unset reading what it always did, so a theme sets its errors in the tone palette's bad (`--tone-bad`, `--tone-bad-bg`) without a rule of its own.
 
-**Also new:** `InfoRows` in the sections, `ContactInfoCard`'s `layout="stacked"`, and `.field.invalid` reaches a `select`.
+**Also new:** `InfoRows` in the sections, `ContactInfoCard`'s `layout="stacked"`, `PageHero`'s `surface="primary"`, `ExpandableText`'s `inline` (and the consent's `inline`), the error type, footnote, and hours tokens in the table below, and `.field.invalid` reaches a `select`. The pickers name their label's words and its hint apart (`aria-labelledby`), so their names keep the space between them where a page's HTML has lost it.
+
+**One change on a site that changes nothing:** the contact form's footnote moved from an inline style to `.form-footnote` in the sheet, at the same size and spacing, so a site can restyle it; a site's own unlayered rule on bare `p` elements now reaches it, where the inline style used to win.
 
 ### Moving to 8.4.0
 
@@ -883,7 +885,7 @@ Nothing breaks: every addition is an optional prop, config key, token, or entry.
 | `FullBleedVideo` | A silent looping clip edge to edge, the poster first and the clip only while on screen |
 | `CalloutPanel` | Short callouts on the primary field, titles and subtitles each on a shared line |
 | `LinkColumns` | Columns of links under a heading, a link's figure right aligned in tabular numerals |
-| `PageHero` | The interior page opener on the alternate band; children sit under the lead |
+| `PageHero` | The interior page opener on the alternate band; children sit under the lead; `surface="primary"` sets it on the primary fill, every word in `--on-primary` (8.5.0) |
 | `LogoMarquee` | A dark band of chips scrolling without end: credentials, clients, or press |
 | `SplitSection` | The two column band: copy beside copy, or media beside copy. `ratio` is `even`, `narrow-first`, or `media`, a fixed 420px shot column and the gap a card row uses, so a photo beside copy lines up with a case study entry above it; `even` and `narrow-first` stack below 920px, `media` below 761px |
 | `PricingBand` | A brand colored band with the price in a card beside it, informational by design |
@@ -1155,6 +1157,10 @@ The sheets read a set of tokens beyond the theme's palette, type, radii, and lay
 | `--link-columns-min` | `170px` | The least a `LinkColumns` column narrows to (8.1.0) |
 | `--field-label-font`, `--field-label-size`, `--field-label-weight`, `--field-label-case`, `--field-label-tracking`, `--field-label-color` | `--font-mono` read in place, `0.74rem`, the inherited weight read in place, `uppercase`, `0.1em`, `--neutral-600` read in place | Every form field's label: `.field label`, and the labels of `AddressSearch` and `MultiSelect`; a design with labels in the body face sets `--field-label-font: var(--font-sans)`, `--field-label-case: none`, `--field-label-tracking: 0`, and its own size and weight (8.5.0) |
 | `--field-border` | `--neutral-200`, read in place | Every form field's border, the pickers' and their lists' included (8.5.0) |
+| `--field-error-size`, `--field-error-weight`, `--field-error-border-width` | `0.82rem`, the inherited weight read in place, `1.5px` | A refused field's message size and weight, and its border's width (8.5.0) |
+| `--form-footnote-align`, `--form-footnote-link-weight`, `--form-footnote-link-color` | each the inherited value, read in place | The contact form's line under its button (`footnote`, now `.form-footnote` in the sheet rather than an inline style): its alignment, and its links' weight and color (8.5.0) |
+| `--hours-rule`, `--hours-time-font`, `--hours-time-size` | `1px dashed --neutral-200` and `--font-mono`, read in place; `0.85rem` | `HoursTable`'s line under each row (a whole border value: `1px solid var(--hairline)` for a solid hairline), and its times' face and size (8.5.0) |
+| `--expandable-ground` | `--surface`, read in place | The ground an inline `ExpandableText` control fades over at the end of its clamped line; a form in a card sets `var(--card)` (8.5.0) |
 | `--field-error`, `--field-error-border`, `--field-error-bg` | `--primary-ink` (then `--primary`), `--primary-deep`, `--primary-tint`, read in place | A refused field's message, a refused field's border, and the count of fields to fix over the form: its words, border, and ground. A design that sets errors in the tone palette sets `--field-error: var(--tone-bad)`, `--field-error-border: var(--tone-bad)`, and `--field-error-bg: var(--tone-bad-bg)` (8.5.0) |
 | `--section-space`, `--block-gap`, `--card-min` | `clamp(56px, 9vw, 120px)`, `44px`, `240px` | The section rhythm where no `base.css` sets it (an app importing `components.css` alone); with `base.css` the settings under [Density](#density) win |
 
