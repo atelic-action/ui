@@ -20,14 +20,14 @@ describe("PhoneLink", () => {
 		expect(link).toHaveTextContent("555.555.0199");
 	});
 
-	it("shows a number it cannot dial as words, unlinked, and warns once in development", () => {
+	it("shows a number with no digit to dial as words, unlinked, and warns once in development", () => {
 		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 		const { rerender } = render(
-			<PhoneLink phone={{ e164: "555-0142", display: "555-0142" }} className="x" />,
+			<PhoneLink phone={{ e164: "", display: "Not listed" }} className="x" />,
 		);
-		rerender(<PhoneLink phone={{ e164: "555-0142", display: "555-0142" }} className="x" />);
+		rerender(<PhoneLink phone={{ e164: "", display: "Not listed" }} className="x" />);
 		expect(screen.queryByRole("link")).toBeNull();
-		expect(screen.getByText("555-0142")).toHaveClass("x");
+		expect(screen.getByText("Not listed")).toHaveClass("x");
 		expect(warn).toHaveBeenCalledOnce();
 	});
 });
@@ -54,11 +54,11 @@ describe("EmailLink", () => {
 		);
 	});
 
-	it("shows an address it cannot write to as words, unlinked, and warns once", () => {
+	it("shows an empty address as words, unlinked, and warns once", () => {
 		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-		render(<EmailLink email="hello@nowhere">hello@nowhere</EmailLink>);
+		render(<EmailLink email="">No address yet</EmailLink>);
 		expect(screen.queryByRole("link")).toBeNull();
-		expect(screen.getByText("hello@nowhere")).toBeInTheDocument();
+		expect(screen.getByText("No address yet")).toBeInTheDocument();
 		expect(warn).toHaveBeenCalledOnce();
 	});
 });

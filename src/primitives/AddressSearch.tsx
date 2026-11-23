@@ -290,6 +290,8 @@ export function AddressSearch({
 						// so no answer reopens the list behind the visitor.
 						clearTimeout(pending.current);
 						lookups.cancel();
+						// Nothing stale is offered after the visitor leaves; typing again asks anew.
+						setSuggestions([]);
 						setOpen(false);
 						setActive(-1);
 					}}

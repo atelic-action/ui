@@ -198,10 +198,11 @@ export function MultiSelect({
 					aria-labelledby={labelledBy}
 					onKeyDown={onListKey}
 				>
-					{choices.map((choice) => {
-						const boxId = `${minted}-${choice.value}`;
+					{choices.map((choice, index) => {
+						// By position, not value: a value may hold a space or repeat.
+						const boxId = `${minted}-choice-${index}`;
 						return (
-							<div key={choice.value} className="multi-select-option">
+							<div key={boxId} className="multi-select-option">
 								<Checkbox.Root
 									id={boxId}
 									className="multi-select-box"

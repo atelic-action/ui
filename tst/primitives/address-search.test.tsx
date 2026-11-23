@@ -232,6 +232,19 @@ describe("AddressSearch", () => {
 		expect(screen.queryAllByRole("option")).toHaveLength(0);
 	});
 
+	it("offers nothing stale after a blur: Arrow Down on a refocus brings no old list", async () => {
+		const { provider, asked } = heldProvider();
+		render(<AddressSearch provider={provider} label="Address" onPick={() => {}} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER, BIRCH]));
+		fireEvent.blur(field());
+		field().focus();
+		fireEvent.keyDown(field(), { key: "ArrowDown" });
+		expect(field()).toHaveAttribute("aria-expanded", "false");
+		expect(screen.queryAllByRole("option")).toHaveLength(0);
+	});
+
 	it("drops a pick still being read when the visitor types again", async () => {
 		const { provider, asked } = heldProvider();
 		let finish: (parts: AddressParts) => void = () => {};

@@ -501,7 +501,7 @@ export const ServiceBusinessRefused: Story = {
 			);
 			await expect(canvas.getByLabelText("First name")).toHaveFocus();
 			await expect(canvas.getByLabelText("Phone")).toHaveAccessibleDescription(
-				"Please enter a 10 digit phone number.",
+				"Please enter a phone number with its area code.",
 			);
 			await expect(canvas.getByLabelText("Street address")).not.toHaveAttribute("aria-invalid");
 			await expect(relay).not.toHaveBeenCalled();

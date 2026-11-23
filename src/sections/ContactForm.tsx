@@ -184,7 +184,11 @@ export interface ContactFormProps {
 	errorSummary?: boolean | ((count: number) => string);
 	/** Replaces the form with a thanks once a message is sent; by default the thanks shows over the cleared form. */
 	thanks?: ContactFormThanks;
-	/** Whether a phone number is one to accept. Defaults to ten digits, a leading 1 aside. */
+	/**
+	 * Whether a phone number is one to accept. Defaults to `isPhoneNumber`: a
+	 * ten digit North American number typed any common way (a leading 1
+	 * aside), or a full international one starting with + and its country code.
+	 */
 	validatePhone?: (value: string) => boolean;
 }
 
@@ -221,7 +225,7 @@ const ERRORS: Record<ContactFormField, string> = {
 	name: "Please enter your name.",
 	firstName: "Please enter your first name.",
 	lastName: "Please enter your last name.",
-	phone: "Please enter a 10 digit phone number.",
+	phone: "Please enter a phone number with its area code.",
 	email: "Please enter a valid email.",
 	street: "Please enter the street address.",
 	city: "Please enter the city.",
@@ -276,7 +280,8 @@ export function ContactForm({
 		services: Boolean(services),
 		consent: Boolean(consent),
 	};
-	const hasTopic = Boolean(topics) && !services;
+	// An empty list of topics is no topic select, as no list is.
+	const hasTopic = Boolean(topics?.length) && !services;
 	const startAddress = (): AddressParts => ({
 		street: "",
 		city: "",

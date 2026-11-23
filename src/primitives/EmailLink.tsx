@@ -1,5 +1,4 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { isEmail } from "../lib/contactLinks";
 import { breakableEmail } from "../lib/emailText";
 
 export interface EmailLinkProps
@@ -24,16 +23,21 @@ function warnOnce(email: string) {
 	);
 }
 
-/** The `mailto:` href for an address, or undefined when it is not one. The one place it is built. */
+/**
+ * The `mailto:` href for an address, the one place it is built: the address
+ * exactly as given, as every link drew it before 8.5.0, so the browser is
+ * never stricter than it was; a malformed configured address is the build
+ * guard's to catch (`contactProblems`). An empty one has no href.
+ */
 export function emailHref(email: string): string | undefined {
-	return isEmail(email) ? `mailto:${email.trim()}` : undefined;
+	return email.trim() ? `mailto:${email}` : undefined;
 }
 
 /**
  * An email address as a link that writes to it (Component Rules 17), the
  * one way the package draws one. It never opens a new tab (Component Rules
- * 12). An address that is not one to write to is shown as plain words
- * rather than a dead link, with a warning in development.
+ * 12). Its href is `emailHref`'s; only an empty address is shown as plain
+ * words, with a warning in development.
  */
 export function EmailLink({ email, children, className, ...anchor }: EmailLinkProps) {
 	const href = emailHref(email);

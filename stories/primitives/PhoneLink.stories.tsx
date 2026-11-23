@@ -53,11 +53,22 @@ export const IconAlone: Story = {
 	},
 };
 
-/** A number that is not one to dial: plain words, no dead tel: link. */
+/** A configured number links its e164 exactly as given, as 8.4.0 drew it; the build guard catches a loose one. */
+export const LooseNumber: Story = {
+	args: { phone: { e164: "+1 303 555 1212", display: "(303) 555-1212" } },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("link", { name: "(303) 555-1212" })).toHaveAttribute(
+			"href",
+			"tel:+1 303 555 1212",
+		);
+	},
+};
+
+/** A number with no digit to dial: plain words, no dead tel: link. */
 export const NotANumber: Story = {
-	args: { phone: { e164: "555-CAKE", display: "555-CAKE" } },
+	args: { phone: { e164: "", display: "Not listed" } },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole("link")).toBeNull();
-		await expect(canvas.getByText("555-CAKE")).toBeVisible();
+		await expect(canvas.getByText("Not listed")).toBeVisible();
 	},
 };

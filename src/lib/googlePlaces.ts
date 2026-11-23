@@ -98,7 +98,7 @@ export function addressFromComponents(
 ): AddressParts {
 	const find = (type: string) => components.find((component) => component.types.includes(type));
 	const long = (type: string) => find(type)?.longText ?? "";
-	const short = (type: string) => find(type)?.shortText ?? find(type)?.longText ?? "";
+	const short = (type: string) => find(type)?.shortText || find(type)?.longText || "";
 	const line = [long("street_number"), long("route")].filter(Boolean).join(" ");
 	const unit = long("subpremise");
 	const street = line ? (unit ? `${line} #${unit}` : line) : fallbackStreet;
@@ -203,8 +203,13 @@ const loads = new Map<string, Promise<PlacesLibrary>>();
 const failures = new Map<string, number>();
 let callbacks = 0;
 
-/** The places library from a Maps API already on the page, by `importLibrary` or the older namespace. */
-function libraryOnPage(): Promise<PlacesLibrary> | null {
+/**
+ * The places library, when the page's Maps API can give it: by
+ * `importLibrary`, or the older namespace once it holds the Autocomplete
+ * Data classes. Null while it cannot yet, including a Maps API still
+ * attaching its libraries.
+ */
+function placesReady(): Promise<PlacesLibrary> | null {
 	const maps = window.google?.maps;
 	if (!maps) return null;
 	if (maps.importLibrary) return maps.importLibrary("places") as Promise<PlacesLibrary>;
@@ -212,21 +217,40 @@ function libraryOnPage(): Promise<PlacesLibrary> | null {
 	if (places?.AutocompleteSuggestion && places.AutocompleteSessionToken) {
 		return Promise.resolve(places as PlacesLibrary);
 	}
-	return Promise.reject(new Error("The Maps JavaScript API on the page has no Places library."));
+	return null;
 }
 
-/** Waits for a Maps script some other code added, rather than adding a second. */
+/** The places library from a Maps API already on the page, a refusal when it has none, null with no Maps. */
+function libraryOnPage(): Promise<PlacesLibrary> | null {
+	if (!window.google?.maps) return null;
+	return (
+		placesReady() ??
+		Promise.reject(new Error("The Maps JavaScript API on the page has no Places library."))
+	);
+}
+
+/**
+ * Waits for a Maps script already on the page (another's, or ours that was
+ * slow) rather than adding a second, until its Places library is there:
+ * a `google.maps` without it yet is still loading, not a failure.
+ */
 function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
 	return new Promise<PlacesLibrary>((resolve, reject) => {
 		const started = Date.now();
 		const check = () => {
-			const ready = libraryOnPage();
+			const ready = placesReady();
 			if (ready) {
 				ready.then(resolve, reject);
 				return;
 			}
 			if (Date.now() - started > SCRIPT_WAIT_MS) {
-				reject(new Error("The Maps JavaScript API on the page never finished loading."));
+				reject(
+					new Error(
+						window.google?.maps
+							? "The Maps JavaScript API on the page has no Places library."
+							: "The Maps JavaScript API on the page never finished loading.",
+					),
+				);
 				return;
 			}
 			setTimeout(check, 50);
@@ -243,9 +267,11 @@ function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
 }
 
 /**
- * Adds Google's direct script tag with `loading=async`. A tag that fails, or
- * never calls back within `SCRIPT_WAIT_MS`, is taken back out and the load
- * rejects, down the same failure and retry path.
+ * Adds Google's direct script tag with `loading=async`. A tag that fails is
+ * taken back out. One that has not called back within `SCRIPT_WAIT_MS`
+ * rejects the load, down the same failure and retry path, but stays on the
+ * page with its callback left as a no op: it may still arrive, and a retry
+ * then waits for it (`waitForScript`) rather than adding a second.
  */
 function addScript(apiKey: string): Promise<PlacesLibrary> {
 	return new Promise<PlacesLibrary>((resolve, reject) => {
@@ -266,7 +292,11 @@ function addScript(apiKey: string): Promise<PlacesLibrary> {
 			script.remove();
 			reject(new Error(message));
 		};
-		const timer = setTimeout(() => fail("The Maps JavaScript API did not answer."), SCRIPT_WAIT_MS);
+		const timer = setTimeout(() => {
+			// Late, not lost: the tag stays and its callback answers nothing.
+			globals[callback] = () => {};
+			reject(new Error("The Maps JavaScript API did not answer."));
+		}, SCRIPT_WAIT_MS);
 		globals[callback] = () => {
 			clearTimeout(timer);
 			delete globals[callback];
@@ -285,10 +315,13 @@ function startLoad(apiKey: string): Promise<PlacesLibrary> {
 	if (typeof window === "undefined") {
 		return Promise.reject(new Error("The Maps JavaScript API loads only in a browser."));
 	}
-	const onPage = libraryOnPage();
-	if (onPage) return onPage;
+	const ready = placesReady();
+	if (ready) return ready;
+	// A Maps script still on its way, even one whose google.maps is there
+	// before its Places library, is waited for rather than doubled.
 	const existing = document.querySelector<HTMLScriptElement>(`script[src^="${MAPS_SCRIPT}"]`);
-	return existing ? waitForScript(existing) : addScript(apiKey);
+	if (existing) return waitForScript(existing);
+	return libraryOnPage() ?? addScript(apiKey);
 }
 
 /**

@@ -57,11 +57,11 @@ export const OwnWords: Story = {
 	},
 };
 
-/** An address that is not one to write to: plain words, no dead mailto: link. */
-export const NotAnAddress: Story = {
-	args: { email: "hello@kestrelhollow", children: "hello@kestrelhollow" },
+/** No address: plain words, no dead mailto: link. */
+export const NoAddress: Story = {
+	args: { email: "", children: "No address yet" },
 	play: async ({ canvas }) => {
 		await expect(canvas.queryByRole("link")).toBeNull();
-		await expect(canvas.getByText("hello@kestrelhollow")).toBeVisible();
+		await expect(canvas.getByText("No address yet")).toBeVisible();
 	},
 };

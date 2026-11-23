@@ -201,6 +201,15 @@ describe("addressFromComponents", () => {
 		expect(addressFromComponents(town).city).toBe("Upper Fairhaven");
 	});
 
+	it("takes the state's long name when its short one is empty", () => {
+		const blank = ALDER.map((component) =>
+			component.types.includes("administrative_area_level_1")
+				? { ...component, shortText: "" }
+				: component,
+		);
+		expect(addressFromComponents(blank).state).toBe("Colorado");
+	});
+
 	it("takes the suggestion's main line when there is no route, and leaves a missing part empty", () => {
 		const building = [{ longText: "The Mill", types: ["premise"] }];
 		expect(addressFromComponents(building, "The Mill")).toEqual({
@@ -279,19 +288,44 @@ describe("loadPlacesLibrary", () => {
 		clock.mockRestore();
 	});
 
-	it("gives up on a script that never calls back, takes it out, and waits to try again", async () => {
+	it("gives up on a slow script but leaves it, its callback a no op, and a retry waits for it", async () => {
 		vi.useFakeTimers();
+		const places = fakeLibrary().library;
 		try {
 			const silent = loadPlacesLibrary("test-key-h");
 			expect(head()).toHaveLength(1);
+			const callback =
+				new URL(head()[0]?.getAttribute("src") ?? "").searchParams.get("callback") ?? "";
 			vi.advanceTimersByTime(SCRIPT_WAIT_MS + 1);
 			await expect(silent).rejects.toThrow("did not answer");
-			expect(head()).toHaveLength(0);
-			loadPlacesLibrary("test-key-h").catch(() => {});
-			expect(head()).toHaveLength(0);
+			// The slow tag stays, and its callback is still there to answer, as a no op.
+			expect(head()).toHaveLength(1);
+			const late = (window as unknown as Record<string, unknown>)[callback];
+			expect(typeof late).toBe("function");
+			// A retry waits for the tag on the page rather than adding a second.
+			const retry = loadPlacesLibrary("test-key-h", { retry: true });
+			expect(head()).toHaveLength(1);
+			window.google = { maps: { importLibrary: async () => places } };
+			(late as () => void)();
+			vi.advanceTimersByTime(100);
+			await expect(retry).resolves.toBe(places);
+			expect(head()).toHaveLength(1);
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+
+	it("waits for a script whose Maps arrives before its Places library", async () => {
+		const theirs = document.createElement("script");
+		theirs.src = "https://maps.googleapis.com/maps/api/js?key=their-own";
+		document.head.appendChild(theirs);
+		window.google = { maps: {} };
+		const places = fakeLibrary().library;
+		const loading = loadPlacesLibrary("test-key-i");
+		setTimeout(() => {
+			window.google = { maps: { places } };
+		}, 120);
+		await expect(loading).resolves.toBe(places);
 	});
 
 	it("waits for a Maps script already on the page rather than adding a second", async () => {

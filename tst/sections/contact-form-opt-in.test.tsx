@@ -89,7 +89,7 @@ describe("ContactForm with the opt in fields", () => {
 		);
 		expect(screen.getByLabelText("First name")).toHaveFocus();
 		expect(screen.getByLabelText("Phone")).toHaveAccessibleDescription(
-			"Please enter a 10 digit phone number.",
+			"Please enter a phone number with its area code.",
 		);
 		expect(fetch).not.toHaveBeenCalled();
 	});
@@ -355,6 +355,12 @@ describe("ContactForm with the opt in fields", () => {
 		send();
 		await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Thank you."));
 		expect(screen.getByRole("button", { name: /Send Message/ })).toBeInTheDocument();
+	});
+
+	it("draws no topic select for an empty list of topics, as for none", () => {
+		render(<ContactForm {...BASE} topics={[]} />);
+		expect(screen.queryByRole("combobox")).toBeNull();
+		expect(screen.queryByLabelText("What can we help with?")).toBeNull();
 	});
 
 	it("posts services as an array and as the topic", async () => {

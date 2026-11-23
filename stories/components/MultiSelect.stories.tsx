@@ -269,3 +269,28 @@ export const NameKeepsItsSpaces: Story = {
 		);
 	},
 };
+
+/**
+ * Values with spaces and a value that repeats: each checkbox keeps its own
+ * id and its own label, since the ids come from the position, not the value.
+ */
+export const AwkwardValues: Story = {
+	args: {
+		options: [
+			{ value: "sandwich loaves", label: "Sandwich loaves" },
+			{ value: "cakes", label: "Celebration cakes" },
+			{ value: "cakes", label: "Wedding cakes" },
+		],
+	},
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(button(canvas));
+		await layerOpened(() => list(canvas));
+		const boxes = canvas.getAllByRole("checkbox");
+		const ids = boxes.map((box) => box.id);
+		await expect(new Set(ids).size).toBe(3);
+		for (const id of ids) await expect(id).not.toMatch(/\s/);
+		await expect(boxes.map((box) => box.getAttribute("aria-labelledby") ?? "")).toBeTruthy();
+		await expect(canvas.getByRole("checkbox", { name: "Wedding cakes" })).toBe(boxes[2]);
+		await expect(canvas.getByRole("checkbox", { name: "Sandwich loaves" })).toBe(boxes[0]);
+	},
+};

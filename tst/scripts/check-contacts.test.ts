@@ -65,9 +65,58 @@ describe("contactProblems", () => {
 	it("refuses a tel: or mailto: href that does not dial or write", () => {
 		const site = { contactDock: { items: [{ href: "tel:555-0142" }, { href: "mailto:hello" }] } };
 		expect(contactProblems(site)).toEqual([
-			'site.contactDock.items[0].href: "tel:555-0142" does not dial a valid number in E.164',
+			'site.contactDock.items[0].href: "tel:555-0142" does not dial a valid number',
 			'site.contactDock.items[1].href: "mailto:hello" does not write to an address',
 		]);
+	});
+
+	it("takes a tel: href written with RFC 3966's visual separators, and a parameter", () => {
+		const site = {
+			contactDock: {
+				items: [
+					{ href: "tel:+1-303-555-0142" },
+					{ href: "tel:+1.303.555.0142" },
+					{ href: "tel:+1(303)555-0142;ext=12" },
+				],
+			},
+		};
+		expect(contactProblems(site)).toEqual([]);
+	});
+
+	it("leaves words alone: a label reading Email is not an address", () => {
+		const site = {
+			...good,
+			labels: { email: "Email", confirmEmail: "Confirm your email" },
+			form: { email: "Your email" },
+			contactForm: { errorText: { email: "Please enter a valid email." } },
+		};
+		expect(contactProblems(site)).toEqual([]);
+	});
+
+	it("judges an address at the config's known paths", () => {
+		const site = { ...good, analytics: { identify: { token: "t", email: "nobody" } } };
+		expect(contactProblems(site)).toEqual([
+			'site.analytics.identify.email: "nobody" is not an email address',
+		]);
+	});
+
+	it("checks a Locations entry's phoneE164 and phoneDisplay, wherever it sits", () => {
+		const site = {
+			locations: [
+				{ name: "Alder", phoneE164: "+13035550142", phoneDisplay: "(303) 555-0142" },
+				{ name: "Birch", phoneE164: "13035550143", phoneDisplay: "(303) 555-0143" },
+			],
+		};
+		expect(contactProblems(site)).toEqual([
+			expect.stringMatching(/^site\.locations\[1\]: e164 "13035550143" is not a valid number/),
+		]);
+	});
+
+	it("walks a config that refers to itself once, without running out of stack", () => {
+		const site: Record<string, unknown> = { ...good };
+		site.self = site;
+		site.header = { phones: good.header.phones, parent: site };
+		expect(contactProblems(site)).toEqual([]);
 	});
 
 	it("checks a site's own props, outside its config, under the path it is given", () => {
