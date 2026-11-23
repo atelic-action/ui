@@ -6,6 +6,7 @@ import {
 	type PlacesLibrary,
 	placesProvider,
 	RETRY_AFTER_MS,
+	SCRIPT_WAIT_MS,
 } from "../../src/lib/googlePlaces";
 
 /*
@@ -276,6 +277,21 @@ describe("loadPlacesLibrary", () => {
 		loadPlacesLibrary("test-key-d").catch(() => {});
 		expect(head()).toHaveLength(1);
 		clock.mockRestore();
+	});
+
+	it("gives up on a script that never calls back, takes it out, and waits to try again", async () => {
+		vi.useFakeTimers();
+		try {
+			const silent = loadPlacesLibrary("test-key-h");
+			expect(head()).toHaveLength(1);
+			vi.advanceTimersByTime(SCRIPT_WAIT_MS + 1);
+			await expect(silent).rejects.toThrow("did not answer");
+			expect(head()).toHaveLength(0);
+			loadPlacesLibrary("test-key-h").catch(() => {});
+			expect(head()).toHaveLength(0);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it("waits for a Maps script already on the page rather than adding a second", async () => {

@@ -196,8 +196,8 @@ declare global {
 const MAPS_SCRIPT = "https://maps.googleapis.com/maps/api/js";
 /** After a failed load, searches wait this long before trying again; a focus does not wait. */
 export const RETRY_AFTER_MS = 30_000;
-/** How long to wait for a Maps script already on the page to finish. */
-const EXISTING_SCRIPT_WAIT_MS = 15_000;
+/** How long to wait for a Maps script, ours or one already on the page, to answer. */
+export const SCRIPT_WAIT_MS = 15_000;
 
 const loads = new Map<string, Promise<PlacesLibrary>>();
 const failures = new Map<string, number>();
@@ -225,7 +225,7 @@ function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
 				ready.then(resolve, reject);
 				return;
 			}
-			if (Date.now() - started > EXISTING_SCRIPT_WAIT_MS) {
+			if (Date.now() - started > SCRIPT_WAIT_MS) {
 				reject(new Error("The Maps JavaScript API on the page never finished loading."));
 				return;
 			}
@@ -242,7 +242,11 @@ function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
 	});
 }
 
-/** Adds Google's direct script tag with `loading=async`; a tag that fails is taken back out. */
+/**
+ * Adds Google's direct script tag with `loading=async`. A tag that fails, or
+ * never calls back within `SCRIPT_WAIT_MS`, is taken back out and the load
+ * rejects, down the same failure and retry path.
+ */
 function addScript(apiKey: string): Promise<PlacesLibrary> {
 	return new Promise<PlacesLibrary>((resolve, reject) => {
 		callbacks += 1;
@@ -256,7 +260,15 @@ function addScript(apiKey: string): Promise<PlacesLibrary> {
 			callback,
 		});
 		const script = document.createElement("script");
+		const fail = (message: string) => {
+			clearTimeout(timer);
+			delete globals[callback];
+			script.remove();
+			reject(new Error(message));
+		};
+		const timer = setTimeout(() => fail("The Maps JavaScript API did not answer."), SCRIPT_WAIT_MS);
 		globals[callback] = () => {
+			clearTimeout(timer);
 			delete globals[callback];
 			const ready = libraryOnPage();
 			if (ready) ready.then(resolve, reject);
@@ -264,11 +276,7 @@ function addScript(apiKey: string): Promise<PlacesLibrary> {
 		};
 		script.src = `${MAPS_SCRIPT}?${params}`;
 		script.async = true;
-		script.onerror = () => {
-			delete globals[callback];
-			script.remove();
-			reject(new Error("The Maps JavaScript API did not load."));
-		};
+		script.onerror = () => fail("The Maps JavaScript API did not load.");
 		document.head.appendChild(script);
 	});
 }

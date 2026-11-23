@@ -50,7 +50,7 @@ const alder = exampleAddresses[0] as (typeof exampleAddresses)[number];
  * field and handing the four parts back.
  */
 export const PicksByKeyboard: Story = {
-	play: async ({ canvas, userEvent, step }) => {
+	play: async ({ canvas, canvasElement, userEvent, step }) => {
 		await step("nothing is offered before anything is typed", async () => {
 			await expect(field(canvas)).toHaveAttribute("aria-expanded", "false");
 			await expect(canvas.queryByRole("listbox")).toBeNull();
@@ -62,7 +62,9 @@ export const PicksByKeyboard: Story = {
 			await expect(canvas.getAllByRole("option")).toHaveLength(2);
 			await expect(field(canvas)).toHaveAttribute("aria-expanded", "true");
 			await expect(canvas.getByText("Suggestions by Example Maps")).toBeVisible();
-			await expect(canvas.getByRole("status")).toHaveTextContent("2 suggestions");
+			await expect(canvasElement.querySelector('[aria-live="polite"]')).toHaveTextContent(
+				"2 suggestions",
+			);
 		});
 		await step("the arrows move the highlight while focus stays in the field", async () => {
 			await userEvent.keyboard("{ArrowDown}");
@@ -144,9 +146,13 @@ export const DropsALateAnswer: Story = {
 
 /** Nothing matches: no list, and a screen reader hears so. */
 export const NothingMatches: Story = {
-	play: async ({ canvas, userEvent }) => {
+	play: async ({ canvas, canvasElement, userEvent }) => {
 		await userEvent.type(field(canvas), "Juniper");
-		await waitFor(() => expect(canvas.getByRole("status")).toHaveTextContent("No suggestions"));
+		await waitFor(() =>
+			expect(canvasElement.querySelector('[aria-live="polite"]')).toHaveTextContent(
+				"No suggestions",
+			),
+		);
 		await expect(field(canvas)).toHaveAttribute("aria-expanded", "false");
 	},
 };

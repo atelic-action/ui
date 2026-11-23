@@ -1,4 +1,5 @@
 @import "./defaults.css";
+@import "./fields.css";
 /* The primitives under src/primitives: the button, the chip, the bubble, the
    eyebrow, the lead paragraph, and the section heading. Every value is a theme token.
    They sit in the package's layer like every sheet here, so any rule a site
@@ -635,28 +636,6 @@
 		flex-direction: column;
 		gap: 7px;
 		min-width: 0;
-	}
-	/* The field label, written alike in three sheets: sections.css (.field
-	   label), primitives.css (AddressSearch), and components.css
-	   (MultiSelect). Each sheet must carry it, since an app loads
-	   components.css alone and a sheet cannot reach another's rules; keep the
-	   three identical (tst/field-label-rules.test.ts holds them so). The
-	   color falls back to --ink-soft where no --neutral-600 is mapped (an app). */
-	.atelic-ui .address-search .address-search-label {
-		font-family: var(--field-label-font, var(--font-mono));
-		font-size: var(--field-label-size);
-		font-weight: var(--field-label-weight, inherit);
-		letter-spacing: var(--field-label-tracking);
-		text-transform: var(--field-label-case);
-		color: var(--field-label-color, var(--neutral-600, var(--ink-soft)));
-	}
-	.atelic-ui .address-search .address-search-label small {
-		font-family: var(--font-sans);
-		font-size: 0.92em;
-		font-weight: var(--weight-regular);
-		letter-spacing: normal;
-		text-transform: none;
-		color: var(--ink-soft);
 	}
 	.atelic-ui .address-search-bar {
 		position: relative;

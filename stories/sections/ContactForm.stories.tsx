@@ -545,7 +545,15 @@ export const ServiceBusinessThanks: Story = {
 		await step("what was sent, read back, and what happens next", async () => {
 			await expect(canvas.getByText("Deliver to")).toBeVisible();
 			await expect(canvas.getByText("418 Alder Street, Fairhaven, CO 80000")).toBeVisible();
-			await expect(canvas.getByText("(555) 555-0199, robin@example.com")).toBeVisible();
+			// The visitor's number and address, read back as links (Component Rules 17).
+			await expect(canvas.getByRole("link", { name: "(555) 555-0199" })).toHaveAttribute(
+				"href",
+				"tel:+15555550199",
+			);
+			await expect(canvas.getByRole("link", { name: "robin@example.com" })).toHaveAttribute(
+				"href",
+				"mailto:robin@example.com",
+			);
 			await expect(canvas.queryByText("Services")).toBeNull();
 			await expect(canvas.getByRole("heading", { name: "What happens next" })).toBeVisible();
 			await expect(canvas.getAllByRole("listitem")).toHaveLength(2);

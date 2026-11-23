@@ -41,7 +41,13 @@ function heldProvider() {
 }
 
 const field = () => screen.getByRole("combobox", { name: "Address" });
-const type = (value: string) => fireEvent.change(field(), { target: { value } });
+/** Types into the field as a visitor does, the field focused first. */
+const type = (value: string) => {
+	if (document.activeElement !== field()) field().focus();
+	fireEvent.change(field(), { target: { value } });
+};
+/** The polite live region the count is announced in. */
+const liveRegion = () => document.querySelector('[aria-live="polite"]') as HTMLElement;
 const settle = () => act(async () => {});
 
 describe("AddressSearch", () => {
@@ -144,11 +150,11 @@ describe("AddressSearch", () => {
 		type("4 A");
 		act(() => vi.advanceTimersByTime(250));
 		await act(async () => asked[0]?.answer([ALDER, BIRCH]));
-		expect(screen.getByRole("status")).toHaveTextContent("2 suggestions");
+		expect(liveRegion()).toHaveTextContent("2 suggestions");
 		type("zzz");
 		act(() => vi.advanceTimersByTime(250));
 		await act(async () => asked[1]?.answer([]));
-		expect(screen.getByRole("status")).toHaveTextContent("No suggestions");
+		expect(liveRegion()).toHaveTextContent("No suggestions");
 		expect(field()).toHaveAttribute("aria-expanded", "false");
 	});
 
@@ -190,6 +196,60 @@ describe("AddressSearch", () => {
 			act(() => vi.advanceTimersByTime(250));
 		}
 		expect(asked).toHaveLength(1);
+	});
+
+	it("announces the count in a polite live region that is not a status role", async () => {
+		const { provider, asked } = heldProvider();
+		render(<AddressSearch provider={provider} label="Address" onPick={() => {}} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		expect(liveRegion().tagName).toBe("DIV");
+		expect(liveRegion()).not.toHaveAttribute("role");
+		expect(liveRegion()).toHaveTextContent("1 suggestion");
+		expect(screen.queryByRole("status")).toBeNull();
+	});
+
+	it("asks nothing when the field is left before the pause ends", () => {
+		const { provider, asked } = heldProvider();
+		render(<AddressSearch provider={provider} label="Address" onPick={() => {}} />);
+		type("418");
+		fireEvent.blur(field());
+		act(() => vi.advanceTimersByTime(1000));
+		expect(asked).toHaveLength(0);
+	});
+
+	it("never opens the list for an answer that lands after the field was left", async () => {
+		const { provider, asked } = heldProvider();
+		render(<AddressSearch provider={provider} label="Address" onPick={() => {}} />);
+		type("418");
+		act(() => vi.advanceTimersByTime(250));
+		field().blur();
+		fireEvent.blur(field());
+		expect(asked[0]?.signal.aborted).toBe(true);
+		await act(async () => asked[0]?.answer([ALDER]));
+		expect(field()).toHaveAttribute("aria-expanded", "false");
+		expect(screen.queryAllByRole("option")).toHaveLength(0);
+	});
+
+	it("drops a pick still being read when the visitor types again", async () => {
+		const { provider, asked } = heldProvider();
+		let finish: (parts: AddressParts) => void = () => {};
+		provider.resolve = vi.fn(
+			() =>
+				new Promise<AddressParts>((resolve) => {
+					finish = resolve;
+				}),
+		);
+		const onPick = vi.fn();
+		render(<AddressSearch provider={provider} label="Address" onPick={onPick} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		fireEvent.click(screen.getByRole("option"));
+		type("12 B");
+		await act(async () => finish(ALDER_PARTS));
+		expect(onPick).not.toHaveBeenCalled();
 	});
 
 	it("asks the provider to prepare on each focus, and never before one", () => {

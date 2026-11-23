@@ -1,5 +1,13 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { AddressProvider } from "../../src/primitives/AddressSearch";
+import type { AddressParts, AddressProvider } from "../../src/primitives/AddressSearch";
+
+const ALDER: AddressParts = {
+	street: "418 Alder Street",
+	city: "Fairhaven",
+	state: "CO",
+	zip: "80000",
+};
+
 import { ContactForm, type ContactFormProps } from "../../src/sections/ContactForm";
 
 const BASE: ContactFormProps = {
@@ -181,6 +189,7 @@ describe("ContactForm with the opt in fields", () => {
 			}),
 		};
 		render(<ContactForm {...BASE} address={{ provider, states: ["CO"] }} />);
+		screen.getByRole("combobox", { name: /Address/ }).focus();
 		fireEvent.change(screen.getByRole("combobox", { name: /Address/ }), {
 			target: { value: "418" },
 		});
@@ -195,6 +204,88 @@ describe("ContactForm with the opt in fields", () => {
 		expect(screen.getByLabelText("ZIP")).toHaveValue("80000");
 		change("City", "Fairhaven Heights");
 		expect(screen.getByLabelText("City")).toHaveValue("Fairhaven Heights");
+	});
+
+	describe("a pick", () => {
+		/** A provider offering one address whose parts arrive when the test says. */
+		function slowProvider(parts: AddressParts) {
+			let finish: () => void = () => {};
+			const provider: AddressProvider = {
+				suggest: async () => [{ id: "a", text: "418 Alder Street", secondary: "Fairhaven" }],
+				resolve: () =>
+					new Promise((resolve) => {
+						finish = () => resolve(parts);
+					}),
+			};
+			return { provider, finish: () => act(async () => finish()) };
+		}
+		const choose = async () => {
+			const search = screen.getByRole("combobox", { name: /Address/ });
+			search.focus();
+			fireEvent.change(search, { target: { value: "418" } });
+			act(() => vi.advanceTimersByTime(250));
+			await act(async () => {});
+			fireEvent.click(screen.getByRole("option", { name: /418 Alder Street/ }));
+		};
+
+		beforeEach(() => {
+			vi.useFakeTimers();
+		});
+
+		it("that lands after a hand edit to an address field is dropped", async () => {
+			const { provider, finish } = slowProvider(ALDER);
+			render(<ContactForm {...BASE} address={{ provider }} />);
+			await choose();
+			change(/Street address/, "12 Birch Lane");
+			await finish();
+			expect(screen.getByLabelText(/Street address/)).toHaveValue("12 Birch Lane");
+			expect(screen.getByLabelText("City")).toHaveValue("");
+		});
+
+		it("clears only the refusals of the fields it filled with a valid value", async () => {
+			const { provider, finish } = slowProvider({ ...ALDER, zip: "800" });
+			render(<ContactForm {...BASE} address={{ provider, required: true }} />);
+			send();
+			await choose();
+			await finish();
+			expect(screen.getByLabelText("Street address")).not.toHaveAttribute("aria-invalid");
+			expect(screen.getByLabelText("City")).not.toHaveAttribute("aria-invalid");
+			expect(screen.getByLabelText("ZIP")).toHaveAttribute("aria-invalid", "true");
+		});
+
+		it("with no state keeps the state the select shows, and posts it", async () => {
+			const { provider, finish } = slowProvider({ ...ALDER, state: "" });
+			render(<ContactForm {...BASE} address={{ provider, states: ["CO", "WY"] }} />);
+			change("State", "WY");
+			await choose();
+			await finish();
+			expect(screen.getByLabelText("State")).toHaveValue("WY");
+			vi.useRealTimers();
+			change("Your name", "Robin");
+			change("Email", "robin@example.com");
+			change("Message", "Hi");
+			send();
+			await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+			expect(posted().address.state).toBe("WY");
+		});
+	});
+
+	it("reads the visitor's phone and email back as links in the thanks", async () => {
+		render(<ContactForm {...BASE} phone="optional" thanks={{ title: "Thanks." }} />);
+		change("Your name", "Robin");
+		change(/Phone/, "(555) 555-0199");
+		change("Email", "robin@example.com");
+		change("Message", "Hi");
+		send();
+		await screen.findByRole("heading", { name: "Thanks." });
+		expect(screen.getByRole("link", { name: "(555) 555-0199" })).toHaveAttribute(
+			"href",
+			"tel:+15555550199",
+		);
+		expect(screen.getByRole("link", { name: "robin@example.com" })).toHaveAttribute(
+			"href",
+			"mailto:robin@example.com",
+		);
 	});
 
 	it("replaces the form with the thanks when asked, focuses it, and brings the form back", async () => {

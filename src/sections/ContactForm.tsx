@@ -19,7 +19,9 @@ import {
 	checkContactForm,
 	contactFormBody,
 	firstRefused,
+	isZIP,
 	readContactForm,
+	telHref,
 } from "../lib/contactForm";
 import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePlaces";
 import { isHoneypotFilled } from "../lib/honeypot";
@@ -298,6 +300,8 @@ export function ContactForm({
 	const [errors, setErrors] = useState<ContactFormRefusals>({});
 	const [status, setStatus] = useState<Status>("idle");
 	const [place, setPlace] = useState<AddressParts>(startAddress);
+	// Whether a chosen suggestion's parts are still on their way.
+	const choosing = useRef(false);
 	const [sentValues, setSentValues] = useState<ContactFormValues | null>(null);
 	const formRef = useRef<HTMLFormElement>(null);
 	const thanksRef = useRef<HTMLDivElement>(null);
@@ -307,13 +311,6 @@ export function ContactForm({
 	// Ids from useId, so two forms on one page never share a label's target.
 	const uid = useId();
 	const idOf = (key: string) => `${uid}-${key}`;
-	const ids = {
-		name: idOf("name"),
-		email: idOf("email"),
-		topic: idOf("topic"),
-		message: idOf("message"),
-		company: idOf("company"),
-	};
 
 	useEffect(() => {
 		if (focusOn === "thanks") thanksRef.current?.focus();
@@ -467,8 +464,12 @@ export function ContactForm({
 	// A state a provider hands back that the list lacks is still offered, so a pick is never lost.
 	const stateOptions =
 		states && place.state && !states.includes(place.state) ? [...states, place.state] : states;
-	const setPart = (part: keyof AddressParts) => (value: string) =>
+	// A hand edit to an address field drops a pick still being read, so the
+	// late pick never writes over what the visitor typed.
+	const setPart = (part: keyof AddressParts) => (value: string) => {
+		choosing.current = false;
 		setPlace((was) => ({ ...was, [part]: value }));
+	};
 	const addressOptional = shape.address === "optional";
 	const searchShown = Boolean(addressProvider);
 
@@ -492,36 +493,14 @@ export function ContactForm({
 					{textField("lastName", { autoComplete: "family-name", required: true })}
 				</div>
 			) : (
-				<div className={fieldClass("name")}>
-					<label htmlFor={ids.name}>{labels.name}</label>
-					<input
-						id={ids.name}
-						name="name"
-						type="text"
-						autoComplete="name"
-						placeholder={placeholders.name}
-						required
-						{...refused("name")}
-					/>
-					{errorLine("name")}
-				</div>
+				textField("name", { autoComplete: "name", required: true })
 			)}
 			{(() => {
-				const emailField = (
-					<div className={fieldClass("email")}>
-						<label htmlFor={ids.email}>{labels.email}</label>
-						<input
-							id={ids.email}
-							name="email"
-							type="email"
-							autoComplete="email"
-							placeholder={placeholders.email}
-							required
-							{...refused("email")}
-						/>
-						{errorLine("email")}
-					</div>
-				);
+				const emailField = textField("email", {
+					type: "email",
+					autoComplete: "email",
+					required: true,
+				});
 				if (shape.phone === "off") return emailField;
 				return (
 					<div className="field-row">
@@ -547,15 +526,29 @@ export function ContactForm({
 							placeholder={placeholders.addressSearch ?? "Start typing an address"}
 							attribution={addressAttribution}
 							listLabel={labels.suggestions}
+							onChoose={() => {
+								choosing.current = true;
+							}}
 							onPick={(picked) => {
-								setPlace(picked);
-								// A field the pick filled is no longer refused.
+								if (!choosing.current) return;
+								choosing.current = false;
+								// A pick with no state keeps the one the field shows, so a state
+								// select and what it submits never part ways.
+								setPlace((was) => ({ ...picked, state: picked.state || was.state }));
+								// Only a field the pick filled with a valid value stops being refused.
+								const filled: Record<keyof AddressParts, boolean> = {
+									street: Boolean(picked.street),
+									city: Boolean(picked.city),
+									state: Boolean(picked.state),
+									zip: isZIP(picked.zip),
+								};
 								setErrors((was) => ({
 									...was,
-									street: undefined,
-									city: undefined,
-									state: undefined,
-									zip: undefined,
+									...Object.fromEntries(
+										(Object.keys(filled) as (keyof AddressParts)[])
+											.filter((part) => filled[part])
+											.map((part) => [part, undefined]),
+									),
 								}));
 							}}
 						/>
@@ -623,8 +616,8 @@ export function ContactForm({
 			) : (
 				hasTopic && (
 					<div className="field">
-						<label htmlFor={ids.topic}>{labels.topic}</label>
-						<select id={ids.topic} name="topic">
+						<label htmlFor={idOf("topic")}>{labels.topic}</label>
+						<select id={idOf("topic")} name="topic">
 							{topics?.map((topic) => (
 								<option key={topic}>{topic}</option>
 							))}
@@ -633,9 +626,9 @@ export function ContactForm({
 				)
 			)}
 			<div className={fieldClass("message")}>
-				<label htmlFor={ids.message}>{labels.message}</label>
+				<label htmlFor={idOf("message")}>{labels.message}</label>
 				<textarea
-					id={ids.message}
+					id={idOf("message")}
 					name="message"
 					placeholder={placeholders.message}
 					required
@@ -681,8 +674,8 @@ export function ContactForm({
 			{/* Honeypot: visually hidden and skipped by keyboard/screen readers;
 			    bots that fill it are quietly dropped by the backend. */}
 			<div className="hp-field" aria-hidden="true">
-				<label htmlFor={ids.company}>Company</label>
-				<input id={ids.company} name="company" type="text" tabIndex={-1} autoComplete="off" />
+				<label htmlFor={idOf("company")}>Company</label>
+				<input id={idOf("company")} name="company" type="text" tabIndex={-1} autoComplete="off" />
 			</div>
 			<Button type="submit" size="lg" arrow style={{ width: "100%" }}>
 				{status === "sending" ? labels.sending : labels.submit}
@@ -725,7 +718,7 @@ function ContactThanks({
 					contact: "Contact",
 					...thanks.summary,
 				};
-	const rows: { label: string; value: string }[] = [];
+	const rows: { label: string; value: ReactNode }[] = [];
 	if (labels) {
 		const { address } = values;
 		if (shape.services && values.services.length > 0)
@@ -734,8 +727,24 @@ function ContactThanks({
 		// A state alone, left at its default, is not an address.
 		if (shape.address !== "off" && (address.street || address.city || address.zip))
 			rows.push({ label: labels.address, value: addressLine(address) });
-		const reach = [values.phone, values.email].filter(Boolean).join(", ");
-		if (reach) rows.push({ label: labels.contact, value: reach });
+		// The visitor's own number and address, read back as links (Component Rules 17).
+		const reach = [
+			values.phone && (
+				<a key="phone" href={telHref(values.phone)}>
+					{values.phone}
+				</a>
+			),
+			values.email && (
+				<a key="email" href={`mailto:${values.email}`}>
+					{values.email}
+				</a>
+			),
+		].filter(Boolean);
+		if (reach.length)
+			rows.push({
+				label: labels.contact,
+				value: reach.flatMap((link, at) => (at ? [", ", link] : [link])),
+			});
 	}
 
 	return (

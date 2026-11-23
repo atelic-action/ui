@@ -1,0 +1,33 @@
+@import "./defaults.css";
+/* The form field label rule the field sheets share (8.5.0). */
+@layer atelic-ui {
+	/* A form field's label and the quiet note beside it, such as
+	   "(optional)": a field's (.field label), the address search's, and the
+	   multi select's, one rule for all three (8.5.0). Its own sheet,
+	   imported by the three that draw a labeled field (sections.css,
+	   primitives.css, components.css) right after defaults.css, so an app
+	   that loads components.css alone still gets the multi select's label. Each reads
+	   the --field-label tokens, at the look .field label always had; the
+	   color falls back to --ink-soft where no --neutral-600 is mapped (an
+	   app). The note takes the body face, never the label's case. */
+	.atelic-ui .field label,
+	.atelic-ui .address-search .address-search-label,
+	.atelic-ui .multi-select .multi-select-label {
+		font-family: var(--field-label-font, var(--font-mono));
+		font-size: var(--field-label-size);
+		font-weight: var(--field-label-weight, inherit);
+		letter-spacing: var(--field-label-tracking);
+		text-transform: var(--field-label-case);
+		color: var(--field-label-color, var(--neutral-600, var(--ink-soft)));
+	}
+	.atelic-ui .field-hint,
+	.atelic-ui .address-search .address-search-label small,
+	.atelic-ui .multi-select .multi-select-label small {
+		font-family: var(--font-sans);
+		font-size: 0.92em;
+		font-weight: var(--weight-regular);
+		letter-spacing: normal;
+		text-transform: none;
+		color: var(--ink-soft);
+	}
+}

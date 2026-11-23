@@ -57,6 +57,11 @@ export interface AddressSearchProps {
 	placeholder?: string;
 	/** Called with the parts of the address the visitor picked. */
 	onPick: (address: AddressParts) => void;
+	/**
+	 * Called the moment a suggestion is chosen, before its parts arrive, so a
+	 * form can tell a pick that lands after the visitor moved on.
+	 */
+	onChoose?: (suggestion: AddressSuggestion) => void;
 	/** Drawn under the suggestions, for a provider whose terms ask for it ("Powered by ..."). */
 	attribution?: ReactNode;
 	/** The suggestion list's accessible name. */
@@ -100,6 +105,7 @@ export function AddressSearch({
 	hint,
 	placeholder,
 	onPick,
+	onChoose,
 	attribution,
 	listLabel = "Suggestions",
 	countLabel = defaultCount,
@@ -132,6 +138,8 @@ export function AddressSearch({
 	latestProvider.current = provider;
 	const latestCount = useRef(countLabel);
 	latestCount.current = countLabel;
+	// The pause before a lookup, held so a blur can stop it.
+	const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const hasProvider = Boolean(provider);
 
 	useEffect(() => {
@@ -146,7 +154,7 @@ export function AddressSearch({
 			setActive(-1);
 			return;
 		}
-		const timer = setTimeout(() => {
+		pending.current = setTimeout(() => {
 			const source = latestProvider.current;
 			if (!source) return;
 			lookups
@@ -156,7 +164,8 @@ export function AddressSearch({
 						if (answer.stale) return;
 						setSuggestions(answer.value);
 						setActive(-1);
-						setOpen(answer.value.length > 0);
+						// Never opens under a field the visitor has left.
+						setOpen(answer.value.length > 0 && document.activeElement === inputRef.current);
 						setAnnounce(latestCount.current(answer.value.length));
 					},
 					// A lookup that fails offers nothing; the plain fields still take the address.
@@ -166,7 +175,7 @@ export function AddressSearch({
 					},
 				);
 		}, debounceMs);
-		return () => clearTimeout(timer);
+		return () => clearTimeout(pending.current);
 	}, [query, hasProvider, minLength, debounceMs, lookups]);
 
 	// A form's reset empties the search with the rest of the form.
@@ -195,6 +204,7 @@ export function AddressSearch({
 		const text = pickedText(suggestion);
 		// What the visitor typed, to go back to if the pick cannot be resolved.
 		const typed = query;
+		onChoose?.(suggestion);
 		picked.current = text;
 		lookups.cancel();
 		setQuery(text);
@@ -268,10 +278,18 @@ export function AddressSearch({
 					autoComplete="off"
 					placeholder={placeholder}
 					value={query}
-					onChange={(event) => setQuery(event.target.value)}
+					onChange={(event) => {
+						// Typing again drops a pick still being read, so it never lands late.
+						resolves.cancel();
+						setQuery(event.target.value);
+					}}
 					onKeyDown={onKeyDown}
 					onFocus={() => latestProvider.current?.prepare?.()}
 					onBlur={() => {
+						// Leaving the field stops the pause and the lookup in flight,
+						// so no answer reopens the list behind the visitor.
+						clearTimeout(pending.current);
+						lookups.cancel();
 						setOpen(false);
 						setActive(-1);
 					}}
@@ -301,7 +319,13 @@ export function AddressSearch({
 				</div>
 				{attribution && <div className="address-search-attribution">{attribution}</div>}
 			</div>
-			<output className="visually-hidden">{announce}</output>
+			{/* An explicit live region under Component Rules 14: a combobox's count
+			    has to be heard as it changes, and it changes once per pause in the
+			    typing, never on a tick. React writes the words only when they differ,
+			    so the same count is not announced twice. */}
+			<div className="visually-hidden" aria-live="polite">
+				{announce}
+			</div>
 		</div>
 	);
 }

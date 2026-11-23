@@ -1,4 +1,5 @@
 @import "./defaults.css";
+@import "./fields.css";
 @import "./star-rating.css";
 
 /* Layout defaults for the components under src/components. A site's own
@@ -1370,28 +1371,6 @@
 		flex-direction: column;
 		gap: 7px;
 		min-width: 0;
-	}
-	/* The field label, written alike in three sheets: sections.css (.field
-	   label), primitives.css (AddressSearch), and components.css
-	   (MultiSelect). Each sheet must carry it, since an app loads
-	   components.css alone and a sheet cannot reach another's rules; keep the
-	   three identical (tst/field-label-rules.test.ts holds them so). The
-	   color falls back to --ink-soft where no --neutral-600 is mapped (an app). */
-	.atelic-ui .multi-select .multi-select-label {
-		font-family: var(--field-label-font, var(--font-mono));
-		font-size: var(--field-label-size);
-		font-weight: var(--field-label-weight, inherit);
-		letter-spacing: var(--field-label-tracking);
-		text-transform: var(--field-label-case);
-		color: var(--field-label-color, var(--neutral-600, var(--ink-soft)));
-	}
-	.atelic-ui .multi-select .multi-select-label small {
-		font-family: var(--font-sans);
-		font-size: 0.92em;
-		font-weight: var(--weight-regular);
-		letter-spacing: normal;
-		text-transform: none;
-		color: var(--ink-soft);
 	}
 	.atelic-ui .multi-select .multi-select-button {
 		box-sizing: border-box;
