@@ -74,7 +74,7 @@ export function LocationSection({
 								Get Directions
 							</Button>
 						)}
-						{/* No number to dial, no call button (8.5.1). */}
+						{/* No number to dial, no call button (8.6.0). */}
 						{site.phone && phoneHref(site.phone) && (
 							<Button variant="ghost" href={phoneHref(site.phone)}>
 								{site.phone.display}

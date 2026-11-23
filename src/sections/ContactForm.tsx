@@ -540,7 +540,7 @@ export function ContactForm({
 							}}
 							onPick={(picked) => {
 								// A hand edit came first: the form keeps it, and the search
-								// goes back to what was typed (8.5.1).
+								// goes back to what was typed (8.6.0).
 								if (!choosing.current) return false;
 								choosing.current = false;
 								// A pick with no state keeps the one the field shows, so a state

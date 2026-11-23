@@ -750,7 +750,7 @@
 		color: var(--primary-ink, var(--primary));
 		text-decoration: underline;
 	}
-	/* inline (8.5.0). Closed and measured cutting (.is-cut, 8.5.1): the
+	/* inline (8.5.0). Closed and measured cutting (.is-cut, 8.6.0): the
 	   control sits over the end of the last line, on a fade of the ground,
 	   after an ellipsis whose empty alternative text keeps it out of the
 	   control's name. Text that fits, or is not yet measured, keeps the

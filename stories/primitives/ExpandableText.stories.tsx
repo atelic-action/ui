@@ -144,7 +144,7 @@ export const Phone: Story = {
 /**
  * Inline, with something in `more`, over text that fits its lines: the
  * text is not cut, so the control waits beneath it, with no ellipsis and
- * no fade over a line that ends whole (8.5.1).
+ * no fade over a line that ends whole (8.6.0).
  */
 export const InlineFits: Story = {
 	args: {

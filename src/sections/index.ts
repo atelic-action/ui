@@ -43,6 +43,7 @@ export {
 	type ContactInfoCardSite,
 	type ContactPhone,
 } from "./ContactInfoCard";
+export { ContactSection, type ContactSectionProps } from "./ContactSection";
 export { type Credential, CredentialList, type CredentialListProps } from "./CredentialList";
 export { CTASection, type CTASectionProps } from "./CTASection";
 export { ExpandList, type ExpandListItem, type ExpandListProps } from "./ExpandList";

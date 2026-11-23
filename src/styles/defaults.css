@@ -191,6 +191,17 @@
 		--field-padding-block: 14px;
 		--field-padding-inline: 16px;
 		--form-footnote-size: 0.82rem;
+		/* ContactSection (8.6.0): the columns' grow ratio (5 to 3, the 1.25 to
+		   0.75 the contact design draws; each at least 1, or a column alone on
+		   its line stops short of the width) and bases (side by side while both
+		   and the gap fit), the gaps, and the card's padding. */
+		--contact-section-main: 5;
+		--contact-section-side: 3;
+		--contact-section-main-basis: 30.25rem;
+		--contact-section-side-basis: 18.25rem;
+		--contact-section-gap: clamp(24px, 4vw, 56px);
+		--contact-section-side-gap: 24px;
+		--contact-section-card-pad: clamp(20px, 3vw, 34px);
 		/* The page hero's headline size (8.5.0). */
 		--page-hero-title-size: clamp(2.4rem, 7vw, 4.2rem);
 		/* A form field's label: its size, its case, and its tracking (8.5.0). */

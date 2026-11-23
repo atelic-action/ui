@@ -30,7 +30,7 @@ const hasDigits = (value: string) => /\d/.test(value);
  * phone links its `e164` exactly as given, as every link drew it before
  * 8.5.0: the browser is never stricter than it was, and a loose `e164` is
  * the build guard's to catch (`contactProblems`). One with no digit at all
- * has no href (8.5.1), so nothing draws a call that dials nothing. A typed number is read
+ * has no href (8.6.0), so nothing draws a call that dials nothing. A typed number is read
  * into E.164 (`toE164`), or failing that dials what a dialer can take
  * (`dialable`: the digits, a typed + kept, an extension dropped); one with
  * no digit at all has no href.

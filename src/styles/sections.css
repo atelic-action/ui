@@ -597,6 +597,50 @@
 		text-decoration: underline;
 	}
 
+	/* ---- ContactSection (8.6.0) ----
+	   The form's card beside the side column. The columns are flex items that
+	   grow in the ratio of --contact-section-main and --contact-section-side
+	   from their bases; they stand side by side while both bases and the gap
+	   fit, and wrap, the card first, below that, so the stacking follows the
+	   width the section is given rather than a viewport breakpoint (the
+	   defaults stack it below about 900px on a site's default gutter). */
+	.atelic-ui .contact-section-layout {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		gap: var(--contact-section-gap);
+	}
+	.atelic-ui .contact-section-main {
+		flex: var(--contact-section-main) 1 var(--contact-section-main-basis);
+		min-width: 0;
+	}
+	.atelic-ui .contact-section-side {
+		flex: var(--contact-section-side) 1 var(--contact-section-side-basis);
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--contact-section-side-gap);
+	}
+	.atelic-ui .contact-section-card {
+		padding: var(--contact-section-card-pad);
+		background: var(--ui-card, var(--card));
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		/* An inline Show more in the form fades over the card's own ground. */
+		--expandable-ground: var(--ui-card, var(--card));
+	}
+	.atelic-ui .contact-section-title {
+		margin: 0 0 4px;
+		font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+		line-height: 1.15;
+	}
+	.atelic-ui .contact-section-lead {
+		margin: 0 0 22px;
+		font-size: 1.03rem;
+		line-height: 1.5;
+		color: var(--ink-soft);
+	}
+
 	/* ---- InfoRows ---- */
 	/* A title over a few lines, with one action on the right, the way a map
 	   pack lists a place: an office and its directions. */

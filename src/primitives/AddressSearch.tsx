@@ -61,7 +61,7 @@ export interface AddressSearchProps {
 	/**
 	 * Called with the parts of the address picked. Return false when the
 	 * pick is not taken after all (a form that has moved on): the field then
-	 * goes back to what the visitor typed (8.5.1).
+	 * goes back to what the visitor typed (8.6.0).
 	 */
 	onPick: (address: AddressParts) => boolean | undefined;
 	/**
@@ -150,7 +150,7 @@ export function AddressSearch({
 	const offeredBy = useRef<AddressProvider | null>(null);
 	// A press on a suggestion, from before the blur it may cause until its
 	// click: that blur is the pick's, and leaves the list, the suggestions,
-	// and the provider's session alone (8.5.1).
+	// and the provider's session alone (8.6.0).
 	const picking = useRef(false);
 	// The blur's cleanup, held past the click so a pick can call it off.
 	const leaving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
