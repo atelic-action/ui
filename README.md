@@ -751,14 +751,13 @@ The space a section leaves above and below itself is one token, `--section-space
 
 ### Moving to 8.6.0
 
-No API breaks. Two additions: `ContactSection`, and `AddressSearch`'s `onPick` may return `false` to decline a pick, the field then going back to what was typed (`ContactForm` does so when the visitor has edited an address field by hand while a pick was on its way). The rest fixes 8.5.0's new pieces.
+No API breaks. Two additions: `ContactSection`, and `AddressSearch`'s `onPick` may return `false` to decline a pick, the field then going back to what was typed without searching again until the visitor types (`ContactForm` does so when the visitor has edited an address field by hand while a pick was on its way); a handler that returns nothing (`onPick={setAddress}`) fits as before. The rest fixes 8.5.0's new pieces.
 
 - **`ContactSection`** draws a contact page's body: the form in a card, with an optional heading (`headingLevel`, 2 by default) and lead, beside a side column of whatever the site stacks there (`side`, an `aside` landmark when given `sideLabel`). The two stand side by side while both columns' bases and the gap fit, and stack, the card first, below that, about 900px on a site's default gutter. The ratio, the bases, the gaps, and the card's padding are tokens (below), and the card sets `--expandable-ground` to its own ground, so an inline consent's Show more fades over it. A site that built this layout by hand deletes its rules.
 
 - **An inline `ExpandableText` over text that fits** no longer sets its control over the end of a whole line with an ellipsis: the control sits over the line's end only once the text is measured as cut (`.is-cut`). Before it is measured (a prerendered page) the clamp's own ellipsis shows only where it clips, and the control waits beneath the text.
-- **A pick that moves focus first** (a touch browser, a screen reader) lands: the blur it causes keeps the suggestions and the provider's session, and leaving the field cleans up only after any click.
-- **Vanity numbers** dial: a typed "1-800-FLOWERS" links `tel:+18003569377`, its letters dialed as the keypad prints them, and the build guard reads a vanity `display` the same way. A word beside a number ("Call", "(cell)") is never dialed.
-- **A configured phone with no digit** (`e164: ""`) draws no call: no `tel:` link, and no call button in `LocationSection`.
+- **A pick that moves focus first** (a touch screen, a screen reader) lands: a press on a suggestion holds from its `pointerdown` to its click, through the `pointerup`, `pointerleave`, and blur a touch sends first, so the blur keeps the suggestions and the provider's session. A press the browser cancels, one no click follows, or one whose suggestions are replaced ends, and leaving the field then cleans up as usual.
+- **A configured phone with no digit** (`e164: ""`) draws no call: no `tel:` link, no call button in `LocationSection`, and none on `StickyCTABar`.
 
 ### Moving to 8.5.0
 

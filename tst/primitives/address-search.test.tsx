@@ -276,43 +276,113 @@ describe("AddressSearch", () => {
 		expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
 	});
 
-	it("lets a pick land when the press moves focus first, keeping the session and the list", async () => {
-		const { provider, asked } = heldProvider();
-		const abandon = vi.fn();
-		const onPick = vi.fn();
-		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={onPick} />);
-		type("4 A");
-		act(() => vi.advanceTimersByTime(250));
-		await act(async () => asked[0]?.answer([ALDER]));
-		const option = screen.getByRole("option");
-		// A touch browser or a screen reader: the press, then the blur, then the click.
-		fireEvent.pointerDown(option);
-		fireEvent.blur(field());
-		act(() => vi.advanceTimersByTime(50));
-		expect(abandon).not.toHaveBeenCalled();
-		expect(screen.getByRole("option")).toBe(option);
-		fireEvent.click(option);
-		await settle();
-		act(() => vi.advanceTimersByTime(50));
-		expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
-		expect(abandon).not.toHaveBeenCalled();
+	describe("a press on a suggestion, as a touch screen fires it", () => {
+		/*
+		 * Pointer Events 3, 4.2.6: for a pointer that cannot hover, pointerup
+		 * is followed by pointerout and pointerleave, and only then come the
+		 * compatibility mousedown (where focus moves, so the blur), mouseup,
+		 * and click.
+		 */
+		async function offered() {
+			const { provider, asked } = heldProvider();
+			const abandon = vi.fn();
+			const onPick = vi.fn();
+			render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={onPick} />);
+			type("4 A");
+			act(() => vi.advanceTimersByTime(250));
+			await act(async () => asked[0]?.answer([ALDER]));
+			return { abandon, onPick, asked, option: screen.getByRole("option") };
+		}
+		const leaveField = () => {
+			field().blur();
+			fireEvent.blur(field());
+		};
+
+		it("lands, in the spec's order, keeping the session and the list", async () => {
+			const { abandon, onPick, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerUp(option);
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			leaveField();
+			fireEvent.mouseDown(option);
+			fireEvent.mouseUp(option);
+			act(() => vi.advanceTimersByTime(50));
+			expect(abandon).not.toHaveBeenCalled();
+			expect(screen.getByRole("option")).toBe(option);
+			fireEvent.click(option);
+			await settle();
+			act(() => vi.advanceTimersByTime(1000));
+			expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+			expect(abandon).not.toHaveBeenCalled();
+		});
+
+		it("lands when the blur comes before pointerleave, as some touch browsers send it", async () => {
+			const { abandon, onPick, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerUp(option);
+			leaveField();
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			act(() => vi.advanceTimersByTime(300));
+			fireEvent.click(option);
+			await settle();
+			expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+			expect(abandon).not.toHaveBeenCalled();
+		});
+
+		it("leaves as usual when the browser cancels the press (the touch became a scroll)", async () => {
+			const { abandon, option } = await offered();
+			fireEvent.pointerDown(option);
+			leaveField();
+			fireEvent.pointerCancel(option);
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			act(() => vi.advanceTimersByTime(1));
+			expect(abandon).toHaveBeenCalledOnce();
+			expect(field()).toHaveAttribute("aria-expanded", "false");
+		});
+
+		it("leaves as usual when no click follows the pointerup", async () => {
+			const { abandon, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerUp(option);
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			leaveField();
+			act(() => vi.advanceTimersByTime(300));
+			expect(abandon).not.toHaveBeenCalled();
+			act(() => vi.advanceTimersByTime(400));
+			expect(abandon).toHaveBeenCalledOnce();
+			expect(field()).toHaveAttribute("aria-expanded", "false");
+		});
+
+		it("ends when its option is replaced mid press, so the next blur leaves", async () => {
+			const { abandon, asked, option } = await offered();
+			fireEvent.pointerDown(option);
+			type("4 Al");
+			act(() => vi.advanceTimersByTime(250));
+			await act(async () => asked[1]?.answer([BIRCH]));
+			leaveField();
+			act(() => vi.advanceTimersByTime(1));
+			expect(abandon).toHaveBeenCalledOnce();
+		});
 	});
 
-	it("leaves as usual when a press slides off the suggestion without a click", async () => {
+	it("goes back to the typed words when its pick is declined, and asks nothing until typing", async () => {
 		const { provider, asked } = heldProvider();
-		const abandon = vi.fn();
-		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />);
+		render(<AddressSearch provider={provider} label="Address" onPick={() => false} />);
 		type("4 A");
 		act(() => vi.advanceTimersByTime(250));
 		await act(async () => asked[0]?.answer([ALDER]));
-		const option = screen.getByRole("option");
-		fireEvent.pointerDown(option);
-		field().blur();
-		fireEvent.blur(field());
-		fireEvent.pointerLeave(option);
-		act(() => vi.advanceTimersByTime(50));
-		expect(abandon).toHaveBeenCalledOnce();
-		expect(field()).toHaveAttribute("aria-expanded", "false");
+		fireEvent.click(screen.getByRole("option"));
+		await settle();
+		expect(field()).toHaveValue("4 A");
+		act(() => vi.advanceTimersByTime(1000));
+		expect(asked).toHaveLength(1);
+		type("4 Al");
+		act(() => vi.advanceTimersByTime(250));
+		expect(asked).toHaveLength(2);
 	});
 
 	it("tells the provider it was abandoned when the field is left", () => {

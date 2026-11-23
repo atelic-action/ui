@@ -44,6 +44,7 @@ export function LocationSection({
 	headingLevel = 2,
 }: LocationSectionProps) {
 	const Title = `h${headingLevel}` as const;
+	const callHref = site.phone ? phoneHref(site.phone) : undefined;
 	return (
 		<section
 			className={["section location", surface === "alt" && "surface-alt"].filter(Boolean).join(" ")}
@@ -75,8 +76,8 @@ export function LocationSection({
 							</Button>
 						)}
 						{/* No number to dial, no call button (8.6.0). */}
-						{site.phone && phoneHref(site.phone) && (
-							<Button variant="ghost" href={phoneHref(site.phone)}>
+						{site.phone && callHref && (
+							<Button variant="ghost" href={callHref}>
 								{site.phone.display}
 							</Button>
 						)}

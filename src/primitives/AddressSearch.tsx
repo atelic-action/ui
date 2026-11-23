@@ -57,13 +57,14 @@ export interface AddressSearchProps {
 	/** A quiet note beside the label, such as "(optional)". */
 	hint?: ReactNode;
 	placeholder?: string;
-	/** Called with the parts of the address the visitor picked. */
 	/**
 	 * Called with the parts of the address picked. Return false when the
 	 * pick is not taken after all (a form that has moved on): the field then
-	 * goes back to what the visitor typed (8.6.0).
+	 * goes back to what the visitor typed (8.6.0). Any handler that returns
+	 * nothing, a state setter included, still fits.
 	 */
-	onPick: (address: AddressParts) => boolean | undefined;
+	// biome-ignore lint/suspicious/noConfusingVoidType: void keeps every handler that returns nothing (onPick={setAddress}) assignable, as it was before 8.6.0
+	onPick: (address: AddressParts) => boolean | void;
 	/**
 	 * Called the moment a suggestion is chosen, before its parts arrive, so a
 	 * form can tell a pick that lands after the visitor moved on.
@@ -88,6 +89,9 @@ const defaultCount = (count: number) =>
 	count === 0 ? "No suggestions" : count === 1 ? "1 suggestion" : `${count} suggestions`;
 
 /** The line an address reads as once picked: the main line and the rest. */
+/** How long after a press's pointerup its click may still come: past a touch's click delay. */
+const PRESS_WAIT_MS = 600;
+
 const pickedText = (suggestion: AddressSuggestion) =>
 	[suggestion.text, suggestion.secondary].filter(Boolean).join(", ");
 
@@ -148,15 +152,61 @@ export function AddressSearch({
 	// The provider whose answer the offered suggestions are, which a pick
 	// resolves through even if the site has passed a new one since.
 	const offeredBy = useRef<AddressProvider | null>(null);
-	// A press on a suggestion, from before the blur it may cause until its
-	// click: that blur is the pick's, and leaves the list, the suggestions,
-	// and the provider's session alone (8.6.0).
+	// A press on a suggestion, from its pointerdown until its click. A touch
+	// fires pointerdown, pointerup, pointerout, pointerleave, and only then
+	// the compatibility mousedown (where focus moves, so the blur) and the
+	// click (Pointer Events 3, 4.2.6): the blur in between is the pick's, and
+	// leaves the list, the suggestions, and the provider's session alone
+	// (8.6.0). The press ends at its click, at a pointercancel, when its
+	// suggestions are replaced, or a while after its pointerup with no click.
 	const picking = useRef(false);
+	// The end of a press whose click never came, started at its pointerup.
+	const pressEnd = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	// The blur's cleanup, held past the click so a pick can call it off.
 	const leaving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	// The pause before a lookup, held so a blur can stop it.
 	const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const hasProvider = Boolean(provider);
+
+	/** What leaving the field does once no pick is under way. */
+	const leave = () => {
+		clearTimeout(pending.current);
+		lookups.cancel();
+		setOpen(false);
+		setActive(-1);
+		// The session and the suggestions go only after any click has landed,
+		// and once however many blurs ask.
+		clearTimeout(leaving.current);
+		leaving.current = setTimeout(() => {
+			latestProvider.current?.abandon?.();
+			// Nothing stale is offered after the visitor leaves; typing again asks anew.
+			setSuggestions([]);
+		}, 0);
+	};
+
+	/** Ends a press that brought no pick; a field the press left is then left properly. */
+	const endPress = () => {
+		clearTimeout(pressEnd.current);
+		if (!picking.current) return;
+		picking.current = false;
+		if (document.activeElement !== inputRef.current) leave();
+	};
+	const latestEndPress = useRef(endPress);
+	latestEndPress.current = endPress;
+
+	// A press on an option the list no longer holds (its suggestions replaced,
+	// or the list gone) is no pick, so the guard never outlives its option.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: the suggestions are what a press belongs to; the press ends when they change
+	useEffect(() => () => latestEndPress.current(), [suggestions]);
+
+	// Nothing waits on a field that is gone.
+	useEffect(
+		() => () => {
+			clearTimeout(pressEnd.current);
+			clearTimeout(leaving.current);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		if (!hasProvider) return;
@@ -217,22 +267,9 @@ export function AddressSearch({
 
 	if (!provider) return null;
 
-	/** What leaving the field does once no pick is under way. */
-	const leave = () => {
-		clearTimeout(pending.current);
-		lookups.cancel();
-		setOpen(false);
-		setActive(-1);
-		// The session and the suggestions go only after any click has landed.
-		leaving.current = setTimeout(() => {
-			latestProvider.current?.abandon?.();
-			// Nothing stale is offered after the visitor leaves; typing again asks anew.
-			setSuggestions([]);
-		}, 0);
-	};
-
 	const pick = (suggestion: AddressSuggestion) => {
 		picking.current = false;
+		clearTimeout(pressEnd.current);
 		clearTimeout(leaving.current);
 		const text = pickedText(suggestion);
 		// What the visitor typed, to go back to if the pick cannot be resolved.
@@ -253,8 +290,10 @@ export function AddressSearch({
 					if (answer.stale) return;
 					// A form that has moved on declines the pick: the field goes back
 					// to what was typed, as it does when the address cannot be read.
+					// The restored words count as answered, so no new lookup (and no
+					// new billable request) runs until the visitor types again.
 					if (latestPick.current(answer.value) === false) {
-						picked.current = null;
+						picked.current = typed;
 						setQuery(typed);
 					}
 				},
@@ -349,13 +388,16 @@ export function AddressSearch({
 							// Keeps focus in the field, so the press is a pick and not a blur.
 							onMouseDown={(event) => event.preventDefault()}
 							onPointerDown={() => {
+								clearTimeout(pressEnd.current);
 								picking.current = true;
 							}}
-							// A press that slides off without a click is no pick after all.
-							onPointerLeave={() => {
-								if (!picking.current) return;
-								picking.current = false;
-								if (document.activeElement !== inputRef.current) leave();
+							// No click follows a cancelled press (a scroll that took the touch).
+							onPointerCancel={endPress}
+							// A click follows a pointerup at once, or after a touch's short
+							// delay; a press that brings none ends after this.
+							onPointerUp={() => {
+								clearTimeout(pressEnd.current);
+								pressEnd.current = setTimeout(endPress, PRESS_WAIT_MS);
 							}}
 							onClick={() => pick(suggestion)}
 						>

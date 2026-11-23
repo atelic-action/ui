@@ -1,12 +1,5 @@
 import { isPhoneNumber } from "../../src/lib/contactForm";
-import {
-	dialable,
-	EMAIL_PATTERN,
-	isE164,
-	isEmail,
-	keypadDigits,
-	toE164,
-} from "../../src/lib/contactLinks";
+import { EMAIL_PATTERN, isE164, isEmail, toE164 } from "../../src/lib/contactLinks";
 
 describe("toE164", () => {
 	it.each([
@@ -43,26 +36,6 @@ describe("toE164", () => {
 		["555+555-0142"],
 	])("refuses %j", (value) => {
 		expect(toE164(value)).toBeNull();
-	});
-});
-
-describe("keypadDigits and dialable", () => {
-	it.each([
-		["1-800-FLOWERS", "18003569377"],
-		["1-800-flowers", "18003569377"],
-		["1 800 FLOWERS", "18003569377"],
-		["1-800-GO-FEDEX", "18004633339"],
-		["Call (303) 555-0142", "3035550142"],
-		["303-555-0142 (cell)", "3035550142"],
-		["(303) 555-0142 x12", "3035550142"],
-		["+44 20 7946 0000", "+442079460000"],
-	])("dials %j as %s", (value, expected) => {
-		expect(dialable(value)).toBe(expected);
-	});
-
-	it("dials nothing from words alone", () => {
-		expect(dialable("call us")).toBeNull();
-		expect(keypadDigits("CALL US")).toBe("");
 	});
 });
 

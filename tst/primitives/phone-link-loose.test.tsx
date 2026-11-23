@@ -92,10 +92,10 @@ describe("what stays unlinked", () => {
 		expect(hrefs()).toEqual(["tel:5550142", "tel:+1234"]);
 	});
 
-	it("dials a vanity number's letters as the keypad prints them, and never a word", () => {
-		render(<PhoneLink phone="1-800-FLOWERS" />);
-		render(<PhoneLink phone="Call (303) 555-0142" />);
-		expect(hrefs()).toEqual(["tel:+18003569377", "tel:+13035550142"]);
+	it("dials a typed number with words in it exactly as 8.5.0 did: its digits, no letter read", () => {
+		render(<PhoneLink phone="TEL 303-555-0142" />);
+		render(<PhoneLink phone="Toll-free: 303-555-0142" />);
+		expect(hrefs()).toEqual(["tel:3035550142", "tel:3035550142"]);
 	});
 
 	it("draws no call for a configured number with no digit: no tel: link, no call button", () => {
@@ -111,6 +111,19 @@ describe("what stays unlinked", () => {
 		expect(
 			screen.queryAllByRole("link").filter((link) => link.getAttribute("href") === "tel:"),
 		).toEqual([]);
+	});
+
+	it("draws no call button on the sticky bar for a configured number with no digit", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		const { container } = render(
+			<StickyCTABar
+				primaryCTA={{ label: "Order", href: "/order" }}
+				phone={{ e164: "", display: "" }}
+				fromTop
+			/>,
+		);
+		expect(container.querySelector(".btn-call")).toBeNull();
+		expect(screen.getAllByRole("link")).toHaveLength(1);
 	});
 
 	it("an address that is not a string draws no link and never throws", () => {

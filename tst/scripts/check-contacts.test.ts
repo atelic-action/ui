@@ -24,15 +24,6 @@ describe("contactProblems", () => {
 		expect(contactProblems(good)).toEqual([]);
 	});
 
-	it("reads a vanity display by its keypad digits, and refuses one that dials another number", () => {
-		expect(contactProblems({ phone: { e164: "+18003569377", display: "1-800-FLOWERS" } })).toEqual(
-			[],
-		);
-		expect(contactProblems({ phone: { e164: "+18003569377", display: "1-800-FLOWERX" } })).toEqual([
-			'site.phone: display "1-800-FLOWERX" does not read as +18003569377',
-		]);
-	});
-
 	it("refuses an e164 that is not a valid number, naming the field", () => {
 		const site = { ...good, phone: { e164: "+1303555014", display: "(303) 555-014" } };
 		expect(contactProblems(site)).toEqual([

@@ -1,7 +1,7 @@
 import { Phone as PhoneIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
-import { PhoneLink } from "../primitives/PhoneLink";
+import { PhoneLink, phoneHref } from "../primitives/PhoneLink";
 import type { CallToAction, Phone } from "../types";
 
 export interface StickyCTABarProps {
@@ -157,7 +157,8 @@ export function StickyCTABar({
 			>
 				{primaryCTA.label}
 			</a>
-			{phone && (
+			{/* No number to dial, no call button: never a nameless empty one (8.6.0). */}
+			{phone && phoneHref(phone) && (
 				<PhoneLink className="btn btn-ghost btn-call" phone={phone} aria-label={callLabel}>
 					<PhoneIcon size={18} aria-hidden="true" />
 				</PhoneLink>
