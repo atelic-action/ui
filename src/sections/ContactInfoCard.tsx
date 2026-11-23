@@ -1,5 +1,6 @@
-import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
+import { EmailLink } from "../primitives/EmailLink";
+import { PhoneLink } from "../primitives/PhoneLink";
 import { useWithBase } from "../routing/BasePathProvider";
 import type { SiteConfig } from "./siteConfig";
 
@@ -70,7 +71,7 @@ export function ContactInfoCard({
 							<div className="ci-row" key={phone.e164}>
 								<span className="k">{phone.role}</span>
 								<span className="v">
-									<a href={`tel:${phone.e164}`}>{phone.display}</a>
+									<PhoneLink phone={phone} />
 								</span>
 							</div>
 						))
@@ -78,7 +79,7 @@ export function ContactInfoCard({
 							<div className="ci-row">
 								<span className="k">{phoneLabel}</span>
 								<span className="v">
-									<a href={`tel:${site.phone.e164}`}>{site.phone.display}</a>
+									<PhoneLink phone={site.phone} />
 								</span>
 							</div>
 						)}
@@ -86,7 +87,7 @@ export function ContactInfoCard({
 					<span className="k">Email</span>
 					<span className="v">
 						{/* Breaks after the @ and before each dot, never inside a word, as the footer's does. */}
-						<a href={`mailto:${site.email}`}>{breakableEmail(site.email)}</a>
+						<EmailLink email={site.email} />
 					</span>
 				</div>
 				{showAddress && (

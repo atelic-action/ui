@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
+import { EmailLink } from "../primitives/EmailLink";
 
 type Status = "idle" | "sending" | "sent" | "failed";
 
@@ -179,7 +180,7 @@ export function GateLogin({
 							<p className="gate-fine">
 								{builtBy && `Built by ${builtBy}`}
 								{builtBy && contactEmail && " · "}
-								{contactEmail && <a href={`mailto:${contactEmail}`}>{contactEmail}</a>}
+								{contactEmail && <EmailLink email={contactEmail}>{contactEmail}</EmailLink>}
 							</p>
 						)}
 					</>

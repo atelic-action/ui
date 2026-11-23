@@ -1,3 +1,4 @@
+export { EMAIL_PATTERN, isE164, isEmail, toE164 } from "../lib/contactLinks";
 export {
 	type AddressComponent,
 	addressFromComponents,
@@ -15,11 +16,13 @@ export { Bubble, type BubbleProps } from "./Bubble";
 export { Button, type ButtonProps } from "./Button";
 export { type CallToActionProps, PrimaryButton, SecondaryButton } from "./CallToAction";
 export { Chip, type ChipProps } from "./Chip";
+export { EmailLink, type EmailLinkProps, emailHref } from "./EmailLink";
 export { ExpandableText, type ExpandableTextProps } from "./ExpandableText";
 export { Eyebrow, type EyebrowProps } from "./Eyebrow";
 export { GoogleMapsAttribution } from "./GoogleMapsAttribution";
 export { ImageFrame, type ImageFrameProps } from "./ImageFrame";
 export { Lead, type LeadProps } from "./Lead";
+export { PhoneLink, type PhoneLinkProps, phoneHref } from "./PhoneLink";
 export { type ProseBlock, ProseBlocks, type ProseBlocksProps } from "./ProseBlocks";
 export { QuoteCard, type QuoteCardProps } from "./QuoteCard";
 export { SectionHeading, type SectionHeadingProps } from "./SectionHeading";

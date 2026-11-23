@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Eyebrow, Lead } from "../primitives";
 import { Button } from "../primitives/Button";
+import { phoneHref } from "../primitives/PhoneLink";
 import { HoursTable } from "./HoursTable";
 import { MapEmbed, type MapEmbedSite } from "./MapEmbed";
 import type { SiteConfig, Surface } from "./siteConfig";
@@ -74,7 +75,7 @@ export function LocationSection({
 							</Button>
 						)}
 						{site.phone && (
-							<Button variant="ghost" href={`tel:${site.phone.e164}`}>
+							<Button variant="ghost" href={phoneHref(site.phone)}>
 								{site.phone.display}
 							</Button>
 						)}

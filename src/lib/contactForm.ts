@@ -1,4 +1,5 @@
 import type { AddressParts } from "../primitives/AddressSearch";
+import { EMAIL_PATTERN, toE164 } from "./contactLinks";
 
 /** Which of the contact form's opt in fields are drawn, and which must be filled. */
 export interface ContactFormShape {
@@ -67,33 +68,18 @@ export const FIELD_ORDER: ContactFormField[] = [
 
 export type ContactFormRefusals = Partial<Record<ContactFormField, true>>;
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 /**
- * A North American number: ten digits once the punctuation and a leading
- * country code 1 are taken out. The form's default phone check.
+ * Whether a typed number is one to dial: one that reads into E.164
+ * (`toE164`), the same check the phone link makes. The form's default
+ * phone check.
  */
 export function isPhoneNumber(value: string): boolean {
-	return value.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "").length === 10;
+	return toE164(value) !== null;
 }
 
 /** A US ZIP code, five digits or ZIP+4. */
 export function isZIP(value: string): boolean {
 	return /^\d{5}(-?\d{4})?$/.test(value.trim());
-}
-
-/**
- * A `tel:` link for a number a visitor typed, which comes with no E.164 form:
- * the digits alone, a typed leading + kept; ten digits take the North
- * American +1, and eleven that open on 1 take the +. Anything else dials as
- * typed, digits only.
- */
-export function telHref(value: string): string {
-	const digits = value.replace(/\D/g, "");
-	if (value.trim().startsWith("+")) return `tel:+${digits}`;
-	if (digits.length === 10) return `tel:+1${digits}`;
-	if (digits.length === 11 && digits.startsWith("1")) return `tel:+${digits}`;
-	return `tel:${digits}`;
 }
 
 /** An address on one line: "418 Alder Street, Fairhaven, CO 80000", skipping empty parts. */

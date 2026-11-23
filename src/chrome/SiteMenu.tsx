@@ -3,6 +3,8 @@ import { useEffect, useId, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { telText } from "../lib/phoneText";
 import { Button } from "../primitives/Button";
+import { EmailLink } from "../primitives/EmailLink";
+import { PhoneLink } from "../primitives/PhoneLink";
 import type {
 	Brand,
 	CallToAction,
@@ -274,15 +276,15 @@ export function SiteMenu({
 							const words = menuPhoneLabel(line);
 							return (
 								// The words and the number are one name, spaced as they read.
-								<a
+								<PhoneLink
 									key={line.e164}
 									className="mm-phone-card"
-									href={`tel:${line.e164}`}
+									phone={line}
 									aria-label={`${words} ${line.display}`}
 								>
 									<span className="mm-phone-label">{words}</span>
 									<span className="mm-phone-number tel-number">{line.display}</span>
-								</a>
+								</PhoneLink>
 							);
 						})}
 					</div>
@@ -418,25 +420,25 @@ function ContactBlock({
 			{phones
 				? phones.map((line) => (
 						<span key={line.e164}>
-							<a className="mm-contact-link" href={`tel:${line.e164}`}>
+							<PhoneLink className="mm-contact-link" phone={line}>
 								{menuPhoneLabel(line).toUpperCase()}&nbsp;&nbsp;{line.display}
-							</a>
+							</PhoneLink>
 							<br />
 						</span>
 					))
 				: phone && (
 						<>
-							<a className="mm-contact-link" href={`tel:${phone.e164}`}>
+							<PhoneLink className="mm-contact-link" phone={phone}>
 								{menuPhoneLabel(phone).toUpperCase()}&nbsp;&nbsp;{phone.display}
-							</a>
+							</PhoneLink>
 							<br />
 						</>
 					)}
 			{email && (
 				<>
-					<a className="mm-contact-link" href={`mailto:${email}`}>
+					<EmailLink className="mm-contact-link" email={email}>
 						{email}
-					</a>
+					</EmailLink>
 					<br />
 				</>
 			)}

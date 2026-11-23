@@ -21,7 +21,6 @@ import {
 	firstRefused,
 	isZIP,
 	readContactForm,
-	telHref,
 } from "../lib/contactForm";
 import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePlaces";
 import { isHoneypotFilled } from "../lib/honeypot";
@@ -33,8 +32,10 @@ import {
 	AddressSearch,
 } from "../primitives/AddressSearch";
 import { Button } from "../primitives/Button";
+import { EmailLink } from "../primitives/EmailLink";
 import { ExpandableText } from "../primitives/ExpandableText";
 import { GoogleMapsAttribution } from "../primitives/GoogleMapsAttribution";
+import { PhoneLink } from "../primitives/PhoneLink";
 import { useWithBase } from "../routing/BasePathProvider";
 
 /** Every word the form draws that is not a visitor's, each with a neutral default. */
@@ -729,15 +730,11 @@ function ContactThanks({
 			rows.push({ label: labels.address, value: addressLine(address) });
 		// The visitor's own number and address, read back as links (Component Rules 17).
 		const reach = [
-			values.phone && (
-				<a key="phone" href={telHref(values.phone)}>
-					{values.phone}
-				</a>
-			),
+			values.phone && <PhoneLink key="phone" phone={values.phone} />,
 			values.email && (
-				<a key="email" href={`mailto:${values.email}`}>
+				<EmailLink key="email" email={values.email}>
 					{values.email}
-				</a>
+				</EmailLink>
 			),
 		].filter(Boolean);
 		if (reach.length)

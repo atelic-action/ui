@@ -58,6 +58,7 @@
 			"types": "./dist/routing/basePath.d.ts",
 			"default": "./dist/routing/basePath.js"
 		},
+		"./scripts/contacts": "./src/scripts/check-contacts.ts",
 		"./sections": "./src/sections/index.ts",
 		"./tokens": "./src/tokens/index.ts",
 		"./styles/app.css": "./src/styles/app.css",
@@ -113,7 +114,8 @@
 		"@radix-ui/react-tabs": "^1.2.1",
 		"@sentry/browser": "^11.16.0",
 		"@sentry/vite-plugin": "^11.16.0",
-		"jose": "^6.2.12"
+		"jose": "^6.2.12",
+		"libphonenumber-js": "^1.13.17"
 	},
 	"peerDependencies": {
 		"@radix-ui/react-accordion": "^1.2.12",

@@ -8,7 +8,6 @@ import {
 	isZIP,
 	PLAIN_SHAPE,
 	readContactForm,
-	telHref,
 } from "../../src/lib/contactForm";
 
 const FULL: ContactFormShape = {
@@ -246,15 +245,6 @@ describe("the helpers", () => {
 		["ABCDE", false],
 	])("isZIP(%j) is %s", (value, expected) => {
 		expect(isZIP(value)).toBe(expected);
-	});
-
-	it.each([
-		["(555) 555-0142", "tel:+15555550142"],
-		["1-555-555-0142", "tel:+15555550142"],
-		["+44 20 7946 0000", "tel:+442079460000"],
-		["555-0142", "tel:5550142"],
-	])("telHref(%j) is %s", (value, expected) => {
-		expect(telHref(value)).toBe(expected);
 	});
 
 	it("writes an address on one line, skipping what is empty", () => {
