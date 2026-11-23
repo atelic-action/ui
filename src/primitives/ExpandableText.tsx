@@ -87,7 +87,18 @@ export function ExpandableText({
 	const hasMore = more != null && more !== false;
 	const showControl = hasMore || open || overflows !== false;
 	const style = { "--expandable-lines": lines } as CSSProperties;
-	const bodyClass = ["expandable-text-body", !open && "is-clamped"].filter(Boolean).join(" ");
+	// is-clamped is the clamp the measuring needs, which cuts nothing when the
+	// text fits; is-cut says it was measured cutting, and only then does an
+	// inline control sit over the line's end (8.5.1). Before measuring (a
+	// prerendered page) the text is never called cut: the clamp's own
+	// ellipsis shows only where it clips, and the control waits beneath.
+	const bodyClass = [
+		"expandable-text-body",
+		!open && "is-clamped",
+		!open && overflows === true && "is-cut",
+	]
+		.filter(Boolean)
+		.join(" ");
 
 	const control = showControl && (
 		<button

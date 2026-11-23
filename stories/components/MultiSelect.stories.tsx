@@ -294,3 +294,23 @@ export const AwkwardValues: Story = {
 		await expect(canvas.getByRole("checkbox", { name: "Sandwich loaves" })).toBe(boxes[0]);
 	},
 };
+
+/**
+ * A form reset while the list is open (a script resetting the form after
+ * a send) leaves the boxes the reset put back, never re ticking one that
+ * was ticked when the list opened.
+ */
+export const ResetWhileOpen: Story = {
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(button(canvas));
+		await layerOpened(() => list(canvas));
+		await userEvent.click(canvas.getByRole("checkbox", { name: "Rye" }));
+		await userEvent.keyboard("{Escape}");
+		await userEvent.click(button(canvas));
+		await layerOpened(() => list(canvas));
+		(button(canvas).closest("form") as HTMLFormElement).reset();
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		await expect(submitted(canvas)).toEqual([]);
+		await expect(button(canvas)).toHaveTextContent("Choose any");
+	},
+};

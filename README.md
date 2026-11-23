@@ -748,6 +748,15 @@ The space a section leaves above and below itself is one token, `--section-space
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
 
+### Moving to 8.5.1
+
+No API breaks; a patch to 8.5.0's new pieces. One optional addition: `AddressSearch`'s `onPick` may return `false` to decline a pick, and the field then goes back to what was typed (`ContactForm` does so when the visitor has edited an address field by hand while a pick was on its way).
+
+- **An inline `ExpandableText` over text that fits** no longer sets its control over the end of a whole line with an ellipsis: the control sits over the line's end only once the text is measured as cut (`.is-cut`). Before it is measured (a prerendered page) the clamp's own ellipsis shows only where it clips, and the control waits beneath the text.
+- **A pick that moves focus first** (a touch browser, a screen reader) lands: the blur it causes keeps the suggestions and the provider's session, and leaving the field cleans up only after any click.
+- **Vanity numbers** dial: a typed "1-800-FLOWERS" links `tel:+18003569377`, its letters dialed as the keypad prints them, and the build guard reads a vanity `display` the same way. A word beside a number ("Call", "(cell)") is never dialed.
+- **A configured phone with no digit** (`e164: ""`) draws no call: no `tel:` link, and no call button in `LocationSection`.
+
 ### Moving to 8.5.0
 
 No API breaks, and nothing moves on a site that changes nothing: every addition is an optional prop, an export, or a token whose default is the look it had. `@radix-ui/react-popover` and `@radix-ui/react-checkbox` move from optional peers to dependencies, as `@radix-ui/react-tabs` is, so a marketing site installs nothing for `MultiSelect`; an app that already had them keeps one copy where the ranges meet.

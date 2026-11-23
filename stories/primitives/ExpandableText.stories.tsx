@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { ExpandableText } from "../../src/primitives";
 import { lines as lineCount } from "../support/geometry";
 import { pin } from "../support/viewports";
@@ -138,5 +138,41 @@ export const Phone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("button", { name: "Show more" })).toBeVisible();
+	},
+};
+
+/**
+ * Inline, with something in `more`, over text that fits its lines: the
+ * text is not cut, so the control waits beneath it, with no ellipsis and
+ * no fade over a line that ends whole (8.5.1).
+ */
+export const InlineFits: Story = {
+	args: {
+		children: "Open from seven.",
+		inline: true,
+		more: <a href="https://kestrelhollow.example.com/hours">Holiday hours</a>,
+	},
+	play: async ({ canvas }) => {
+		const more = canvas.getByRole("button", { name: "Show more" });
+		const words = canvas.getByText("Open from seven.");
+		await expect(more.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+			words.getBoundingClientRect().bottom - 1,
+		);
+		await expect(getComputedStyle(more, "::before").content).toBe("none");
+	},
+};
+
+/** Inline over text that runs past its lines: once measured, the control sits on the last line's end. */
+export const InlineCut: Story = {
+	args: { inline: true, lines: 1 },
+	play: async ({ canvas }) => {
+		const more = canvas.getByRole("button", { name: "Show more" });
+		const words = canvas.getByText(/Every loaf on the shelf/);
+		await waitFor(() =>
+			expect(Math.round(more.getBoundingClientRect().bottom)).toBe(
+				Math.round(words.getBoundingClientRect().bottom),
+			),
+		);
+		await expect(getComputedStyle(more, "::before").content).not.toBe("none");
 	},
 };

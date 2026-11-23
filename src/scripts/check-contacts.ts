@@ -28,7 +28,7 @@ import parsePhoneNumber, {
 	isSupportedCountry,
 	type PhoneNumber,
 } from "libphonenumber-js/max";
-import { isEmail } from "../lib/contactLinks.js";
+import { isEmail, keypadDigits } from "../lib/contactLinks.js";
 
 /** A number read against a country, or undefined when it is not one; never throws. */
 function parse(text: string, country: CountryCode): PhoneNumber | undefined {
@@ -57,7 +57,14 @@ function phoneProblem(e164: string, display: string, country: CountryCode): stri
 		return `e164 "${e164}" is not a valid number in E.164 (a + and the country code, digits only)`;
 	}
 	const shown = parse(display, number.country ?? country);
-	if (shown?.number !== e164) {
+	// A vanity display ("1-800-FLOWERS") reads as its letters dialed on the keypad.
+	const vanity = /[A-Za-z]/.test(display)
+		? parse(
+				`${display.trim().startsWith("+") ? "+" : ""}${keypadDigits(display)}`,
+				number.country ?? country,
+			)
+		: undefined;
+	if (shown?.number !== e164 && vanity?.number !== e164) {
 		return `display "${display}" does not read as ${e164}`;
 	}
 	return null;

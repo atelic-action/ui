@@ -29,14 +29,18 @@ const hasDigits = (value: string) => /\d/.test(value);
  * The `tel:` href for a number, the one place it is built. A configured
  * phone links its `e164` exactly as given, as every link drew it before
  * 8.5.0: the browser is never stricter than it was, and a loose `e164` is
- * the build guard's to catch (`contactProblems`). A typed number is read
+ * the build guard's to catch (`contactProblems`). One with no digit at all
+ * has no href (8.5.1), so nothing draws a call that dials nothing. A typed number is read
  * into E.164 (`toE164`), or failing that dials what a dialer can take
  * (`dialable`: the digits, a typed + kept, an extension dropped); one with
  * no digit at all has no href.
  */
 export function phoneHref(phone: Pick<Phone, "e164"> | string): string | undefined {
-	if (typeof phone !== "string") return `tel:${phone.e164}`;
-	const number = toE164(phone) ?? dialable(phone);
+	if (typeof phone !== "string")
+		return hasDigits(phone.e164 ?? "") ? `tel:${phone.e164}` : undefined;
+	// What a dialer takes from the words, itself read into E.164 when it can be.
+	const dial = dialable(phone);
+	const number = toE164(phone) ?? (dial ? (toE164(dial) ?? dial) : null);
 	return number ? `tel:${number}` : undefined;
 }
 

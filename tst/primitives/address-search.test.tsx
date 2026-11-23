@@ -239,6 +239,8 @@ describe("AddressSearch", () => {
 		act(() => vi.advanceTimersByTime(250));
 		await act(async () => asked[0]?.answer([ALDER, BIRCH]));
 		fireEvent.blur(field());
+		// The blur's cleanup runs once any click has had its turn.
+		act(() => vi.advanceTimersByTime(1));
 		field().focus();
 		fireEvent.keyDown(field(), { key: "ArrowDown" });
 		expect(field()).toHaveAttribute("aria-expanded", "false");
@@ -274,12 +276,53 @@ describe("AddressSearch", () => {
 		expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
 	});
 
+	it("lets a pick land when the press moves focus first, keeping the session and the list", async () => {
+		const { provider, asked } = heldProvider();
+		const abandon = vi.fn();
+		const onPick = vi.fn();
+		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={onPick} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		const option = screen.getByRole("option");
+		// A touch browser or a screen reader: the press, then the blur, then the click.
+		fireEvent.pointerDown(option);
+		fireEvent.blur(field());
+		act(() => vi.advanceTimersByTime(50));
+		expect(abandon).not.toHaveBeenCalled();
+		expect(screen.getByRole("option")).toBe(option);
+		fireEvent.click(option);
+		await settle();
+		act(() => vi.advanceTimersByTime(50));
+		expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+		expect(abandon).not.toHaveBeenCalled();
+	});
+
+	it("leaves as usual when a press slides off the suggestion without a click", async () => {
+		const { provider, asked } = heldProvider();
+		const abandon = vi.fn();
+		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		const option = screen.getByRole("option");
+		fireEvent.pointerDown(option);
+		field().blur();
+		fireEvent.blur(field());
+		fireEvent.pointerLeave(option);
+		act(() => vi.advanceTimersByTime(50));
+		expect(abandon).toHaveBeenCalledOnce();
+		expect(field()).toHaveAttribute("aria-expanded", "false");
+	});
+
 	it("tells the provider it was abandoned when the field is left", () => {
 		const { provider } = heldProvider();
 		const abandon = vi.fn();
 		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />);
 		field().focus();
 		fireEvent.blur(field());
+		// After any click has had its turn.
+		act(() => vi.advanceTimersByTime(1));
 		expect(abandon).toHaveBeenCalledOnce();
 	});
 

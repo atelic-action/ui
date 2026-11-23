@@ -92,6 +92,27 @@ describe("what stays unlinked", () => {
 		expect(hrefs()).toEqual(["tel:5550142", "tel:+1234"]);
 	});
 
+	it("dials a vanity number's letters as the keypad prints them, and never a word", () => {
+		render(<PhoneLink phone="1-800-FLOWERS" />);
+		render(<PhoneLink phone="Call (303) 555-0142" />);
+		expect(hrefs()).toEqual(["tel:+18003569377", "tel:+13035550142"]);
+	});
+
+	it("draws no call for a configured number with no digit: no tel: link, no call button", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		render(
+			<LocationSection
+				site={{ ...testSite, phone: { e164: "", display: "Call us" } }}
+				title="Visit"
+			/>,
+		);
+		expect(screen.queryByRole("link", { name: "Call us" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Call us" })).toBeNull();
+		expect(
+			screen.queryAllByRole("link").filter((link) => link.getAttribute("href") === "tel:"),
+		).toEqual([]);
+	});
+
 	it("an address that is not a string draws no link and never throws", () => {
 		vi.spyOn(console, "warn").mockImplementation(() => {});
 		expect(() => render(<EmailLink email={undefined as unknown as string} />)).not.toThrow();

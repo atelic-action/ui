@@ -58,7 +58,12 @@ export interface AddressSearchProps {
 	hint?: ReactNode;
 	placeholder?: string;
 	/** Called with the parts of the address the visitor picked. */
-	onPick: (address: AddressParts) => void;
+	/**
+	 * Called with the parts of the address picked. Return false when the
+	 * pick is not taken after all (a form that has moved on): the field then
+	 * goes back to what the visitor typed (8.5.1).
+	 */
+	onPick: (address: AddressParts) => boolean | undefined;
 	/**
 	 * Called the moment a suggestion is chosen, before its parts arrive, so a
 	 * form can tell a pick that lands after the visitor moved on.
@@ -143,6 +148,12 @@ export function AddressSearch({
 	// The provider whose answer the offered suggestions are, which a pick
 	// resolves through even if the site has passed a new one since.
 	const offeredBy = useRef<AddressProvider | null>(null);
+	// A press on a suggestion, from before the blur it may cause until its
+	// click: that blur is the pick's, and leaves the list, the suggestions,
+	// and the provider's session alone (8.5.1).
+	const picking = useRef(false);
+	// The blur's cleanup, held past the click so a pick can call it off.
+	const leaving = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	// The pause before a lookup, held so a blur can stop it.
 	const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	const hasProvider = Boolean(provider);
@@ -206,7 +217,23 @@ export function AddressSearch({
 
 	if (!provider) return null;
 
+	/** What leaving the field does once no pick is under way. */
+	const leave = () => {
+		clearTimeout(pending.current);
+		lookups.cancel();
+		setOpen(false);
+		setActive(-1);
+		// The session and the suggestions go only after any click has landed.
+		leaving.current = setTimeout(() => {
+			latestProvider.current?.abandon?.();
+			// Nothing stale is offered after the visitor leaves; typing again asks anew.
+			setSuggestions([]);
+		}, 0);
+	};
+
 	const pick = (suggestion: AddressSuggestion) => {
+		picking.current = false;
+		clearTimeout(leaving.current);
 		const text = pickedText(suggestion);
 		// What the visitor typed, to go back to if the pick cannot be resolved.
 		const typed = query;
@@ -223,7 +250,13 @@ export function AddressSearch({
 			.run((signal) => source.resolve(suggestion, { signal }))
 			.then(
 				(answer) => {
-					if (!answer.stale) latestPick.current(answer.value);
+					if (answer.stale) return;
+					// A form that has moved on declines the pick: the field goes back
+					// to what was typed, as it does when the address cannot be read.
+					if (latestPick.current(answer.value) === false) {
+						picked.current = null;
+						setQuery(typed);
+					}
 				},
 				() => {
 					// The address could not be read: the field goes back to what was
@@ -293,15 +326,12 @@ export function AddressSearch({
 					onKeyDown={onKeyDown}
 					onFocus={() => latestProvider.current?.prepare?.()}
 					onBlur={() => {
+						// A press on a suggestion moved focus first (a touch browser, a
+						// screen reader): the pick is coming, and keeps what it needs.
+						if (picking.current) return;
 						// Leaving the field stops the pause and the lookup in flight,
 						// so no answer reopens the list behind the visitor.
-						clearTimeout(pending.current);
-						lookups.cancel();
-						latestProvider.current?.abandon?.();
-						// Nothing stale is offered after the visitor leaves; typing again asks anew.
-						setSuggestions([]);
-						setOpen(false);
-						setActive(-1);
+						leave();
 					}}
 				/>
 			</div>
@@ -318,6 +348,15 @@ export function AddressSearch({
 							className="address-search-option"
 							// Keeps focus in the field, so the press is a pick and not a blur.
 							onMouseDown={(event) => event.preventDefault()}
+							onPointerDown={() => {
+								picking.current = true;
+							}}
+							// A press that slides off without a click is no pick after all.
+							onPointerLeave={() => {
+								if (!picking.current) return;
+								picking.current = false;
+								if (document.activeElement !== inputRef.current) leave();
+							}}
 							onClick={() => pick(suggestion)}
 						>
 							<span className="address-search-option-text">{suggestion.text}</span>

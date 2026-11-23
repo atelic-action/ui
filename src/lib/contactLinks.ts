@@ -44,14 +44,46 @@ export function toE164(value: string): string | null {
 	return null;
 }
 
+/** The keypad digit each letter dials, as a phone's keypad prints them. */
+const KEYPAD: Record<string, string> = Object.fromEntries(
+	["ABC", "DEF", "GHI", "JKL", "MNO", "PQRS", "TUV", "WXYZ"].flatMap((letters, at) =>
+		[...letters].map((letter) => [letter, String(at + 2)]),
+	),
+);
+
+/**
+ * A number's digits, its letters dialed as the keypad prints them, for a
+ * vanity number ("1-800-FLOWERS" dials 18003569377). Only letters that are
+ * part of the number are dialed: those in a run that also holds a digit or
+ * a hyphen ("800-FLOWERS"), or a word in capitals beside the digits ("1 800
+ * FLOWERS"). Any other word ("Call", "(cell)") is words, and text with no
+ * digit at all dials nothing.
+ */
+export function keypadDigits(value: string): string {
+	if (!/\d/.test(value)) return "";
+	return value
+		.split(/\s+/)
+		.map((run) => {
+			const letters = run.replace(/[^A-Za-z]/g, "");
+			const partOfNumber =
+				/[\d-]/.test(run) || (letters.length > 1 && letters === letters.toUpperCase());
+			return partOfNumber
+				? run.toUpperCase().replace(/[A-Z]/g, (letter) => KEYPAD[letter] ?? "")
+				: run;
+		})
+		.join(" ")
+		.replace(/\D/g, "");
+}
+
 /**
  * What a dialer can still take from a typed number `toE164` cannot read:
- * its digits, its extension dropped and a typed leading + kept. Null when
- * there is no digit to dial.
+ * its digits, a vanity number's letters dialed as the keypad prints them,
+ * its extension dropped and a typed leading + kept. Null when there is no
+ * digit to dial.
  */
 export function dialable(value: string): string | null {
 	const number = value.trim().replace(EXTENSION, "");
-	const digits = number.replace(/\D/g, "");
+	const digits = keypadDigits(number);
 	if (!digits) return null;
 	return number.startsWith("+") ? `+${digits}` : digits;
 }
