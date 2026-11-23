@@ -811,3 +811,62 @@ export const ConsentInline: Story = {
 		await expect(box).toHaveAccessibleName(consentText);
 	},
 };
+
+/** A thanks with `lead: false` draws no lead at all, not an empty line. */
+export const ThanksWithoutLead: Story = {
+	args: { thanks: { title: "We have it.", lead: false } },
+	play: async ({ canvas, userEvent }) => {
+		await fillIn(canvas, userEvent);
+		await userEvent.click(send(canvas));
+		const title = await canvas.findByRole("heading", { name: "We have it." });
+		await expect(canvas.queryByText(/Thank you. We answer within a day/)).toBeNull();
+		await expect(title.nextElementSibling?.tagName).not.toBe("P");
+	},
+};
+
+/** The footnote's size by token. */
+export const FootnoteSize: Story = {
+	args: FootnoteDefault.args,
+	decorators: [
+		(Story) => (
+			<div style={{ "--form-footnote-size": "14.5px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		await expect(getComputedStyle(canvas.getByText(/Need it today/)).fontSize).toBe("14.5px");
+	},
+};
+
+/**
+ * The fields' padding by token, the pickers with them, so a form stays
+ * even: a text field, the services button, and the address search alike
+ * (the search keeps its room for the pin).
+ */
+export const FieldPadding: Story = {
+	args: serviceShape,
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{ "--field-padding-block": "10px", "--field-padding-inline": "12px" } as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const name = getComputedStyle(canvas.getByLabelText("First name"));
+		const services = getComputedStyle(canvas.getByRole("button", { name: /What can we bake/ }));
+		const search = getComputedStyle(canvas.getByRole("combobox", { name: /Delivery address/ }));
+		for (const field of [name, services, search]) {
+			await expect(field.paddingTop).toBe("10px");
+			await expect(field.paddingRight).toBe("12px");
+		}
+		await expect(name.paddingLeft).toBe("12px");
+		await expect(services.paddingLeft).toBe("12px");
+		await expect(search.paddingLeft).toBe("44px");
+	},
+};

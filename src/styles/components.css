@@ -1379,7 +1379,7 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 12px;
-		padding: 14px 16px;
+		padding: var(--field-padding-block) var(--field-padding-inline);
 		border: 1.5px solid var(--field-border, var(--neutral-200));
 		border-radius: var(--radius-md, 10px);
 		background: var(--ui-card, var(--card));

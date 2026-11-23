@@ -4,6 +4,8 @@ import type { Surface } from "./siteConfig";
 
 export interface PageHeroProps {
 	eyebrow?: string;
+	/** Draws the eyebrow's trailing rule. Defaults to true; false sets the kicker alone, as `Hero`'s does. */
+	eyebrowRule?: boolean;
 	title: ReactNode;
 	lead?: ReactNode;
 	center?: boolean;
@@ -20,6 +22,7 @@ export interface PageHeroProps {
 /** Interior page opener on the alternate surface band, the page surface, or the primary fill. */
 export function PageHero({
 	eyebrow,
+	eyebrowRule = true,
 	title,
 	lead,
 	center = false,
@@ -39,7 +42,11 @@ export function PageHero({
 			data-ground={surface === "primary" ? "primary" : undefined}
 		>
 			<div className="wrap">
-				{eyebrow && <Eyebrow center={center}>{eyebrow}</Eyebrow>}
+				{eyebrow && (
+					<Eyebrow center={center} rule={eyebrowRule}>
+						{eyebrow}
+					</Eyebrow>
+				)}
 				<h1>{title}</h1>
 				{lead && <Lead style={center ? { marginInline: "auto" } : undefined}>{lead}</Lead>}
 				{children}

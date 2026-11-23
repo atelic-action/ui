@@ -112,7 +112,10 @@ export interface ContactFormConsent {
 export interface ContactFormThanks {
 	/** The heading; a function of what was sent, to greet by name. */
 	title: ReactNode | ((values: ContactFormValues) => ReactNode);
-	/** The line under it. Defaults to the form's `successMessage`. */
+	/**
+	 * The line under it. Defaults to the form's `successMessage`; `null` or
+	 * `false` draws none, no element at all.
+	 */
 	lead?: ReactNode | ((values: ContactFormValues) => ReactNode);
 	/**
 	 * What was sent, read back: the labels of its rows (services, topic,
@@ -764,7 +767,9 @@ function ContactThanks({
 			>
 				{read(thanks.title)}
 			</div>
-			<p className="contact-thanks-lead">{read(thanks.lead ?? successMessage)}</p>
+			{thanks.lead !== null && thanks.lead !== false && (
+				<p className="contact-thanks-lead">{read(thanks.lead ?? successMessage)}</p>
+			)}
 			{rows.length > 0 && (
 				<dl className="contact-thanks-summary">
 					{rows.map((row) => (

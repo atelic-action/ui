@@ -652,7 +652,7 @@
 		box-sizing: border-box;
 		width: 100%;
 		font: inherit;
-		padding: 14px 16px 14px 44px;
+		padding: var(--field-padding-block) var(--field-padding-inline) var(--field-padding-block) 44px;
 		border: 1.5px solid var(--field-border, var(--neutral-200));
 		border-radius: var(--radius-md);
 		background: var(--card);

@@ -136,7 +136,11 @@
 		   --field-error-weight, --form-footnote-align, and the footnote's
 		   --form-footnote-link-weight and --form-footnote-link-color (each
 		   the inherited value); HoursTable's --hours-rule (1px dashed
-		   --neutral-200) and --hours-time-font (--font-mono). --hero-stack-gap and the three gaps under it
+		   --neutral-200) and --hours-time-font (--font-mono); the page hero's
+		   --page-hero-pad-block (its own top and bottom, from
+		   --section-space), --page-hero-kicker-font (--font-mono), and its
+		   kicker's size, weight, and tracking (the eyebrow's own, on
+		   .eyebrow). --hero-stack-gap and the three gaps under it
 		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
 		   default of their own: unset, each gap in the hero keeps the value
 		   it always had, in place; so has --footer-brand-width, the brand
@@ -182,6 +186,13 @@
 		/* A refused field's message size and border width (8.5.0). */
 		--field-error-size: 0.82rem;
 		--field-error-border-width: 1.5px;
+		/* A form field's padding, the pickers' with it, and the contact form's
+		   footnote size (8.5.0). */
+		--field-padding-block: 14px;
+		--field-padding-inline: 16px;
+		--form-footnote-size: 0.82rem;
+		/* The page hero's headline size (8.5.0). */
+		--page-hero-title-size: clamp(2.4rem, 7vw, 4.2rem);
 		/* A form field's label: its size, its case, and its tracking (8.5.0). */
 		--field-label-size: 0.74rem;
 		--field-label-case: uppercase;
