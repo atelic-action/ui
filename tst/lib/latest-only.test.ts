@@ -70,6 +70,15 @@ describe("latestOnly", () => {
 		expect(seen?.aborted).toBe(true);
 	});
 
+	it("rejects a task that throws before it returns a promise, and runs on after it", async () => {
+		const lookups = latestOnly();
+		const thrown = lookups.run(() => {
+			throw new Error("bad input");
+		});
+		await expect(thrown).rejects.toThrow("bad input");
+		await expect(lookups.run(async () => "next")).resolves.toEqual({ stale: false, value: "next" });
+	});
+
 	it("rejects with a failure that still matters, and swallows one a later run replaced", async () => {
 		const lookups = latestOnly();
 		await expect(lookups.run(() => Promise.reject(new Error("down")))).rejects.toThrow("down");

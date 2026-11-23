@@ -293,13 +293,19 @@
 	/* The label reads the --field-label tokens (8.5.0), each at the look it
 	   had before, so a theme restyles every field's label, the pickers'
 	   included, in one place. */
+	/* The field label, written alike in three sheets: sections.css (.field
+	   label), primitives.css (AddressSearch), and components.css
+	   (MultiSelect). Each sheet must carry it, since an app loads
+	   components.css alone and a sheet cannot reach another's rules; keep the
+	   three identical (tst/field-label-rules.test.ts holds them so). The
+	   color falls back to --ink-soft where no --neutral-600 is mapped (an app). */
 	.atelic-ui .field label {
 		font-family: var(--field-label-font, var(--font-mono));
 		font-size: var(--field-label-size);
 		font-weight: var(--field-label-weight, inherit);
 		letter-spacing: var(--field-label-tracking);
 		text-transform: var(--field-label-case);
-		color: var(--field-label-color, var(--neutral-600));
+		color: var(--field-label-color, var(--neutral-600, var(--ink-soft)));
 	}
 	/* A quiet note beside a label, such as "(optional)": the body face, never
 	   the label's case. */
@@ -360,7 +366,7 @@
 	}
 	.atelic-ui .field.invalid input,
 	.atelic-ui .field.invalid textarea,
-	.atelic-ui .field.invalid :is(select) {
+	.atelic-ui .field.invalid select {
 		border-color: var(--field-error-border, var(--primary-deep));
 	}
 	/* Fields that share a line where there is room: a first and a last name,

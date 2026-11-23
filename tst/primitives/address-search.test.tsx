@@ -192,7 +192,7 @@ describe("AddressSearch", () => {
 		expect(asked).toHaveLength(1);
 	});
 
-	it("asks the provider to prepare on the first focus only", () => {
+	it("asks the provider to prepare on each focus, and never before one", () => {
 		const { provider } = heldProvider();
 		const prepare = vi.fn();
 		render(<AddressSearch provider={{ ...provider, prepare }} label="Address" onPick={() => {}} />);
@@ -200,7 +200,58 @@ describe("AddressSearch", () => {
 		fireEvent.focus(field());
 		fireEvent.blur(field());
 		fireEvent.focus(field());
-		expect(prepare).toHaveBeenCalledOnce();
+		expect(prepare).toHaveBeenCalledTimes(2);
+	});
+
+	it("offers nothing more after a pick: Arrow Down does not bring the old list back", async () => {
+		const { provider, asked } = heldProvider();
+		render(<AddressSearch provider={provider} label="Address" onPick={() => {}} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER, BIRCH]));
+		fireEvent.click(screen.getAllByRole("option")[0] as HTMLElement);
+		await settle();
+		fireEvent.keyDown(field(), { key: "ArrowDown" });
+		expect(field()).toHaveAttribute("aria-expanded", "false");
+		expect(screen.queryAllByRole("option")).toHaveLength(0);
+	});
+
+	it("goes back to what was typed when a pick cannot be resolved, and asks again", async () => {
+		const { provider, asked } = heldProvider();
+		provider.resolve = vi.fn(() => Promise.reject(new Error("details failed")));
+		const onPick = vi.fn();
+		render(<AddressSearch provider={provider} label="Address" onPick={onPick} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		fireEvent.click(screen.getByRole("option"));
+		await settle();
+		expect(onPick).not.toHaveBeenCalled();
+		expect(field()).toHaveValue("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		expect(asked.map((a) => a.query)).toEqual(["4 A", "4 A"]);
+	});
+
+	it("empties with its form's reset when its provider arrives after the first render", async () => {
+		const { provider, asked } = heldProvider();
+		const view = (withProvider: boolean) => (
+			<form>
+				<AddressSearch
+					provider={withProvider ? provider : undefined}
+					label="Address"
+					onPick={() => {}}
+				/>
+			</form>
+		);
+		const { rerender } = render(view(false));
+		rerender(view(true));
+		type("418");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		act(() => {
+			(field() as HTMLInputElement).form?.reset();
+		});
+		expect(field()).toHaveValue("");
 	});
 
 	it("empties with its form's reset", async () => {

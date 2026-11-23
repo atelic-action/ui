@@ -229,6 +229,32 @@ describe("ContactForm with the opt in fields", () => {
 		await waitFor(() => expect(screen.getByLabelText("First name")).toHaveFocus());
 	});
 
+	it("brings back an empty address after a mail handoff's thanks", async () => {
+		render(
+			<ContactForm
+				{...BASE}
+				endpoint={undefined}
+				toEmail="hello@kestrelhollow.example.com"
+				address={{ states: ["CO", "WY"] }}
+				thanks={{ title: "Thanks." }}
+			/>,
+		);
+		change("Your name", "Robin");
+		change("Email", "robin@example.com");
+		change("Message", "Hi");
+		change(/Street address/, "418 Alder Street");
+		change("City", "Fairhaven");
+		change("State", "WY");
+		change("ZIP", "80000");
+		send();
+		await screen.findByRole("heading", { name: "Thanks." });
+		fireEvent.click(screen.getByRole("button", { name: "Send another message" }));
+		expect(screen.getByLabelText(/Street address/)).toHaveValue("");
+		expect(screen.getByLabelText("City")).toHaveValue("");
+		expect(screen.getByLabelText("State")).toHaveValue("CO");
+		expect(screen.getByLabelText("ZIP")).toHaveValue("");
+	});
+
 	it("keeps the thanks in the status region by default", async () => {
 		render(<ContactForm {...BASE} splitName />);
 		change("First name", "Robin");

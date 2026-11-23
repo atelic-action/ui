@@ -1371,6 +1371,12 @@
 		gap: 7px;
 		min-width: 0;
 	}
+	/* The field label, written alike in three sheets: sections.css (.field
+	   label), primitives.css (AddressSearch), and components.css
+	   (MultiSelect). Each sheet must carry it, since an app loads
+	   components.css alone and a sheet cannot reach another's rules; keep the
+	   three identical (tst/field-label-rules.test.ts holds them so). The
+	   color falls back to --ink-soft where no --neutral-600 is mapped (an app). */
 	.atelic-ui .multi-select .multi-select-label {
 		font-family: var(--field-label-font, var(--font-mono));
 		font-size: var(--field-label-size);

@@ -40,8 +40,9 @@ export interface AddressProvider {
 	/** The four parts of the suggestion the visitor picked. */
 	resolve(suggestion: AddressSuggestion, options: { signal: AbortSignal }): Promise<AddressParts>;
 	/**
-	 * Called once, on the field's first focus, so a provider that loads a
-	 * library can start before the first keystroke rather than at page load.
+	 * Called on each focus of the field, so a provider that loads a library
+	 * can start before the first keystroke rather than at page load, and try
+	 * again on a later focus when a load failed.
 	 */
 	prepare?(): void;
 }
@@ -130,7 +131,6 @@ export function AddressSearch({
 	const latestCount = useRef(countLabel);
 	latestCount.current = countLabel;
 	const hasProvider = Boolean(provider);
-	const prepared = useRef(false);
 
 	useEffect(() => {
 		if (!hasProvider) return;
@@ -168,6 +168,7 @@ export function AddressSearch({
 	}, [query, hasProvider, minLength, debounceMs, lookups]);
 
 	// A form's reset empties the search with the rest of the form.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: hasProvider is read through the input it puts on the page, which the effect finds by ref
 	useEffect(() => {
 		const form = inputRef.current?.form;
 		if (!form) return;
@@ -182,15 +183,21 @@ export function AddressSearch({
 		};
 		form.addEventListener("reset", onReset);
 		return () => form.removeEventListener("reset", onReset);
-	}, [lookups, resolves]);
+		// The input exists only once there is a provider, so a provider that
+		// arrives after the first render attaches the listener then.
+	}, [lookups, resolves, hasProvider]);
 
 	if (!provider) return null;
 
 	const pick = (suggestion: AddressSuggestion) => {
 		const text = pickedText(suggestion);
+		// What the visitor typed, to go back to if the pick cannot be resolved.
+		const typed = query;
 		picked.current = text;
 		lookups.cancel();
 		setQuery(text);
+		// The suggestions belong to the session the pick ends; none are offered again.
+		setSuggestions([]);
 		setOpen(false);
 		setActive(-1);
 		resolves
@@ -199,7 +206,13 @@ export function AddressSearch({
 				(answer) => {
 					if (!answer.stale) latestPick.current(answer.value);
 				},
-				() => {},
+				() => {
+					// The address could not be read: the field goes back to what was
+					// typed, which asks again, so the field never shows an address the
+					// form did not receive.
+					picked.current = null;
+					setQuery(typed);
+				},
 			);
 	};
 
@@ -253,11 +266,7 @@ export function AddressSearch({
 					value={query}
 					onChange={(event) => setQuery(event.target.value)}
 					onKeyDown={onKeyDown}
-					onFocus={() => {
-						if (prepared.current) return;
-						prepared.current = true;
-						latestProvider.current?.prepare?.();
-					}}
+					onFocus={() => latestProvider.current?.prepare?.()}
 					onBlur={() => {
 						setOpen(false);
 						setActive(-1);

@@ -447,9 +447,12 @@ export function ContactForm({
 				hasTopic={hasTopic}
 				titleRef={thanksRef}
 				onAgain={() => {
+					// Back to a fresh form, whichever way it was sent: the address the
+					// form holds goes with the rest of the last visitor's words.
 					setStatus("idle");
 					setErrors({});
 					setSentValues(null);
+					setPlace(startAddress());
 					setFocusOn("form");
 				}}
 			/>

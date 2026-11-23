@@ -21,7 +21,14 @@ export function latestOnly() {
 			controller = mine;
 			current += 1;
 			const ticket = current;
-			return task(mine.signal).then(
+			// A task that throws before it returns a promise rejects like one that fails later.
+			let started: Promise<T>;
+			try {
+				started = task(mine.signal);
+			} catch (error) {
+				started = Promise.reject(error);
+			}
+			return started.then(
 				(value) =>
 					ticket === current ? { stale: false as const, value } : { stale: true as const },
 				(error: unknown) => {

@@ -5,6 +5,7 @@ import {
 	loadPlacesLibrary,
 	type PlacesLibrary,
 	placesProvider,
+	RETRY_AFTER_MS,
 } from "../../src/lib/googlePlaces";
 
 /*
@@ -87,7 +88,7 @@ describe("the Google provider over the places library", () => {
 		expect(fake.requests[0]).toEqual({
 			input: "418 Ald",
 			sessionToken: fake.tokens[0],
-			includedPrimaryTypes: ["street_address", "premise"],
+			includedPrimaryTypes: ["street_address", "premise", "subpremise"],
 		});
 		// A query prediction (no place) is not an address to offer.
 		expect(suggestions).toEqual([
@@ -166,10 +167,13 @@ describe("the Google provider over the places library", () => {
 		).rejects.toThrow();
 	});
 
-	it("starts loading on prepare, and swallows a failed load there", async () => {
-		const load = vi.fn(() => Promise.reject(new Error("blocked")));
-		placesProvider(load, {}).prepare?.();
-		expect(load).toHaveBeenCalledOnce();
+	it("loads with a retry on prepare and without one on a search, swallowing a failed load", async () => {
+		const load = vi.fn((_retry: boolean) => Promise.reject(new Error("blocked")));
+		const provider = placesProvider(load, {});
+		provider.prepare?.();
+		expect(load).toHaveBeenLastCalledWith(true);
+		await provider.suggest("418", { signal: signal() });
+		expect(load).toHaveBeenLastCalledWith(false);
 	});
 });
 
@@ -249,12 +253,56 @@ describe("loadPlacesLibrary", () => {
 		expect(head()).toHaveLength(0);
 	});
 
-	it("rejects when the script fails, and tries again on the next call", async () => {
+	it("takes a failed tag back out, and adds none on the searches that follow", async () => {
 		const first = loadPlacesLibrary("test-key-c");
 		head()[0]?.dispatchEvent(new Event("error"));
 		await expect(first).rejects.toThrow("did not load");
-		const second = loadPlacesLibrary("test-key-c");
-		expect(second).not.toBe(first);
-		second.catch(() => {});
+		expect(head()).toHaveLength(0);
+		const again = loadPlacesLibrary("test-key-c");
+		await expect(again).rejects.toThrow("did not load");
+		expect(head()).toHaveLength(0);
+	});
+
+	it("tries again on a focus at once, and on a search once the wait is over", async () => {
+		const failed = loadPlacesLibrary("test-key-d");
+		head()[0]?.dispatchEvent(new Event("error"));
+		await expect(failed).rejects.toThrow();
+		const focused = loadPlacesLibrary("test-key-d", { retry: true });
+		expect(head()).toHaveLength(1);
+		head()[0]?.dispatchEvent(new Event("error"));
+		await expect(focused).rejects.toThrow();
+		const now = Date.now();
+		const clock = vi.spyOn(Date, "now").mockReturnValue(now + RETRY_AFTER_MS + 1);
+		loadPlacesLibrary("test-key-d").catch(() => {});
+		expect(head()).toHaveLength(1);
+		clock.mockRestore();
+	});
+
+	it("waits for a Maps script already on the page rather than adding a second", async () => {
+		const theirs = document.createElement("script");
+		theirs.src = "https://maps.googleapis.com/maps/api/js?key=their-own&loading=async";
+		document.head.appendChild(theirs);
+		const places = fakeLibrary().library;
+		const loading = loadPlacesLibrary("test-key-e");
+		expect(head()).toHaveLength(1);
+		setTimeout(() => {
+			window.google = { maps: { importLibrary: async () => places } };
+		}, 120);
+		await expect(loading).resolves.toBe(places);
+		expect(head()).toHaveLength(1);
+	});
+
+	it("takes the older places namespace when the page's Maps has no importLibrary", async () => {
+		const places = fakeLibrary().library;
+		window.google = { maps: { places } };
+		await expect(loadPlacesLibrary("test-key-f")).resolves.toBe(places);
+		expect(head()).toHaveLength(0);
+	});
+
+	it("fails cleanly when the page's Maps has neither, so the plain fields stand", async () => {
+		window.google = { maps: {} };
+		await expect(loadPlacesLibrary("test-key-g")).rejects.toThrow("no Places library");
+		const provider = googlePlacesProvider({ apiKey: "test-key-g" });
+		await expect(provider.suggest("418", { signal: signal() })).resolves.toEqual([]);
 	});
 });

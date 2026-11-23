@@ -15,7 +15,7 @@ export interface GooglePlacesOptions {
 	 * and a radius in meters (up to 50000).
 	 */
 	near?: { lat: number; lng: number; radius: number };
-	/** The kinds of place offered. Defaults to addresses: `street_address` and `premise`. */
+	/** The kinds of place offered, up to five. Defaults to addresses: `street_address`, `premise`, and `subpremise` (a unit). */
 	types?: string[];
 	/** The language of the suggestions (an IETF code, "en"). */
 	language?: string;
@@ -59,7 +59,8 @@ export interface AddressComponent {
 	types: string[];
 }
 
-const ADDRESS_TYPES = ["street_address", "premise"];
+// Addresses, buildings, and the units inside them (Table B; up to five allowed).
+const ADDRESS_TYPES = ["street_address", "premise", "subpremise"];
 
 function abortError(): Error {
 	return new DOMException("The lookup was aborted.", "AbortError");
@@ -117,7 +118,7 @@ export function addressFromComponents(
  * the next search starts a new one.
  */
 export function placesProvider(
-	library: () => Promise<PlacesLibrary>,
+	library: (retry: boolean) => Promise<PlacesLibrary>,
 	options: Omit<GooglePlacesOptions, "apiKey">,
 ): AddressProvider {
 	let token: unknown = null;
@@ -126,12 +127,13 @@ export function placesProvider(
 	let predictions = new Map<string, PlacePrediction>();
 
 	return {
+		// Each focus may retry a load that failed; a search never does.
 		prepare() {
-			library().catch(() => {});
+			library(true).catch(() => {});
 		},
 		async suggest(query, { signal }) {
 			try {
-				const places = await honoring(signal, library);
+				const places = await honoring(signal, () => library(false));
 				token ??= new places.AutocompleteSessionToken();
 				const request: Record<string, unknown> = {
 					input: query,
@@ -182,46 +184,70 @@ export function placesProvider(
 
 declare global {
 	interface Window {
-		google?: { maps?: { importLibrary?: (name: string) => Promise<unknown> } };
+		google?: {
+			maps?: {
+				importLibrary?: (name: string) => Promise<unknown>;
+				places?: Partial<PlacesLibrary>;
+			};
+		};
 	}
 }
 
+const MAPS_SCRIPT = "https://maps.googleapis.com/maps/api/js";
+/** After a failed load, searches wait this long before trying again; a focus does not wait. */
+export const RETRY_AFTER_MS = 30_000;
+/** How long to wait for a Maps script already on the page to finish. */
+const EXISTING_SCRIPT_WAIT_MS = 15_000;
+
 const loads = new Map<string, Promise<PlacesLibrary>>();
+const failures = new Map<string, number>();
 let callbacks = 0;
 
-/**
- * Loads the Maps JavaScript API once per key, by Google's direct script tag
- * with `loading=async`, and imports its `places` library. Reuses the API
- * when the page already has it. Runs only when called, never at import, so
- * a page that never focuses the field loads nothing of Google's.
- */
-export function loadPlacesLibrary(apiKey: string): Promise<PlacesLibrary> {
-	const cached = loads.get(apiKey);
-	if (cached) return cached;
-	const load = new Promise<PlacesLibrary>((resolve, reject) => {
-		if (typeof window === "undefined") {
-			reject(new Error("The Maps JavaScript API loads only in a browser."));
-			return;
-		}
-		const ready = () => {
-			const importLibrary = window.google?.maps?.importLibrary;
-			if (!importLibrary) {
-				reject(new Error("The Maps JavaScript API loaded without importLibrary."));
+/** The places library from a Maps API already on the page, by `importLibrary` or the older namespace. */
+function libraryOnPage(): Promise<PlacesLibrary> | null {
+	const maps = window.google?.maps;
+	if (!maps) return null;
+	if (maps.importLibrary) return maps.importLibrary("places") as Promise<PlacesLibrary>;
+	const places = maps.places;
+	if (places?.AutocompleteSuggestion && places.AutocompleteSessionToken) {
+		return Promise.resolve(places as PlacesLibrary);
+	}
+	return Promise.reject(new Error("The Maps JavaScript API on the page has no Places library."));
+}
+
+/** Waits for a Maps script some other code added, rather than adding a second. */
+function waitForScript(script: HTMLScriptElement): Promise<PlacesLibrary> {
+	return new Promise<PlacesLibrary>((resolve, reject) => {
+		const started = Date.now();
+		const check = () => {
+			const ready = libraryOnPage();
+			if (ready) {
+				ready.then(resolve, reject);
 				return;
 			}
-			importLibrary("places").then((places) => resolve(places as PlacesLibrary), reject);
+			if (Date.now() - started > EXISTING_SCRIPT_WAIT_MS) {
+				reject(new Error("The Maps JavaScript API on the page never finished loading."));
+				return;
+			}
+			setTimeout(check, 50);
 		};
-		if (window.google?.maps?.importLibrary) {
-			ready();
-			return;
-		}
+		script.addEventListener(
+			"error",
+			() => reject(new Error("The Maps JavaScript API did not load.")),
+			{
+				once: true,
+			},
+		);
+		check();
+	});
+}
+
+/** Adds Google's direct script tag with `loading=async`; a tag that fails is taken back out. */
+function addScript(apiKey: string): Promise<PlacesLibrary> {
+	return new Promise<PlacesLibrary>((resolve, reject) => {
 		callbacks += 1;
 		const callback = `__atelicPlacesReady${callbacks}`;
 		const globals = window as unknown as Record<string, unknown>;
-		globals[callback] = () => {
-			delete globals[callback];
-			ready();
-		};
 		const params = new URLSearchParams({
 			key: apiKey,
 			loading: "async",
@@ -230,16 +256,59 @@ export function loadPlacesLibrary(apiKey: string): Promise<PlacesLibrary> {
 			callback,
 		});
 		const script = document.createElement("script");
-		script.src = `https://maps.googleapis.com/maps/api/js?${params}`;
+		globals[callback] = () => {
+			delete globals[callback];
+			const ready = libraryOnPage();
+			if (ready) ready.then(resolve, reject);
+			else reject(new Error("The Maps JavaScript API loaded without google.maps."));
+		};
+		script.src = `${MAPS_SCRIPT}?${params}`;
 		script.async = true;
 		script.onerror = () => {
 			delete globals[callback];
+			script.remove();
 			reject(new Error("The Maps JavaScript API did not load."));
 		};
 		document.head.appendChild(script);
 	});
-	// A failed load is forgotten, so the next focus tries again.
-	load.catch(() => loads.delete(apiKey));
+}
+
+function startLoad(apiKey: string): Promise<PlacesLibrary> {
+	if (typeof window === "undefined") {
+		return Promise.reject(new Error("The Maps JavaScript API loads only in a browser."));
+	}
+	const onPage = libraryOnPage();
+	if (onPage) return onPage;
+	const existing = document.querySelector<HTMLScriptElement>(`script[src^="${MAPS_SCRIPT}"]`);
+	return existing ? waitForScript(existing) : addScript(apiKey);
+}
+
+/**
+ * Loads the Maps JavaScript API once per key, by Google's direct script tag
+ * with `loading=async`, and imports its `places` library. Uses the API when
+ * the page already has it, and waits for a Maps script already on the page
+ * rather than adding a second; where `importLibrary` is missing it takes
+ * the older `google.maps.places` namespace when that holds the Autocomplete
+ * Data classes, and fails otherwise.
+ *
+ * A failed load takes its tag back out and is remembered: a call without
+ * `retry` hands back the same failure for `RETRY_AFTER_MS`, so a search on
+ * every keystroke never adds a tag, while `retry` (the field's next focus)
+ * tries again at once. Runs only when called, never at import.
+ */
+export function loadPlacesLibrary(
+	apiKey: string,
+	{ retry = false }: { retry?: boolean } = {},
+): Promise<PlacesLibrary> {
+	const cached = loads.get(apiKey);
+	if (cached) {
+		const failedAt = failures.get(apiKey);
+		if (failedAt === undefined) return cached;
+		if (!retry && Date.now() - failedAt < RETRY_AFTER_MS) return cached;
+		failures.delete(apiKey);
+	}
+	const load = startLoad(apiKey);
+	load.catch(() => failures.set(apiKey, Date.now()));
 	loads.set(apiKey, load);
 	return load;
 }
@@ -250,7 +319,8 @@ export function loadPlacesLibrary(apiKey: string): Promise<PlacesLibrary> {
  * street, city, state, and ZIP of the one picked.
  *
  * Built on the Maps JavaScript API's Places library (Autocomplete Data API,
- * the New one), loaded on the field's first focus and never before, so a
+ * the New one), loaded on the field's first focus and never before (a
+ * failed load is tried again on a later focus, not on every keystroke), so a
  * page whose visitor never reaches the address loads nothing of Google's.
  * Google documents a website restricted key for the JavaScript API, and does
  * not document one for calling the Places web service from a browser, which
@@ -264,5 +334,5 @@ export function loadPlacesLibrary(apiKey: string): Promise<PlacesLibrary> {
  * `googlePlacesKey` does).
  */
 export function googlePlacesProvider({ apiKey, ...options }: GooglePlacesOptions): AddressProvider {
-	return placesProvider(() => loadPlacesLibrary(apiKey), options);
+	return placesProvider((retry) => loadPlacesLibrary(apiKey, { retry }), options);
 }
