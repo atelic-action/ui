@@ -94,6 +94,12 @@ export function readContactForm(data: FormData, shape: ContactFormShape): Contac
 	const firstName = shape.splitName ? text("firstName") : "";
 	const lastName = shape.splitName ? text("lastName") : "";
 	const services = shape.services ? data.getAll("services").map(String) : [];
+	const street = text("street");
+	const city = text("city");
+	const zip = text("zip");
+	// An optional address nobody wrote is no address: a state select's
+	// default alone is not the visitor's answer, so it goes too.
+	const unwritten = shape.address === "optional" && !street && !city && !zip;
 	return {
 		name: shape.splitName ? [firstName, lastName].filter(Boolean).join(" ") : text("name"),
 		firstName,
@@ -106,7 +112,7 @@ export function readContactForm(data: FormData, shape: ContactFormShape): Contac
 		address:
 			shape.address === "off"
 				? { street: "", city: "", state: "", zip: "" }
-				: { street: text("street"), city: text("city"), state: text("state"), zip: text("zip") },
+				: { street, city, state: unwritten ? "" : text("state"), zip },
 		message: text("message"),
 		consent: shape.consent && data.get("consent") !== null,
 		company: String(data.get("company") ?? ""),

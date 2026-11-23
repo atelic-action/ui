@@ -347,8 +347,11 @@
 	}
 	/* The error words read the primary's ink, which clears 4.5 to 1 on the
 	   surface and on the tint (--primary-deep, a fill, read 4.17 and 3.96). */
+	/* --field-error, --field-error-border, and --field-error-bg (8.5.0) let a
+	   theme set the errors in its own color (the tone palette's bad, say);
+	   unset, each reads in place what it always did. */
 	.atelic-ui .field .err {
-		color: var(--primary-ink, var(--primary));
+		color: var(--field-error, var(--primary-ink, var(--primary)));
 		font-size: 0.82rem;
 		display: none;
 	}
@@ -358,7 +361,7 @@
 	.atelic-ui .field.invalid input,
 	.atelic-ui .field.invalid textarea,
 	.atelic-ui .field.invalid :is(select) {
-		border-color: var(--primary-deep);
+		border-color: var(--field-error-border, var(--primary-deep));
 	}
 	/* Fields that share a line where there is room: a first and a last name,
 	   a phone and an email (two up), a city, a state, and a ZIP (three up).
@@ -376,9 +379,9 @@
 	}
 	/* The count of fields to fix, over the form after a refused send. */
 	.atelic-ui .form-alert {
-		background: var(--primary-tint);
-		border: 1.5px solid var(--primary);
-		color: var(--primary-ink, var(--primary));
+		background: var(--field-error-bg, var(--primary-tint));
+		border: 1.5px solid var(--field-error-border, var(--primary-deep));
+		color: var(--field-error, var(--primary-ink, var(--primary)));
 		padding: 14px 16px;
 		border-radius: var(--radius-md);
 		font-weight: var(--weight-semibold);

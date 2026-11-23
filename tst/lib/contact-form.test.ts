@@ -168,6 +168,35 @@ describe("checking the opt in fields", () => {
 		expect(checkContactForm(filled([["phone", "12"]]), FULL, anything)).toEqual({});
 	});
 
+	it("drops the state of an optional address nobody wrote, and keeps it once anything is", () => {
+		const empty = filled([
+			["street", ""],
+			["city", ""],
+			["zip", ""],
+			["state", "CO"],
+		]);
+		expect(empty.address).toEqual({ street: "", city: "", state: "", zip: "" });
+		expect(contactFormBody(empty, FULL).address).toEqual({
+			street: "",
+			city: "",
+			state: "",
+			zip: "",
+		});
+		const cityOnly = filled([
+			["street", ""],
+			["city", "Fairhaven"],
+			["zip", ""],
+			["state", "CO"],
+		]);
+		expect(cityOnly.address.state).toBe("CO");
+	});
+
+	it("keeps the state of a required address, written or not", () => {
+		const shape = { ...FULL, address: "required" as const };
+		const kept = [...fullEntries.filter(([key]) => !["street", "city", "zip"].includes(key))];
+		expect(readContactForm(data(kept), shape).address.state).toBe("CO");
+	});
+
 	it("never checks an optional address", () => {
 		const blank = filled([
 			["street", ""],

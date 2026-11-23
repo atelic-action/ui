@@ -119,6 +119,17 @@ describe("ContactForm with the opt in fields", () => {
 		expect(posted().address).toEqual({ street: "", city: "", state: "", zip: "" });
 	});
 
+	it("posts no state for an optional address left empty, though the select shows one", async () => {
+		render(<ContactForm {...BASE} address={{ states: ["CO", "WY"] }} />);
+		expect(screen.getByLabelText("State")).toHaveValue("CO");
+		change("Your name", "Robin");
+		change("Email", "robin@example.com");
+		change("Message", "Hi");
+		send();
+		await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+		expect(posted().address).toEqual({ street: "", city: "", state: "", zip: "" });
+	});
+
 	it("refuses a required address part by part", () => {
 		render(<ContactForm {...BASE} address={{ required: true }} />);
 		change("Your name", "Robin");

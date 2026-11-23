@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, fn, type Mock, spyOn, waitFor, within } from "storybook/test";
 import { ContactForm, type ContactFormProps } from "../../src/sections";
 import { exampleProvider } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../support/geometry";
-import { layerOpened } from "../support/settle";
+import { layerOpened, settled } from "../support/settle";
 import { pin } from "../support/viewports";
 
 /*
@@ -617,5 +618,79 @@ export const ServiceBusinessThanksPhone: Story = {
 		await userEvent.click(send(canvas));
 		await canvas.findByRole("heading", { name: "We have your order, Robin." });
 		await expectNoSidewaysScroll();
+	},
+};
+
+/** The color a custom property resolves to on an element, as the browser computes it. */
+function resolved(element: Element, value: string): string {
+	const probe = document.createElement("span");
+	probe.style.color = value;
+	element.appendChild(probe);
+	const color = getComputedStyle(probe).color;
+	probe.remove();
+	return color;
+}
+
+/**
+ * Unset, the error tokens read exactly what they always did: the message in
+ * the primary's ink, the border in the deep primary, the count on the tint.
+ */
+export const ErrorsInTheDefaultColors: Story = {
+	args: { errorSummary: true },
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(send(canvas));
+		// The email field, not the focused name, so no focus ring colors its border.
+		const name = canvas.getByLabelText("Email");
+		await settled();
+		const message = canvas.getByText("Please enter your name.");
+		const alert = canvas.getByRole("alert");
+		await expect(getComputedStyle(message).color).toBe(
+			resolved(message, "var(--primary-ink, var(--primary))"),
+		);
+		await expect(getComputedStyle(name).borderTopColor).toBe(
+			resolved(message, "var(--primary-deep)"),
+		);
+		await expect(getComputedStyle(alert).backgroundColor).toBe(
+			resolved(alert, "var(--primary-tint)"),
+		);
+	},
+};
+
+/**
+ * A theme that sets its errors in the tone palette's bad, through the three
+ * error tokens: the message, the refused border, and the count all follow.
+ */
+export const ErrorsInTheThemesColors: Story = {
+	args: { errorSummary: true },
+	decorators: [
+		(Story) => (
+			<div
+				style={
+					{
+						"--field-error": "var(--tone-bad)",
+						"--field-error-border": "var(--tone-bad)",
+						"--field-error-bg": "var(--tone-bad-bg)",
+					} as CSSProperties
+				}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(send(canvas));
+		// The email field, not the focused name, so no focus ring colors its border.
+		const name = canvas.getByLabelText("Email");
+		await settled();
+		const message = canvas.getByText("Please enter your name.");
+		const alert = canvas.getByRole("alert");
+		const bad = resolved(message, "var(--tone-bad)");
+		await expect(bad).not.toBe(resolved(message, "var(--primary-ink, var(--primary))"));
+		await expect(getComputedStyle(message).color).toBe(bad);
+		await expect(getComputedStyle(alert).color).toBe(bad);
+		await expect(getComputedStyle(name).borderTopColor).toBe(bad);
+		await expect(getComputedStyle(alert).backgroundColor).toBe(
+			resolved(alert, "var(--tone-bad-bg)"),
+		);
 	},
 };

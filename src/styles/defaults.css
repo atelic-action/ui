@@ -129,7 +129,10 @@
 		   (--section-space); a form field's --field-label-font (--font-mono),
 		   --field-label-color (--neutral-600), --field-label-weight (the
 		   inherited weight), and --field-border (--neutral-200), each read by
-		   .field and by the pickers' own fields. --hero-stack-gap and the three gaps under it
+		   .field and by the pickers' own fields; a form's --field-error
+		   (--primary-ink, then --primary), --field-error-border
+		   (--primary-deep), and --field-error-bg (--primary-tint), on a refused
+		   field's words and border and the count over the form. --hero-stack-gap and the three gaps under it
 		   (--hero-gap-kicker, --hero-gap-lead, --hero-gap-actions) have no
 		   default of their own: unset, each gap in the hero keeps the value
 		   it always had, in place; so has --footer-brand-width, the brand
