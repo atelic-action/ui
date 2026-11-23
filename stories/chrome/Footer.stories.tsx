@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, type HoursRow, SiteHeader } from "../../src/chrome";
@@ -764,6 +764,7 @@ export const LinkSizeAndBrandShareDefaults: Story = {
 async function expectBrandRows(
 	canvas: ReturnType<typeof within>,
 	layout?: "one row" | "brand above four" | "brand above two by two",
+	{ rating = true }: { rating?: boolean } = {},
 ) {
 	const footer = within(canvas.getByRole("contentinfo"));
 	const top = (element: Element) => Math.round(element.getBoundingClientRect().top);
@@ -789,8 +790,9 @@ async function expectBrandRows(
 	const oneLine = (element: HTMLElement) =>
 		element.getBoundingClientRect().height <
 		1.5 * Number.parseFloat(getComputedStyle(element).lineHeight);
-	await expect(oneLine(footer.getByText("4.9 on Google"))).toBe(true);
-	await expect(oneLine(footer.getByRole("link", { name: email }))).toBe(true);
+	if (rating) await expect(oneLine(footer.getByText("4.9 on Google"))).toBe(true);
+	const mail = footer.getByRole("link", { name: /@/ });
+	await expect(oneLine(mail)).toBe(true);
 	await expectWholeWords(canvas);
 }
 
@@ -930,4 +932,116 @@ export const HoursInBrandThreeColumns: Story = {
 export const HoursInBrandThreeColumnsAt1024: Story = {
 	...HoursInBrandThreeColumns,
 	globals: pin("laptop"),
+};
+
+/** A short brand block: no rating, a short street, a short email, one row of hours. */
+const shortBrand = {
+	rating: undefined,
+	email: "hi@kh.example.com",
+	address: { ...address, street: "4 Elm" },
+	hours: [{ label: "Daily", range: "7a to 2p" }],
+	hoursPlacement: "brand" as const,
+};
+
+/** The brand column and how wide its content needs it: its longest line, set whole. */
+function brandBox(canvas: ReturnType<typeof within>) {
+	const brand = (canvas.getByRole("contentinfo").querySelector("address") as HTMLElement)
+		.parentElement as HTMLElement;
+	// The words' own boxes, never their elements' (a block runs the column's
+	// full width whatever its words need).
+	let right = 0;
+	const walker = document.createTreeWalker(brand, NodeFilter.SHOW_TEXT);
+	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+		const range = document.createRange();
+		range.selectNodeContents(node);
+		for (const rect of range.getClientRects()) right = Math.max(right, rect.right);
+	}
+	const need = right - brand.getBoundingClientRect().left;
+	return { brand, width: brand.getBoundingClientRect().width, need };
+}
+
+/** A wide wrap (1200, a template's) at 1280, where the row holds every column. */
+const wideWrap = (vars: Record<string, string> = {}): Decorator[] => [
+	(Story) => (
+		<div className="atelic-ui" style={{ "--max-width": "1200px", ...vars } as CSSProperties}>
+			<Story />
+		</div>
+	),
+];
+
+/**
+ * A short brand block with the hours in it: the brand column's floor is its
+ * content, not a fixed width, so it is no wider than its longest line plus
+ * its share of the row's spare room (1.4 to each link column's 1), well
+ * under the 17em it was once held at, and the link columns take the rest.
+ */
+export const HoursInBrandShortBrandBlock: Story = {
+	args: shortBrand,
+	decorators: wideWrap(),
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "one row", { rating: false });
+		const footer = within(canvas.getByRole("contentinfo"));
+		const { width, need } = brandBox(canvas);
+		const company = footer.getAllByRole("navigation")[0] as HTMLElement;
+		const [link] = within(company).getAllByRole("link");
+		const floor = 10 * Number.parseFloat(getComputedStyle(link as HTMLElement).fontSize);
+		const column = company.getBoundingClientRect();
+		const share = column.width - floor;
+		await expect(share).toBeGreaterThan(0);
+		await expect(width).toBeLessThanOrEqual(need + 1.4 * share + 1);
+		const em = Number.parseFloat(getComputedStyle(canvas.getByRole("contentinfo")).fontSize);
+		await expect(width).toBeLessThan(17 * em);
+	},
+};
+
+/** With `--footer-brand-width: 0` the short brand block is exactly as wide as its content. */
+export const HoursInBrandShortBrandBlockNoShare: Story = {
+	args: shortBrand,
+	decorators: wideWrap({ "--footer-brand-width": "0" }),
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "one row", { rating: false });
+		const { width, need } = brandBox(canvas);
+		await expect(Math.abs(width - need)).toBeLessThanOrEqual(1);
+	},
+};
+
+/** At 1024, a short brand block and the link columns' floors at the footer's own size: the brand column takes its own row. */
+export const HoursInBrandShortBrandBlockAt1024: Story = {
+	args: shortBrand,
+	globals: pin("laptop"),
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand above four", { rating: false });
+	},
+};
+
+/**
+ * The link columns' floor is measured in the link text's own size, so a
+ * smaller `--footer-link-size` (13px) lowers it, and at 1024 the same short
+ * brand block and the four link columns share one row.
+ */
+export const HoursInBrandLinkSizeScalesTheFloor: Story = {
+	args: shortBrand,
+	globals: pin("laptop"),
+	decorators: [
+		(Story) => (
+			<div style={{ "--footer-link-size": "13px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "one row", { rating: false });
+		for (const column of within(canvas.getByRole("contentinfo")).getAllByRole("navigation")) {
+			await expect(column.getBoundingClientRect().width).toBeGreaterThanOrEqual(130);
+		}
+	},
+};
+
+/** The same at 820: the brand column above, the four link columns across under it at the smaller floor. */
+export const HoursInBrandLinkSizeScalesTheFloorAt820: Story = {
+	...HoursInBrandLinkSizeScalesTheFloor,
+	globals: pin("tablet"),
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand above four", { rating: false });
+	},
 };

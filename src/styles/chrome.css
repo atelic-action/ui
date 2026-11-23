@@ -1729,6 +1729,11 @@
 		display: flex;
 		flex-direction: column;
 	}
+	/* The link columns' shared box under the hours in the brand column: no
+	   box of its own on a phone, where the columns pair in the grid. */
+	.atelic-ui .footer-links {
+		display: contents;
+	}
 	/* From 760px one row that wraps: the brand column at 1.4 shares, each
 	   other column at one, as the grid laid them out, but a column never
 	   narrows past its longest word; when the row cannot hold every column
@@ -1753,39 +1758,47 @@
 			flex-basis: 100%;
 		}
 		/* With the hours in the brand column the row is the brand column and
-		   four link columns, each link column a floor of 10em (about twenty
-		   characters) and never narrower than its longest label, the brand
-		   column a floor of 17em (an ordinary email address on one line), the
-		   columns 24px apart. While the row holds every floor they share
-		   it; when it cannot, the brand column takes a row of its own and the
-		   link columns sit under it, four across while their floors fit and two
-		   by two below that. One measure drives both steps, the floors against
-		   the row's own width (a basis of the floor, or of the whole row once
-		   the floors outrun it), so no breakpoint can disagree with it. A font
-		   a few percent wider than a site was drawn in still sets an ordinary
-		   three word label on one line. */
+		   the link columns' shared box, 24px apart, side by side while the row
+		   holds both at their floors and each on a row of its own when it
+		   cannot. The brand column's floor is its content: the width its
+		   longest line takes whole (the lockup, the rating, an address line,
+		   the email, a row of the hours), so a short brand block is as narrow
+		   as it reads and --footer-brand-width shares out the rest. The box's
+		   floor is every link column at its own floor, 10 of its link text's
+		   size (about twenty characters, scaled by --footer-link-size) and
+		   never narrower than its longest label, the columns 24px apart. In
+		   the box the columns sit four across while their floors fit it and
+		   two by two below that: one measure, the floors against the box's own
+		   width (a basis of the floor, or of half the box once the floors
+		   outrun it), so no breakpoint can disagree with it. A font a few
+		   percent wider than a site was drawn in still sets an ordinary three
+		   word label on one line. */
 		.atelic-ui .footer-grid.has-brand-hours {
-			--_link-floor: 10em;
-			--_brand-floor: 17em;
+			--_link-floor: calc(10 * var(--footer-link-size));
 			--_links-need: calc(
 				var(--_link-count, 4) *
 				var(--_link-floor) +
 				(var(--_link-count, 4) - 1) *
 				24px
 			);
-			--_row-need: calc(var(--_brand-floor) + 24px + var(--_links-need));
 			column-gap: 24px;
 		}
 		.atelic-ui .footer-grid.has-brand-hours > .footer-brand {
-			flex: var(--footer-brand-width, 1.4) 1
-				max(var(--_brand-floor), calc((var(--_row-need) - 100%) * 999));
+			flex: var(--footer-brand-width, 1.4) 1 auto;
+			width: max-content;
+		}
+		.atelic-ui .footer-grid.has-brand-hours > .footer-links {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 48px 24px;
+			flex: var(--_link-count, 4) 1 var(--_links-need);
 		}
 		/* min-width: max-content departs from Component Rules 5 (zero the
 		   min-width chain around wide content) on purpose: these labels are
 		   short words a design sets whole, and the floor is what keeps a label
 		   whole on a machine whose font runs a few percent wider; the row wraps
 		   a column instead, so nothing scrolls sideways. */
-		.atelic-ui .footer-grid.has-brand-hours > .footer-column {
+		.atelic-ui .footer-grid.has-brand-hours .footer-links > .footer-column {
 			flex: 1 1
 				min(calc(50% - 16px), max(var(--_link-floor), calc((var(--_links-need) - 100%) * 999)));
 			min-width: max-content;
