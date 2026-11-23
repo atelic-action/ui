@@ -39,6 +39,11 @@ export interface AddressProvider {
 	suggest(query: string, options: { signal: AbortSignal }): Promise<AddressSuggestion[]>;
 	/** The four parts of the suggestion the visitor picked. */
 	resolve(suggestion: AddressSuggestion, options: { signal: AbortSignal }): Promise<AddressParts>;
+	/**
+	 * Called once, on the field's first focus, so a provider that loads a
+	 * library can start before the first keystroke rather than at page load.
+	 */
+	prepare?(): void;
 }
 
 export interface AddressSearchProps {
@@ -125,6 +130,7 @@ export function AddressSearch({
 	const latestCount = useRef(countLabel);
 	latestCount.current = countLabel;
 	const hasProvider = Boolean(provider);
+	const prepared = useRef(false);
 
 	useEffect(() => {
 		if (!hasProvider) return;
@@ -247,6 +253,11 @@ export function AddressSearch({
 					value={query}
 					onChange={(event) => setQuery(event.target.value)}
 					onKeyDown={onKeyDown}
+					onFocus={() => {
+						if (prepared.current) return;
+						prepared.current = true;
+						latestProvider.current?.prepare?.();
+					}}
 					onBlur={() => {
 						setOpen(false);
 						setActive(-1);

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, waitFor } from "storybook/test";
-import { AddressSearch } from "../../src/primitives";
+import { AddressSearch, GoogleMapsAttribution } from "../../src/primitives";
 import { exampleAddresses, exampleProvider } from "../fixtures/primitives";
-import { expectNoSidewaysScroll } from "../support/geometry";
+import { expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 const onPick = fn();
@@ -181,5 +181,30 @@ export const Phone: Story = {
 		await expect(listBox.top).toBeGreaterThanOrEqual(fieldBox.bottom);
 		await expect(listBox.right).toBeLessThanOrEqual(fieldBox.right + 1);
 		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * With Google's suggestions a site credits them as Google's terms ask: the
+ * words "Google Maps", left untranslated, on one line, in a regular weight
+ * at 12 to 16 pixels, inside the list. The suggestions here are the made up
+ * provider's; no story calls Google.
+ */
+export const GoogleAttribution: Story = {
+	args: { attribution: <GoogleMapsAttribution /> },
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.type(field(canvas), "418");
+		const list = await canvas.findByRole("listbox");
+		const credit = canvas.getByText("Google Maps");
+		await expect(credit).toBeVisible();
+		await expect(credit).toHaveAttribute("translate", "no");
+		await expect(lines(credit)).toBe(1);
+		const style = getComputedStyle(credit);
+		const size = Number.parseFloat(style.fontSize);
+		await expect(size).toBeGreaterThanOrEqual(12);
+		await expect(size).toBeLessThanOrEqual(16);
+		await expect(Number(style.fontWeight)).toBe(400);
+		// In the same box as the suggestions it credits.
+		await expect(list.parentElement?.contains(credit)).toBe(true);
 	},
 };

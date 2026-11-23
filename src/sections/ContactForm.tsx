@@ -5,6 +5,7 @@ import {
 	type RefObject,
 	useEffect,
 	useId,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -20,6 +21,7 @@ import {
 	firstRefused,
 	readContactForm,
 } from "../lib/contactForm";
+import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePlaces";
 import { isHoneypotFilled } from "../lib/honeypot";
 import { newTabProps } from "../lib/newTabProps";
 import { trackEvent } from "../lib/trackEvent";
@@ -30,6 +32,7 @@ import {
 } from "../primitives/AddressSearch";
 import { Button } from "../primitives/Button";
 import { ExpandableText } from "../primitives/ExpandableText";
+import { GoogleMapsAttribution } from "../primitives/GoogleMapsAttribution";
 import { useWithBase } from "../routing/BasePathProvider";
 
 /** Every word the form draws that is not a visitor's, each with a neutral default. */
@@ -73,7 +76,16 @@ export interface ContactFormAddress {
 	required?: boolean;
 	/** Looks addresses up as they are typed and fills the four fields; without it, the fields stand alone. */
 	provider?: AddressProvider;
-	/** Under the suggestions, for a provider whose terms ask for it. */
+	/**
+	 * A Maps JavaScript API key: the search then offers Google's addresses
+	 * (`googlePlacesProvider`) under the "Google Maps" attribution Google's
+	 * terms ask for. `provider` wins when both are given; with neither, the
+	 * fields stand alone.
+	 */
+	googlePlacesKey?: string;
+	/** Google's options beside the key: the countries, a point to prefer, the types, the language. */
+	googlePlacesOptions?: Omit<GooglePlacesOptions, "apiKey">;
+	/** Under the suggestions, for a provider whose terms ask for it; with `googlePlacesKey`, Google's by default. */
 	attribution?: ReactNode;
 	/** Draws the state as a select of these; a text field when left out. */
 	states?: string[];
@@ -267,6 +279,20 @@ export function ContactForm({
 		zip: "",
 	});
 
+	// Google's provider, made once per key and options, so the search keeps
+	// one session across renders.
+	const googleKey = address?.provider ? undefined : address?.googlePlacesKey;
+	const googleOptions = JSON.stringify(address?.googlePlacesOptions ?? {});
+	const google = useMemo(
+		() =>
+			googleKey
+				? googlePlacesProvider({ apiKey: googleKey, ...JSON.parse(googleOptions) })
+				: undefined,
+		[googleKey, googleOptions],
+	);
+	const addressProvider = address?.provider ?? google;
+	const addressAttribution =
+		address?.attribution ?? (google ? <GoogleMapsAttribution /> : undefined);
 	const [errors, setErrors] = useState<ContactFormRefusals>({});
 	const [status, setStatus] = useState<Status>("idle");
 	const [place, setPlace] = useState<AddressParts>(startAddress);
@@ -439,7 +465,7 @@ export function ContactForm({
 	const setPart = (part: keyof AddressParts) => (value: string) =>
 		setPlace((was) => ({ ...was, [part]: value }));
 	const addressOptional = shape.address === "optional";
-	const searchShown = Boolean(address?.provider);
+	const searchShown = Boolean(addressProvider);
 
 	return (
 		<form ref={formRef} onSubmit={handleSubmit} noValidate>
@@ -510,11 +536,11 @@ export function ContactForm({
 					{searchShown && (
 						<AddressSearch
 							className="field"
-							provider={address.provider}
+							provider={addressProvider}
 							label={labels.addressSearch}
 							hint={addressOptional ? labels.optional : undefined}
 							placeholder={placeholders.addressSearch ?? "Start typing an address"}
-							attribution={address.attribution}
+							attribution={addressAttribution}
 							listLabel={labels.suggestions}
 							onPick={(picked) => {
 								setPlace(picked);

@@ -192,6 +192,17 @@ describe("AddressSearch", () => {
 		expect(asked).toHaveLength(1);
 	});
 
+	it("asks the provider to prepare on the first focus only", () => {
+		const { provider } = heldProvider();
+		const prepare = vi.fn();
+		render(<AddressSearch provider={{ ...provider, prepare }} label="Address" onPick={() => {}} />);
+		expect(prepare).not.toHaveBeenCalled();
+		fireEvent.focus(field());
+		fireEvent.blur(field());
+		fireEvent.focus(field());
+		expect(prepare).toHaveBeenCalledOnce();
+	});
+
 	it("empties with its form's reset", async () => {
 		const { provider, asked } = heldProvider();
 		render(

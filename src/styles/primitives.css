@@ -715,6 +715,14 @@
 		font-size: 0.92em;
 		color: var(--ink-soft);
 	}
+	/* Google's attribution, as its terms set it: never wrapped, a regular
+	   weight, 12 to 16 pixels, 4.5 to 1 against the list. */
+	.atelic-ui .google-maps-attribution {
+		white-space: nowrap;
+		font-size: 13px;
+		font-weight: var(--weight-regular);
+		color: var(--neutral-600);
+	}
 	.atelic-ui .address-search-attribution {
 		padding: 8px 12px 4px;
 		font-size: 0.8rem;

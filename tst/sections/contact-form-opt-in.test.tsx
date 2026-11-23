@@ -130,6 +130,33 @@ describe("ContactForm with the opt in fields", () => {
 		expect(posted().address).toEqual({ street: "", city: "", state: "", zip: "" });
 	});
 
+	it("draws the address search with Google's attribution from a key, loading nothing before focus", () => {
+		render(<ContactForm {...BASE} address={{ googlePlacesKey: "test-key-form" }} />);
+		const search = screen.getByRole("combobox", { name: /Address/ });
+		expect(document.head.querySelector("script[src*='maps.googleapis.com']")).toBeNull();
+		const credit = screen.getByText("Google Maps");
+		expect(credit).toHaveAttribute("translate", "no");
+		fireEvent.focus(search);
+		const script = document.head.querySelector("script[src*='maps.googleapis.com']");
+		expect(script?.getAttribute("src")).toContain("key=test-key-form");
+		script?.remove();
+	});
+
+	it("lets a site's own provider and attribution win over a key", () => {
+		const provider: AddressProvider = {
+			suggest: async () => [],
+			resolve: async () => ({ street: "", city: "", state: "", zip: "" }),
+		};
+		render(
+			<ContactForm
+				{...BASE}
+				address={{ googlePlacesKey: "test-key-unused", provider, attribution: "Our own lookup" }}
+			/>,
+		);
+		expect(screen.getByText("Our own lookup")).toBeInTheDocument();
+		expect(screen.queryByText("Google Maps")).toBeNull();
+	});
+
 	it("refuses a required address part by part", () => {
 		render(<ContactForm {...BASE} address={{ required: true }} />);
 		change("Your name", "Robin");

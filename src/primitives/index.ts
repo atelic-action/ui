@@ -1,4 +1,10 @@
 export {
+	type AddressComponent,
+	addressFromComponents,
+	type GooglePlacesOptions,
+	googlePlacesProvider,
+} from "../lib/googlePlaces";
+export {
 	type AddressParts,
 	type AddressProvider,
 	AddressSearch,
@@ -11,6 +17,7 @@ export { type CallToActionProps, PrimaryButton, SecondaryButton } from "./CallTo
 export { Chip, type ChipProps } from "./Chip";
 export { ExpandableText, type ExpandableTextProps } from "./ExpandableText";
 export { Eyebrow, type EyebrowProps } from "./Eyebrow";
+export { GoogleMapsAttribution } from "./GoogleMapsAttribution";
 export { ImageFrame, type ImageFrameProps } from "./ImageFrame";
 export { Lead, type LeadProps } from "./Lead";
 export { type ProseBlock, ProseBlocks, type ProseBlocksProps } from "./ProseBlocks";
