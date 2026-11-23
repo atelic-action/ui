@@ -662,7 +662,7 @@ The menu has two sheets, chosen by `menu.surface` in the config (`SiteHeader`'s 
 
 The burger takes `menu.burger` (`SiteHeader`'s `burger`): `labelAfter` sets the three lines before the words `menuLabel` puts beside it, and `outlined` draws it in an outlined pill; both are off by default (8.2.0). While the menu is open only the lines fold to an X. The phone's round call button beside the burger is named by its number's `label` and the number, or "Call" and the number when it has no label (8.2.0).
 
-The menu's words come from the config: the call to action reads `cta.menuLabel` when set, else `cta.label` ("Order ahead for Saturday" in the menu where the bar says "Order ahead"), and each header number reads its `menuLabel`, else its `label`, else "Call" (8.2.0). A number's `label` keeps its place in the desktop bar's phone pill.
+The menu's words come from the config: the call to action reads `cta.menuLabel` when set, else `cta.label` ("Order ahead for Saturday" in the menu where the bar says "Order ahead"), and each header number reads its `menuLabel`, else its `label`, else "Call" (8.2.0). A number's `label` keeps its place in the desktop bar's phone pill. With no header numbers the menu lists the contact block's one phone, which reads `phone.menuLabel`, else "Call", on either sheet (8.4.0); only the menu reads it, and `ContactInfoCard`'s row takes its own `phoneLabel`.
 
 ```ts
 // src/site.config.ts

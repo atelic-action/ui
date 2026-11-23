@@ -9,6 +9,7 @@ import {
 	cta,
 	flatLinks,
 	groupedLinks,
+	phone,
 	phones,
 	sectionedLinks,
 } from "../fixtures/bakery";
@@ -659,6 +660,40 @@ export const DarkNumberWithoutALabel: Story = {
 	play: async ({ canvas, userEvent }) => {
 		const menu = within(await openMenu(canvas, userEvent));
 		await expect(menu.getByRole("link", { name: /^CALL\s+\(555\) 555-0142$/ })).toBeVisible();
+	},
+};
+
+/**
+ * A site with no header numbers whose line answers texts: the contact
+ * block's phone carries its own menu words (`phone.menuLabel`), which the
+ * dark sheet sets in its contact block.
+ */
+export const DarkContactPhoneMenuLabel: Story = {
+	args: {
+		phones: undefined,
+		contact: { ...contact, phone: { ...phone, menuLabel: "Call / Text" } },
+	},
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await expect(
+			menu.getByRole("link", { name: /^CALL \/ TEXT\s+\(555\) 555-0142$/ }),
+		).toHaveAttribute("href", "tel:+15555550142");
+	},
+};
+
+/** The same contact phone on the light sheet: its card says "Call / Text". */
+export const LightContactPhoneMenuLabel: Story = {
+	args: {
+		...light,
+		phones: undefined,
+		contact: { ...contact, phone: { ...phone, menuLabel: "Call / Text" } },
+	},
+	play: async ({ canvas, userEvent }) => {
+		const menu = within(await openMenu(canvas, userEvent));
+		await expect(menu.getByRole("link", { name: "Call / Text (555) 555-0142" })).toHaveAttribute(
+			"href",
+			"tel:+15555550142",
+		);
 	},
 };
 

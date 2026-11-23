@@ -318,7 +318,12 @@ export interface HoursRow {
 
 /** The contact block at the foot of the menu. */
 export interface MenuContact {
-	phone?: Phone;
+	/**
+	 * The one phone, which the menu lists when the header shows no numbers;
+	 * its `menuLabel` is the words beside it on either sheet, else "Call"
+	 * (8.4.0).
+	 */
+	phone?: Phone & { menuLabel?: string };
 	email?: string;
 	address?: PostalAddress;
 }
