@@ -114,13 +114,42 @@ function eventID(): string {
 	return id;
 }
 
-/** The thrown value as Sentry's exception: its type, message, and frames. */
-function exceptionOf(error: unknown) {
-	if (error instanceof Error) {
-		const frames = parseStack(error.stack);
+/** How many causes deep a report follows a thrown value's `cause`. */
+const CAUSE_DEPTH = 5;
+
+/** The longest an exception's message is kept in a report. */
+const EXCEPTION_VALUE_MAX = 300;
+
+/**
+ * One thrown value as Sentry's exception: its type, message, and frames. A
+ * cause's words are upstream free text (a resolver's, a socket's), so they
+ * take the refusal's scrub, and its `code` (ENOTFOUND, ECONNRESET, a TLS
+ * error's) leads its message when the message does not already say it, so a
+ * DNS fault reads apart from a refused connection.
+ */
+function exceptionOne(error: unknown, isCause: boolean) {
+	const words = (text: string) => (isCause ? scrub(text) : text).slice(0, EXCEPTION_VALUE_MAX);
+	const shaped =
+		error instanceof Error ||
+		(isCause &&
+			error !== null &&
+			typeof error === "object" &&
+			("message" in error || "code" in error));
+	if (shaped) {
+		const { name, message, stack, code } = error as {
+			name?: unknown;
+			message?: unknown;
+			stack?: unknown;
+			code?: unknown;
+		};
+		const text = typeof message === "string" ? message : "";
+		const coded =
+			isCause && (typeof code === "string" || typeof code === "number") ? String(code) : "";
+		const value = coded && !text.includes(coded) ? (text ? `${coded}: ${text}` : coded) : text;
+		const frames = parseStack(typeof stack === "string" ? stack : undefined);
 		return {
-			type: error.name || "Error",
-			value: error.message,
+			type: typeof name === "string" && name ? name : "Error",
+			value: words(value),
 			...(frames.length ? { stacktrace: { frames } } : {}),
 		};
 	}
@@ -130,7 +159,47 @@ function exceptionOf(error: unknown) {
 	} catch {
 		value = String(error);
 	}
-	return { type: "Error", value: value ?? String(error) };
+	return { type: "Error", value: words(value ?? String(error)) };
+}
+
+/** A value's `cause`, read so that a throwing getter reads as none. */
+function causeOf(error: unknown): unknown {
+	if (error === null || typeof error !== "object") return undefined;
+	try {
+		return (error as { cause?: unknown }).cause;
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * The thrown value and the causes under it, up to five deep, as Sentry's
+ * exception values: innermost first and the thrown value last, as Sentry
+ * orders a chain, each cause linked to the one it caused (`mechanism`
+ * `chained`, `source` `cause`, its own `exception_id` and its parent's
+ * `parent_id`), the thrown value `exception_id` 0 under the generic
+ * mechanism, handled, since the reporter is called by code that caught it.
+ * A cause met twice (a cycle) ends the chain. A value with no cause is the
+ * one exception it always was, with no mechanism.
+ */
+function exceptionsOf(error: unknown) {
+	const chain: unknown[] = [error];
+	const seen = new Set<unknown>([error]);
+	for (let cause = causeOf(error); chain.length <= CAUSE_DEPTH; cause = causeOf(cause)) {
+		if (cause === undefined || cause === null || seen.has(cause)) break;
+		seen.add(cause);
+		chain.push(cause);
+	}
+	if (chain.length === 1) return [exceptionOne(error, false)];
+	return chain
+		.map((value, id) => ({
+			...exceptionOne(value, id > 0),
+			mechanism:
+				id === 0
+					? { type: "generic", handled: true, exception_id: 0 }
+					: { type: "chained", source: "cause", exception_id: id, parent_id: id - 1 },
+		}))
+		.reverse();
 }
 
 /**
@@ -179,7 +248,7 @@ export function buildEnvelope(
 		...(environment ? { environment } : {}),
 		tags: { runtime: runtime(), ...options.tags },
 		...(request ? { request } : {}),
-		exception: { values: [exceptionOf(error)] },
+		exception: { values: exceptionsOf(error) },
 	};
 	const header = { event_id: id, sent_at: now.toISOString(), dsn, sdk: SDK };
 	return [JSON.stringify(header), JSON.stringify({ type: "event" }), JSON.stringify(event)].join(
@@ -301,17 +370,24 @@ const ADDRESS = /[^\s@<>()[\]"',;:]+@[\p{L}\p{N}_-]+(?:\.[\p{L}\p{N}_-]+)+/gu;
 /** A separator inside a phone number: a space, a dot, a slash, or any hyphen or dash. */
 const SEP = "[\\s./\\u2010-\\u2015\\u2212-]";
 
+/** One part of a dotted IPv4 address, 0 to 255. */
+const OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";
+
 /**
- * A run shaped like a phone number: an optional country code, then an area
- * code in parentheses and the number after it, or at least three groups of
- * digits joined by separators, the last of three or four digits, or a plus
- * sign and seven to fifteen digits run together (E.164). A date
- * (2026-11-23), a bare id (12345678), and a count beside a year (120 2026)
- * are none of these, and stay.
+ * A run shaped like a phone number: an optional country code (a plus sign
+ * and one to three digits, or one to three digits and a separator, as in
+ * 1-555-555-0142), then an area code in parentheses and the number after
+ * it, or at least three groups of digits joined by separators, the last of
+ * three or four digits, or a plus sign and seven to fifteen digits run
+ * together (E.164); any of them may close on an extension (x12, ext. 12). A
+ * date (2026-11-23), a bare id (12345678), a count beside a year (120
+ * 2026), a status (429), and a dotted IPv4 address (192.168.10.200) are none
+ * of these, and stay. A run starts at a word's edge and never just after a
+ * digit's dot, so no tail of a longer dotted run is taken for one.
  */
 const PHONE = new RegExp(
-	`(?<![\\w+-])\\+\\d{7,15}(?![\\w-])|(?<![\\w+-])(?:\\+\\d{1,3}${SEP}?)?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})(?![\\w-])`,
-	"gu",
+	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4}))(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
+	"giu",
 );
 
 /** A refusal's field with every address and phone number in it replaced. */

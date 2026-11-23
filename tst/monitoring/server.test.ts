@@ -162,6 +162,93 @@ describe("buildEnvelope", () => {
 	});
 });
 
+describe("buildEnvelope's chain of causes", () => {
+	const valuesOf = (error: unknown) => lines(buildEnvelope(error, DSN))[2].exception.values;
+
+	it("sends a two level cause chain innermost first, each cause linked to the one it caused", () => {
+		const dns = Object.assign(new Error("getaddrinfo ENOTFOUND relay.example.com"), {
+			code: "ENOTFOUND",
+		});
+		const socket = new Error("connect failed", { cause: dns });
+		const thrown = new TypeError("fetch failed", { cause: socket });
+		const values = valuesOf(thrown);
+		expect(values).toHaveLength(3);
+		expect(values.map((value: { type: string }) => value.type)).toEqual([
+			"Error",
+			"Error",
+			"TypeError",
+		]);
+		expect(values[0].value).toBe("getaddrinfo ENOTFOUND relay.example.com");
+		expect(values[1].value).toBe("connect failed");
+		expect(values[2].value).toBe("fetch failed");
+		expect(values[0].mechanism).toEqual({
+			type: "chained",
+			source: "cause",
+			exception_id: 2,
+			parent_id: 1,
+		});
+		expect(values[1].mechanism).toEqual({
+			type: "chained",
+			source: "cause",
+			exception_id: 1,
+			parent_id: 0,
+		});
+		expect(values[2].mechanism).toEqual({ type: "generic", handled: true, exception_id: 0 });
+		for (const value of values) expect(value.stacktrace.frames.length).toBeGreaterThan(0);
+	});
+
+	it("ends a cyclic chain at the first cause met twice", () => {
+		const first = new Error("first");
+		const second = new Error("second", { cause: first });
+		(first as { cause?: unknown }).cause = second;
+		const values = valuesOf(first);
+		expect(values.map((value: { value: string }) => value.value)).toEqual(["second", "first"]);
+		const self = new Error("self");
+		(self as { cause?: unknown }).cause = self;
+		expect(valuesOf(self)).toEqual([expect.objectContaining({ value: "self" })]);
+	});
+
+	it("follows no more than five causes", () => {
+		let error: Error = new Error("cause 9");
+		for (let at = 8; at >= 0; at--) error = new Error(`cause ${at}`, { cause: error });
+		const values = valuesOf(error);
+		expect(values).toHaveLength(6);
+		expect(values[0].value).toBe("cause 5");
+	});
+
+	it("carries a cause's code, alone or ahead of words that do not say it", () => {
+		const bare = new TypeError("fetch failed", { cause: { code: "ECONNRESET" } });
+		const [reset] = valuesOf(bare);
+		expect(reset).toEqual(expect.objectContaining({ type: "Error", value: "ECONNRESET" }));
+		expect(reset.stacktrace).toBeUndefined();
+		const tls = Object.assign(new Error("unable to verify the first certificate"), {
+			code: "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+			stack: undefined,
+		});
+		const [verify] = valuesOf(new TypeError("fetch failed", { cause: tls }));
+		expect(verify.value).toBe(
+			"UNABLE_TO_VERIFY_LEAF_SIGNATURE: unable to verify the first certificate",
+		);
+	});
+
+	it("scrubs an address and a number in a cause's words, and cuts each message to 300 characters", () => {
+		const cause = new Error(`Rejected owner@example.com, call 555-555-0142 ${"x".repeat(400)}`);
+		const values = valuesOf(new Error("y".repeat(400), { cause }));
+		expect(values[0].value.startsWith("Rejected [address], call [number] ")).toBe(true);
+		expect(values[0].value).toHaveLength(300);
+		expect(values[1].value).toHaveLength(300);
+		expect(JSON.stringify(values)).not.toContain("owner@example.com");
+		expect(JSON.stringify(values)).not.toContain("555-555-0142");
+	});
+
+	it("leaves an error with no cause the one exception it always was, with no mechanism", () => {
+		const [only, ...rest] = valuesOf(new Error("relay exploded"));
+		expect(rest).toEqual([]);
+		expect(only.mechanism).toBeUndefined();
+		expect(only.value).toBe("relay exploded");
+	});
+});
+
 describe("reportServerError", () => {
 	it("sends nothing and resolves false with no DSN", async () => {
 		vi.stubEnv("SENTRY_DSN", "");
@@ -413,10 +500,64 @@ describe("refusalError and reportRefusedResponse", () => {
 		}
 	});
 
+	it("scrubs a country code written without a plus sign", async () => {
+		for (const number of [
+			"1-555-555-0142",
+			"1 555 555 0142",
+			"1.555.555.0142",
+			"1 (555) 555-0142",
+		]) {
+			const error = await refusalError(
+				refused({ name: "refused", message: `Call ${number} to confirm` }),
+			);
+			expect(error.message, number).toBe(
+				"The upstream service answered 422: refused: Call [number] to confirm",
+			);
+		}
+	});
+
+	it("scrubs a trailing extension with the number, leaving nothing of it behind", async () => {
+		for (const number of [
+			"555-555-0142x12",
+			"555-555-0142 x12",
+			"555-555-0142 ext. 12",
+			"555-555-0142 Ext 12",
+			"(555) 555-0142 extension 12",
+			"+1 555 555 0142 ext. 12",
+			"+15555550142x7",
+		]) {
+			const error = await refusalError(
+				refused({ name: "refused", message: `Call ${number} to confirm` }),
+			);
+			expect(error.message, number).toBe(
+				"The upstream service answered 422: refused: Call [number] to confirm",
+			);
+		}
+	});
+
+	it("leaves a dotted IPv4 address alone, whole", async () => {
+		for (const ip of ["192.168.10.200", "10.120.130.140", "203.0.113.255", "255.255.255.0"]) {
+			const message = `Refused from ${ip} after 3 tries`;
+			const kept = await refusalError(refused({ name: "forbidden", message }));
+			expect(kept.message, ip).toBe(`The upstream service answered 422: forbidden: ${message}`);
+			const port = `Refused from ${ip}:8443.`;
+			const withPort = await refusalError(refused({ name: "forbidden", message: port }));
+			expect(withPort.message, ip).toBe(`The upstream service answered 422: forbidden: ${port}`);
+		}
+	});
+
 	it("leaves a date, a bare id, a count beside a year, and a status alone", async () => {
-		const message = "On 2026-11-23 send 12345678 failed: 429 after 120 2026 sends";
-		const kept = await refusalError(refused({ name: "rate_limit", message }));
-		expect(kept.message).toBe(`The upstream service answered 422: rate_limit: ${message}`);
+		for (const message of [
+			"On 2026-11-23 send 12345678 failed: 429 after 120 2026 sends",
+			"Retry after 2026-11-23T10:00:00Z, status 503, request 4815162342",
+			"1 of 3 failed at 2026-11-23, 12 2026 sends extra",
+			"Code 422 on 2026/11/23 for id 90210",
+		]) {
+			const kept = await refusalError(refused({ name: "rate_limit", message }));
+			expect(kept.message, message).toBe(
+				`The upstream service answered 422: rate_limit: ${message}`,
+			);
+		}
 	});
 
 	it("catches an internationalized domain and an underscore in a label", async () => {

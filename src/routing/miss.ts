@@ -1,3 +1,17 @@
+/** One of the router's matches, by the plain fields `isMiss` reads. */
+export interface MissMatch {
+	routeId: string;
+	params: Record<string, string>;
+	staticData?: { missing?: (params: Record<string, string>) => boolean };
+	/** The match's state; `notFound` once a route's loader has thrown `notFound()`. */
+	status?: string;
+	/** Set on the match that renders a not found nothing below it handled. */
+	globalNotFound?: boolean;
+}
+
+/** The catch all route's id in a TanStack file route tree. */
+export const CATCH_ALL_ROUTE_ID = "/$";
+
 /**
  * Whether the router's matches are a miss: the catch all route took the
  * path (an unknown page), a route with params says its params name a page
@@ -16,19 +30,6 @@
  * the site's shell from the root layout, so the shell stays mounted while
  * the not found body swaps from its pending render to its own.
  */
-export interface MissMatch {
-	routeId: string;
-	params: Record<string, string>;
-	staticData?: { missing?: (params: Record<string, string>) => boolean };
-	/** The match's state; `notFound` once a route's loader has thrown `notFound()`. */
-	status?: string;
-	/** Set on the match that renders a not found nothing below it handled. */
-	globalNotFound?: boolean;
-}
-
-/** The catch all route's id in a TanStack file route tree. */
-export const CATCH_ALL_ROUTE_ID = "/$";
-
 export function isMiss(
 	matches: ReadonlyArray<MissMatch>,
 	catchAllId: string = CATCH_ALL_ROUTE_ID,

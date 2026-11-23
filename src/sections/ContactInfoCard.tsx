@@ -1,3 +1,4 @@
+import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
 import { useWithBase } from "../routing/BasePathProvider";
 import type { SiteConfig } from "./siteConfig";
@@ -70,7 +71,8 @@ export function ContactInfoCard({
 				<div className={["ci-row", !showAddress && !portal && "last"].filter(Boolean).join(" ")}>
 					<span className="k">Email</span>
 					<span className="v">
-						<a href={`mailto:${site.email}`}>{site.email}</a>
+						{/* Breaks after the @ and before each dot, never inside a word, as the footer's does. */}
+						<a href={`mailto:${site.email}`}>{breakableEmail(site.email)}</a>
 					</span>
 				</div>
 				{showAddress && (

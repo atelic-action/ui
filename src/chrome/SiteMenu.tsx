@@ -51,7 +51,8 @@ export interface SiteMenuProps {
 	/**
 	 * The phone, email, and address block at the foot of the dark sheet. The
 	 * light sheet draws its one phone as a card when `phones` is empty, and
-	 * leaves the email and the address out, as its design does.
+	 * leaves the email and the address out, as its design does. Either sheet
+	 * sets the phone with its `menuLabel`, else "Call".
 	 */
 	contact?: MenuContact;
 	/**

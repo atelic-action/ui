@@ -1,8 +1,10 @@
-import { render, screen, within } from "@testing-library/react";
-import { SiteMenu } from "../../src/chrome";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { SiteMenu, SiteShell } from "../../src/chrome";
 import { menuPhoneLabel } from "../../src/chrome/SiteMenu";
 import { BasePathProvider } from "../../src/routing";
+import type { SiteConfig } from "../../src/sections";
 import { brand, links, phone, primaryCTA } from "../fixtures";
+import { testSite } from "../sections/site-fixture";
 
 const phones = [
 	{ e164: "+15555550142", display: "(555) 555-0142", label: "The shop" },
@@ -111,6 +113,85 @@ describe("the light sheet", () => {
 			"href",
 			`tel:${phone.e164}`,
 		);
+	});
+
+	it("sets the contact phone with its menuLabel on either sheet, and says Call without one", () => {
+		for (const surface of ["light", "dark"] as const) {
+			const labeled = render(
+				<SiteMenu
+					open
+					onClose={() => {}}
+					links={links}
+					contact={{ phone: { ...phone, menuLabel: "Call / Text" } }}
+					surface={surface}
+					brand={brand}
+				/>,
+			);
+			expect(
+				screen.getByRole("link", { name: /^Call \/ Text\s+\(555\) 555-0100$/i }),
+				surface,
+			).toHaveAttribute("href", `tel:${phone.e164}`);
+			labeled.unmount();
+			const plain = render(
+				<SiteMenu
+					open
+					onClose={() => {}}
+					links={links}
+					contact={{ phone }}
+					surface={surface}
+					brand={brand}
+				/>,
+			);
+			expect(
+				screen.getByRole("link", { name: /^Call\s+\(555\) 555-0100$/i }),
+				surface,
+			).toBeVisible();
+			plain.unmount();
+		}
+	});
+
+	it("carries the config's phone.menuLabel from the shell to the menu, and a header number's own words win", () => {
+		const site = {
+			...testSite,
+			phone: { ...testSite.phone, menuLabel: "Call / Text" },
+		} as SiteConfig;
+		for (const surface of ["light", "dark"] as const) {
+			const shell = render(
+				<SiteShell site={{ ...site, menu: { surface } }} currentPath="/about">
+					<p>Page</p>
+				</SiteShell>,
+			);
+			fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+			const menu = shell.container.querySelector("dialog") as HTMLElement;
+			expect(
+				within(menu).getByRole("link", { name: /^Call \/ Text\s+\(555\)/i }),
+				surface,
+			).toBeInTheDocument();
+			shell.unmount();
+			const header = render(
+				<SiteShell
+					site={{
+						...site,
+						menu: { surface },
+						header: { phones: [{ e164: "+15555550143", display: "(555) 555-0143" }] },
+					}}
+					currentPath="/about"
+				>
+					<p>Page</p>
+				</SiteShell>,
+			);
+			fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+			const withNumbers = header.container.querySelector("dialog") as HTMLElement;
+			expect(
+				within(withNumbers).queryByRole("link", { name: /Call \/ Text/i }),
+				surface,
+			).toBeNull();
+			expect(
+				within(withNumbers).getByRole("link", { name: /^Call\s+\(555\) 555-0143$/i }),
+				surface,
+			).toBeInTheDocument();
+			header.unmount();
+		}
 	});
 
 	it("takes an empty list of numbers as none, on either sheet: the contact phone stands in", () => {

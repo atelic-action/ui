@@ -1,5 +1,5 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import type { ComponentProps, CSSProperties, Ref } from "react";
+import type { ComponentProps, CSSProperties, ReactNode, Ref } from "react";
 import { breakableEmail } from "../lib/emailText";
 import { newTabProps } from "../lib/newTabProps";
 import type {
@@ -257,6 +257,13 @@ export function Footer({
 			))}
 		</dl>
 	);
+	// With the hours in the brand column the link columns share one box, so
+	// the row is the brand column and that box: the two sit side by side or
+	// each takes a row, and the box alone decides four across or two by two
+	// (chrome.css). Anywhere else, and on a phone, the columns stand in the
+	// grid as they always have.
+	const wrapLinks = (links: ReactNode) =>
+		hoursInBrand ? <div className="footer-links">{links}</div> : links;
 	const stars = (
 		<span className="footer-stars" aria-hidden="true">
 			{STARS.map((star) => (
@@ -369,23 +376,25 @@ export function Footer({
 								{hoursList(hoursShown)}
 							</div>
 						)}
-						{shown.map((column) => (
-							<nav key={column.heading} className="footer-column" aria-label={column.heading}>
-								{/* A heading by role rather than by element: a site's own bare
+						{wrapLinks(
+							shown.map((column) => (
+								<nav key={column.heading} className="footer-column" aria-label={column.heading}>
+									{/* A heading by role rather than by element: a site's own bare
 								    h2 rule (unlayered, so it beats any rule in the package's
 								    layer whatever its weight) is written for a page's section
 								    titles and would restyle these small labels. A div that says
 								    it is a heading keeps the outline and matches no such rule. */}
-								{/* biome-ignore lint/a11y/useSemanticElements: an h2 element would take a site's bare h2 rules, see above */}
-								<div className="footer-heading" role="heading" aria-level={headingLevel}>
-									{column.heading}
-								</div>
-								{column.links.map((link, at) => (
-									// biome-ignore lint/suspicious/noArrayIndexKey: two links may share a label and a page, so the place keeps the key unique; links never reorder
-									<ColumnLink key={at} link={link} />
-								))}
-							</nav>
-						))}
+									{/* biome-ignore lint/a11y/useSemanticElements: an h2 element would take a site's bare h2 rules, see above */}
+									<div className="footer-heading" role="heading" aria-level={headingLevel}>
+										{column.heading}
+									</div>
+									{column.links.map((link, at) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: two links may share a label and a page, so the place keeps the key unique; links never reorder
+										<ColumnLink key={at} link={link} />
+									))}
+								</nav>
+							)),
+						)}
 					</div>
 				</div>
 			</footer>

@@ -174,6 +174,40 @@ export const FullPagePhone: Story = {
 };
 
 /**
+ * A home page on a phone, its sticky bar waiting for a scroll, reached in one
+ * jump from the top straight to the page's end: the page is already as long
+ * as it is once the bar shows, so the jump lands at the true end and the
+ * closing bar's last line sits fully above the bar with no second scroll.
+ */
+export const JumpToTheEndPhone: Story = {
+	globals: pin("phone"),
+	play: async ({ canvas, step }) => {
+		const call = canvas.getByRole("link", { name: "Call us" });
+		const credit = canvas.getByRole("link", { name: "Atelic" });
+		const copyright = canvas.getByText(/© \d{4} Kestrel Hollow Bakehouse/);
+		await step("at the top the bar waits below the screen", async () => {
+			await expect(box(call).top).toBeGreaterThanOrEqual(window.innerHeight);
+			// Two frames, so the page has measured what it measures on load.
+			await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+		});
+		await step("one jump to the end, and the bar slides in", async () => {
+			toBottom();
+			await waitFor(() => expect(box(call).bottom).toBeLessThanOrEqual(window.innerHeight), {
+				timeout: 5000,
+			});
+		});
+		await step("with no second scroll, the closing bar's last line is above the bar", async () => {
+			// Still at the page's end: its arrival made the page no longer.
+			await expect(window.scrollY + window.innerHeight).toBeGreaterThanOrEqual(
+				document.documentElement.scrollHeight - 1,
+			);
+			const lastLine = Math.max(box(copyright).bottom, box(credit).bottom);
+			await expect(lastLine).toBeLessThanOrEqual(box(call).top);
+		});
+	},
+};
+
+/**
  * With the hours in it, the phone's footer runs taller than the screen. At
  * every scroll position sampled, from the footer's top coming up the screen
  * to the foot of the page, the launcher never rises into the header: it

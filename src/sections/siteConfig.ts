@@ -208,7 +208,18 @@ export interface SiteConfig {
 	/** The site's primary conversion action; rendered in nav, sticky bar, and menus. */
 	cta: CTA;
 	/** Omit for businesses with no public phone; call surfaces render nothing. */
-	phone?: { e164: string; display: string };
+	phone?: {
+		e164: string;
+		display: string;
+		/**
+		 * The words the phone menu sets with this number when the header shows
+		 * no numbers of its own (`header.phones`), on either sheet, e.g. "Call
+		 * / Text" for a line that answers texts. Defaults to "Call". Only the
+		 * phone menu reads it: a header number takes its own `menuLabel`, and
+		 * `ContactInfoCard` takes `phoneLabel` (8.4.0).
+		 */
+		menuLabel?: string;
+	};
 	email: string;
 	address: Address;
 	geo?: { latitude: number; longitude: number };

@@ -302,13 +302,13 @@ export interface PostalAddress {
 	postalCode?: string;
 }
 
-/** One row of opening hours, already formatted by the site. */
 /**
  * Where the footer sets the hours: `column`, a column of their own beside
  * the link columns, or `brand`, a compact list inside the brand column.
  */
 export type FooterHoursPlacement = "column" | "brand";
 
+/** One row of opening hours, already formatted by the site. */
 export interface HoursRow {
 	/** The day label as printed, e.g. "Mon" or "Fri to Sun". */
 	label: string;
@@ -318,7 +318,12 @@ export interface HoursRow {
 
 /** The contact block at the foot of the menu. */
 export interface MenuContact {
-	phone?: Phone;
+	/**
+	 * The one phone, which the menu lists when the header shows no numbers;
+	 * its `menuLabel` is the words beside it on either sheet, else "Call"
+	 * (8.4.0).
+	 */
+	phone?: Phone & { menuLabel?: string };
 	email?: string;
 	address?: PostalAddress;
 }
