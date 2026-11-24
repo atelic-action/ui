@@ -1,6 +1,6 @@
 # Findings: Primitives, Components, and Artifact
 
-The bugs the stories of the primitives, the components, and the artifact pieces exposed (`stories/primitives/`, `stories/components/`, `stories/artifact/`), each fixed in `src/` by a later pass. Written only by that group's writer; the format is in `stories/README.md`. Ratios are on the stories' theme, the practice's palette in `.storybook/theme.css`. Every finding this file listed through the first browser pass was fixed in `src/` (ATE-772) and its marker removed, the story keeping the check as a plain assertion.
+The bugs the stories of the primitives, the components, and the artifact pieces exposed (`stories/primitives/`, `stories/components/`, `stories/artifact/`), each fixed in `src/` by a later pass. Written only by that group's writer; the format is in `stories/README.md`. Ratios are on the stories' theme, the practice's palette in `src/styles/theme.css`, with the fonts in `.storybook/theme.css`. Every finding this file listed through the first browser pass was fixed in `src/` (ATE-772) and its marker removed, the story keeping the check as a plain assertion.
 
 ## Accessibility
 

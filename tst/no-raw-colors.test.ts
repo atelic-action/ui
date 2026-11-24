@@ -11,7 +11,8 @@ import { join } from "node:path";
  * with a raw color anywhere else is a second, hidden palette and fails.
  * `color-mix()`, `transparent`, and `currentColor` are not colors of their
  * own and pass. Every sheet in `src/styles/` is swept, a new one included,
- * except those excluded below with their reasons; `src/email/` (inline
+ * except those excluded below with their reasons (the excluded skip the
+ * defaults import check too); `src/email/` (inline
  * literals by design) is not a sheet.
  */
 const STYLES = join(import.meta.dirname, "..", "src", "styles");
@@ -22,6 +23,11 @@ const EXCLUDED: { sheet: string; reason: string }[] = [
 		sheet: "app.css",
 		reason:
 			"Tailwind source for the app shell, outside the atelic-ui layer, whose default tokens are the app's own palette",
+	},
+	{
+		sheet: "theme.css",
+		reason:
+			"the one sheet that holds theme values, the practice's own palette, opted into by import (README.md, Theme); tst/theme-contract.test.ts holds its shape",
 	},
 ];
 
@@ -161,7 +167,7 @@ describe("raw colors in the layered sheets", () => {
 	it("finds every sheet in the styles folder, and excludes only what it names", () => {
 		expect(SHEETS).toContain("components.css");
 		expect(SHEETS).toContain("chrome.css");
-		expect(SHEETS).not.toContain("app.css");
+		for (const entry of EXCLUDED) expect(SHEETS).not.toContain(entry.sheet);
 		for (const entry of EXCLUDED) expect(entry.reason.length).toBeGreaterThan(10);
 	});
 

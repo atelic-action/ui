@@ -162,12 +162,88 @@ Import the stylesheets in this order, from the root route or the site's base she
 6. `@atelic-action/ui/styles/gate.css`, on a site that mounts the access gate
 7. `@atelic-action/ui/styles/artifact.css`, on a site that hosts the artifact documents
 8. `@atelic-action/artifact/styles/documents.css`, on the same site, for the documents themselves
-9. The site's own CSS
-10. The site's `theme.css`, last
+9. `@atelic-action/ui/styles/theme.css`, on a site that wears the practice's own palette (the practice's site, the artifact documents, Storybook); a client site skips it and writes every token in its own `theme.css`
+10. The site's own CSS
+11. The site's `theme.css`, last (on a site that imports the package's theme, only the tokens it changes; the theme sets the primary's derived tokens too, so a new brand color restates `--primary-fill`, `--primary-ink`, `--primary-deep`, `--primary-bright`, `--primary-tint`, both shadows, and the focus ring with it)
 
 Every rule in the package sheets is scoped under `.atelic-ui`, the one root class a consumer wears: a site puts it on its outermost wrapper, an app on the region that holds a package component. Which sheets it imports decides what it gets, so a site importing `base.css` gets the resets and typography under that class and an app importing `components.css` alone gets none of them.
 
-The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The package reads the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and defines none of them, so `theme.css` stays the one file a site edits to rebrand; the only values it declares are the defaults of its own optional tokens, on a selector that weighs nothing (see [Tokens](#tokens)). The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
+The package sheets sit inside `@layer atelic-ui`, so any rule a site writes outside a layer wins over them whatever its specificity. The component sheets read the theme tokens (`--ink`, `--surface`, `--primary`, `--nav-height`, and the rest) and define no theme value, so `theme.css` stays the one file a site edits to rebrand; the one theme the package ships is the opt in sheet, `styles/theme.css`, documented under [Theme](#theme). The only values the component sheets declare are the defaults of their own optional tokens, on a selector that weighs nothing (see [Tokens](#tokens)). The chrome's buttons wear the `.btn` classes, which `primitives.css` defines and a site may restyle.
+
+## Theme
+
+A theme is the `.atelic-ui` block in a site's `theme.css`, unlayered and imported last: every token below, set to the brand's values. It is the one file a site edits to rebrand, since the component sheets read these tokens and define none of them. The package ships one theme of its own, `@atelic-action/ui/styles/theme.css`, the practice's palette, type, shape, and layout, which a site wearing the practice's look opts into by importing it (see [CSS Import Order](#css-import-order)). It sits in its own layer, `atelic-ui-theme`, which its first line names after `atelic-ui`, so it outranks the component sheets and their defaults whichever loads first, and a site's own unlayered rule outranks it: a site that imports it and restates one token in its own `theme.css` wins, whatever the import order. It bundles no font and paints no page ground; those stay the site's.
+
+The contract is every token in this table, with the practice's value from that sheet. `tst/theme-contract.test.ts` holds it: every token a component sheet reads is declared by the theme sheet or by `defaults.css`, or excluded by name with its reason, and every token the sheet declares has its row here.
+
+| Token | The practice's value | What it colors or sets |
+|---|---|---|
+| **Surfaces** | | |
+| `--surface` | `#f6f1e7` | The page ground under `.atelic-ui`, the solid bar, the sticky bar, the light phone menu, the default page hero and proof strip, and the gate's screen; also the light words on a dark band (the dark bar's text, the phone menu's, the process band's, the dark button's) |
+| `--surface-alt` | `#efe8da` | The alternate band (`.section.surface-alt`), the page hero's ground, every other FAQ category, a mega menu row's and the dock's hover, the report card's group, a review tag, the muted tone's ground |
+| `--surface-inset` | `#e9e0cd` | The inset well behind media: an image frame, a placeholder, the gallery and map frames, a profile's photo, the reveal slider |
+| `--surface-dark` | `#151515` | Every dark band: the footer and the closing bar, the dark bar, the phone menu, the process and credentials bands, the contact card, the hero's fallback, the gate's watermark |
+| `--card` | `#fdfbf6` | Every raised card and field: the feature, location, profile, review, price, and FAQ cards, the mega menu's card, the dock's panel, a chip, a disclosure, the report card, the form fields and the pickers' lists |
+| **Text** | | |
+| `--ink` | `#151515` | The body text and headings, a field's typed words, the dark button's ground, the ghost button's words, a review's name and quote, the current carousel dot |
+| `--ink-soft` | `#55503f` | The second voice: a lead paragraph, a card's body, captions, the mega menu's descriptions, the gate's lead, a field's hint, the ticked list's items |
+| **Neutral ramp** | | |
+| `--neutral-100` | `#e5dcc8` | The lightest rules: the report card's border and rows, a data table's row lines, the gate's brand rule, the mega menu's card dividers |
+| `--neutral-200` | `#d4c8b0` | Field and picker borders, a disclosure's and the tabs' rules, the hours rows' dashes, a chip's ring, the carousel's dots, and the footer's body words on its dark band |
+| `--neutral-300` | `#b6a98f` | Outlines that read as controls: the ghost button, the header's phone pill and burger, the light menu's close button; and the closing bar's links |
+| `--neutral-500` | `#6e6757` | The quiet gray for small meta words: dates, a stat's label and period, the comparison table's head, placeholders, a closed hours row, the muted tone |
+| `--neutral-600` | `#6b6559` | The field labels, the mega menu's heads and kickers, a location's hours and areas, a quote's byline, the `.muted` class |
+| **Primary** | | |
+| `--primary` | `#fc4a1a` | The brand color as a mark: rules, focus rings, icons, stars, dots, and accents that carry no words, and the fallback for the fill and the ink ([Tokens](#tokens)) |
+| `--primary-fill` | `#d63a10` | The primary as a field that carries words: the primary button, the dock's head, the split hero and callout bands, the price band, the menu's badges; white on it reads 4.70 to 1 |
+| `--primary-ink` | `#b8300b` | The primary as words on `--surface` and `--surface-alt`: the eyebrow, a serif accent, the current nav entry, inline accent links; 5.38 to 1 on `--surface`, 4.97 on `--surface-alt` |
+| `--primary-deep` | `#d63a10` | The deeper primary grounds: the mega panel's feature card and picture column, the hero's and split hero's fallback, the full bleed video's ground, a refused field's border |
+| `--primary-bright` | `#ff8059` | The primary on a dark band: the dark bar's current entry, the phone menu's numbers, chevrons, and current link, a step's number, the eyebrow and bubble on dark, the info tone's fill |
+| `--primary-tint` | `#fee7df` | The faint primary ground: a form's alert and error, a ticked item's tick, the dock's lead row and hover, the after placeholder, a review's avatar, a picker option's hover, the info tone's ground |
+| `--primary-shadow` | `0 6px 18px rgba(252, 74, 26, 0.28)` | The primary button's glow |
+| `--primary-shadow-hover` | `0 8px 24px rgba(252, 74, 26, 0.36)` | The primary button's glow on hover |
+| `--primary-focus-ring` | `rgba(252, 74, 26, 0.12)` | The soft ring around a focused field, the FAQ search, the review filter, the address search, and the gate's input |
+| **Secondary** | | |
+| `--secondary` | `#55503f` | A form's sent message, and the FAQ's copied link |
+| `--secondary-soft` | `#6b6559` | The sent message's border |
+| `--secondary-tint` | `#ece5d6` | The sent message's ground |
+| **Tertiary** | | |
+| `--tertiary` | `#6e6757` | No package sheet reads it; it stays in the contract for a site's own rules |
+| **Type** | | |
+| `--font-sans` | `"Geist", system-ui, -apple-system, sans-serif` | The body face, and every heading unless `--font-heading` names another |
+| `--font-serif` | `"Geist", Georgia, serif` | A serif accent in a heading (`em.serif`), a quote card's quote, the gate's brand name and headline |
+| `--font-mono` | `"Geist Mono", ui-monospace, "SF Mono", monospace` | The eyebrow and kickers, the field labels, and the figures: a feature's number, the hours' times, the comparison table's head |
+| `--font-brand` | `var(--font-sans)` | The header lockup's name (`.nav-logo`) |
+| `--font-script` | not set; the default chain of the system scripts | The sign off's script line in a document; a site that self hosts a script face names it here |
+| **Shape** | | |
+| `--radius-sm` | `8px` | Small controls: a picker's options, a select, a hint, a boxed callout, a document's shot |
+| `--radius-md` | `14px` | Fields, a form's alerts, the FAQ groups, the gallery frames, the location cards, a profile's photo |
+| `--radius-lg` | `22px` | Cards and frames: the feature, profile, review, and contact cards, the map, an image frame, a placeholder, the reveal slider |
+| `--radius-xl` | `32px` | The price and cost cards |
+| `--radius-pill` | `999px` | Buttons, chips, the nav entries' pills, the FAQ search, badges, the carousel's dots |
+| **Shadows** | | |
+| `--shadow-sm` | `0 1px 2px rgba(21, 21, 21, 0.06), 0 2px 8px rgba(21, 21, 21, 0.04)` | The resting card: the feature, location, profile, review, and FAQ cards, a quote card, a bubble, the report card |
+| `--shadow-md` | `0 4px 14px rgba(21, 21, 21, 0.08), 0 12px 32px rgba(21, 21, 21, 0.06)` | The raised one: a card on hover, an image frame, the map and its chip, the mega menu's card, the dock's launcher, a picker's list |
+| `--shadow-lg` | `0 10px 30px rgba(21, 21, 21, 0.12), 0 30px 70px rgba(21, 21, 21, 0.1)` | The higher one: a lifted image frame, the cost card, the reveal slider, the dock's panel, the mega menu's card |
+| **Hairlines** | | |
+| `--hairline` | `rgba(21, 21, 21, 0.05)` | The faint dividers: a card's border, the comparison table's rows, an FAQ row, a blog index item |
+| `--hairline-strong` | `rgba(21, 21, 21, 0.08)` | The firmer dividers: the FAQ group's and the contact card's borders, the jump rail's and the proof strip's rules, an expand list's rows, a placeholder's hatching |
+| **Layout** | | |
+| `--max-width` | `1040px` | The content's width (`.wrap`), the bar's and the mega panel's unless `--header-max` says otherwise, and the split hero's edge |
+| `--gutter` | `clamp(16px, 5vw, 56px)` | The side gutter of `.wrap`, the bar, the phone menu, and the sticky bar |
+| `--nav-height` | `68px` | The bar's height, the room a page clears under it, and where an in page jump lands |
+
+A client theme, from the practice's:
+
+1. Copy the `.atelic-ui` block out of `@atelic-action/ui/styles/theme.css` into the site's `theme.css`, without the two layer lines, so it sits unlayered.
+2. Set the surfaces and the ink first; every other color is judged against them.
+3. Set the primary's three jobs: the brand color as `--primary`, then a `--primary-fill` that white words read 4.5 to 1 on, and a `--primary-ink` that reads 4.5 to 1 on both `--surface` and `--surface-alt`.
+4. Map the weights to the font kit (`--weight-medium` and the rest, under [Tokens](#tokens)), so the browser synthesizes none.
+5. Self host the fonts in the site's own `fonts.css` and name them in the four stacks.
+6. Set the shadows and the hairlines in the ink's tint.
+7. Leave every optional token to its default unless the design asks for it.
+
+The optional tokens, each with its default and what it restyles, are under [Tokens](#tokens).
 
 ## Rendering From Props
 
@@ -749,6 +825,12 @@ The space a section leaves above and below itself is one token, `--section-space
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
 
+### Moving to 8.7.0
+
+No API breaks, and nothing moves on a site that does not import the new sheet. One addition: `@atelic-action/ui/styles/theme.css`, the practice's own palette, type, shape, and layout, the one theme the package ships (see [Theme](#theme)). It is the block Storybook's theme held, moved into the package in its own layer, `atelic-ui-theme`, so a site's unlayered rule still wins over it.
+
+A site that wears the practice's look (the practice's site, the artifact documents) adopts it by importing the sheet where its `theme.css` comes in the [CSS Import Order](#css-import-order) and deleting every token its own `theme.css` restates at the practice's value, keeping only the ones it changes; the fonts and the page ground stay in the site. A client site with its own brand changes nothing.
+
 ### Moving to 8.6.0
 
 No API breaks. Two additions: `ContactSection`, and `AddressSearch`'s `onPick` may return `false` to decline a pick, the field then going back to what was typed without searching again until the visitor types (`ContactForm` does so when the visitor has edited an address field by hand while a pick was on its way); a handler that returns nothing (`onPick={setAddress}`) fits as before. The rest fixes 8.5.0's new pieces.
@@ -1117,9 +1199,9 @@ The plain text alternative part ports as plain functions with no React anywhere 
 
 ### Tokens
 
-The sheets read a set of tokens beyond the theme's palette, type, radii, and layout. Each has a default, declared once in `styles/defaults.css` on `:where(.atelic-ui)`, which weighs nothing, so a theme's own `.atelic-ui` rule wins and sets one only to change it; every default is the value the sheets used before it was a token, so a site that sets none looks as it did (8.0.0). Every layered sheet imports `defaults.css` first, so a sheet loaded alone still finds its defaults. Only a default that is a literal value or a system keyword is declared there; an inherited color is `currentColor`, which is the same thing. Every other default stays at the read, marked "read in place" below: a default that names another token (`--menu-cta-bg` falls back to `--primary-fill`, then `--primary`), since declared on the root it would resolve once there and a band that restates the named token below it would no longer reach it, as `--primary-fill` and `--primary-ink` never have; a chain read more than once is written once as a private property on the component's own root (`--_menu-cta-bg` on the menu's sheet, `--_header-gutter` on the bar), where it resolves below any band. Also read in place: one computed on the element itself (`--hero-split-pad`), an inherited one other than a color (`--callout-sub-font`, the plain address's `--footer-nap-weight`), since a custom property cannot hold `inherit`, and `--hero-stack-gap`, whose gaps each keep their own value unset. `defaults.css` lists them in one comment, and `Foundations/ThemeTokens`' `BandRestatingPrimary` and `Chrome/SiteMenu`'s `CTAInABandRestatingPrimary` prove a band reaches them (8.2.0). No layered sheet paints a raw color anywhere else: `tst/no-raw-colors.test.ts` sweeps every sheet in `src/styles/` but the ones it excludes by name with a reason (`app.css`, Tailwind source outside the layer), and fails on a hex, a color function, or a named color outside a token's declaration in the defaults sheet, with its few exceptions listed in the test, each with its reason.
+The sheets read a set of tokens beyond the theme's palette, type, radii, and layout. Each has a default, declared once in `styles/defaults.css` on `:where(.atelic-ui)`, which weighs nothing, so a theme's own `.atelic-ui` rule wins and sets one only to change it; every default is the value the sheets used before it was a token, so a site that sets none looks as it did (8.0.0). Every layered sheet imports `defaults.css` first, so a sheet loaded alone still finds its defaults. Only a default that is a literal value or a system keyword is declared there; an inherited color is `currentColor`, which is the same thing. Every other default stays at the read, marked "read in place" below: a default that names another token (`--menu-cta-bg` falls back to `--primary-fill`, then `--primary`), since declared on the root it would resolve once there and a band that restates the named token below it would no longer reach it, as `--primary-fill` and `--primary-ink` never have; a chain read more than once is written once as a private property on the component's own root (`--_menu-cta-bg` on the menu's sheet, `--_header-gutter` on the bar), where it resolves below any band. Also read in place: one computed on the element itself (`--hero-split-pad`), an inherited one other than a color (`--callout-sub-font`, the plain address's `--footer-nap-weight`), since a custom property cannot hold `inherit`, and `--hero-stack-gap`, whose gaps each keep their own value unset. `defaults.css` lists them in one comment, and `Foundations/ThemeTokens`' `BandRestatingPrimary` and `Chrome/SiteMenu`'s `CTAInABandRestatingPrimary` prove a band reaches them (8.2.0). No layered sheet paints a raw color anywhere else: `tst/no-raw-colors.test.ts` sweeps every sheet in `src/styles/` but the ones it excludes by name with a reason (`app.css`, Tailwind source outside the layer, and `theme.css`, the palette itself), and fails on a hex, a color function, or a named color outside a token's declaration in the defaults sheet, with its few exceptions listed in the test, each with its reason.
 
-**The primary does three jobs, and each has its own token.** `--primary` is the brand color as a mark: lines, rules, focus rings, icons, stars, dots, and accents that carry no words. `--primary-fill` is the primary as a field that carries words: the primary button, the dock's launcher and panel head, the split hero and the callout panel bands, the price band, the menu's badges and highlighted row, the reveal slider's after label, the map's directions chip, a step bubble's badge; the words on it read `--on-primary`, and its hover and press darken it, so they stay distinct even where a theme's fill is its old hover shade. `--primary-ink` is the primary as words on `--surface` and `--surface-alt`: the eyebrow, a serif accent in a heading, the current nav entry and panel link, inline accent links, a feature number, the info tone. Both new tokens fall back to `--primary` where they are read, so a site that sets neither looks as it did, and a band that restates `--primary` carries both with it. A bright brand color that cannot pass text contrast keeps `--primary` and sets the other two deeper; the Storybook theme (`.storybook/theme.css`) sets `--primary` `#fc4a1a`, `--primary-fill` `#d63a10` (white on it 4.70 to 1), and `--primary-ink` `#b8300b` (5.38 to 1 on `--surface`, 4.97 on `--surface-alt`, 4.80 under the bar's hover tint).
+**The primary does three jobs, and each has its own token.** `--primary` is the brand color as a mark: lines, rules, focus rings, icons, stars, dots, and accents that carry no words. `--primary-fill` is the primary as a field that carries words: the primary button, the dock's launcher and panel head, the split hero and the callout panel bands, the price band, the menu's badges and highlighted row, the reveal slider's after label, the map's directions chip, a step bubble's badge; the words on it read `--on-primary`, and its hover and press darken it, so they stay distinct even where a theme's fill is its old hover shade. `--primary-ink` is the primary as words on `--surface` and `--surface-alt`: the eyebrow, a serif accent in a heading, the current nav entry and panel link, inline accent links, a feature number, the info tone. Both new tokens fall back to `--primary` where they are read, so a site that sets neither looks as it did, and a band that restates `--primary` carries both with it. A bright brand color that cannot pass text contrast keeps `--primary` and sets the other two deeper; the practice's theme (`src/styles/theme.css`) sets `--primary` `#fc4a1a`, `--primary-fill` `#d63a10` (white on it 4.70 to 1), and `--primary-ink` `#b8300b` (5.38 to 1 on `--surface`, 4.97 on `--surface-alt`, 4.80 under the bar's hover tint).
 
 | Token | Default | What it colors or sets |
 |---|---|---|
@@ -1226,7 +1308,7 @@ The blocks a page composes, each styled in `styles/components.css` inside the `a
 The page components also work in an app that has its own base styles (Tailwind, shadcn) and wears none of the site chrome. Three things make that so (0.10.0):
 
 1. **The same root class, without the site base.** Every rule in `styles/components.css` answers to `.atelic-ui`. An app imports no `base.css`, so the class brings no resets with it, and an app puts the class on the region that holds a package component and nothing else in it restyles. Prefer a region to `body`: the components use plain class names (`.stat .num`, `.callout`, `.note`), and an app with markup of its own under those names would have a page wide scope reach it. `body` is right only for an app that has checked it has none, and it is the one way to cover a component rendered in a portal.
-2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind the app **must declare the layer order before any stylesheet loads**, in a `<style>` in the `<head>` of its `index.html`: `@layer properties, theme, base, atelic-ui, components, utilities;`. A layer ranks by where it is first named, and a bundler is free to name the package's first, which ranks it below Tailwind's reset; the reset then strips the padding, margins, and borders off every component, while colors and type still look right, so it is easy to miss. Named there, the package ranks above the reset and below the app's utilities.
+2. **The app imports one sheet**, `@atelic-action/ui/styles/components.css`, and neither `base.css` nor `chrome.css`. An app's own unlayered CSS always wins over the package. With Tailwind the app **must declare the layer order before any stylesheet loads**, in a `<style>` in the `<head>` of its `index.html`: `@layer properties, theme, base, atelic-ui, atelic-ui-theme, components, utilities;` (`atelic-ui-theme` matters only on a site that imports `styles/theme.css`; named there, Tailwind's components and utilities outrank it. The theme sets plain names such as `--primary`, `--card`, `--radius-*`, and `--font-*`, which a Tailwind and shadcn app reads as its own, so an app with that stack does not import the theme and writes its own tokens). A layer ranks by where it is first named, and a bundler is free to name the package's first, which ranks it below Tailwind's reset; the reset then strips the padding, margins, and borders off every component, while colors and type still look right, so it is easy to miss. Named there, the package ranks above the reset and below the app's utilities.
 3. **The app maps its tokens** onto the ones the components read, in its own stylesheet on the same scope:
 
 | Token | What it colors |
@@ -1418,9 +1500,9 @@ The stories live in `stories/`, outside `src/`, one file per component in a fold
 
 **The test run.** `vitest.config.ts` holds two projects. `unit` is the jsdom suite in `tst/`, unchanged, and `bun run test:run` runs it alone. `storybook` runs every story through `@storybook/addon-vitest` in Vitest's browser mode on Playwright's Chromium, headless: the story renders, its `play` function runs, and axe checks the page after it, failing the story on any violation (`a11y: { test: "error" }`). A story pins its width (`phone` 390, `tablet` 820, `desktop` 1280, `narrowDesktop` 1180, `smallDesktop` 900) and the run sizes the page to it, so layout is asserted as geometry. A marker for a known bug fails the run the day the bug is gone, accessibility markers included ([stories/README.md](stories/README.md#accessibility-and-bugs)). Playwright's Chromium is installed once per machine with `bunx playwright install chromium`; CI installs it with its system libraries and caches it.
 
-**The frame.** A story is mounted the way its consumer mounts the component, chosen by the first segment of its title. Site pieces render inside a `.atelic-ui` root with every package sheet in a site's import order and the practice's theme last (`.storybook/theme.css`). `App/` stories run inside `AppProvider` with a fixture app under a memory router, with the shell's Tailwind sheet mounted only while the story shows, so its reset never reaches a site story. `Email/` stories render their rows in the email theme on a 680 column, with no sheet at all.
+**The frame.** A story is mounted the way its consumer mounts the component, chosen by the first segment of its title. Site pieces render inside a `.atelic-ui` root with every package sheet in a site's import order, then the practice's own theme sheet (`src/styles/theme.css`), then the fonts and the page ground (`.storybook/theme.css`). `App/` stories run inside `AppProvider` with a fixture app under a memory router, with the shell's Tailwind sheet mounted only while the story shows, so its reset never reaches a site story. `Email/` stories render their rows in the email theme on a 680 column, with no sheet at all.
 
-**The layer order.** `.storybook/preview-head.html` names the layers before any sheet loads (`properties, theme, base, atelic-ui, components, utilities`), the line an app's `index.html` carries, since Storybook injects sheets in whatever order its modules load. `stories/foundations/CascadeLayers.stories.tsx` proves it: the package outranks Tailwind's reset loaded after it, an app's utilities outrank the package, and an unlayered rule wins with less specificity.
+**The layer order.** `.storybook/preview-head.html` names the layers before any sheet loads (`properties, theme, base, atelic-ui, atelic-ui-theme, components, utilities`), the line an app's `index.html` carries, since Storybook injects sheets in whatever order its modules load. `stories/foundations/CascadeLayers.stories.tsx` proves it: the package outranks Tailwind's reset loaded after it, an app's utilities outrank the package, and an unlayered rule wins with less specificity.
 
 **The toolbar.** Density sets `data-density` on the story's root (default, compact, comfortable; see [Density](#density)), and the viewport menu offers the same widths the tests pin.
 

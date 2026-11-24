@@ -1,6 +1,6 @@
 # Findings: Sections
 
-The bugs the sections' stories exposed (`stories/sections/`), each fixed in `src/` by a later pass. Written only by the sections' writer; the format is in `stories/README.md`. Ratios are on the stories' theme, the practice's palette in `.storybook/theme.css`: `--surface` `#f6f1e7`, `--surface-alt` `#efe8da`, `--card` `#fdfbf6`, `--surface-inset` `#e9e0cd`, and the quiet gray `--neutral-500` `#6e6757`. Every finding this file listed through the first browser pass was fixed in `src/` (ATE-772) and its marker removed, the story keeping the check as a plain assertion.
+The bugs the sections' stories exposed (`stories/sections/`), each fixed in `src/` by a later pass. Written only by the sections' writer; the format is in `stories/README.md`. Ratios are on the stories' theme, the practice's palette in `src/styles/theme.css` (the fonts in `.storybook/theme.css`): `--surface` `#f6f1e7`, `--surface-alt` `#efe8da`, `--card` `#fdfbf6`, `--surface-inset` `#e9e0cd`, and the quiet gray `--neutral-500` `#6e6757`. Every finding this file listed through the first browser pass was fixed in `src/` (ATE-772) and its marker removed, the story keeping the check as a plain assertion.
 
 ## Accessibility
 
