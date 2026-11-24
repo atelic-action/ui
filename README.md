@@ -501,9 +501,9 @@ Two noises are left out, the list kept short: an error whose top frame is a brow
 |---|---|---|
 | `VITE_SENTRY_DSN` | the Vercel project, every environment | The browser's DSN, read by the start function; the server reporter falls back to it. Required for a production build |
 | `SENTRY_DSN` | the Vercel project, optional | The server's DSN when it should differ from the browser's |
-| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | the Vercel project, production | With all three, `marketingConfig` adds the Sentry Vite plugin: it creates a release named by the commit, uploads hidden source maps (`build.sourcemap: "hidden"`, only then), and deletes every map from `dist/` once uploaded. With any missing, the build is unchanged |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | the Vercel project, production | With all three, `marketingConfig` and `artifactConfig` add the Sentry Vite plugin: it creates a release named by the commit, uploads hidden source maps (`build.sourcemap: "hidden"`, only then), and deletes every map from `dist/` once uploaded. With any missing, the build is unchanged |
 
-`marketingConfig` hands the browser the commit (`VERCEL_GIT_COMMIT_SHA`, else `GITHUB_SHA`) as `import.meta.env.VITE_RELEASE`, the same name the upload's release takes, so a stack trace meets its source maps, and the environment as `import.meta.env.VITE_ENVIRONMENT`: `VERCEL_ENV` (production, preview, development) on Vercel, else the build's mode, since a production build's mode is production on every deploy, a preview's included. `atelic-check-sentry` also fails any build whose DSN is set but is not one, and any whose DSN carries a space or a line break around it, since the build ships the value as it is set (8.2.0).
+`marketingConfig` and `artifactConfig` hand the browser the commit (`VERCEL_GIT_COMMIT_SHA`, else `GITHUB_SHA`) as `import.meta.env.VITE_RELEASE`, the same name the upload's release takes, so a stack trace meets its source maps, and the environment as `import.meta.env.VITE_ENVIRONMENT`: `VERCEL_ENV` (production, preview, development) on Vercel, else the build's mode, since a production build's mode is production on every deploy, a preview's included. `atelic-check-sentry` also fails any build whose DSN is set but is not one, and any whose DSN carries a space or a line break around it, since the build ships the value as it is set (8.2.0).
 
 What a site changes. `src/router.tsx` drops its own Sentry import and its `afterFirstPaint`, and starts reporting where the lazy init was:
 
@@ -600,7 +600,7 @@ import { artifactConfig } from "@atelic-action/ui/vite";
 export default artifactConfig({ pages: ["/the-read", "/proposal", "/report"] });
 ```
 
-`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
+`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; the environment plugin and, with the three Sentry variables set, the Sentry upload (it skips the document chunks and the server bundle, and its maps carry no source text, so a document's content is never uploaded); `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
 
 A site with a real need of its own passes `extend`, which is merged over the result with Vite's `mergeConfig`:
 
@@ -824,6 +824,13 @@ The space a section leaves above and below itself is one token, `--section-space
 | `compact` | `clamp(24px, 3.2vw, 44px)` | 20px | 0 |
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
+
+### Moving to 8.7.1
+
+Nothing to do for a site; two fixes, no API change (ATE-843, ATE-854).
+
+- **An artifact build carries the release and the environment into its error reports.** `artifactConfig` now defines `import.meta.env.VITE_RELEASE` from the commit and `import.meta.env.VITE_ENVIRONMENT` from `VERCEL_ENV` or the build's mode, and runs the optional Sentry source map upload, exactly as `marketingConfig` does, so a document's `startErrorReporting` files its errors under both. The two configurations share one module for it, and `@atelic-action/ui/vite` exports what it did.
+- **The chrome's refs survive a React 18 host.** `Footer` and `ClosingBar` forward their `ref` rather than reading it as a prop, which React 18 strips, so `SiteShell`'s contact dock still finds the footer, or the closing bar standing in for it, on a host such as the Claude Design canvas. React 19 behaves as before.
 
 ### Moving to 8.7.0
 

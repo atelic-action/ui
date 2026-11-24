@@ -15,8 +15,17 @@
 import { resolve } from "node:path";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
-import { mergeConfig, type Plugin, type PluginOption, type UserConfig } from "vite";
+import { mergeConfig, type UserConfig } from "vite";
 import { normalizeBasePath } from "../routing/basePath.js";
+import { releaseConfig } from "./release.js";
+
+// The reporting helpers lived here first; they stay importable from this file.
+export {
+	buildRelease,
+	environmentPlugin,
+	type SentryUpload,
+	sentryUpload,
+} from "./release.js";
 
 /** One entry of the prerender list, as TanStack Start takes it. */
 export interface MarketingPage {
@@ -47,76 +56,6 @@ export interface MarketingConfigOptions {
 	extend?: UserConfig;
 	/** The environment to read `VITE_BASE_PATH` from; a test passes its own. */
 	env?: Record<string, string | undefined>;
-}
-
-/**
- * The commit a build is filed under in Sentry: Vercel's commit, else the CI's.
- * The same value names the release the Sentry plugin creates and the release
- * the browser reports under, so a stack trace meets its source maps.
- */
-export function buildRelease(
-	env: Record<string, string | undefined> = process.env,
-): string | undefined {
-	return env.VERCEL_GIT_COMMIT_SHA || env.GITHUB_SHA || undefined;
-}
-
-/** What the Sentry plugin is given, when it runs at all. */
-export interface SentryUpload {
-	org: string;
-	project: string;
-	authToken: string;
-	release: string;
-}
-
-/**
- * The source map upload, on only when `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and
- * `SENTRY_PROJECT` are all set and the build knows its commit. Off, the
- * build is exactly what it was: no plugin, no source maps.
- */
-export function sentryUpload(
-	env: Record<string, string | undefined> = process.env,
-): SentryUpload | undefined {
-	const { SENTRY_AUTH_TOKEN: authToken, SENTRY_ORG: org, SENTRY_PROJECT: project } = env;
-	const release = buildRelease(env);
-	if (!authToken || !org || !project || !release) return undefined;
-	return { org, project, authToken, release };
-}
-
-/**
- * The Sentry Vite plugin, loaded only when it runs: it creates the release
- * named by the commit, uploads the build's hidden source maps, and deletes
- * every map file from the output afterwards, so none is ever served.
- */
-function sentryPlugin(upload: SentryUpload): PluginOption {
-	return import("@sentry/vite-plugin").then(
-		({ sentryVitePlugin }) =>
-			sentryVitePlugin({
-				org: upload.org,
-				project: upload.project,
-				authToken: upload.authToken,
-				release: { name: upload.release, inject: false },
-				sourcemaps: { filesToDeleteAfterUpload: ["./dist/**/*.map"] },
-				telemetry: false,
-			}) as PluginOption,
-	);
-}
-
-/**
- * The environment the browser files its errors under, as
- * `import.meta.env.VITE_ENVIRONMENT`: Vercel's (production, preview,
- * development) when the build runs there, else the build's mode. A Vite
- * production build's mode is production on every deploy, a preview's
- * included, so the mode alone filed every error as production.
- */
-export function environmentPlugin(env: Record<string, string | undefined> = process.env): Plugin {
-	return {
-		name: "atelic-build-environment",
-		config: (_config, { mode }) => ({
-			define: {
-				"import.meta.env.VITE_ENVIRONMENT": JSON.stringify(env.VERCEL_ENV || mode),
-			},
-		}),
-	};
 }
 
 /** The 404 page, prerendered and copied to 404.html by the build, never in the sitemap. */
@@ -154,8 +93,7 @@ export function marketingConfig({
 	env = process.env,
 }: MarketingConfigOptions): UserConfig {
 	const basePath = marketingBasePath(site, env);
-	const release = buildRelease(env);
-	const upload = sentryUpload(env);
+	const reporting = releaseConfig(env);
 	const listed = pages.filter((page) => page.path !== NOT_FOUND_PAGE.path);
 	const config: UserConfig = {
 		// The base becomes Vite's `base`, so every built asset URL and every
@@ -182,15 +120,11 @@ export function marketingConfig({
 				},
 			}),
 			react(),
-			environmentPlugin(env),
-			...(upload ? [sentryPlugin(upload)] : []),
+			...reporting.plugins,
 		],
-		// The commit, for the browser to report under (`startErrorReporting`'s
-		// `release`), read as `import.meta.env.VITE_RELEASE`.
-		...(release ? { define: { "import.meta.env.VITE_RELEASE": JSON.stringify(release) } } : {}),
-		// Maps only for Sentry, and hidden: the bundles carry no comment
-		// pointing at one, and the plugin deletes them once uploaded.
-		...(upload ? { build: { sourcemap: "hidden" as const } } : {}),
+		// The release define and, with an upload, hidden source maps
+		// (release.ts).
+		...reporting.config,
 		resolve: {
 			alias: {
 				// The site's src, from the directory Vite is run in: this file

@@ -8,7 +8,8 @@ export interface ErrorReportingOptions {
 	release?: string;
 	/**
 	 * The environment the errors are filed under. Defaults to the build's
-	 * `import.meta.env.VITE_ENVIRONMENT`, which `marketingConfig` sets from
+	 * `import.meta.env.VITE_ENVIRONMENT`, which `marketingConfig` and
+	 * `artifactConfig` set from
 	 * `VERCEL_ENV` (production, preview, development), falling back to the
 	 * build's mode.
 	 */

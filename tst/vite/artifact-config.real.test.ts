@@ -16,7 +16,7 @@ function names(options: PluginOption[] | undefined): string[] {
  */
 describe("artifactConfig with the real plugins", () => {
 	it("loads TanStack Start and React and ends on the private content plugin", () => {
-		const found = names(artifactConfig({ pages: ["/writeup"] }).plugins);
+		const found = names(artifactConfig({ pages: ["/writeup"], env: {} }).plugins);
 		expect(found.some((name) => name.startsWith("tanstack"))).toBe(true);
 		expect(found.some((name) => name.includes("react"))).toBe(true);
 		expect(found.at(-1)).toBe("atelic:private-chunks");

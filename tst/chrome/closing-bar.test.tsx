@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import { ClosingBar, Copyright, Credit } from "../../src/chrome";
 
 const CREDIT = "Made with \u{1F49A} in Denver, Colorado by Atelic";
@@ -69,5 +70,15 @@ describe("Credit", () => {
 		expect(practice).toHaveAttribute("href", "https://atelic.me");
 		expect(practice).toHaveAttribute("target", "_blank");
 		expect(practice).toHaveAttribute("rel", "noopener");
+	});
+
+	it("hands its ref the bar's element, forwarded so a React 18 host keeps it", () => {
+		const ref = createRef<HTMLDivElement>();
+		const { container } = render(<ClosingBar name="Test Practice" ref={ref} />);
+		expect(ref.current).toBe(container.querySelector(".closing-bar"));
+		expect((ClosingBar as unknown as { $$typeof: symbol }).$$typeof).toBe(
+			Symbol.for("react.forward_ref"),
+		);
+		expect(ClosingBar.displayName).toBe("ClosingBar");
 	});
 });

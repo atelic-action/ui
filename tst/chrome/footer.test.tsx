@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import { createRef } from "react";
 import { Footer, type FooterProps } from "../../src/chrome";
 import { address, brand, email, phone } from "../fixtures";
 
@@ -228,5 +229,18 @@ describe("Footer", () => {
 		expect(
 			screen.getByRole("contentinfo").querySelector("address")?.parentElement,
 		).not.toContainElement(heading);
+	});
+
+	it("hands its ref the footer element, forwarded so a React 18 host keeps it", () => {
+		const ref = createRef<HTMLElement>();
+		render(<Footer {...props} ref={ref} />);
+		expect(ref.current).toBe(screen.getByRole("contentinfo"));
+		expect(ref.current?.tagName).toBe("FOOTER");
+		// A React 18 host strips `ref` from a plain function component's props;
+		// a forwardRef component is the shape both majors deliver it to.
+		expect((Footer as unknown as { $$typeof: symbol }).$$typeof).toBe(
+			Symbol.for("react.forward_ref"),
+		);
+		expect(Footer.displayName).toBe("Footer");
 	});
 });

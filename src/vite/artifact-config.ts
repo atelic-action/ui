@@ -15,6 +15,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import { mergeConfig, type UserConfig } from "vite";
 import { privateChunks } from "./private-chunks.js";
+import { releaseConfig } from "./release.js";
 
 export interface ArtifactConfigOptions {
 	/**
@@ -28,6 +29,11 @@ export interface ArtifactConfigOptions {
 	 * going back to a configuration written by hand.
 	 */
 	extend?: UserConfig;
+	/**
+	 * The environment the release, the environment name, and the Sentry upload
+	 * are read from (release.ts); a test passes its own.
+	 */
+	env?: Record<string, string | undefined>;
 }
 
 /** One entry of the prerender list. */
@@ -51,7 +57,17 @@ export function artifactPages(pages: readonly string[]): ArtifactPage[] {
 	];
 }
 
-export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserConfig {
+export function artifactConfig({
+	pages,
+	extend,
+	env = process.env,
+}: ArtifactConfigOptions): UserConfig {
+	// The release and the environment a document's `startErrorReporting` files
+	// its errors under, and the optional source map upload, as marketingConfig
+	// sets them.
+	// A document's text is compiled into its chunks and the server bundle, so the
+	// upload skips both: only the public chunks are symbolicated.
+	const reporting = releaseConfig(env, ["**/assets/doc/**", "**/server/**"]);
 	const config: UserConfig = {
 		// Every stylesheet rides in the one base sheet the root route links
 		// (src/styles/base.css), the documents' own included, since they come from
@@ -83,12 +99,25 @@ export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserCo
 				sitemap: { enabled: false },
 			}),
 			react(),
+			...reporting.plugins,
 			// A document's content builds into /assets/doc/, which the access wall
 			// holds back, and the build fails if any lands where the login page
 			// can load it (privateChunks beside this file, needsSession in
 			// @atelic-action/ui/gate).
 			privateChunks(),
 		],
+		...reporting.config,
+		// A document is private to its business: when the maps are built for the
+		// Sentry upload, they carry no source text, so the content of a read or a
+		// proposal never leaves the build (stack traces still symbolicate).
+		...(reporting.config.build?.sourcemap
+			? {
+					build: {
+						...reporting.config.build,
+						rollupOptions: { output: { sourcemapExcludeSources: true } },
+					},
+				}
+			: {}),
 		resolve: {
 			alias: {
 				// The site's src, from the directory Vite is run in: this file lives
