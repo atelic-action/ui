@@ -98,7 +98,7 @@ export const LayerOrder: Story = {
 		});
 
 		await step(
-			"the package's theme sheet, in its own layer after the components, sets the tokens they read",
+			"the package's theme sheet, in its own layer after the package's, sets the tokens they read",
 			async () => {
 				const root = specimen.closest(".atelic-ui") as HTMLElement;
 				await expect(getComputedStyle(root).getPropertyValue("--primary").trim()).toBe("#fc4a1a");
