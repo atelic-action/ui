@@ -78,3 +78,14 @@ The package's own README is the source: its Theme table holds every token with t
 ## The Producer
 
 `design/` in `atelic-action/ui` holds the producer. A card's story is the first story in the component's story file unless `design/cards.json` names another, in the shape `{"<Component>": {"story": "<StoryExport>", "args": {…}, "group": "<group>", "height": <px>, "width": <px>}}`, every key optional, `args` laid over the story's own; an entry is added only where the first story makes a poor card. A card's width is the viewport its story pins (1280 desktop, 820 tablet, 390 phone, else 1200), and its height is measured by the render check, or held at that viewport's height when the story's height follows the viewport.
+
+### Publishing a Sync
+
+The system in Claude is the Design System artifact at `claude.ai/artifact/XjFif4GuiTgDxvZk8EcdTh`, and the session publishes it with the Artifact tool after `bun run design:build` and `bun run design:check` are green; `design/out/publish-plan.json` names every file. The mechanics that bit on the first sync (2026-11-24):
+
+1. Read the artifact by its URL right before publishing, even after reading its files by path; a publish to a version the session has not read is refused.
+2. Publish in batches of at most 255 paths, removals counted, with `root` set to `design/out` and every path under `project/`. `components/index.d.ts` goes with `contentType` `text/plain`, since a `.ts` name is not served on its own.
+3. Removals are `null` entries against the live file listing, never against a map of where files were meant to go; the first sync deleted the old two level layout (`components/<group>/<Name>/…`, `_preview/`, `_vendor/`, `_ds_bundle.*`, the old fonts) this way.
+4. The index, `project/design-system.json`, goes once, as the `file_path` of the last call: the live one read back, `source` removed, `namespace`, `libraries`, `lastChange`, and `"editing": "code"` set, every other key kept. The build empties `design/out`, so write the merged index after the build, from `design/out/index.proposed.json`.
+
+A canvas uses the system by installing it under its own `project/ds/<folder>/` with a record in its `canvas.json`, as the Design type prescribes; the canvas runtime is React 18, which drops a `ref` prop, so a component that takes one (`Footer`, `ClosingBar`) is laid out by hand there until ATE-854 lands.
