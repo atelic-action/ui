@@ -78,3 +78,7 @@ The package's own README is the source: its Theme table holds every token with t
 ## The Producer
 
 `design/` in `atelic-action/ui` holds the producer. A card's story is the first story in the component's story file unless `design/cards.json` names another, in the shape `{"<Component>": {"story": "<StoryExport>", "args": {…}, "group": "<group>", "height": <px>, "width": <px>}}`, every key optional, `args` laid over the story's own; an entry is added only where the first story makes a poor card. A card's width is the viewport its story pins (1280 desktop, 820 tablet, 390 phone, else 1200), and its height is measured by the render check, or held at that viewport's height when the story's height follows the viewport.
+
+### Using the System in a Canvas
+
+A canvas uses the system by installing it under its own `project/ds/<folder>/` with a record in its `canvas.json`, as the Design type prescribes; the canvas runtime is React 18, which drops a `ref` prop, so a component that takes one (`Footer`, `ClosingBar`, and `SiteShell`, which passes refs to both) is laid out by hand there until ATE-854 lands.
