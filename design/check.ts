@@ -15,8 +15,8 @@
  * `tokens.json`, compiled the same way: the color and shadow tokens on
  * `:root` and the first theme, the other families on `:root`, a face per font.
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, normalize, resolve } from "node:path";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { join, normalize, resolve, sep } from "node:path";
 import { chromium } from "playwright";
 
 const DESIGN = resolve(import.meta.dir);
@@ -108,8 +108,11 @@ async function main() {
 	const cards = JSON.parse(read(join(OUT, "cards.json"))) as Card[];
 	const stylesheet = tokensCSS(JSON.parse(read(join(PROJECT, "tokens.json"))) as TokensJSON);
 
+	// Loopback only, and only files under the project folder: the separator
+	// keeps a sibling folder whose name starts the same from matching.
 	const server = Bun.serve({
 		port: 0,
+		hostname: "127.0.0.1",
 		fetch(request) {
 			const path = decodeURIComponent(new URL(request.url).pathname);
 			if (path === "/__check/tokens.css") {
@@ -121,7 +124,7 @@ async function main() {
 				return new Response(html, { headers: { "content-type": "text/html" } });
 			}
 			const file = normalize(join(PROJECT, path));
-			if (!file.startsWith(PROJECT) || !existsSync(file)) {
+			if (!file.startsWith(PROJECT + sep) || !existsSync(file) || !statSync(file).isFile()) {
 				return new Response("not found", { status: 404 });
 			}
 			const type = TYPES[file.slice(file.lastIndexOf("."))] ?? "application/octet-stream";

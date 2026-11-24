@@ -89,6 +89,12 @@ export async function mountStory(
 	const args = { ...meta.args, ...story.args, ...cardArgs };
 	const parameters = { ...meta.parameters, ...story.parameters };
 	const globals = { density: "default", ...meta.globals, ...story.globals };
+	// Storybook's site root carries the density as data-density (withSiteRoot);
+	// the card's root does the same, so a story pinned to compact or
+	// comfortable renders at that rhythm.
+	if (globals.density && globals.density !== "default") {
+		element.dataset.density = String(globals.density);
+	}
 	const name = story.name ?? exportName;
 	const componentId = slug(meta.title);
 	const context: CardContext = {
