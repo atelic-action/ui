@@ -65,7 +65,9 @@ export function artifactConfig({
 	// The release and the environment a document's `startErrorReporting` files
 	// its errors under, and the optional source map upload, as marketingConfig
 	// sets them.
-	const reporting = releaseConfig(env);
+	// A document's text is compiled into its chunks and the server bundle, so the
+	// upload skips both: only the public chunks are symbolicated.
+	const reporting = releaseConfig(env, ["**/assets/doc/**", "**/server/**"]);
 	const config: UserConfig = {
 		// Every stylesheet rides in the one base sheet the root route links
 		// (src/styles/base.css), the documents' own included, since they come from

@@ -45,7 +45,7 @@ export function sentryUpload(
  * named by the commit, uploads the build's hidden source maps, and deletes
  * every map file from the output afterwards, so none is ever served.
  */
-export function sentryPlugin(upload: SentryUpload): PluginOption {
+export function sentryPlugin(upload: SentryUpload, ignore: string[] = []): PluginOption {
 	return import("@sentry/vite-plugin").then(
 		({ sentryVitePlugin }) =>
 			sentryVitePlugin({
@@ -53,7 +53,10 @@ export function sentryPlugin(upload: SentryUpload): PluginOption {
 				project: upload.project,
 				authToken: upload.authToken,
 				release: { name: upload.release, inject: false },
-				sourcemaps: { filesToDeleteAfterUpload: ["./dist/**/*.map"] },
+				sourcemaps: {
+					filesToDeleteAfterUpload: ["./dist/**/*.map"],
+					...(ignore.length ? { ignore } : {}),
+				},
 				telemetry: false,
 			}) as PluginOption,
 	);
@@ -85,14 +88,17 @@ export function environmentPlugin(env: Record<string, string | undefined> = proc
  * for Sentry, hidden, so the bundles carry no comment pointing at one and the
  * plugin deletes them once uploaded.
  */
-export function releaseConfig(env: Record<string, string | undefined> = process.env): {
+export function releaseConfig(
+	env: Record<string, string | undefined> = process.env,
+	ignore: string[] = [],
+): {
 	plugins: PluginOption[];
 	config: Pick<UserConfig, "define" | "build">;
 } {
 	const release = buildRelease(env);
 	const upload = sentryUpload(env);
 	return {
-		plugins: [environmentPlugin(env), ...(upload ? [sentryPlugin(upload)] : [])],
+		plugins: [environmentPlugin(env), ...(upload ? [sentryPlugin(upload, ignore)] : [])],
 		config: {
 			...(release ? { define: { "import.meta.env.VITE_RELEASE": JSON.stringify(release) } } : {}),
 			...(upload ? { build: { sourcemap: "hidden" as const } } : {}),

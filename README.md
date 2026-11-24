@@ -600,7 +600,7 @@ import { artifactConfig } from "@atelic-action/ui/vite";
 export default artifactConfig({ pages: ["/the-read", "/proposal", "/report"] });
 ```
 
-`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; the environment plugin and, with the three Sentry variables set, the Sentry upload (its maps carry no source text, so a document's content is never uploaded); `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
+`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; the environment plugin and, with the three Sentry variables set, the Sentry upload (it skips the document chunks and the server bundle, and its maps carry no source text, so a document's content is never uploaded); `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
 
 A site with a real need of its own passes `extend`, which is merged over the result with Vite's `mergeConfig`:
 
@@ -827,7 +827,7 @@ The space a section leaves above and below itself is one token, `--section-space
 
 ### Moving to 8.7.1
 
-Nothing to do for a site; two fixes, no API change (ATE-843).
+Nothing to do for a site; two fixes, no API change (ATE-843, ATE-854).
 
 - **An artifact build carries the release and the environment into its error reports.** `artifactConfig` now defines `import.meta.env.VITE_RELEASE` from the commit and `import.meta.env.VITE_ENVIRONMENT` from `VERCEL_ENV` or the build's mode, and runs the optional Sentry source map upload, exactly as `marketingConfig` does, so a document's `startErrorReporting` files its errors under both. The two configurations share one module for it, and `@atelic-action/ui/vite` exports what it did.
 - **The chrome's refs survive a React 18 host.** `Footer` and `ClosingBar` forward their `ref` rather than reading it as a prop, which React 18 strips, so `SiteShell`'s contact dock still finds the footer, or the closing bar standing in for it, on a host such as the Claude Design canvas. React 19 behaves as before.
