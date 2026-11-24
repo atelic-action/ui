@@ -1,5 +1,5 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import type { ComponentProps, CSSProperties, ReactNode, Ref } from "react";
+import { type ComponentProps, type CSSProperties, forwardRef, type ReactNode } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { EmailLink } from "../primitives/EmailLink";
 import { PhoneLink } from "../primitives/PhoneLink";
@@ -205,8 +205,6 @@ export interface FooterProps {
 	 * inside a deeper outline passes its own.
 	 */
 	headingLevel?: 2 | 3 | 4 | 5 | 6;
-	/** The footer element, for a caller that measures it (`SiteShell` hands it to the contact dock). */
-	ref?: Ref<HTMLElement>;
 }
 
 /**
@@ -215,26 +213,33 @@ export interface FooterProps {
  * site gives them, the link columns beside it, and the closing bar under it
  * all. The logo is the header's lockup: the mark with the wordmark beside it,
  * or the mark alone when `logo.wordmark` is false.
+ *
+ * Its `ref` reaches the footer element, for a caller that measures it
+ * (`SiteShell` hands it to the contact dock). It is forwarded rather than
+ * read as a prop, so a React 18 host, which strips `ref` from a plain
+ * function component's props, still delivers it.
  */
-export function Footer({
-	brand,
-	rating,
-	ratingHref,
-	ratingLabel,
-	address,
-	addressHref,
-	phone,
-	email,
-	hours,
-	hoursHeading = "Hours",
-	hoursPlacement = "column",
-	columns,
-	attribution,
-	note,
-	credit = true,
-	headingLevel = 2,
+export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
+	{
+		brand,
+		rating,
+		ratingHref,
+		ratingLabel,
+		address,
+		addressHref,
+		phone,
+		email,
+		hours,
+		hoursHeading = "Hours",
+		hoursPlacement = "column",
+		columns,
+		attribution,
+		note,
+		credit = true,
+		headingLevel = 2,
+	},
 	ref,
-}: FooterProps) {
+) {
 	const { name, logo } = brand;
 	// The footer always names the business beside a glyph tile.
 	const wordmark = logo?.wordmark === false ? name : (logo?.wordmark ?? name);
@@ -405,4 +410,5 @@ export function Footer({
 			/>
 		</>
 	);
-}
+});
+Footer.displayName = "Footer";

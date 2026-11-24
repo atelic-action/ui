@@ -81,4 +81,4 @@ The package's own README is the source: its Theme table holds every token with t
 
 ### Using the System in a Canvas
 
-A canvas uses the system by installing it under its own `project/ds/<folder>/` with a record in its `canvas.json`, as the Design type prescribes; the canvas runtime is React 18, which drops a `ref` prop, so a component that takes one (`Footer`, `ClosingBar`, and `SiteShell`, which passes refs to both) is laid out by hand there until ATE-854 lands.
+A canvas uses the system by installing it under its own `project/ds/<folder>/` with a record in its `canvas.json`, as the Design type prescribes; the canvas runtime is React 18, which drops a plain `ref` prop, so `Footer` and `ClosingBar` forward theirs (8.7.1) and `SiteShell`, which passes refs to both, needs no hand layout there.

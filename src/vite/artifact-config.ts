@@ -15,6 +15,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
 import { mergeConfig, type UserConfig } from "vite";
 import { privateChunks } from "./private-chunks.js";
+import { releaseConfig } from "./release.js";
 
 export interface ArtifactConfigOptions {
 	/**
@@ -28,6 +29,11 @@ export interface ArtifactConfigOptions {
 	 * going back to a configuration written by hand.
 	 */
 	extend?: UserConfig;
+	/**
+	 * The environment the release, the environment name, and the Sentry upload
+	 * are read from (release.ts); a test passes its own.
+	 */
+	env?: Record<string, string | undefined>;
 }
 
 /** One entry of the prerender list. */
@@ -51,7 +57,15 @@ export function artifactPages(pages: readonly string[]): ArtifactPage[] {
 	];
 }
 
-export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserConfig {
+export function artifactConfig({
+	pages,
+	extend,
+	env = process.env,
+}: ArtifactConfigOptions): UserConfig {
+	// The release and the environment a document's `startErrorReporting` files
+	// its errors under, and the optional source map upload, as marketingConfig
+	// sets them.
+	const reporting = releaseConfig(env);
 	const config: UserConfig = {
 		// Every stylesheet rides in the one base sheet the root route links
 		// (src/styles/base.css), the documents' own included, since they come from
@@ -83,12 +97,14 @@ export function artifactConfig({ pages, extend }: ArtifactConfigOptions): UserCo
 				sitemap: { enabled: false },
 			}),
 			react(),
+			...reporting.plugins,
 			// A document's content builds into /assets/doc/, which the access wall
 			// holds back, and the build fails if any lands where the login page
 			// can load it (privateChunks beside this file, needsSession in
 			// @atelic-action/ui/gate).
 			privateChunks(),
 		],
+		...reporting.config,
 		resolve: {
 			alias: {
 				// The site's src, from the directory Vite is run in: this file lives

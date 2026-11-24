@@ -1,4 +1,4 @@
-import type { ReactNode, Ref } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { Copyright } from "./Copyright";
 import { Credit } from "./Credit";
 
@@ -15,8 +15,6 @@ export interface ClosingBarProps {
 	 * it; anything else renders as given.
 	 */
 	right?: ReactNode;
-	/** The bar's element, for a caller that measures it. */
-	ref?: Ref<HTMLDivElement>;
 }
 
 /**
@@ -25,9 +23,13 @@ export interface ClosingBarProps {
  * the practice's credit. Footer renders it at its foot, and a page with no
  * footer renders it on its own (ArtifactShell passes the sender's name, so a
  * sent document closes the way a site does); with nothing on the left, the
- * right side sits centered.
+ * right side sits centered. Its `ref` reaches the bar's element, for a caller
+ * that measures it, forwarded so a React 18 host still delivers it.
  */
-export function ClosingBar({ name, left, right, ref }: ClosingBarProps) {
+export const ClosingBar = forwardRef<HTMLDivElement, ClosingBarProps>(function ClosingBar(
+	{ name, left, right },
+	ref,
+) {
 	const leftSide = left === undefined ? name ? <Copyright name={name} /> : null : left;
 	const rightSide = right === undefined ? <Credit /> : right;
 	const hasLeft = leftSide !== null && leftSide !== false;
@@ -42,4 +44,5 @@ export function ClosingBar({ name, left, right, ref }: ClosingBarProps) {
 			</div>
 		</div>
 	);
-}
+});
+ClosingBar.displayName = "ClosingBar";
