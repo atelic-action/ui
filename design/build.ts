@@ -223,10 +223,11 @@ function inventory(): Inventory[] {
 	return found;
 }
 
-/** The doc comment directly above `export function <name>`, as plain text. */
+/** The doc comment directly above the component's export, `export function
+ * <name>` or `export const <name> =` (a forwardRef), as plain text. */
 function docComment(source: string, name: string): string | undefined {
 	const text = read(source);
-	const at = text.search(new RegExp(`^export function ${name}\\b`, "m"));
+	const at = text.search(new RegExp(`^export (?:function ${name}\\b|const ${name} =)`, "m"));
 	if (at < 0) return undefined;
 	const before = text.slice(0, at).trimEnd();
 	if (!before.endsWith("*/")) return undefined;
