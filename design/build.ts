@@ -564,19 +564,21 @@ interface TypeStyle {
  */
 function typeScale(weights: Map<string, number>) {
 	const base = read(join(ROOT, "src/styles/base.css"));
+	const sheet = base.replace(/\/\*[\s\S]*?\*\//g, "");
 	const rule = (selector: string) => {
-		const escaped = selector.replace(/[.()[\]]/g, "\\$&");
-		const blocks = [...base.matchAll(new RegExp(`(?:^|[\\s}])${escaped}\\s*\\{([^}]*)\\}`, "g"))];
 		const props: Record<string, string> = {};
-		for (const block of blocks) {
-			for (const m of (block[1] as string).matchAll(/(?:^|;|\s)([a-z-]+)\s*:\s*([^;]+);/g)) {
+		for (const block of sheet.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+			const list = (block[1] as string).split(",").map((s) => s.trim());
+			if (!list.includes(selector)) continue;
+			for (const m of (block[2] as string).matchAll(/(?:^|;|\s)([a-z-]+)\s*:\s*([^;]+);/g)) {
 				props[m[1] as string] = (m[2] as string).trim();
 			}
 		}
 		return props;
 	};
 	const weightOf = (value?: string) => {
-		const name = value && VAR.exec(value)?.[1];
+		const last = value && [...value.matchAll(/var\(--([\w-]+)\)/g)].pop()?.[1];
+		const name = value && (VAR.exec(value)?.[1] ?? last);
 		return name ? weights.get(name) : value && /^\d+$/.test(value) ? Number(value) : undefined;
 	};
 	const sized = (name: string, props: Record<string, string>, usage: string): TypeStyle => {
@@ -643,7 +645,7 @@ function declarationOf(types: string, name: string): string | undefined {
 	for (let i = start; i < types.length; i++) {
 		const ch = types[i];
 		if (ch === "{" || ch === "(" || ch === "<" || ch === "[") depth++;
-		else if (ch === "}" || ch === ")" || ch === ">" || ch === "]") {
+		else if (ch === "}" || ch === ")" || (ch === ">" && types[i - 1] !== "=") || ch === "]") {
 			depth--;
 			if (depth === 0 && ch === "}" && types.slice(start, i).match(/^[^=]*interface /)) {
 				return types.slice(start, i + 1);
