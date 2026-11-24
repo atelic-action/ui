@@ -1,8 +1,8 @@
 /**
  * `storybook/test` as a preview card sees it: every name a story imports,
  * doing nothing. A card renders a story's args and render function and never
- * runs its `play`, so an assertion, a spy, or a simulated event has nothing
- * to check; they only have to exist, and `fn()` has to be callable wherever
+ * runs its `play`, so an assertion or a simulated event has nothing to
+ * check; they only have to exist, and `fn()` has to be callable wherever
  * a story passes one as a handler.
  */
 
@@ -47,6 +47,12 @@ export function fn(implementation?: Anything): Anything {
 					return proxy;
 				};
 			}
+			if (key === "mockReturnValue" || key === "mockResolvedValue") {
+				return (value: unknown) => {
+					impl = () => (key === "mockResolvedValue" ? Promise.resolve(value) : value);
+					return proxy;
+				};
+			}
 			if (key === "then") return undefined;
 			if (key in fnTarget) return Reflect.get(fnTarget, key);
 			return () => proxy;
@@ -55,9 +61,26 @@ export function fn(implementation?: Anything): Anything {
 	return proxy;
 }
 
-/** A spy that replaces nothing: the method stays as it was. */
-export function spyOn(_object: unknown, _method: string): Anything {
-	return fn();
+/**
+ * A spy: the method is replaced by a mock that calls through until a story
+ * gives it an implementation, so a card's `window.fetch` answers as the
+ * story's relay does and makes no real request.
+ */
+export function spyOn(object: unknown, method: string): Anything {
+	const host = object as Record<string, Anything>;
+	const original = host[method];
+	const mock = fn((...args: unknown[]) => original?.apply(object, args));
+	host[method] = mock;
+	const spy: Anything = new Proxy(mock, {
+		get: (target, key) =>
+			key === "mockRestore"
+				? () => {
+						host[method] = original as Anything;
+						return spy;
+					}
+				: (target as unknown as Record<PropertyKey, unknown>)[key],
+	});
+	return spy;
 }
 
 const nothing = chain();

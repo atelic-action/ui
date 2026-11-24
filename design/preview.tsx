@@ -110,6 +110,13 @@ export async function mountStory(
 		step: async () => {},
 	};
 
+	// The project's own hold on links (.storybook/preview.tsx): a card is a
+	// picture, and a followed link would carry its frame away.
+	document.addEventListener("click", (event) => {
+		const link = (event.target as Element | null)?.closest?.("a[href]");
+		if (link && !link.getAttribute("href")?.startsWith("#")) event.preventDefault();
+	});
+
 	// A hook prepares the page for a test (a spy, a cookie, a query string);
 	// one that fails leaves the card to render as it can.
 	for (const hook of [...list(meta.beforeEach), ...list(story.beforeEach)]) {
