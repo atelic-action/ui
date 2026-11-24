@@ -106,11 +106,13 @@
 		"prepack": "bun run build",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",
-		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p stories",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p stories && tsc --noEmit -p design",
 		"test:run": "vitest run --project=unit",
 		"test:stories": "vitest run --project=storybook",
 		"storybook": "storybook dev --port 6006",
-		"storybook:build": "storybook build --output-dir storybook-static"
+		"storybook:build": "storybook build --output-dir storybook-static",
+		"design:build": "bun design/build.ts",
+		"design:check": "bun design/check.ts"
 	},
 	"dependencies": {
 		"@radix-ui/react-checkbox": "^1.1.2",
@@ -277,6 +279,8 @@
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",
 		"country-data-list": "^1.6.0",
+		"dts-bundle-generator": "^9.5.1",
+		"esbuild": "0.28.2",
 		"jsdom": "^25.0.1",
 		"lucide-react": "^1.23.0",
 		"playwright": "^1.65.1",

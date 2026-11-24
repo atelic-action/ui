@@ -1,0 +1,10 @@
+{
+  /* The producer's own check: the root config over design/, which runs under
+     bun (the build, the check) and in the browser (the card runtime). */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun", "vite/client"]
+  },
+  "include": ["*.ts", "*.tsx", "stubs"],
+  "exclude": ["out"]
+}

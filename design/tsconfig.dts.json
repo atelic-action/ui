@@ -1,0 +1,10 @@
+{
+  /* The declaration flattener's program: the four barrels through
+     design/entry.ts, with no ambient types (bun's globals break the bundler). */
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "noEmit": false
+  },
+  "include": ["entry.ts"]
+}
