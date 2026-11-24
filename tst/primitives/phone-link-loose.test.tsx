@@ -92,6 +92,52 @@ describe("what stays unlinked", () => {
 		expect(hrefs()).toEqual(["tel:5550142", "tel:+1234"]);
 	});
 
+	it("dials a typed number with words in it exactly as 8.5.0 did: its digits, no letter read", () => {
+		render(<PhoneLink phone="TEL 303-555-0142" />);
+		render(<PhoneLink phone="Toll-free: 303-555-0142" />);
+		expect(hrefs()).toEqual(["tel:3035550142", "tel:3035550142"]);
+	});
+
+	it("draws no call for a configured number with no digit: no tel: link, no call button", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		render(
+			<LocationSection
+				site={{ ...testSite, phone: { e164: "", display: "Call us" } }}
+				title="Visit"
+			/>,
+		);
+		expect(screen.queryByRole("link", { name: "Call us" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Call us" })).toBeNull();
+		expect(
+			screen.queryAllByRole("link").filter((link) => link.getAttribute("href") === "tel:"),
+		).toEqual([]);
+	});
+
+	it("draws no call button on the sticky bar for a configured number with no digit", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		const { container } = render(
+			<StickyCTABar
+				primaryCTA={{ label: "Order", href: "/order" }}
+				phone={{ e164: "", display: "" }}
+				fromTop
+			/>,
+		);
+		expect(container.querySelector(".btn-call")).toBeNull();
+		expect(screen.getAllByRole("link")).toHaveLength(1);
+	});
+
+	it("draws nothing, not a nameless span, for an icon only call with no digit", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		const { container } = render(
+			<PhoneLink phone={{ e164: "", display: "" }} className="nav-call" aria-label="Call">
+				<svg aria-hidden="true" />
+			</PhoneLink>,
+		);
+		expect(container).toBeEmptyDOMElement();
+		render(<SiteHeader brand={brand} phones={[{ e164: "", display: "", label: "" }]} />);
+		expect(document.querySelector(".nav-call")).toBeNull();
+	});
+
 	it("an address that is not a string draws no link and never throws", () => {
 		vi.spyOn(console, "warn").mockImplementation(() => {});
 		expect(() => render(<EmailLink email={undefined as unknown as string} />)).not.toThrow();

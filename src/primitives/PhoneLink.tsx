@@ -1,4 +1,4 @@
-import type { AnchorHTMLAttributes, ReactNode } from "react";
+import { type AnchorHTMLAttributes, isValidElement, type ReactNode } from "react";
 import { dialable, toE164 } from "../lib/contactLinks";
 import type { Phone } from "../types";
 
@@ -31,27 +31,39 @@ const hasDigits = (value: string) => /\d/.test(value);
  * 8.5.0: the browser is never stricter than it was, and a loose `e164` is
  * the build guard's to catch (`contactProblems`). A typed number is read
  * into E.164 (`toE164`), or failing that dials what a dialer can take
- * (`dialable`: the digits, a typed + kept, an extension dropped); one with
- * no digit at all has no href.
+ * (`dialable`: the digits, a typed + kept, an extension dropped). Either
+ * with no digit at all has no href (8.6.0), so nothing draws a call that
+ * dials nothing.
  */
 export function phoneHref(phone: Pick<Phone, "e164"> | string): string | undefined {
-	if (typeof phone !== "string") return `tel:${phone.e164}`;
+	if (typeof phone !== "string") {
+		return hasDigits(phone.e164 ?? "") ? `tel:${phone.e164}` : undefined;
+	}
 	const number = toE164(phone) ?? dialable(phone);
 	return number ? `tel:${number}` : undefined;
+}
+
+/** The words a node shows, gathered through its elements; an icon alone shows none. */
+function textOf(node: ReactNode): string {
+	if (typeof node === "string" || typeof node === "number") return String(node);
+	if (Array.isArray(node)) return node.map(textOf).join("");
+	if (isValidElement<{ children?: ReactNode }>(node)) return textOf(node.props.children);
+	return "";
 }
 
 /**
  * A phone number as a link that dials it (Component Rules 17), the one way
  * the package draws one. It never opens a new tab (Component Rules 12). Its
- * href is `phoneHref`'s. Only a number with no digit to dial is shown as
- * plain words rather than a dead link, with a warning in development.
+ * href is `phoneHref`'s. A number with no digit to dial is shown as plain
+ * words rather than a dead link, with a warning in development, and as
+ * nothing at all when it has no words to show (an icon alone).
  */
 export function PhoneLink({ phone, children, className, ...anchor }: PhoneLinkProps) {
 	const href = phoneHref(phone);
 	const words = children ?? (typeof phone === "string" ? phone : phone.display);
-	if (!href || !hasDigits(href)) {
+	if (!href) {
 		warnOnce(typeof phone === "string" ? phone : phone.e164);
-		return <span className={className}>{words}</span>;
+		return textOf(words).trim() ? <span className={className}>{words}</span> : null;
 	}
 	return (
 		<a className={className} href={href} {...anchor}>

@@ -242,6 +242,15 @@ describe("ContactForm with the opt in fields", () => {
 			expect(screen.getByLabelText("City")).toHaveValue("");
 		});
 
+		it("that is dropped puts the search back to what was typed, never the address the form refused", async () => {
+			const { provider, finish } = slowProvider(ALDER);
+			render(<ContactForm {...BASE} address={{ provider }} />);
+			await choose();
+			change(/Street address/, "12 Birch Lane");
+			await finish();
+			expect(screen.getByRole("combobox", { name: /Address/ })).toHaveValue("418");
+		});
+
 		it("clears only the refusals of the fields it filled with a valid value", async () => {
 			const { provider, finish } = slowProvider({ ...ALDER, zip: "800" });
 			render(<ContactForm {...BASE} address={{ provider, required: true }} />);

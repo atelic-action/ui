@@ -239,6 +239,8 @@ describe("AddressSearch", () => {
 		act(() => vi.advanceTimersByTime(250));
 		await act(async () => asked[0]?.answer([ALDER, BIRCH]));
 		fireEvent.blur(field());
+		// The blur's cleanup runs once any click has had its turn.
+		act(() => vi.advanceTimersByTime(1));
 		field().focus();
 		fireEvent.keyDown(field(), { key: "ArrowDown" });
 		expect(field()).toHaveAttribute("aria-expanded", "false");
@@ -274,12 +276,160 @@ describe("AddressSearch", () => {
 		expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
 	});
 
+	describe("a press on a suggestion, as a touch screen fires it", () => {
+		/*
+		 * Pointer Events 3, 4.2.6: for a pointer that cannot hover, pointerup
+		 * is followed by pointerout and pointerleave, and only then come the
+		 * compatibility mousedown (where focus moves, so the blur), mouseup,
+		 * and click.
+		 */
+		async function offered() {
+			const { provider, asked } = heldProvider();
+			const abandon = vi.fn();
+			const onPick = vi.fn();
+			render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={onPick} />);
+			type("4 A");
+			act(() => vi.advanceTimersByTime(250));
+			await act(async () => asked[0]?.answer([ALDER]));
+			return { abandon, onPick, asked, option: screen.getByRole("option") };
+		}
+		const leaveField = () => {
+			field().blur();
+			fireEvent.blur(field());
+		};
+
+		it("lands, in the spec's order, keeping the session and the list", async () => {
+			const { abandon, onPick, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerUp(option);
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			leaveField();
+			fireEvent.mouseDown(option);
+			fireEvent.mouseUp(option);
+			act(() => vi.advanceTimersByTime(50));
+			expect(abandon).not.toHaveBeenCalled();
+			expect(screen.getByRole("option")).toBe(option);
+			fireEvent.click(option);
+			await settle();
+			act(() => vi.advanceTimersByTime(1000));
+			expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+			expect(abandon).not.toHaveBeenCalled();
+		});
+
+		it("lands when the blur comes before pointerleave, as some touch browsers send it", async () => {
+			const { abandon, onPick, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerUp(option);
+			leaveField();
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			act(() => vi.advanceTimersByTime(300));
+			fireEvent.click(option);
+			await settle();
+			expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+			expect(abandon).not.toHaveBeenCalled();
+		});
+
+		it("leaves as usual when the browser cancels the press (the touch became a scroll)", async () => {
+			const { abandon, option } = await offered();
+			fireEvent.pointerDown(option);
+			leaveField();
+			fireEvent.pointerCancel(option);
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			act(() => vi.advanceTimersByTime(1));
+			expect(abandon).toHaveBeenCalledOnce();
+			expect(field()).toHaveAttribute("aria-expanded", "false");
+		});
+
+		it("leaves as usual when no click follows the pointerup", async () => {
+			const { abandon, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerUp(option);
+			fireEvent.pointerOut(option);
+			fireEvent.pointerLeave(option);
+			leaveField();
+			act(() => vi.advanceTimersByTime(300));
+			expect(abandon).not.toHaveBeenCalled();
+			act(() => vi.advanceTimersByTime(400));
+			expect(abandon).toHaveBeenCalledOnce();
+			expect(field()).toHaveAttribute("aria-expanded", "false");
+		});
+
+		it("ends when a mouse press is dragged off and released elsewhere, so the next blur leaves", async () => {
+			const { abandon, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerLeave(option);
+			fireEvent.pointerUp(document.body);
+			act(() => vi.advanceTimersByTime(700));
+			leaveField();
+			act(() => vi.advanceTimersByTime(1));
+			expect(abandon).toHaveBeenCalledOnce();
+			expect(field()).toHaveAttribute("aria-expanded", "false");
+		});
+
+		it("still picks when a mouse press leaves its suggestion and comes back to click", async () => {
+			const { onPick, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerLeave(option);
+			fireEvent.pointerEnter(option);
+			fireEvent.pointerUp(option);
+			fireEvent.click(option);
+			await settle();
+			expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+		});
+
+		it("ends when its option is replaced mid press, so the next blur leaves", async () => {
+			const { abandon, asked, option } = await offered();
+			fireEvent.pointerDown(option);
+			type("4 Al");
+			act(() => vi.advanceTimersByTime(250));
+			await act(async () => asked[1]?.answer([BIRCH]));
+			leaveField();
+			act(() => vi.advanceTimersByTime(1));
+			expect(abandon).toHaveBeenCalledOnce();
+		});
+	});
+
+	it("goes back to the typed words when its pick is declined, and asks nothing until typing", async () => {
+		const { provider, asked } = heldProvider();
+		render(<AddressSearch provider={provider} label="Address" onPick={() => false} />);
+		type("4 A");
+		act(() => vi.advanceTimersByTime(250));
+		await act(async () => asked[0]?.answer([ALDER]));
+		fireEvent.click(screen.getByRole("option"));
+		await settle();
+		expect(field()).toHaveValue("4 A");
+		act(() => vi.advanceTimersByTime(1000));
+		expect(asked).toHaveLength(1);
+		type("4 Al");
+		act(() => vi.advanceTimersByTime(250));
+		expect(asked).toHaveLength(2);
+	});
+
+	it("still ends the session when the field goes the moment after a blur", () => {
+		const { provider } = heldProvider();
+		const abandon = vi.fn();
+		const { unmount } = render(
+			<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />,
+		);
+		field().focus();
+		fireEvent.blur(field());
+		unmount();
+		expect(abandon).toHaveBeenCalledOnce();
+		act(() => vi.advanceTimersByTime(10));
+		expect(abandon).toHaveBeenCalledOnce();
+	});
+
 	it("tells the provider it was abandoned when the field is left", () => {
 		const { provider } = heldProvider();
 		const abandon = vi.fn();
 		render(<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />);
 		field().focus();
 		fireEvent.blur(field());
+		// After any click has had its turn.
+		act(() => vi.advanceTimersByTime(1));
 		expect(abandon).toHaveBeenCalledOnce();
 	});
 

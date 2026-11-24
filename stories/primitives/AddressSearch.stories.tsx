@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { expect, fn, waitFor } from "storybook/test";
-import { AddressSearch, GoogleMapsAttribution } from "../../src/primitives";
+import { type AddressParts, AddressSearch, GoogleMapsAttribution } from "../../src/primitives";
 import { exampleAddresses, exampleProvider } from "../fixtures/primitives";
 import { expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
@@ -212,5 +213,26 @@ export const GoogleAttribution: Story = {
 		await expect(Number(style.fontWeight)).toBe(400);
 		// In the same box as the suggestions it credits.
 		await expect(list.parentElement?.contains(credit)).toBe(true);
+	},
+};
+
+/**
+ * A handler that returns nothing, a state setter, fits `onPick` as it
+ * always has: this story is also the type check that it compiles.
+ */
+export const StateSetterHandler: Story = {
+	render: (args) => {
+		const [address, setAddress] = useState<AddressParts | null>(null);
+		return (
+			<>
+				<AddressSearch {...args} onPick={setAddress} />
+				<p>{address ? `${address.street}, ${address.city}` : "Nothing picked"}</p>
+			</>
+		);
+	},
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.type(field(canvas), "Birch");
+		await userEvent.click(await canvas.findByRole("option", { name: /12 Birch Lane/ }));
+		await expect(await canvas.findByText("12 Birch Lane, Fairhaven")).toBeVisible();
 	},
 };

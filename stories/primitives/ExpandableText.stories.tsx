@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+import { expect, waitFor } from "storybook/test";
 import { ExpandableText } from "../../src/primitives";
 import { lines as lineCount } from "../support/geometry";
 import { pin } from "../support/viewports";
@@ -138,5 +140,84 @@ export const Phone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expect(canvas.getByRole("button", { name: "Show more" })).toBeVisible();
+	},
+};
+
+/**
+ * Inline over text that fits its lines: nothing is hidden, so no control is
+ * drawn and what `more` holds shows at once (8.6.0).
+ */
+export const InlineFits: Story = {
+	args: {
+		children: "Open from seven.",
+		inline: true,
+		more: <a href="https://kestrelhollow.example.com/hours">Holiday hours</a>,
+	},
+	play: async ({ canvas }) => {
+		await waitFor(() => expect(canvas.queryByRole("button")).toBeNull());
+		await expect(canvas.getByRole("link", { name: "Holiday hours" })).toBeVisible();
+	},
+};
+
+/**
+ * A prerendered inline text never moves the page when it is measured:
+ * the text and what follows it sit where they sat before hydration, cut or
+ * fitting, and the control is unseen and unreachable until the text is
+ * measured as cut.
+ */
+export const InlinePrerenderNeverMoves: Story = {
+	args: { inline: true, lines: 1 },
+	render: () => <div data-prerender-host="" />,
+	play: async ({ canvasElement, step }) => {
+		const host = canvasElement.querySelector("[data-prerender-host]") as HTMLElement;
+		const cases = [
+			["a cut text", longText],
+			["a text that fits", "Open from seven."],
+		] as const;
+		for (const [name, words] of cases) {
+			await step(name, async () => {
+				const element = (
+					<ExpandableText inline lines={1}>
+						{words}
+					</ExpandableText>
+				);
+				host.innerHTML = "";
+				const holder = document.createElement("div");
+				const after = document.createElement("p");
+				after.textContent = "What follows";
+				host.append(holder, after);
+				holder.innerHTML = renderToString(element);
+				const body = () => holder.querySelector(".expandable-text-body") as HTMLElement;
+				const before = [body().getBoundingClientRect().top, after.getBoundingClientRect().top];
+				const toggle = holder.querySelector("button");
+				if (toggle) {
+					await expect(toggle).toHaveAttribute("aria-hidden", "true");
+					await expect(toggle).toHaveAttribute("tabindex", "-1");
+					await expect(getComputedStyle(toggle).visibility).toBe("hidden");
+				}
+				const root = hydrateRoot(holder, element);
+				await new Promise((resolve) => setTimeout(resolve, 100));
+				await expect([
+					body().getBoundingClientRect().top,
+					after.getBoundingClientRect().top,
+				]).toEqual(before);
+				root.unmount();
+			});
+		}
+	},
+};
+
+/** Inline over text that runs past its lines: once measured, the control sits on the last line's end. */
+export const InlineCut: Story = {
+	args: { inline: true, lines: 1 },
+	play: async ({ canvas }) => {
+		const more = canvas.getByRole("button", { name: "Show more" });
+		const words = canvas.getByText(/Every loaf on the shelf/);
+		await waitFor(() =>
+			expect(Math.round(more.getBoundingClientRect().bottom)).toBe(
+				Math.round(words.getBoundingClientRect().bottom),
+			),
+		);
+		await expect(getComputedStyle(more, "::before").content).not.toBe("none");
 	},
 };
