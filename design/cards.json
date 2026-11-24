@@ -1,0 +1,5 @@
+{
+	"FullBleedVideo": { "story": "Controls" },
+	"SiteMenu": { "args": { "open": true }, "height": 844 },
+	"StickyCTABar": { "story": "FromTop" }
+}

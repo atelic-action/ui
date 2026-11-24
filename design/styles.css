@@ -1,0 +1,13 @@
+/* The Design System's stylesheet: the package's sheets in the order a site
+   imports them (README.md, CSS Import Order), then the practice's theme in
+   the place a site's theme.css takes. design/build.ts bundles it, resolving
+   each sheet's own relative imports, into components/bundle.css. No fonts:
+   the system's tokens.json names them and the page writes their faces. */
+@import "../src/styles/base.css";
+@import "../src/styles/chrome.css";
+@import "../src/styles/components.css";
+@import "../src/styles/primitives.css";
+@import "../src/styles/sections.css";
+@import "../src/styles/gate.css";
+@import "../src/styles/artifact.css";
+@import "../src/styles/theme.css";
