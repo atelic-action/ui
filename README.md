@@ -827,7 +827,7 @@ The space a section leaves above and below itself is one token, `--section-space
 
 ### Moving to 8.7.1
 
-Nothing to do for a site; two fixes, no API change (ATE-843, ATE-854).
+Nothing to do for a site; two fixes, no API change (ATE-843).
 
 - **An artifact build carries the release and the environment into its error reports.** `artifactConfig` now defines `import.meta.env.VITE_RELEASE` from the commit and `import.meta.env.VITE_ENVIRONMENT` from `VERCEL_ENV` or the build's mode, and runs the optional Sentry source map upload, exactly as `marketingConfig` does, so a document's `startErrorReporting` files its errors under both. The two configurations share one module for it, and `@atelic-action/ui/vite` exports what it did.
 - **The chrome's refs survive a React 18 host.** `Footer` and `ClosingBar` forward their `ref` rather than reading it as a prop, which React 18 strips, so `SiteShell`'s contact dock still finds the footer, or the closing bar standing in for it, on a host such as the Claude Design canvas. React 19 behaves as before.
