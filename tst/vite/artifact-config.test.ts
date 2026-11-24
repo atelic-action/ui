@@ -179,6 +179,7 @@ describe("artifactConfig's error reporting", () => {
 	it("with all three and a commit, adds the Sentry plugin and hidden source maps, still ending on the private content plugin", async () => {
 		const config = artifactConfig({ pages: PAGES, env: SENTRY });
 		expect(config.build?.sourcemap).toBe("hidden");
+		expect(config.build?.rollupOptions?.output).toEqual({ sourcemapExcludeSources: true });
 		expect(config.plugins).toHaveLength(5);
 		const plugin = await (config.plugins?.[3] as Promise<Array<{ name: string }>>);
 		expect(

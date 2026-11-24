@@ -501,7 +501,7 @@ Two noises are left out, the list kept short: an error whose top frame is a brow
 |---|---|---|
 | `VITE_SENTRY_DSN` | the Vercel project, every environment | The browser's DSN, read by the start function; the server reporter falls back to it. Required for a production build |
 | `SENTRY_DSN` | the Vercel project, optional | The server's DSN when it should differ from the browser's |
-| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | the Vercel project, production | With all three, `marketingConfig` adds the Sentry Vite plugin: it creates a release named by the commit, uploads hidden source maps (`build.sourcemap: "hidden"`, only then), and deletes every map from `dist/` once uploaded. With any missing, the build is unchanged |
+| `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` | the Vercel project, production | With all three, `marketingConfig` and `artifactConfig` add the Sentry Vite plugin: it creates a release named by the commit, uploads hidden source maps (`build.sourcemap: "hidden"`, only then), and deletes every map from `dist/` once uploaded. With any missing, the build is unchanged |
 
 `marketingConfig` and `artifactConfig` hand the browser the commit (`VERCEL_GIT_COMMIT_SHA`, else `GITHUB_SHA`) as `import.meta.env.VITE_RELEASE`, the same name the upload's release takes, so a stack trace meets its source maps, and the environment as `import.meta.env.VITE_ENVIRONMENT`: `VERCEL_ENV` (production, preview, development) on Vercel, else the build's mode, since a production build's mode is production on every deploy, a preview's included. `atelic-check-sentry` also fails any build whose DSN is set but is not one, and any whose DSN carries a space or a line break around it, since the build ships the value as it is set (8.2.0).
 
@@ -600,7 +600,7 @@ import { artifactConfig } from "@atelic-action/ui/vite";
 export default artifactConfig({ pages: ["/the-read", "/proposal", "/report"] });
 ```
 
-`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
+`artifactConfig` returns the TanStack Start plugin with prerendering on, the crawler following links but kept out of `/images/` (where a prerendered page would overwrite a real file), one prerendered page for `/`, for each path the site names, and for `/404`, and no sitemap; the React plugin; the environment plugin and, with the three Sentry variables set, the Sentry upload (its maps carry no source text, so a document's content is never uploaded); `privateChunks()`; the `@` alias to the site's `src`, resolved from the directory Vite is run in; and `ssr.noExternal: ["@atelic-action/ui", "@atelic-action/artifact"]`, so the documents compile too. Nothing links to an artifact page, so a page a site leaves out of `pages` ships with no HTML in it. `artifactPages` is the list alone.
 
 A site with a real need of its own passes `extend`, which is merged over the result with Vite's `mergeConfig`:
 

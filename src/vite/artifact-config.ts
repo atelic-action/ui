@@ -105,6 +105,17 @@ export function artifactConfig({
 			privateChunks(),
 		],
 		...reporting.config,
+		// A document is private to its business: when the maps are built for the
+		// Sentry upload, they carry no source text, so the content of a read or a
+		// proposal never leaves the build (stack traces still symbolicate).
+		...(reporting.config.build?.sourcemap
+			? {
+					build: {
+						...reporting.config.build,
+						rollupOptions: { output: { sourcemapExcludeSources: true } },
+					},
+				}
+			: {}),
 		resolve: {
 			alias: {
 				// The site's src, from the directory Vite is run in: this file lives
