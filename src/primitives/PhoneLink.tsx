@@ -1,4 +1,4 @@
-import type { AnchorHTMLAttributes, ReactNode } from "react";
+import { type AnchorHTMLAttributes, isValidElement, type ReactNode } from "react";
 import { dialable, toE164 } from "../lib/contactLinks";
 import type { Phone } from "../types";
 
@@ -43,18 +43,27 @@ export function phoneHref(phone: Pick<Phone, "e164"> | string): string | undefin
 	return number ? `tel:${number}` : undefined;
 }
 
+/** The words a node shows, gathered through its elements; an icon alone shows none. */
+function textOf(node: ReactNode): string {
+	if (typeof node === "string" || typeof node === "number") return String(node);
+	if (Array.isArray(node)) return node.map(textOf).join("");
+	if (isValidElement<{ children?: ReactNode }>(node)) return textOf(node.props.children);
+	return "";
+}
+
 /**
  * A phone number as a link that dials it (Component Rules 17), the one way
  * the package draws one. It never opens a new tab (Component Rules 12). Its
- * href is `phoneHref`'s. Only a number with no digit to dial is shown as
- * plain words rather than a dead link, with a warning in development.
+ * href is `phoneHref`'s. A number with no digit to dial is shown as plain
+ * words rather than a dead link, with a warning in development, and as
+ * nothing at all when it has no words to show (an icon alone).
  */
 export function PhoneLink({ phone, children, className, ...anchor }: PhoneLinkProps) {
 	const href = phoneHref(phone);
 	const words = children ?? (typeof phone === "string" ? phone : phone.display);
-	if (!href || !hasDigits(href)) {
+	if (!href) {
 		warnOnce(typeof phone === "string" ? phone : phone.e164);
-		return <span className={className}>{words}</span>;
+		return textOf(words).trim() ? <span className={className}>{words}</span> : null;
 	}
 	return (
 		<a className={className} href={href} {...anchor}>

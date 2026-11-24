@@ -357,6 +357,29 @@ describe("AddressSearch", () => {
 			expect(field()).toHaveAttribute("aria-expanded", "false");
 		});
 
+		it("ends when a mouse press is dragged off and released elsewhere, so the next blur leaves", async () => {
+			const { abandon, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerLeave(option);
+			fireEvent.pointerUp(document.body);
+			act(() => vi.advanceTimersByTime(700));
+			leaveField();
+			act(() => vi.advanceTimersByTime(1));
+			expect(abandon).toHaveBeenCalledOnce();
+			expect(field()).toHaveAttribute("aria-expanded", "false");
+		});
+
+		it("still picks when a mouse press leaves its suggestion and comes back to click", async () => {
+			const { onPick, option } = await offered();
+			fireEvent.pointerDown(option);
+			fireEvent.pointerLeave(option);
+			fireEvent.pointerEnter(option);
+			fireEvent.pointerUp(option);
+			fireEvent.click(option);
+			await settle();
+			expect(onPick).toHaveBeenCalledWith(ALDER_PARTS);
+		});
+
 		it("ends when its option is replaced mid press, so the next blur leaves", async () => {
 			const { abandon, asked, option } = await offered();
 			fireEvent.pointerDown(option);
@@ -383,6 +406,20 @@ describe("AddressSearch", () => {
 		type("4 Al");
 		act(() => vi.advanceTimersByTime(250));
 		expect(asked).toHaveLength(2);
+	});
+
+	it("still ends the session when the field goes the moment after a blur", () => {
+		const { provider } = heldProvider();
+		const abandon = vi.fn();
+		const { unmount } = render(
+			<AddressSearch provider={{ ...provider, abandon }} label="Address" onPick={() => {}} />,
+		);
+		field().focus();
+		fireEvent.blur(field());
+		unmount();
+		expect(abandon).toHaveBeenCalledOnce();
+		act(() => vi.advanceTimersByTime(10));
+		expect(abandon).toHaveBeenCalledOnce();
 	});
 
 	it("tells the provider it was abandoned when the field is left", () => {

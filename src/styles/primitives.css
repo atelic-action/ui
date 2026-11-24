@@ -750,25 +750,30 @@
 		color: var(--primary-ink, var(--primary));
 		text-decoration: underline;
 	}
-	/* inline (8.5.0). Closed and measured cutting (.is-cut, 8.6.0): the
-	   control sits over the end of the last line, on a fade of the ground,
-	   after an ellipsis whose empty alternative text keeps it out of the
-	   control's name. Text that fits, or is not yet measured, keeps the
-	   control beneath it. */
+	/* inline (8.5.0). Closed, the control is out of the flow from the first
+	   paint, over the end of the last line, so measuring the text never moves
+	   the page (8.6.0): unseen until the text is measured as cut (.is-cut),
+	   then shown on a fade of the ground, after an ellipsis whose empty
+	   alternative text keeps it out of the control's name. Text that fits
+	   draws no control. */
 	.atelic-ui .expandable-text.is-inline {
 		position: relative;
 	}
-	.atelic-ui .expandable-text.is-inline .expandable-text-body.is-cut + .expandable-text-toggle {
+	.atelic-ui .expandable-text.is-inline .expandable-text-body.is-clamped + .expandable-text-toggle {
 		position: absolute;
 		right: 0;
 		bottom: 0;
 		margin: 0;
 		padding-left: 1.25em;
+		visibility: hidden;
 		background: linear-gradient(
 			to right,
 			transparent,
 			var(--expandable-ground, var(--surface)) 1em
 		);
+	}
+	.atelic-ui .expandable-text.is-inline .expandable-text-body.is-cut + .expandable-text-toggle {
+		visibility: visible;
 	}
 	.atelic-ui
 		.expandable-text.is-inline

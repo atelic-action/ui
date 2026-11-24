@@ -126,6 +126,18 @@ describe("what stays unlinked", () => {
 		expect(screen.getAllByRole("link")).toHaveLength(1);
 	});
 
+	it("draws nothing, not a nameless span, for an icon only call with no digit", () => {
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		const { container } = render(
+			<PhoneLink phone={{ e164: "", display: "" }} className="nav-call" aria-label="Call">
+				<svg aria-hidden="true" />
+			</PhoneLink>,
+		);
+		expect(container).toBeEmptyDOMElement();
+		render(<SiteHeader brand={brand} phones={[{ e164: "", display: "", label: "" }]} />);
+		expect(document.querySelector(".nav-call")).toBeNull();
+	});
+
 	it("an address that is not a string draws no link and never throws", () => {
 		vi.spyOn(console, "warn").mockImplementation(() => {});
 		expect(() => render(<EmailLink email={undefined as unknown as string} />)).not.toThrow();

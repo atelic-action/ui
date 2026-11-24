@@ -88,10 +88,13 @@ export interface AddressSearchProps {
 const defaultCount = (count: number) =>
 	count === 0 ? "No suggestions" : count === 1 ? "1 suggestion" : `${count} suggestions`;
 
-/** The line an address reads as once picked: the main line and the rest. */
-/** How long after a press's pointerup its click may still come: past a touch's click delay. */
+/**
+ * How long a press may still bring its click after it is released, or
+ * after it leaves its suggestion: past a touch's click delay.
+ */
 const PRESS_WAIT_MS = 600;
 
+/** The line an address reads as once picked: the main line and the rest. */
 const pickedText = (suggestion: AddressSuggestion) =>
 	[suggestion.text, suggestion.secondary].filter(Boolean).join(", ");
 
@@ -178,6 +181,7 @@ export function AddressSearch({
 		// and once however many blurs ask.
 		clearTimeout(leaving.current);
 		leaving.current = setTimeout(() => {
+			leaving.current = undefined;
 			latestProvider.current?.abandon?.();
 			// Nothing stale is offered after the visitor leaves; typing again asks anew.
 			setSuggestions([]);
@@ -199,11 +203,16 @@ export function AddressSearch({
 	// biome-ignore lint/correctness/useExhaustiveDependencies: the suggestions are what a press belongs to; the press ends when they change
 	useEffect(() => () => latestEndPress.current(), [suggestions]);
 
-	// Nothing waits on a field that is gone.
+	// Nothing waits on a field that is gone, but a leave it had begun (a blur
+	// just before the field went) still ends the provider's session.
 	useEffect(
 		() => () => {
 			clearTimeout(pressEnd.current);
-			clearTimeout(leaving.current);
+			if (leaving.current !== undefined) {
+				clearTimeout(leaving.current);
+				leaving.current = undefined;
+				latestProvider.current?.abandon?.();
+			}
 		},
 		[],
 	);
@@ -271,6 +280,7 @@ export function AddressSearch({
 		picking.current = false;
 		clearTimeout(pressEnd.current);
 		clearTimeout(leaving.current);
+		leaving.current = undefined;
 		const text = pickedText(suggestion);
 		// What the visitor typed, to go back to if the pick cannot be resolved.
 		const typed = query;
@@ -393,6 +403,14 @@ export function AddressSearch({
 							}}
 							// No click follows a cancelled press (a scroll that took the touch).
 							onPointerCancel={endPress}
+							// A mouse press dragged off its suggestion is released elsewhere,
+							// where this option hears no pointerup: the wait starts here, and
+							// a press that comes back and clicks still picks.
+							onPointerLeave={() => {
+								if (!picking.current) return;
+								clearTimeout(pressEnd.current);
+								pressEnd.current = setTimeout(endPress, PRESS_WAIT_MS);
+							}}
 							// A click follows a pointerup at once, or after a touch's short
 							// delay; a press that brings none ends after this.
 							onPointerUp={() => {

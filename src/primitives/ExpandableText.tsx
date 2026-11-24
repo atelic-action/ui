@@ -4,9 +4,13 @@ import {
 	type RefObject,
 	useEffect,
 	useId,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
+
+/** A layout effect in a browser, so a measure lands before paint; an effect where nothing paints (prerender). */
+const useMeasureEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 export interface ExpandableTextProps {
 	/** The text: prose only, since all of it stays in the page while clamped. */
@@ -73,7 +77,7 @@ export function ExpandableText({
 	// Whether the text runs past its lines; unknown until measured.
 	const [overflows, setOverflows] = useState<boolean | null>(null);
 
-	useEffect(() => {
+	useMeasureEffect(() => {
 		const body = bodyRef.current;
 		if (!body || open) return;
 		const measure = () => setOverflows(body.scrollHeight > body.clientHeight + 1);
@@ -85,13 +89,19 @@ export function ExpandableText({
 	}, [open]);
 
 	const hasMore = more != null && more !== false;
-	const showControl = hasMore || open || overflows !== false;
+	// Inline text that fits has nothing hidden, so what `more` holds shows
+	// and no control is drawn; inline text not yet measured has its control
+	// placed but unseen, so measuring never moves the page (8.6.0).
+	const fitsInline = inline && !open && overflows === false;
+	const unmeasuredInline = inline && !open && overflows === null;
+	const moreShown = open || (fitsInline && hasMore);
+	const showControl = inline ? !fitsInline : hasMore || open || overflows !== false;
 	const style = { "--expandable-lines": lines } as CSSProperties;
 	// is-clamped is the clamp the measuring needs, which cuts nothing when the
-	// text fits; is-cut says it was measured cutting, and only then does an
-	// inline control sit over the line's end (8.6.0). Before measuring (a
-	// prerendered page) the text is never called cut: the clamp's own
-	// ellipsis shows only where it clips, and the control waits beneath.
+	// text fits; is-cut says it was measured cutting, and only then is an
+	// inline control seen over the line's end (8.6.0). Before measuring (a
+	// prerendered page) the inline control already sits there, out of the
+	// flow and unseen, so nothing moves when it shows.
 	const bodyClass = [
 		"expandable-text-body",
 		!open && "is-clamped",
@@ -106,6 +116,9 @@ export function ExpandableText({
 			className="expandable-text-toggle"
 			aria-expanded={open}
 			aria-controls={hasMore ? `${bodyId} ${moreId}` : bodyId}
+			// Unseen until measured: out of the accessibility tree and the tab order.
+			aria-hidden={unmeasuredInline || undefined}
+			tabIndex={unmeasuredInline ? -1 : undefined}
 			onClick={() => setOpen((was) => !was)}
 		>
 			<span className="expandable-text-toggle-label">{open ? lessLabel : moreLabel}</span>
@@ -138,7 +151,7 @@ export function ExpandableText({
 			)}
 			{inline && control}
 			{hasMore && (
-				<div id={moreId} className="expandable-text-more" hidden={!open} inert={!open}>
+				<div id={moreId} className="expandable-text-more" hidden={!moreShown} inert={!moreShown}>
 					{more}
 				</div>
 			)}
