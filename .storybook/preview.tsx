@@ -1,6 +1,7 @@
 import type { Preview } from "@storybook/react-vite";
 // The package's sheets in the order a site imports them (README, CSS Import
-// Order), then the theme last, as a site's theme.css is.
+// Order), then the package's own theme in the place a site's theme.css
+// takes, then the fonts and the page ground (./theme.css).
 import "../src/styles/base.css";
 import "../src/styles/chrome.css";
 import "../src/styles/components.css";
@@ -8,6 +9,7 @@ import "../src/styles/primitives.css";
 import "../src/styles/sections.css";
 import "../src/styles/gate.css";
 import "../src/styles/artifact.css";
+import "../src/styles/theme.css";
 import "./theme.css";
 import { issues } from "../stories/support/known-issues";
 import { judgeFileMarkers, judgeStoryMarkers } from "../stories/support/known-issues/stale";

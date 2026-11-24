@@ -1,0 +1,88 @@
+/* The practice's own theme: the Atelic palette, type, shape, and layout,
+   the one theme this package ships. A site that wears the practice's look
+   (the practice's site, the artifact documents, Storybook) opts in by
+   importing it after the component sheets, in the place a site's theme.css
+   takes (README.md, CSS Import Order). A site that wants its own brand
+   writes its own theme.css instead and never imports this one; the block
+   below is the worked example of the contract it fills (README.md, Theme).
+
+   It sits in its own layer, atelic-ui-theme, named after atelic-ui by the
+   statement below, so it outranks the component sheets and their defaults
+   whichever is imported first, and any unlayered rule a site writes outranks
+   it. A site that imports this sheet and restates one token in its own
+   theme.css wins, whatever the import order. The package bundles no font
+   and paints no page ground, so neither is here: the site self hosts Geist
+   and Geist Mono and sets its own body background. */
+@layer atelic-ui, atelic-ui-theme;
+
+@layer atelic-ui-theme {
+	.atelic-ui {
+		/* Surfaces */
+		--surface: #f6f1e7;
+		--surface-alt: #efe8da;
+		--surface-inset: #e9e0cd;
+		--surface-dark: #151515;
+		--card: #fdfbf6;
+
+		/* Text */
+		--ink: #151515;
+		--ink-soft: #55503f;
+
+		/* Neutral ramp */
+		--neutral-100: #e5dcc8;
+		--neutral-200: #d4c8b0;
+		--neutral-300: #b6a98f;
+		--neutral-500: #6e6757;
+		--neutral-600: #6b6559;
+
+		/* The primary and its three jobs (README.md, Tokens), set apart here:
+		   the brand orange for marks, lines, and focus rings, a deeper fill
+		   behind white words (the package's default --on-primary, 4.70 to 1),
+		   and a deeper still ink for orange words on the cream surfaces (5.38
+		   to 1 on --surface, 4.97 on --surface-alt). */
+		--primary: #fc4a1a;
+		--primary-fill: #d63a10;
+		--primary-ink: #b8300b;
+		--primary-deep: #d63a10;
+		--primary-bright: #ff8059;
+		--primary-tint: #fee7df;
+		--primary-shadow: 0 6px 18px rgba(252, 74, 26, 0.28);
+		--primary-shadow-hover: 0 8px 24px rgba(252, 74, 26, 0.36);
+		--primary-focus-ring: rgba(252, 74, 26, 0.12);
+
+		/* Secondary */
+		--secondary: #55503f;
+		--secondary-soft: #6b6559;
+		--secondary-tint: #ece5d6;
+
+		/* Tertiary */
+		--tertiary: #6e6757;
+
+		/* Type: the four stacks, each naming a face the site self hosts */
+		--font-sans: "Geist", system-ui, -apple-system, sans-serif;
+		--font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
+		--font-serif: "Geist", Georgia, serif;
+		--font-brand: var(--font-sans);
+
+		/* Radii */
+		--radius-sm: 8px;
+		--radius-md: 14px;
+		--radius-lg: 22px;
+		--radius-xl: 32px;
+		--radius-pill: 999px;
+
+		/* Shadows, in the ink's tint */
+		--shadow-sm: 0 1px 2px rgba(21, 21, 21, 0.06), 0 2px 8px rgba(21, 21, 21, 0.04);
+		--shadow-md: 0 4px 14px rgba(21, 21, 21, 0.08), 0 12px 32px rgba(21, 21, 21, 0.06);
+		--shadow-lg: 0 10px 30px rgba(21, 21, 21, 0.12), 0 30px 70px rgba(21, 21, 21, 0.1);
+
+		/* Hairlines */
+		--hairline: rgba(21, 21, 21, 0.05);
+		--hairline-strong: rgba(21, 21, 21, 0.08);
+
+		/* Layout */
+		--max-width: 1040px;
+		--gutter: clamp(16px, 5vw, 56px);
+		--nav-height: 68px;
+	}
+}

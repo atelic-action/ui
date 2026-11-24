@@ -59,7 +59,7 @@ Use `userEvent`, `expect`, `fn`, `spyOn`, and `waitFor` from `storybook/test`. W
 
 The first segment of the title decides it (`.storybook/decorators.tsx`):
 
-- **Everything but `App/` and `Email/`** renders inside a `.atelic-ui` root wearing the toolbar's density, with every package sheet loaded in a site's order and the practice's theme last (`.storybook/theme.css`). A component that renders its own root (`SiteShell`) sets `parameters: { root: false }` and passes `globals.density` through its render.
+- **Everything but `App/` and `Email/`** renders inside a `.atelic-ui` root wearing the toolbar's density, with every package sheet loaded in a site's order, then the practice's palette from the package's own theme sheet (`src/styles/theme.css`), then the fonts and the page ground (`.storybook/theme.css`). A component that renders its own root (`SiteShell`) sets `parameters: { root: false }` and passes `globals.density` through its render.
 - **`App/`** renders inside `AppProvider` with the fixture app's config and nav, under a memory router at `parameters.app.path` (default `/`), with the app shell's Tailwind sheet mounted only while the story shows.
 - **`Email/`** renders rows inside the email theme provider and a 680 column table on the email's ground. No sheet loads.
 

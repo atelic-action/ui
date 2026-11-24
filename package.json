@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "8.6.0",
+	"version": "8.7.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -73,6 +73,7 @@
 		"./styles/primitives.css": "./src/styles/primitives.css",
 		"./styles/sections.css": "./src/styles/sections.css",
 		"./styles/star-rating.css": "./src/styles/star-rating.css",
+		"./styles/theme.css": "./src/styles/theme.css",
 		"./gate": {
 			"types": "./dist/gate/index.d.ts",
 			"default": "./dist/gate/index.js"

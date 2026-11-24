@@ -21,7 +21,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const ORDER = ["properties", "theme", "base", "atelic-ui", "components", "utilities"];
+const ORDER = [
+	"properties",
+	"theme",
+	"base",
+	"atelic-ui",
+	"atelic-ui-theme",
+	"components",
+	"utilities",
+];
 
 /** The first layer rule the document meets, in sheet order. */
 function firstLayerRule(): CSSRule | undefined {
@@ -90,7 +98,7 @@ export const LayerOrder: Story = {
 		});
 
 		await step(
-			"the theme sheet, unlayered and last, sets the tokens the package reads",
+			"the package's theme sheet, in its own layer after the components, sets the tokens they read",
 			async () => {
 				const root = specimen.closest(".atelic-ui") as HTMLElement;
 				await expect(getComputedStyle(root).getPropertyValue("--primary").trim()).toBe("#fc4a1a");

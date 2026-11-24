@@ -10,8 +10,11 @@ import { join } from "node:path";
  */
 
 const STYLES = join(import.meta.dirname, "..", "src", "styles");
+// The theme sheet is left out with app.css: it holds the practice's tokens
+// and no rule a long word meets, in its own layer (README.md, Theme).
 const layered = readdirSync(STYLES).filter(
-	(name) => name.endsWith(".css") && name !== "app.css" && name !== "defaults.css",
+	(name) =>
+		name.endsWith(".css") && !["app.css", "defaults.css", "theme.css"].includes(name),
 );
 const sheet = (name: string) => readFileSync(join(STYLES, name), "utf8");
 
