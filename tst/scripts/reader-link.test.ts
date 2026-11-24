@@ -55,7 +55,9 @@ describe("sendLink", () => {
 	const reader = { email: "owner@example.com", path: "/the-read?tab=plan", days: 14 };
 
 	it("signs a link token for the reader, landing on the page, inside the window", async () => {
-		const now = Date.parse("2026-11-10T12:00:00Z");
+		// The clock the link is signed at, whole seconds, taken at run time: a
+		// literal date here expired against the real clock on 2026-11-24 (ATE-853).
+		const now = Math.floor(Date.now() / 1000) * 1000;
 		const link = new URL(await sendLink(reader, HOST, now));
 		expect(link.origin + link.pathname).toBe("https://summit.atelic.me/api/auth/verify");
 		const claims = await verifyToken(link.searchParams.get("token"), SECRET);
