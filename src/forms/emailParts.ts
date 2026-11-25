@@ -79,8 +79,8 @@ export interface FieldRow {
  * The rows of an email's table: every shown field but the name and the
  * message, in the order the site listed them, each that holds something.
  * With `blank` true, an empty field that names `blank` words prints them
- * (the office's email); without it, an empty field prints no row (the
- * visitor's receipt).
+ * (the office's email), unless it is a choice the form did not send at
+ * all; without it, an empty field prints no row (the visitor's receipt).
  */
 export function fieldRows(
 	read: ContactFields,
@@ -96,7 +96,9 @@ export function fieldRows(
 					{ html: row(field.label, cell(field, value)), text: `${field.label}: ${words(value)}` },
 				];
 			}
-			if (options.blank && field.blank) {
+			// Blank words stand for a field the form sent empty; a choice the
+			// form did not send at all (null) prints nothing.
+			if (options.blank && field.blank && !(field.kind === "choice" && value === null)) {
 				return [
 					{
 						html: row(field.label, escapeHTML(field.blank)),

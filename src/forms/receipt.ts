@@ -94,13 +94,16 @@ export function noReplySender(from: string): string {
 }
 
 /**
- * Who the receipt greets: the `firstName` field when the site lists one and
- * it holds something, else the `name` field, else no one.
+ * Who the receipt greets: the `firstName` field when the site lists and
+ * shows one and it holds something, else the shown `name` field, else no
+ * one.
  */
 function greetingName(read: ContactFields, fields: ContactField[]): string {
 	for (const key of ["firstName", "name"]) {
 		const value = read[key];
-		if (fields.some((field) => field.key === key) && typeof value === "string" && value.trim()) {
+		// A field the site keeps out of its emails (`show: false`) is never used.
+		const shown = fields.some((field) => field.key === key && field.show !== false);
+		if (shown && typeof value === "string" && value.trim()) {
 			return value.trim();
 		}
 	}

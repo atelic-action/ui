@@ -10,11 +10,13 @@
  * submission through and reports it, because a lead lost to a check that
  * could not answer costs more than a stray piece of spam.
  *
- * A missing token is the one unanswered cause the endpoint does not report
- * (`quiet`). A real visitor whose browser could not run the check was
- * already reported by the form, and a bot that leaves the token out would
- * otherwise file one report for every submission and bury the rest. The
- * submission is still delivered unchecked, with no receipt.
+ * A missing token is unanswered and `quiet`: the endpoint does not report
+ * a token key that arrived empty, since a real visitor whose browser could
+ * not run the check was already reported by the form, and a bot that sends
+ * it empty would otherwise file one report for every submission. A body
+ * with no token key at all is reported on production alone, since the form
+ * may be running no check. Either way the submission is delivered
+ * unchecked, with no receipt.
  *
  * Built with the gate (`@atelic-action/ui/forms/guard`): plain TypeScript,
  * no React, relative imports carrying `.js`.
@@ -30,9 +32,10 @@ export type GuardVerdict =
 	 * The check could not answer: the submission is let through and the
 	 * cause reported. `unset` marks a cause that is a missing setting (the
 	 * secret), which is reported on the production deploy alone, as the
-	 * endpoint's other unset settings are. `quiet` marks a cause the
-	 * endpoint does not report at all (a form that sent no token, which the
-	 * form reports itself when a real visitor's browser could not run it).
+	 * endpoint's other unset settings are. `quiet` marks a missing token,
+	 * which the endpoint reports only when the body carried no token key at
+	 * all (and then on production alone); an empty token the form reported
+	 * itself, from the browser.
 	 */
 	| { status: "unanswered"; cause: Error; unset?: boolean; quiet?: boolean };
 
@@ -42,6 +45,12 @@ export interface GuardContext {
 	id: string;
 	/** The request being handled; a guard may read the visitor's address from its headers. */
 	request: Request;
+	/**
+	 * Aborted when the endpoint stops waiting on the check, so a guard hands
+	 * it on to its own calls and stops with the endpoint. A guard's own limit
+	 * may be shorter and still applies.
+	 */
+	signal: AbortSignal;
 }
 
 export interface Guard {
@@ -148,7 +157,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 		name: "turnstile",
 		tokenKey: TURNSTILE_TOKEN_KEY,
 		timeoutMs,
-		async check(token, { id, request }) {
+		async check(token, { id, request, signal: endpoint }) {
 			// The secret is looked for first, so a site whose guard is not set
 			// up yet reads as one missing setting, whatever its form sent.
 			const secret = options.secret ?? process.env.TURNSTILE_SECRET_KEY;
@@ -165,7 +174,9 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 			const remoteip = visitorIP(request);
 			return within(
 				timeoutMs,
-				async (signal): Promise<GuardVerdict> => {
+				async (own): Promise<GuardVerdict> => {
+					// Stopped at its own limit or the endpoint's, whichever is first.
+					const signal = endpoint ? AbortSignal.any([own, endpoint]) : own;
 					let response: Response;
 					try {
 						response = await fetch(SITEVERIFY_URL, {

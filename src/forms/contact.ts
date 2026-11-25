@@ -110,8 +110,9 @@ export interface ContactField {
 	/** The answers a `choice` accepts, in order. Required for a choice. */
 	options?: string[];
 	/**
-	 * The words the office's email prints for the field when it holds
-	 * nothing ("Not given"). Without them an empty field prints no row.
+	 * The words the office's email prints for the field when the form sent
+	 * it holding nothing ("Not given"). Without them an empty field prints no
+	 * row, and a choice the form did not send at all prints none either.
 	 */
 	blank?: string;
 }
@@ -279,6 +280,9 @@ function readField(
 		// A tab left open across an edit to the list can send an answer the
 		// list no longer holds: it is read as not given, never refused, so a
 		// visitor never loses a message over a question about how they heard.
+		// A choice the form did not send at all is null, apart from one sent
+		// unanswered, so the office's email can leave it out.
+		if (raw === undefined) return { value: null };
 		const answer = text(raw);
 		if (!answer) return { value: "" };
 		// The options are compared trimmed, as the answer is, so an option
@@ -507,7 +511,7 @@ async function ask(
 	try {
 		return await within<GuardVerdict>(
 			bound,
-			() => guard.check(token, { id, request }),
+			(signal) => guard.check(token, { id, request, signal }),
 			() => ({
 				status: "unanswered",
 				cause: new Error(`${guard.name} sent no verdict within ${bound} ms`),
@@ -566,13 +570,17 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			if (!isRecord(data)) return json(400, { ok: false, error: "Invalid request body." });
 
 			// Honeypot: a bot that fills it gets the same quiet success a real
-			// send through this endpoint usually gets, a receipt when the
-			// endpoint sends one, so it never adapts. It is caught before
+			// send with the same token would usually get, a receipt when the
+			// endpoint sends one and a token came, so it never adapts. It is caught before
 			// everything else, so a bot that fills it costs no check.
 			// ContactForm runs the same predicate to keep the catch out of the
 			// lead event.
 			if (isHoneypotFilled(data.company)) {
-				return json(200, { ok: true, receipt: Boolean(receipt) });
+				const token = guard ? data[guard.tokenKey] : undefined;
+				return json(200, {
+					ok: true,
+					receipt: Boolean(receipt) && typeof token === "string" && token !== "",
+				});
 			}
 
 			const canaryToken = process.env.CONTACT_CANARY_TOKEN;
@@ -626,14 +634,21 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 					return json(403, { ok: false, code: "guard", error: GUARD_REFUSAL });
 				}
 				checked = verdict.status === "passed";
-				// A missing token is quiet: the form reported a real visitor whose
-				// browser could not run the check, and a bot that leaves it out
-				// would otherwise file a report for every submission.
-				if (
-					verdict.status === "unanswered" &&
-					!verdict.quiet &&
-					(!verdict.unset || isProduction())
-				) {
+				// A token key that arrived empty is quiet: the form reported a real
+				// visitor whose browser could not run the check, and a bot that
+				// sends it empty would otherwise file a report for every
+				// submission. No token key at all means the form may be running no
+				// check, which production hears about.
+				if (verdict.status === "unanswered" && verdict.quiet) {
+					if (!(guard.tokenKey in data) && isProduction()) {
+						reportServerErrorLater(
+							new Error(
+								"Form guard: the endpoint names a guard and the submission carried no token key, so the form may be running no check",
+							),
+							{ request, tags: { ...tags, guard: guard.name, reason: "guard-no-token-key" } },
+						);
+					}
+				} else if (verdict.status === "unanswered" && (!verdict.unset || isProduction())) {
 					reportServerErrorLater(
 						new Error(
 							`Form guard: ${guard.name} could not answer, and the submission was let through: ${scrub(verdict.cause.message)}`,
@@ -655,6 +670,22 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 						),
 						{ request, tags },
 					);
+				}
+			}
+
+			// The function lists a choice the form did not send, so the office
+			// never hears the question was asked. The submission goes on, and
+			// the practice hears that the form and the function disagree.
+			if (!canary && isProduction()) {
+				for (const field of fields) {
+					if (field.kind === "choice" && !(field.key in data)) {
+						reportServerErrorLater(
+							new Error(
+								`Contact form: the endpoint lists the choice ${field.key} and the form did not send it`,
+							),
+							{ request, tags },
+						);
+					}
 				}
 			}
 

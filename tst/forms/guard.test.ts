@@ -14,6 +14,11 @@ function request(headers: Record<string, string> = {}): Request {
 	return new Request("http://localhost/api/contact", { method: "POST", headers });
 }
 
+/** A signal the endpoint never aborts. */
+function open(): AbortSignal {
+	return new AbortController().signal;
+}
+
 function answer(body: unknown, status = 200): Response {
 	return new Response(typeof body === "string" ? body : JSON.stringify(body), { status });
 }
@@ -57,6 +62,7 @@ describe("turnstileGuard", () => {
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
 			request: request({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }),
+			signal: open(),
 		});
 		expect(verdict).toEqual({ status: "passed" });
 		expect(sentBody()).toEqual({
@@ -69,22 +75,30 @@ describe("turnstileGuard", () => {
 	});
 
 	it("leaves the address out when the platform gave none", async () => {
-		await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		await turnstileGuard().check(TOKEN, { id: ID, request: request(), signal: open() });
 		expect(sentBody()).not.toHaveProperty("remoteip");
 	});
 
 	it("reads the secret at each check, and takes one given in the options first", async () => {
 		const guard = turnstileGuard();
 		vi.stubEnv("TURNSTILE_SECRET_KEY", "later-secret");
-		await guard.check(TOKEN, { id: ID, request: request() });
+		await guard.check(TOKEN, { id: ID, request: request(), signal: open() });
 		expect(sentBody().secret).toBe("later-secret");
 		vi.mocked(fetch).mockClear();
-		await turnstileGuard({ secret: "given-secret" }).check(TOKEN, { id: ID, request: request() });
+		await turnstileGuard({ secret: "given-secret" }).check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(sentBody().secret).toBe("given-secret");
 	});
 
 	it("calls an empty token unanswered without calling Cloudflare", async () => {
-		const verdict = await turnstileGuard().check("", { id: ID, request: request() });
+		const verdict = await turnstileGuard().check("", {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict).toMatchObject({ status: "unanswered", quiet: true });
 		expect(causeOf(verdict)).toBe("the form sent no token");
 		expect(fetch).not.toHaveBeenCalled();
@@ -94,7 +108,11 @@ describe("turnstileGuard", () => {
 		"refuses a token Cloudflare answers %s",
 		async (code) => {
 			vi.mocked(fetch).mockResolvedValue(answer({ success: false, "error-codes": [code] }));
-			const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+			const verdict = await turnstileGuard().check(TOKEN, {
+				id: ID,
+				request: request(),
+				signal: open(),
+			});
 			expect(verdict.status).toBe("failed");
 			expect(causeOf(verdict)).toBe(`Turnstile refused the token: ${code}`);
 		},
@@ -109,7 +127,11 @@ describe("turnstileGuard", () => {
 		["bad-request"],
 	])("lets a token through unanswered when Cloudflare answers %s", async (code) => {
 		vi.mocked(fetch).mockResolvedValue(answer({ success: false, "error-codes": [code] }));
-		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		const verdict = await turnstileGuard().check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict).toMatchObject({ status: "unanswered" });
 		expect(verdict).not.toHaveProperty("unset");
 		expect(verdict).not.toHaveProperty("quiet");
@@ -120,20 +142,32 @@ describe("turnstileGuard", () => {
 		vi.mocked(fetch).mockResolvedValue(
 			answer({ success: false, "error-codes": ["invalid-input-response", "internal-error"] }),
 		);
-		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		const verdict = await turnstileGuard().check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict.status).toBe("unanswered");
 	});
 
 	it("lets a token through when Cloudflare says no with no code at all", async () => {
 		vi.mocked(fetch).mockResolvedValue(answer({ success: false }));
-		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		const verdict = await turnstileGuard().check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict.status).toBe("unanswered");
 		expect(causeOf(verdict)).toBe("Turnstile could not answer: no error code");
 	});
 
 	it("marks an unset secret as a missing setting, without calling Cloudflare", async () => {
 		vi.stubEnv("TURNSTILE_SECRET_KEY", "");
-		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		const verdict = await turnstileGuard().check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict).toMatchObject({ status: "unanswered", unset: true });
 		expect(causeOf(verdict)).toContain("TURNSTILE_SECRET_KEY unset");
 		expect(fetch).not.toHaveBeenCalled();
@@ -141,7 +175,11 @@ describe("turnstileGuard", () => {
 
 	it("reads a missing token with no secret as the missing setting, not the missing token", async () => {
 		vi.stubEnv("TURNSTILE_SECRET_KEY", "");
-		const verdict = await turnstileGuard().check("", { id: ID, request: request() });
+		const verdict = await turnstileGuard().check("", {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict).toMatchObject({ status: "unanswered", unset: true });
 		expect(fetch).not.toHaveBeenCalled();
 	});
@@ -149,7 +187,11 @@ describe("turnstileGuard", () => {
 	it("lets a token through when the fetch throws, the error chained under the cause", async () => {
 		const thrown = new TypeError("fetch failed");
 		vi.mocked(fetch).mockRejectedValue(thrown);
-		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		const verdict = await turnstileGuard().check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict.status).toBe("unanswered");
 		expect(causeOf(verdict)).toBe("Turnstile could not be reached");
 		if (verdict.status === "unanswered") expect(verdict.cause.cause).toBe(thrown);
@@ -159,7 +201,11 @@ describe("turnstileGuard", () => {
 		"lets a token through when Cloudflare answers %i",
 		async (status) => {
 			vi.mocked(fetch).mockResolvedValue(answer({ success: true }, status));
-			const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+			const verdict = await turnstileGuard().check(TOKEN, {
+				id: ID,
+				request: request(),
+				signal: open(),
+			});
 			expect(verdict.status).toBe("unanswered");
 			expect(causeOf(verdict)).toBe(`Turnstile answered ${status}`);
 		},
@@ -170,7 +216,11 @@ describe("turnstileGuard", () => {
 		["JSON that is not an object", "null"],
 	])("lets a token through when the answer is %s", async (_name, body) => {
 		vi.mocked(fetch).mockResolvedValue(answer(body));
-		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
+		const verdict = await turnstileGuard().check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(verdict.status).toBe("unanswered");
 		expect(causeOf(verdict)).toBe("Turnstile's answer was not JSON");
 	});
@@ -188,7 +238,7 @@ describe("turnstileGuard", () => {
 		);
 		let settled: GuardVerdict | undefined;
 		const pending = turnstileGuard()
-			.check(TOKEN, { id: ID, request: request() })
+			.check(TOKEN, { id: ID, request: request(), signal: open() })
 			.then((verdict) => {
 				settled = verdict;
 			});
@@ -204,9 +254,50 @@ describe("turnstileGuard", () => {
 	it("takes its own time limit", async () => {
 		vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
 		vi.mocked(fetch).mockImplementation(() => new Promise<Response>(() => {}));
-		const pending = turnstileGuard({ timeoutMs: 500 }).check(TOKEN, { id: ID, request: request() });
+		const pending = turnstileGuard({ timeoutMs: 500 }).check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: open(),
+		});
 		await vi.advanceTimersByTimeAsync(500);
 		const verdict = await pending;
 		expect(causeOf(verdict)).toBe("Turnstile sent no answer within 500 ms");
+	});
+});
+
+describe("turnstileGuard and the endpoint's signal", () => {
+	beforeEach(() => {
+		vi.stubEnv("TURNSTILE_SECRET_KEY", SECRET);
+	});
+	afterEach(() => {
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
+	});
+
+	it("aborts its call when the endpoint stops waiting, before its own limit", async () => {
+		let seen: AbortSignal | undefined;
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(
+				(_input: RequestInfo | URL, init?: RequestInit) =>
+					new Promise<Response>((_resolve, reject) => {
+						seen = init?.signal ?? undefined;
+						init?.signal?.addEventListener("abort", () =>
+							reject(new DOMException("This operation was aborted", "AbortError")),
+						);
+					}),
+			),
+		);
+		const endpoint = new AbortController();
+		const pending = turnstileGuard({ timeoutMs: 60_000 }).check(TOKEN, {
+			id: ID,
+			request: request(),
+			signal: endpoint.signal,
+		});
+		await vi.waitFor(() => expect(seen).toBeDefined());
+		endpoint.abort();
+		expect(seen?.aborted).toBe(true);
+		const verdict = await pending;
+		expect(verdict.status).toBe("unanswered");
 	});
 });

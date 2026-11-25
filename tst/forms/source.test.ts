@@ -63,12 +63,16 @@ describe("a choice field", () => {
 	});
 
 	it.each([
-		["missing", undefined],
 		["empty", ""],
 		["not words", 7],
 	])("reads a %s answer as not given, with nothing to report", (_name, source) => {
 		const read = readFields({ ...VALID, source }, fields);
 		expect(read).toMatchObject({ fields: { source: "" }, offList: [] });
+	});
+
+	it("reads a choice the form did not send at all as null, apart from one left unanswered", () => {
+		const read = readFields({ ...VALID }, fields);
+		expect(read).toMatchObject({ fields: { source: null }, offList: [] });
 	});
 
 	it("matches an option written with a stray space, and records it trimmed", () => {
@@ -176,6 +180,29 @@ describe("a choice through the endpoint", () => {
 			"Contact form sent a source answer that is not on its list, and it was recorded as not given",
 		);
 		expect(sent[0]).not.toContain("billboard");
+	});
+
+	it("prints nothing for a choice the form did not send, and reports it on production", async () => {
+		vi.stubEnv("VERCEL_ENV", "production");
+		const response = await post(request(VALID));
+		expect(response.status).toBe(200);
+		expect(office().text).not.toContain("Heard about us");
+		expect(office().text).not.toContain("Not given");
+		const sent = await reports();
+		expect(sent).toHaveLength(1);
+		expect(sent[0]).toContain(
+			"Contact form: the endpoint lists the choice source and the form did not send it",
+		);
+	});
+
+	it("says nothing of a choice the form did not send off production, or for a canary", async () => {
+		vi.stubEnv("VERCEL_ENV", "preview");
+		await post(request(VALID));
+		vi.stubEnv("VERCEL_ENV", "production");
+		vi.stubEnv("CONTACT_CANARY_TOKEN", "canary-secret");
+		vi.stubEnv("CONTACT_CANARY_TO", "monitor@example.com");
+		await post(request({ ...VALID, canary: "canary-secret" }));
+		expect(await reports()).toEqual([]);
 	});
 
 	it("says nothing of an answer off the list off production", async () => {

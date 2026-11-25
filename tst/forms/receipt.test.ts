@@ -83,7 +83,7 @@ describe("receiptEmail without a copy, the default", () => {
 });
 
 describe("receiptEmail with a copy", () => {
-	it("greets by first name and reads back what was sent, the name and message aside", () => {
+	it("greets by the shown name, the hidden first name unused, and reads back what was sent", () => {
 		const email = receiptEmail(
 			{
 				name: "Jane Doe",
@@ -103,7 +103,7 @@ describe("receiptEmail with a copy", () => {
 		// An empty field prints no row here, its blank words included.
 		expect(email.text).toBe(
 			[
-				"We have your message, Jane.",
+				"We have your message, Jane Doe.",
 				"",
 				DEFAULT_RECEIPT_NEXT,
 				"",
@@ -138,6 +138,35 @@ describe("receiptEmail with a copy", () => {
 			{ endpointFrom: FROM, copy: true },
 		);
 		expect(empty.text.split("\n")[0]).toBe("We have your message, Jane Doe.");
+	});
+
+	it("greets by a first name the site shows", () => {
+		const shown = SPLIT.map((field) =>
+			field.key === "firstName" ? { ...field, show: true } : field,
+		);
+		const email = receiptEmail(
+			{ name: "Jane Doe", firstName: "Jane", email: "jane@example.com", message: "Hi" },
+			shown,
+			{ endpointFrom: FROM, copy: true },
+		);
+		expect(email.text.split("\n")[0]).toBe("We have your message, Jane.");
+	});
+
+	it("greets no one when every name field is kept out of the emails", () => {
+		const hidden = [
+			{ key: "name", label: "Name", required: true, show: false },
+			{ key: "firstName", label: "First name", show: false },
+			{ key: "email", label: "Email", kind: "email" as const, required: true },
+			{ key: "message", label: "Message", required: true },
+		];
+		const email = receiptEmail(
+			{ name: "Jane Doe", firstName: "Jane", email: "jane@example.com", message: "Hi" },
+			hidden,
+			{ endpointFrom: FROM, copy: true },
+		);
+		expect(email.text.split("\n")[0]).toBe("We have your message.");
+		expect(email.text).not.toContain("Jane");
+		expect(email.html).not.toContain("Jane");
 	});
 
 	it("greets no one when the form asks no name", () => {

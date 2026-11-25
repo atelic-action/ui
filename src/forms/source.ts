@@ -41,9 +41,10 @@ export const DEFAULT_SOURCE_OFFICE_LABEL = "Heard about us";
 
 /**
  * The answer as one of the endpoint's fields: a choice out of the site's
- * list, which the office's email prints as "Not given" when the visitor
- * gave none, so the office can tell a skipped question from a field the
- * form never asked.
+ * list. The office's email prints "Not given" when the form sent the
+ * question and the visitor skipped it, and nothing when the form did not
+ * send it at all, which production reports as a form and a function that
+ * disagree.
  */
 export function sourceField(source: Source): ContactField {
 	return {

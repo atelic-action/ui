@@ -1272,12 +1272,14 @@ describe("the guard and the receipt", () => {
 			expect(siteverifyCalls()).toEqual([]);
 		});
 
-		it("delivers a submission with no token unchecked and with no receipt, and files no report", async () => {
+		it("delivers an empty token unchecked and with no receipt, and files no report", async () => {
 			// The form reported a real visitor whose browser could not run the
-			// check; a bot that leaves the token out would bury every other report.
+			// check; a bot that sends it empty would bury every other report.
 			vi.stubEnv("VERCEL_ENV", "production");
 			const lead = crm();
-			const response = await guarded({ destinations: [lead] })(request(VALID));
+			const response = await guarded({ destinations: [lead] })(
+				request({ ...VALID, turnstile: "" }),
+			);
 			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 			expect(officeCalls()).toHaveLength(1);
 			expect(receiptCalls()).toEqual([]);
@@ -1285,6 +1287,27 @@ describe("the guard and the receipt", () => {
 			expect(JSON.parse(String(officeCalls()[0]?.[1]?.body)).text).toContain(
 				"This one was not checked for spam.",
 			);
+			expect(await reports()).toEqual([]);
+		});
+
+		it("reports a body with no token key at all on production, and delivers it unchecked", async () => {
+			vi.stubEnv("VERCEL_ENV", "production");
+			const lead = crm();
+			const response = await guarded({ destinations: [lead] })(request(VALID));
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(lead.send.mock.calls[0]?.[0].checked).toBe(false);
+			expect(receiptCalls()).toEqual([]);
+			const sent = await reports();
+			expect(sent).toHaveLength(1);
+			expect(sent[0]).toContain(
+				"the endpoint names a guard and the submission carried no token key, so the form may be running no check",
+			);
+			expect(sent[0]).toContain('"reason":"guard-no-token-key"');
+		});
+
+		it("says nothing of a body with no token key off production", async () => {
+			vi.stubEnv("VERCEL_ENV", "preview");
+			expect((await guarded()(request(VALID))).status).toBe(200);
 			expect(await reports()).toEqual([]);
 		});
 
@@ -1370,6 +1393,27 @@ describe("the guard and the receipt", () => {
 			},
 		);
 
+		it("hands the guard a signal it aborts at the cutoff", async () => {
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+			let signal: AbortSignal | undefined;
+			const guard = {
+				name: "custom",
+				tokenKey: "proof",
+				timeoutMs: 1000,
+				check: (_token: string, context: { signal: AbortSignal }) => {
+					signal = context.signal;
+					return new Promise<never>(() => {});
+				},
+			};
+			const pending = createContact({ from: FROM, guard })(request({ ...VALID, proof: "x" }));
+			await vi.advanceTimersByTimeAsync(1499);
+			expect(signal?.aborted).toBe(false);
+			await vi.advanceTimersByTimeAsync(1);
+			await pending;
+			vi.useRealTimers();
+			expect(signal?.aborted).toBe(true);
+		});
+
 		it("holds Turnstile to its own limit and half a second", () => {
 			expect(turnstileGuard().timeoutMs).toBe(3000);
 			expect(turnstileGuard({ timeoutMs: 1200 }).timeoutMs).toBe(1200);
@@ -1411,6 +1455,19 @@ describe("the guard and the receipt", () => {
 				receipt: true,
 			});
 		});
+
+		it.each([
+			["no token key", VALID],
+			["an empty token", { ...VALID, turnstile: "" }],
+		])(
+			"answers the honeypot with %s as a real send with it would, receipt false",
+			async (_name, body) => {
+				const caught = await guarded()(request({ ...body, company: "Totally Real LLC" }));
+				await expect(caught.json()).resolves.toEqual({ ok: true, receipt: false });
+				const real = await guarded()(request(body));
+				await expect(real.json()).resolves.toEqual({ ok: true, receipt: false });
+			},
+		);
 
 		it("answers the honeypot as a real send without a receipt where the endpoint sends none", async () => {
 			const post = createContact({ from: FROM, guard: turnstileGuard() });
