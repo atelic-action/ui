@@ -1,6 +1,8 @@
 /**
  * The visitor's receipt: a short email back to whoever wrote, saying the
- * message arrived, with replies going to the office. The contact endpoint
+ * message arrived. It comes from a no-reply address and carries no reply
+ * address, so a reply to it goes nowhere, and it says so in its last line.
+ * The contact endpoint
  * sends it when a site turns it on (`receipt`), only behind a guard that
  * passed, and only once a destination took the submission, so a receipt
  * never goes to an address a bot typed and never promises a message nobody
@@ -33,17 +35,31 @@ export interface ReceiptOptions {
 	 * name, to any inbox. Turn it on only when that is acceptable.
 	 */
 	copy?: boolean;
+	/**
+	 * The sender: `Display Name <address@a-verified-domain>`. Defaults to
+	 * the endpoint's `from` with its address's local part made `no-reply`
+	 * (`noReplySender`).
+	 */
+	from?: string;
 	/** The subject. Defaults to "We have your message". */
 	subject?: string;
 	/** The line saying what happens next. Defaults to "Someone from our office will be in touch soon." */
 	next?: string;
 	/** The name it is signed with. Defaults to the display name of the endpoint's `from`. */
 	signature?: string;
+	/**
+	 * The last line of the receipt, small and faint, saying the address is
+	 * not read (a site may give its phone instead). Defaults to
+	 * `DEFAULT_RECEIPT_NOTE`; an empty string prints none.
+	 */
+	note?: string;
 	/** How long the one try may take, in milliseconds. Defaults to 3000. */
 	timeoutMs?: number;
 }
 
 export const DEFAULT_RECEIPT_SUBJECT = "We have your message";
+export const DEFAULT_RECEIPT_NOTE =
+	"This address is not monitored, so a reply to this email will not be read.";
 export const DEFAULT_RECEIPT_NEXT = "Someone from our office will be in touch soon.";
 export const DEFAULT_RECEIPT_TIMEOUT_MS = 3_000;
 
@@ -54,6 +70,23 @@ export const DEFAULT_RECEIPT_TIMEOUT_MS = 3_000;
 export function displayName(from: string): string {
 	const match = from.match(/^\s*(.*?)\s*<[^>]*>\s*$/);
 	return (match?.[1] ?? "").replace(/^"(.*)"$/, "$1").trim();
+}
+
+/**
+ * The no-reply sender for a sender: the address's local part made
+ * `no-reply` and the display name kept as written.
+ *
+ *   noReplySender("Summit Movement Studio <forms@atelic.me>")
+ *   // "Summit Movement Studio <no-reply@atelic.me>"
+ *   noReplySender("forms@atelic.me")  // "no-reply@atelic.me"
+ *
+ * A sender with no address in it is handed back as it is.
+ */
+export function noReplySender(from: string): string {
+	const named = from.match(/^(.*<)[^<>@]*(@[^<>]+>\s*)$/);
+	if (named) return `${named[1]}no-reply${named[2]}`;
+	const bare = from.trim().match(/^[^\s@<>]+(@[^\s@<>]+)$/);
+	return bare ? `no-reply${bare[1]}` : from;
 }
 
 /**
@@ -76,18 +109,22 @@ function greetingName(read: ContactFields, fields: ContactField[]): string {
  * visitor, and a table of what was sent in the site's order (the name and
  * the message aside, and no row for a field left empty) and the message
  * follow, everything the visitor wrote escaped as the office's email
- * escapes it, by the same code. `replyTo` is the office's inboxes.
+ * escapes it, by the same code. The note closes it. It carries no reply
+ * address. `endpointFrom` is the endpoint's own sender, whose display name
+ * signs the receipt unless `signature` says otherwise; the receipt itself
+ * goes out from `receiptSender`.
  */
 export function receiptEmail(
 	read: ContactFields,
 	fields: ContactField[],
-	options: ReceiptOptions & { from: string; replyTo?: string[] },
+	options: ReceiptOptions & { endpointFrom: string },
 ): Email {
 	const copy = options.copy === true;
 	const name = copy ? greetingName(read, fields) : "";
 	const greeting = name ? `We have your message, ${name}.` : "We have your message.";
 	const next = options.next ?? DEFAULT_RECEIPT_NEXT;
-	const signature = options.signature ?? displayName(options.from);
+	const signature = options.signature ?? displayName(options.endpointFrom);
+	const note = options.note ?? DEFAULT_RECEIPT_NOTE;
 	const rows = copy ? fieldRows(read, fields) : [];
 	const message = copy ? shownWords(read, fields, "message") : "";
 	const messageLabel = fields.find((field) => field.key === "message")?.label ?? "Message";
@@ -100,6 +137,7 @@ export function receiptEmail(
 			${rows.length > 0 ? rowsTable(rows) : ""}
 			${message ? `<p style="margin: 0 0 4px; color: ${LOOK.quiet};">${escapeHTML(messageLabel)}</p><p style="white-space: pre-wrap; margin: 0;">${escapeHTML(message)}</p>` : ""}
 			${signature ? `<p style="margin: 24px 0 0;">${escapeHTML(signature)}</p>` : ""}
+			${note ? `<p style="margin: 24px 0 0; font-size: 12px; color: ${LOOK.faint};">${escapeHTML(note)}</p>` : ""}
 		</div>`;
 	const plain = [
 		greeting,
@@ -109,12 +147,13 @@ export function receiptEmail(
 		...rows.map((one) => one.text),
 		...(message ? ["", `${messageLabel}:`, message] : []),
 		...(signature ? ["", signature] : []),
+		...(note ? ["", note] : []),
 	].join("\n");
 
-	return {
-		subject: options.subject ?? DEFAULT_RECEIPT_SUBJECT,
-		html,
-		text: plain,
-		replyTo: options.replyTo,
-	};
+	return { subject: options.subject ?? DEFAULT_RECEIPT_SUBJECT, html, text: plain };
+}
+
+/** Who a receipt is sent from: the site's `from`, or the endpoint's made no-reply. */
+export function receiptSender(options: ReceiptOptions, endpointFrom: string): string {
+	return options.from ?? noReplySender(endpointFrom);
 }

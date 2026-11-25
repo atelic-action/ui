@@ -60,7 +60,12 @@ import { within } from "../lib/within.js";
 import { reportServerErrorLater, scrub, withErrorReporting } from "../monitoring/server.js";
 import { fieldRows, LOOK, rowsTable, shownWords, words } from "./emailParts.js";
 import { type Guard, type GuardVerdict, TURNSTILE_TOKEN_KEY } from "./guard.js";
-import { DEFAULT_RECEIPT_TIMEOUT_MS, type ReceiptOptions, receiptEmail } from "./receipt.js";
+import {
+	DEFAULT_RECEIPT_TIMEOUT_MS,
+	type ReceiptOptions,
+	receiptEmail,
+	receiptSender,
+} from "./receipt.js";
 import { type Destination, type DestinationResult, down, relay, type Submission } from "./relay.js";
 import { type Email, resendDestination } from "./resend.js";
 
@@ -371,13 +376,6 @@ export function readFields(
 	return { fields: read, offList };
 }
 
-/**
- * The office's email: an `Email` whose reply goes to one address, the
- * visitor's, as it always has. `Email.replyTo` took a list in 9.2.0 for the
- * receipt; this stays a string, so code that read it as one still compiles.
- */
-export type OfficeEmail = Omit<Email, "replyTo"> & { replyTo?: string };
-
 /** The footer line of a submission the guard could not vouch for. */
 export const UNCHECKED_LINE = "This one was not checked for spam.";
 
@@ -399,7 +397,7 @@ export function officeEmail(
 	read: ContactFields,
 	fields: ContactField[],
 	options: { subject?: string[]; canary?: boolean; checked?: boolean } = {},
-): OfficeEmail {
+): Email {
 	const name = shownWords(read, fields, "name");
 	const message = shownWords(read, fields, "message");
 	const messageLabel = fields.find((field) => field.key === "message")?.label ?? "Message";
@@ -724,14 +722,15 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			let sentReceipt = false;
 			if (receipt && checked === true && apiKey && address) {
 				const timeoutMs = receipt.timeoutMs ?? DEFAULT_RECEIPT_TIMEOUT_MS;
+				// From a no-reply address, with no reply address of its own.
 				const copy = resendDestination<ContactFields>({
 					apiKey,
-					from: options.from,
+					from: receiptSender(receipt, options.from),
 					to: [address],
 					name: "receipt",
 					timeoutMs,
 					compose: (taken) =>
-						receiptEmail(taken.fields, fields, { ...receipt, from: options.from, replyTo: to }),
+						receiptEmail(taken.fields, fields, { ...receipt, endpointFrom: options.from }),
 				});
 				// One try, its own idempotency key, cut off at its limit.
 				const answer = await within<DestinationResult>(

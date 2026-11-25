@@ -8,6 +8,7 @@ import {
 	SUBJECT_LIMIT,
 } from "../../src/forms/contact";
 import { turnstileGuard } from "../../src/forms/guard";
+import { DEFAULT_RECEIPT_NOTE } from "../../src/forms/receipt";
 import { type DestinationResult, refused, type Submission } from "../../src/forms/relay";
 
 const FROM = "Summit Movement Studio <forms@example.com>";
@@ -1083,8 +1084,11 @@ describe("the guard and the receipt", () => {
 			expect(receiptCalls()).toHaveLength(1);
 			const receipt = JSON.parse(String(receiptCalls()[0]?.[1]?.body));
 			expect(receipt.to).toEqual(["jane@example.com"]);
-			expect(receipt.from).toBe(FROM);
-			expect(receipt.reply_to).toEqual(["inbox@example.com", "front@example.com"]);
+			// From the no-reply address, with no reply address, closing on the note.
+			expect(receipt.from).toBe("Summit Movement Studio <no-reply@example.com>");
+			expect(receipt).not.toHaveProperty("reply_to");
+			expect(receipt.text.endsWith(DEFAULT_RECEIPT_NOTE)).toBe(true);
+			expect(receipt.html).toContain(DEFAULT_RECEIPT_NOTE);
 			expect(receipt.subject).toBe("We have your message");
 			// The default receipt repeats nothing the visitor wrote.
 			expect(receipt.text.split("\n")[0]).toBe("We have your message.");
@@ -1145,6 +1149,15 @@ describe("the guard and the receipt", () => {
 			vi.useRealTimers();
 			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 			expect(receiptCalls()).toHaveLength(1);
+		});
+
+		it("sends the receipt from the site's own sender when it names one", async () => {
+			await guarded({ receipt: { from: "Front Desk <desk@example.com>" } })(request(SIGNED));
+			const receipt = JSON.parse(String(receiptCalls()[0]?.[1]?.body));
+			expect(receipt.from).toBe("Front Desk <desk@example.com>");
+			expect(receipt).not.toHaveProperty("reply_to");
+			// The signature is still the endpoint's display name.
+			expect(receipt.text).toContain("Summit Movement Studio");
 		});
 
 		it("sends no receipt when the site turned none on, and says so", async () => {
