@@ -3082,11 +3082,14 @@
 		display: block;
 		max-width: 100%;
 	}
-	.atelic-ui .esf-cover {
+	.atelic-ui .esf-cover,
+	.atelic-ui .esf-noscript {
 		position: absolute;
 		inset: 0;
 		z-index: 1;
 		pointer-events: none;
+	}
+	.atelic-ui .esf-cover {
 		transition:
 			opacity 0.3s ease,
 			visibility 0s linear 0.3s;
@@ -3099,6 +3102,12 @@
 		background: var(--_esf-ground);
 		opacity: 0;
 		visibility: hidden;
+	}
+	/* Ready after the fallback: the tool is already in sight, so the cover
+	   goes at once, with no ground to bring back and fade. */
+	.atelic-ui .esf-cover.is-gone {
+		visibility: hidden;
+		transition: none;
 	}
 	.atelic-ui .esf-status {
 		box-sizing: border-box;

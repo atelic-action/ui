@@ -15,10 +15,10 @@ export interface SpinnerProps {
 }
 
 /**
- * The package's one loading animation: a turning ring that says something
- * is on its way, in the primary color on a faint track of it, in three
- * sizes. A component that waits reaches for it rather than drawing its
- * own. The label is words a screen reader hears; under
+ * The loading animation for sites built from this package: a turning ring
+ * that says something is on its way, in the primary color on a faint track
+ * of it, in three sizes. A site component that waits reaches for it rather
+ * than drawing its own; the app shell keeps its own. The label is words a screen reader hears; under
  * `prefers-reduced-motion` the ring holds still and the label shows beside
  * it, at every size, so the wait still reads without the motion. It is no
  * live region of its own: where the wait is a status a reader should hear,

@@ -55,7 +55,6 @@ export { ContactSection, type ContactSectionProps } from "./ContactSection";
 export { type Credential, CredentialList, type CredentialListProps } from "./CredentialList";
 export { CTASection, type CTASectionProps } from "./CTASection";
 export {
-	EMBED_GRACE_MS,
 	EMBED_WAIT_MS,
 	EmbeddedScriptFrame,
 	type EmbeddedScriptFrameProps,

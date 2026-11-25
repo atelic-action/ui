@@ -1,6 +1,9 @@
 import { act, render, screen } from "@testing-library/react";
 import { StrictMode, useLayoutEffect } from "react";
-import { EMBED_GRACE_MS, EMBED_WAIT_MS, EmbeddedScriptFrame } from "../../src/sections";
+import { EMBED_WAIT_MS, EmbeddedScriptFrame } from "../../src/sections";
+
+/** The grace an iframe already in the mount at the first look gets, internal to the frame. */
+const GRACE_MS = 2_000;
 
 /** Each test its own script, since the record of what was added is shared by the page. */
 let count = 0;
@@ -96,6 +99,27 @@ describe("EmbeddedScriptFrame", () => {
 		expect(Array.from(element.childNodes)).toEqual([theirs]);
 		// The status is drawn beside the mount, never inside it.
 		expect(element.contains(screen.getByRole("status"))).toBe(false);
+	});
+
+	it("keeps focus out of the mount while the cover is up, and lets it in once ready", async () => {
+		render(frame(nextSrc()));
+		const element = mountElement();
+		expect(element).toHaveAttribute("inert");
+		const iframe = await vendorArrives();
+		act(() => {
+			iframe.dispatchEvent(new Event("load"));
+		});
+		expect(mountElement()).toBe(element);
+		expect(element).not.toHaveAttribute("inert");
+	});
+
+	it("lets focus into the mount once the fallback shows", () => {
+		vi.useFakeTimers();
+		render(frame(nextSrc()));
+		act(() => {
+			vi.advanceTimersByTime(EMBED_WAIT_MS);
+		});
+		expect(mountElement()).not.toHaveAttribute("inert");
 	});
 
 	it("names the region by its title", () => {
@@ -231,7 +255,7 @@ describe("EmbeddedScriptFrame", () => {
 		);
 		expect(mountElement().querySelector("iframe")).not.toBeNull();
 		act(() => {
-			vi.advanceTimersByTime(EMBED_GRACE_MS - 1);
+			vi.advanceTimersByTime(GRACE_MS - 1);
 		});
 		expect(screen.getByRole("status")).toHaveTextContent("Loading");
 		act(() => {

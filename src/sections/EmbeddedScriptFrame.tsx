@@ -5,6 +5,7 @@ import {
 	type RefObject,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
@@ -20,7 +21,7 @@ export const EMBED_WAIT_MS = 15_000;
  * given to fire its load before the wait ends anyway: its load may have
  * fired before the listener was there to hear it.
  */
-export const EMBED_GRACE_MS = 2_000;
+const EMBED_GRACE_MS = 2_000;
 
 export interface EmbeddedScriptFrameProps {
 	/** The vendor's script, e.g. "https://vendor.example.com/widget.js?id=abc". Fixed for the frame's life. */
@@ -79,6 +80,13 @@ export interface EmbedReadyMessage {
 
 type Status = "loading" | "ready" | "failed";
 
+/**
+ * Read only where no script runs, from inside a `<noscript>`: the cover and
+ * its spinner wait for a tool that can never come, so they are hidden and
+ * the fallback beside them shows. It names no site value.
+ */
+const NO_SCRIPT_RULE = ".atelic-ui .embedded-script-frame .esf-cover { display: none; }";
+
 /** Whether `event` is `wanted`, posted by one of the iframes in `element`. */
 function isReadyMessage(event: MessageEvent, wanted: EmbedReadyMessage, element: HTMLElement) {
 	if (event.origin !== wanted.origin) return false;
@@ -133,6 +141,10 @@ const Mount = memo(function Mount({
  * fallback is drawn over the tool, whether or not its ready signal was
  * heard. A tool that is ready after the fallback still takes its place.
  *
+ * With no script, nothing loads: the prerendered page hides the cover and
+ * shows the fallback, from a `<noscript>`. While the cover is up the mount
+ * is `inert`, so focus cannot enter a tool nobody can see.
+ *
  * The script loads when the page opens, with no click to load step. That
  * is deliberate, an exception to the load on request habit every other
  * third party embed here keeps (`MapEmbed`'s facade, Turnstile on a form's
@@ -170,6 +182,10 @@ export function EmbeddedScriptFrame({
 	const mount = useRef<HTMLDivElement>(null);
 	const [status, setStatus] = useState<Status>("loading");
 	const ready = status === "ready";
+	// Whether the wait last ended in the fallback, so a tool that is ready
+	// after it is revealed without the cover's ground coming back to fade.
+	const [shownFallback, setShownFallback] = useState(false);
+	if (status === "failed" && !shownFallback) setShownFallback(true);
 
 	/**
 	 * Where the wait ends without a load heard: an iframe in the mount means
@@ -240,6 +256,17 @@ export function EmbeddedScriptFrame({
 		};
 	}, [ready]);
 
+	// While the cover is up nothing under it can be seen, so focus cannot
+	// go there either; set on the element itself, so Mount never renders
+	// again, and in the commit that lifts the cover, so the tool is never
+	// shown while still inert.
+	useLayoutEffect(() => {
+		const element = mount.current;
+		if (!element) return;
+		if (status === "loading") element.setAttribute("inert", "");
+		else element.removeAttribute("inert");
+	}, [status]);
+
 	// The wait, so the page never spins forever.
 	useEffect(() => {
 		if (status !== "loading") return;
@@ -264,7 +291,7 @@ export function EmbeddedScriptFrame({
 						className={[
 							"esf-cover",
 							status === "loading" && "is-covering",
-							status === "ready" && "is-lifted",
+							status === "ready" && (shownFallback ? "is-gone" : "is-lifted"),
 						]
 							.filter(Boolean)
 							.join(" ")}
@@ -281,6 +308,16 @@ export function EmbeddedScriptFrame({
 							</output>
 						)}
 					</div>
+					{/* With no script nothing ever loads: the cover and spinner stay
+					    hidden, and the fallback is the page. */}
+					<noscript>
+						<style>{NO_SCRIPT_RULE}</style>
+						<div className="esf-noscript">
+							<div className="esf-status">
+								<span className="esf-fallback">{fallback}</span>
+							</div>
+						</div>
+					</noscript>
 				</div>
 			</div>
 		</section>

@@ -20,7 +20,22 @@ describe("EmbeddedScriptFrame on the server", () => {
 		expect(html).toMatch(/<div id="vendor-mount" class="esf-mount"><\/div>/);
 		expect(html).toContain("<output");
 		expect(html).toContain("Loading");
-		expect(html).not.toContain("Call us instead.");
+	});
+
+	it("ships the fallback, and the rule that hides the cover, for a visitor with no script", () => {
+		const html = renderToString(
+			<EmbeddedScriptFrame
+				src="https://widget.example.com/embed.js?id=ssr-noscript"
+				mountId="vendor-mount"
+				title="Instant estimate"
+				fallback="Call us instead."
+			/>,
+		);
+		const noscript = /<noscript>([\s\S]*)<\/noscript>/.exec(html)?.[1] ?? "";
+		expect(noscript).toContain("Call us instead.");
+		expect(noscript).toMatch(/<style>[^<]*\.esf-cover \{ display: none; \}<\/style>/);
+		// Outside the noscript the fallback is not drawn: the page waits on the tool.
+		expect(html.replace(/<noscript>[\s\S]*<\/noscript>/, "")).not.toContain("Call us instead.");
 	});
 
 	it("refuses to add a script where there is no window", () => {

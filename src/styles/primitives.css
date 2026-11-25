@@ -801,9 +801,10 @@
 		border-radius: 2px;
 	}
 
-	/* Spinner, the package's one loading animation: a ring in the primary
-	   color turning on a faint track of it, in three sizes (sm, md, lg).
-	   Under reduced motion it holds still and its label shows beside it. */
+	/* Spinner, the loading animation for sites built from this package: a
+	   ring in the primary color turning on a faint track of it, in three
+	   fixed sizes (sm 20px, md 32px, lg 72px). Under reduced motion it holds
+	   still and its label shows beside it. */
 	.atelic-ui .spinner {
 		display: inline-flex;
 		align-items: center;
@@ -813,8 +814,8 @@
 	}
 	.atelic-ui .spinner-ring {
 		flex: none;
-		width: 2rem;
-		height: 2rem;
+		width: 32px;
+		height: 32px;
 		border-radius: 50%;
 		border: 3px solid color-mix(in srgb, var(--primary) 18%, transparent);
 		border-top-color: var(--primary);

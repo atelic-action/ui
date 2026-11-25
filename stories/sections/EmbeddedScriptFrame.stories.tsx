@@ -252,6 +252,34 @@ export const Fallback: Story = {
 	},
 };
 
+/**
+ * A tool that arrives after the fallback took its place still takes it
+ * back, and the cover goes at once: no ground comes back over the tool to
+ * fade.
+ */
+export const LateArrival: Story = {
+	args: {
+		src: embeddedWidget({ mount: "order-tool-late", story: "late", delay: "1500" }),
+		mountId: "order-tool-late",
+		timeoutMS: 800,
+	},
+	play: async ({ canvas, step }) => {
+		const cover = coverOf(canvas.getByRole("status"));
+		await step("the fallback shows first", async () => {
+			await waitFor(
+				() => expect(canvas.getByRole("status")).toHaveTextContent("The order tool did not load"),
+				{ timeout: 5000 },
+			);
+		});
+		await step("the tool takes its place with no ground and no fade", async () => {
+			await waitFor(() => expect(canvas.queryByRole("status")).toBeNull(), { timeout: 10_000 });
+			await expect(getComputedStyle(cover).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+			await expect(cover.getAnimations()).toHaveLength(0);
+			await expect(getComputedStyle(cover).visibility).toBe("hidden");
+		});
+	},
+};
+
 /** On the alternate band. */
 export const AltSurface: Story = {
 	args: {
