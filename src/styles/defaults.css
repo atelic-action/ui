@@ -202,6 +202,10 @@
 		--contact-section-gap: clamp(24px, 4vw, 56px);
 		--contact-section-side-gap: 24px;
 		--contact-section-card-pad: clamp(20px, 3vw, 34px);
+		/* EmbeddedScriptFrame (9.4.0): how far below the top of the tool's
+		   space the spinner and the fallback sit, so they show on a phone
+		   without a scroll. */
+		--embed-status-offset: 96px;
 		/* The page hero's headline size (8.5.0). */
 		--page-hero-title-size: clamp(2.4rem, 7vw, 4.2rem);
 		/* A form field's label: its size, its case, and its tracking (8.5.0). */

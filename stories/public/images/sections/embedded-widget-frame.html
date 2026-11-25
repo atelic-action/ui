@@ -2,6 +2,20 @@
 <html lang="en">
 <head><meta charset="utf-8"><title>A stand in for a vendor's embedded tool</title></head>
 <body style="margin:0;background:#e9e0cd;display:grid;place-items:center;height:100vh;font-family:system-ui,sans-serif;color:#151515">
-<p>The vendor's tool would load here.</p>
+<p id="state">The vendor's own loader would spin here.</p>
+<script>
+	// Draws the tool `ready` milliseconds after this page loads, then tells
+	// the page the way a vendor does: its host loader can go, its height, and
+	// that the tool is drawn.
+	window.addEventListener("load", () => {
+		const ready = Number(new URLSearchParams(location.search).get("ready") || "0");
+		setTimeout(() => {
+			document.getElementById("state").textContent = "The vendor's tool would load here.";
+			parent.postMessage({ type: "stand-in-remove-spinner" }, "*");
+			parent.postMessage({ type: "stand-in-height", height: 420 }, "*");
+			parent.postMessage({ type: "stand-in-loaded" }, "*");
+		}, ready);
+	});
+</script>
 </body>
 </html>

@@ -7,11 +7,15 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
 
+/** The bakery's number, as a link, for the fallback line. */
+const bakeryPhone = { e164: "+15555550142", display: "555-0142" };
+
 /**
  * A vendor's tool that arrives as a script mounting its own iframe into a
- * known element. The frame holds the space, shows a spinner beside the
- * mount until the iframe has loaded, and shows the site's own line instead
- * if it never does. The stories load a local stand in, never a vendor.
+ * known element. The frame holds the space and covers it, with one spinner,
+ * until the tool is ready, then gives way to it; it shows the site's own
+ * line instead if the tool never comes. The stories load a local stand in,
+ * never a vendor.
  */
 const meta = {
 	title: "Sections/EmbeddedScriptFrame",
@@ -20,7 +24,11 @@ const meta = {
 		src: embeddedWidget({ mount: "order-tool-loads", story: "loads", delay: "600" }),
 		mountId: "order-tool-loads",
 		title: "Build a custom cake order",
-		fallback: "The order tool did not load. Call the bakery at 555-0142 to order.",
+		fallback: (
+			<>
+				The order tool did not load. Call the bakery at <PhoneLink phone={bakeryPhone} /> to order.
+			</>
+		),
 		minHeight: "420px",
 	},
 	globals: pin("desktop"),
@@ -36,6 +44,75 @@ const region = (canvas: ReturnType<typeof within>) =>
 const hitAt = (element: Element) => {
 	const box = element.getBoundingClientRect();
 	return document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+};
+
+/** The cover the status sits in, reached from the status, which has a role. */
+const coverOf = (status: HTMLElement) => status.parentElement as HTMLElement;
+
+/**
+ * The one loader a reader sees. The stand in behaves as a vendor whose
+ * iframe loads early and draws its tool later: it puts a whole page loader
+ * of its own on the host page (hidden here by `hostChrome`), a loader of its
+ * own inside its iframe (under the cover), and posts `stand-in-loaded` when
+ * the tool is drawn, which `readyMessage` waits for. Until then the cover,
+ * in the band's color, lies over the iframe at its full size.
+ */
+export const SingleLoader: Story = {
+	args: {
+		src: embeddedWidget({
+			mount: "order-tool-single",
+			story: "single",
+			delay: "200",
+			chrome: "stand-in-page-loader",
+			ready: "1500",
+		}),
+		mountId: "order-tool-single",
+		readyMessage: { origin: window.location.origin, type: "stand-in-loaded" },
+		hostChrome: "#stand-in-page-loader",
+	},
+	// The stand in's page loader leaves only on the tool's message, so a run
+	// that stops before it takes it away here, before the next story.
+	beforeEach: () => () => document.getElementById("stand-in-page-loader")?.remove(),
+	play: async ({ canvas, canvasElement, step }) => {
+		const mount = canvasElement.querySelector("#order-tool-single") as HTMLElement;
+		const status = canvas.getByRole("status");
+		const cover = coverOf(status);
+		await step("our spinner shows, and the vendor's page loader never does", async () => {
+			await expect(status).toHaveTextContent("Loading");
+			await waitFor(() => expect(document.getElementById("stand-in-page-loader")).not.toBeNull(), {
+				timeout: 10_000,
+			});
+			const loader = document.getElementById("stand-in-page-loader") as HTMLElement;
+			await expect(getComputedStyle(loader).display).toBe("none");
+		});
+		const iframe = await waitFor(
+			() => within(mount).getByTitle("The stand in tool") as HTMLIFrameElement,
+			{
+				timeout: 10_000,
+			},
+		);
+		await step(
+			"the iframe loads at full size under an opaque cover, and the wait holds",
+			async () => {
+				await waitFor(() => expect(iframe.contentDocument?.readyState).toBe("complete"), {
+					timeout: 10_000,
+				});
+				const box = iframe.getBoundingClientRect();
+				await expect(box.width).toBeGreaterThan(0);
+				await expect(box.height).toBeGreaterThan(0);
+				await expect(canvas.getByRole("status")).toBeInTheDocument();
+				await expect(cover.contains(hitAt(iframe))).toBe(true);
+				await expect(getComputedStyle(cover).backgroundColor).toMatch(/^rgb\(\d+, \d+, \d+\)$/);
+			},
+		);
+		await step("the tool's message lifts the cover, and the tool takes the pointer", async () => {
+			await waitFor(() => expect(canvas.queryByRole("status")).toBeNull(), { timeout: 10_000 });
+			await expect(hitAt(iframe)).toBe(iframe);
+			await expect(iframe.contentDocument?.body).toHaveTextContent(
+				"The vendor's tool would load here.",
+			);
+		});
+	},
 };
 
 /** The spinner holds the space until the vendor's iframe has loaded, then gives way to it. */
@@ -62,7 +139,7 @@ export const Loads: Story = {
 	},
 };
 
-/** While the tool is on its way: the spinner in the middle of the held space. */
+/** While the tool is on its way: the cover over the held space, the spinner near its top. */
 export const Waiting: Story = {
 	args: {
 		src: embeddedWidget({ mount: "order-tool-waiting", story: "waiting", never: "" }),
@@ -76,9 +153,27 @@ export const Waiting: Story = {
 			await expect(box.height).toBeGreaterThanOrEqual(420);
 			await expect(status).toHaveTextContent("Loading");
 		});
-		await step("a pointer passes through the spinner to whatever is under it", async () => {
-			await expect(status.contains(hitAt(status))).toBe(false);
+		await step("the cover takes the pointer, since nothing under it is usable yet", async () => {
+			await expect(coverOf(status).contains(hitAt(coverOf(status)))).toBe(true);
 		});
+	},
+};
+
+/** On a phone the spinner sits near the top of a tall held space, in view without a scroll. */
+export const WaitingPhone: Story = {
+	args: {
+		src: embeddedWidget({ mount: "order-tool-waiting-phone", story: "waiting-phone", never: "" }),
+		mountId: "order-tool-waiting-phone",
+		timeoutMS: 600_000,
+		minHeight: "1400px",
+	},
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const status = canvas.getByRole("status");
+		const top = coverOf(status).getBoundingClientRect().top;
+		const spinner = status.getBoundingClientRect();
+		await expect(spinner.top - top).toBeLessThan(160);
+		await expect(spinner.bottom).toBeLessThan(window.innerHeight);
 	},
 };
 
@@ -94,8 +189,8 @@ export const Fallback: Story = {
 		fallback: (
 			<>
 				The order tool did not load just now, which happens when a browser blocks it. Call the
-				bakery at <PhoneLink phone={{ e164: "+15555550142", display: "555-0142" }} /> and we will
-				take your order by phone, or try the page again in a minute.
+				bakery at <PhoneLink phone={bakeryPhone} /> and we will take your order by phone, or try the
+				page again in a minute.
 			</>
 		),
 	},
@@ -105,9 +200,16 @@ export const Fallback: Story = {
 			{ timeout: 5000 },
 		);
 		const link = canvas.getByRole("link", { name: "555-0142" });
-		await step("the link in the fallback takes the pointer", async () => {
-			await expect(hitAt(link)).toBe(link);
-		});
+		await step(
+			"the link in the fallback takes the pointer, and the clear cover does not",
+			async () => {
+				await expect(hitAt(link)).toBe(link);
+				const status = canvas.getByRole("status");
+				const box = coverOf(status).getBoundingClientRect();
+				const corner = document.elementFromPoint(box.left + 4, box.bottom - 4);
+				await expect(coverOf(status).contains(corner)).toBe(false);
+			},
+		);
 		await step("the line runs the column's width, with no width of its own", async () => {
 			const line = canvas.getByText(/The order tool did not load/);
 			await expect(line.getBoundingClientRect().width).toBeGreaterThan(600);

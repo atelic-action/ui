@@ -29,10 +29,32 @@ export interface EmbeddedScriptFrameProps {
 	/** The region's accessible name, e.g. "Instant roof estimate". Site copy, so it comes in as a prop. */
 	title: string;
 	/**
+	 * The message the vendor's iframe posts to the page once its tool is
+	 * drawn, for a vendor whose iframe loads well before its tool does. Set,
+	 * the wait ends only on a `message` event from the mount's iframe (its
+	 * `contentWindow` is the event's `source`) whose `origin` is `origin` and
+	 * whose `data.type` is `type`; the iframe's `load` alone no longer ends
+	 * it. For example `{ origin: "https://app.vendor.example.com", type:
+	 * "quote-loaded" }`. Unset, the iframe's `load` ends the wait. Fixed for
+	 * the frame's life.
+	 */
+	readyMessage?: EmbedReadyMessage;
+	/**
+	 * A CSS selector for what the vendor's script draws on the host page
+	 * outside the mount, such as its own whole page loader or overlay, kept
+	 * hidden (`display: none !important`) for as long as the frame is
+	 * mounted, so the reader sees one loader, ours. The rule goes into the
+	 * head before the script does, so the vendor's loader never flashes, and
+	 * leaves with the frame. It is the site's selector and is not checked:
+	 * aim it at a loader or an overlay, never at any part of the vendor's
+	 * tool. Fixed for the frame's life.
+	 */
+	hostChrome?: string;
+	/**
 	 * The one line shown in place of the tool when it never arrives: the
-	 * script is refused or blocked, fails to load, or no iframe has loaded
-	 * within `timeoutMS`. Point the reader to another way through, such as
-	 * the phone.
+	 * script is refused, blocked, or fails to load, or no iframe is in the
+	 * mount when `timeoutMS` runs out. Point the reader to another way
+	 * through, such as the phone.
 	 */
 	fallback: ReactNode;
 	/** The space held for the tool before it arrives, any CSS length. Defaults to 600px. */
@@ -48,7 +70,22 @@ export interface EmbeddedScriptFrameProps {
 	className?: string;
 }
 
+/** The message that says a vendor's tool is drawn: where it comes from, and its `data.type`. */
+export interface EmbedReadyMessage {
+	origin: string;
+	type: string;
+}
+
 type Status = "loading" | "ready" | "failed";
+
+/** Whether `event` is `wanted`, posted by one of the iframes in `element`. */
+function isReadyMessage(event: MessageEvent, wanted: EmbedReadyMessage, element: HTMLElement) {
+	if (event.origin !== wanted.origin) return false;
+	if ((event.data as { type?: unknown } | null)?.type !== wanted.type) return false;
+	return Array.from(element.querySelectorAll("iframe")).some(
+		(frame) => event.source !== null && frame.contentWindow === event.source,
+	);
+}
 
 /**
  * The element the vendor mounts into. Memoized on props that never change,
@@ -69,17 +106,29 @@ const Mount = memo(function Mount({
  * A vendor's tool that arrives as a script which finds a known element by
  * its id and mounts its own iframe there, resizing that iframe itself (a
  * roof estimator such as Roofle's, whose widget script mounts into
- * `roof-quote-pro-embedded`). The frame draws the empty mount, holds
- * `minHeight` so the page does not jump, and keeps a spinner beside the
- * mount, never inside it, until the vendor's iframe has loaded. The spinner
- * and the fallback sit over the held space and never take a pointer (a link
- * in the fallback still does), so neither can block the tool. If no iframe
- * is in the mount when `timeoutMS` runs out, or the script fails first, the
- * spinner gives way to the consumer's `fallback`, so the page never spins
- * forever. An iframe in the mount at either moment means the vendor
- * arrived: the wait ends and no fallback is drawn over the tool, whether or
- * not its load was heard. An iframe that loads after the fallback still
- * takes its place.
+ * `roof-quote-pro-embedded`). The frame draws the empty mount and holds
+ * `minHeight` so the page does not jump.
+ *
+ * The reader sees one loader, ours. Until the tool is ready, an opaque
+ * cover in the band's own color lies over the whole frame, beside the
+ * mount, never inside it, with the spinner near its top so it shows on a
+ * phone without a scroll; whatever the vendor draws in its iframe meanwhile
+ * (its own loader) stays under it. The mount and the iframe stay at full
+ * size underneath, never hidden, since a vendor measures itself. When the
+ * tool is ready the cover fades away (at once under reduced motion). Ready
+ * is the iframe's `load`, or, with `readyMessage`, the vendor's own message
+ * that its tool is drawn. A loader the vendor draws on the host page
+ * outside the mount is hidden with `hostChrome`. For Roofle, the ready
+ * message is its app's origin with the type `quick-quote-loaded`, and its
+ * host page loader is `#spinner-container`.
+ *
+ * If no iframe is in the mount when `timeoutMS` runs out, or the script
+ * fails first, the spinner gives way to the consumer's `fallback`, so the
+ * page never spins forever; the fallback takes no pointer but its own (a
+ * link in it still works), so it can never block a tool. An iframe in the
+ * mount at either moment means the vendor arrived: the cover lifts and no
+ * fallback is drawn over the tool, whether or not its ready signal was
+ * heard. A tool that is ready after the fallback still takes its place.
  *
  * The script loads when the page opens, with no click to load step. That
  * is deliberate, an exception to the load on request habit every other
@@ -105,6 +154,8 @@ export function EmbeddedScriptFrame({
 	src,
 	mountId,
 	title,
+	readyMessage,
+	hostChrome,
 	fallback,
 	minHeight = "600px",
 	timeoutMS = EMBED_WAIT_MS,
@@ -127,19 +178,43 @@ export function EmbeddedScriptFrame({
 		[],
 	);
 
-	// The vendor's script, once per page.
+	// Props fixed for the frame's life, read once by the effects below.
+	const wanted = useRef(readyMessage);
+	const chrome = useRef(hostChrome);
+
+	// The vendor's script, once per page, after the rule that hides its host
+	// page loader, so that loader never shows.
 	useEffect(() => {
+		let rule: HTMLStyleElement | undefined;
+		if (chrome.current) {
+			rule = document.createElement("style");
+			rule.dataset.embedHostChrome = "";
+			rule.textContent = `${chrome.current} { display: none !important; }`;
+			document.head.appendChild(rule);
+		}
 		const script = addScriptOnce(src);
 		const onError = () => setStatus(endWait);
 		script.addEventListener("error", onError);
-		return () => script.removeEventListener("error", onError);
+		return () => {
+			script.removeEventListener("error", onError);
+			rule?.remove();
+		};
 	}, [src, endWait]);
 
-	// The vendor's iframe: watched for in the mount, then waited for to
-	// load. The watch stops once the tool is ready.
+	// The vendor's iframe: watched for in the mount, then waited for to load,
+	// or, with a ready message, for its message. The watch stops once the
+	// tool is ready.
 	useEffect(() => {
 		const element = mount.current;
 		if (!element || ready) return;
+		const message = wanted.current;
+		if (message) {
+			const onMessage = (event: MessageEvent) => {
+				if (isReadyMessage(event, message, element)) setStatus("ready");
+			};
+			window.addEventListener("message", onMessage);
+			return () => window.removeEventListener("message", onMessage);
+		}
 		let frame: HTMLIFrameElement | null = null;
 		const onLoad = () => setStatus("ready");
 		const watch = () => {
@@ -180,17 +255,29 @@ export function EmbeddedScriptFrame({
 			<div className="wrap">
 				<div className="esf-frame" style={{ minHeight }}>
 					<Mount id={mountId} holder={mount} />
-					{status !== "ready" && (
-						// One live region for the wait and what replaces it, so the
-						// fallback is announced where the spinner was.
-						<output className="esf-status">
-							{status === "loading" ? (
-								<Spinner label={loadingLabel} />
-							) : (
-								<span className="esf-fallback">{fallback}</span>
-							)}
-						</output>
-					)}
+					{/* The cover over the tool while it loads: drawn always, so it can
+					    fade when the tool is ready, and clear while the fallback shows. */}
+					<div
+						className={[
+							"esf-cover",
+							status === "loading" && "is-covering",
+							status === "ready" && "is-lifted",
+						]
+							.filter(Boolean)
+							.join(" ")}
+					>
+						{status !== "ready" && (
+							// One live region for the wait and what replaces it, so the
+							// fallback is announced where the spinner was.
+							<output className="esf-status">
+								{status === "loading" ? (
+									<Spinner label={loadingLabel} />
+								) : (
+									<span className="esf-fallback">{fallback}</span>
+								)}
+							</output>
+						)}
+					</div>
 				</div>
 			</div>
 		</section>

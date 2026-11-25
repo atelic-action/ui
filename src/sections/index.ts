@@ -59,6 +59,7 @@ export {
 	EMBED_WAIT_MS,
 	EmbeddedScriptFrame,
 	type EmbeddedScriptFrameProps,
+	type EmbedReadyMessage,
 } from "./EmbeddedScriptFrame";
 export { ExpandList, type ExpandListItem, type ExpandListProps } from "./ExpandList";
 export {

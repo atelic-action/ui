@@ -253,3 +253,104 @@ describe("EmbeddedScriptFrame", () => {
 		expect(disconnect.mock.calls.length).toBeGreaterThan(before);
 	});
 });
+
+describe("EmbeddedScriptFrame with a ready message", () => {
+	const origin = "https://widget.example.com";
+	const readyMessage = { origin, type: "tool-drawn" };
+
+	/** The vendor's iframe posting to the page, as a browser would deliver it. */
+	function post(
+		iframe: HTMLIFrameElement,
+		init: { origin?: string; type?: string; source?: Window | null } = {},
+	) {
+		act(() => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					origin: init.origin ?? origin,
+					data: { type: init.type ?? "tool-drawn" },
+					source: init.source === undefined ? iframe.contentWindow : init.source,
+				}),
+			);
+		});
+	}
+
+	it("keeps the wait over a loaded iframe until the message comes", async () => {
+		render(frame(nextSrc(), { readyMessage }));
+		const iframe = await vendorArrives();
+		act(() => {
+			iframe.dispatchEvent(new Event("load"));
+		});
+		expect(screen.getByRole("status")).toHaveTextContent("Loading");
+		post(iframe);
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
+	});
+
+	it("ignores a message from the wrong origin, the wrong window, or of the wrong type", async () => {
+		render(frame(nextSrc(), { readyMessage }));
+		const iframe = await vendorArrives();
+		post(iframe, { origin: "https://other.example.com" });
+		post(iframe, { type: "tool-height" });
+		post(iframe, { source: window });
+		post(iframe, { source: null });
+		expect(screen.getByRole("status")).toHaveTextContent("Loading");
+	});
+
+	it("ignores the message from an iframe outside the mount", async () => {
+		render(frame(nextSrc(), { readyMessage }));
+		await vendorArrives();
+		const stranger = document.createElement("iframe");
+		document.body.appendChild(stranger);
+		post(stranger);
+		expect(screen.getByRole("status")).toHaveTextContent("Loading");
+		stranger.remove();
+	});
+
+	it("reveals an iframe in the mount when the wait runs out without the message", async () => {
+		vi.useFakeTimers();
+		render(frame(nextSrc(), { readyMessage }));
+		await vendorArrives();
+		act(() => {
+			vi.advanceTimersByTime(EMBED_WAIT_MS);
+		});
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
+		expect(screen.queryByText(/Call us instead/)).not.toBeInTheDocument();
+	});
+
+	it("shows the fallback when the wait runs out with no iframe", () => {
+		vi.useFakeTimers();
+		render(frame(nextSrc(), { readyMessage }));
+		act(() => {
+			vi.advanceTimersByTime(EMBED_WAIT_MS);
+		});
+		expect(screen.getByRole("status")).toHaveTextContent("Call us instead");
+	});
+});
+
+describe("EmbeddedScriptFrame with host chrome", () => {
+	const rules = () => Array.from(document.head.querySelectorAll("style[data-embed-host-chrome]"));
+
+	it("hides the vendor's host page loader by a rule added before the script", () => {
+		const src = nextSrc();
+		render(frame(src, { hostChrome: "#vendor-page-spinner" }));
+		const [rule] = rules();
+		expect(rule?.textContent).toBe("#vendor-page-spinner { display: none !important; }");
+		const script = scripts(src)[0];
+		expect(script).toBeDefined();
+		const children = Array.from(document.head.children);
+		expect(children.indexOf(rule as Element)).toBeLessThan(children.indexOf(script as Element));
+	});
+
+	it("keeps it hidden while mounted, and takes the rule out with the frame", () => {
+		const { unmount } = render(
+			<StrictMode>{frame(nextSrc(), { hostChrome: "#vendor-page-spinner" })}</StrictMode>,
+		);
+		expect(rules()).toHaveLength(1);
+		unmount();
+		expect(rules()).toHaveLength(0);
+	});
+
+	it("adds no rule without host chrome", () => {
+		render(frame(nextSrc()));
+		expect(rules()).toHaveLength(0);
+	});
+});
