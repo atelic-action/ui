@@ -721,7 +721,7 @@ The header carries the services and the service areas, so the footer does not re
 | The rating | `footer.rating`, as printed (`"4.8 on Google"`) |
 | The rating's link | `footer.ratingHref`, else `mapLinkURL`, the Google profile, whenever a rating is set; `footer.ratingLabel` names it |
 | The address and its link | `address` and `mapLinkURL`; `footer.showAddress: false` drops the address |
-| The hours | `hours`, each row's `labelShort` and its range on `clock` and `meridiem`, short ("8a to 5p") unless `footer.hoursShort` is false ("8:00a to 5:00p", or "8:00 am to 5:00 pm" with `meridiem: "word"`); `footer.hoursPlacement` sets them inside the brand column (the default) or as a column; `footer.showHours: false` keeps them out of the footer and in the structured data |
+| The hours | `hours`, each row's `labelShort` and its range on `clock` ("8:00 am to 5:00 pm", or "08:00 to 17:00" with `clock: "24h"`); `footer.hoursPlacement` sets them inside the brand column (the default) or as a column; `footer.showHours: false` keeps them out of the footer and in the structured data |
 | The phone and the email | `phone`, `email` |
 | Company | `nav` |
 | Resources | `footerLinks` |
@@ -824,6 +824,10 @@ The space a section leaves above and below itself is one token, `--section-space
 | `compact` | `clamp(24px, 3.2vw, 44px)` | 20px | 0 |
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
+
+### Moving to 9.0.0
+
+Hours print two ways and no others: "8:00 am to 5:00 pm", the default, or "08:00 to 17:00" with `clock: "24h"`. That is a change on every site that sets no clock: the footer's "8a to 5p" and the hours table's "8:00a to 5:00p" both read "8:00 am to 5:00 pm". `meridiem` (with its `Meridiem` type), `footer.hoursShort`, `HoursTable`'s `meridiem` prop, and the `short` and `meridiem` options of `formatClock` and `formatHoursRange` are gone, so a config or a call that sets one no longer compiles: delete the line, since what it asked for is now the default or no longer exists. A site on `clock: "24h"` changes nothing. The longer ranges make the footer's hours wider, so look at the footer at 1280 and 390 wide after the move, the hours column placement above all.
 
 ### Moving to 8.8.0
 
@@ -1029,7 +1033,7 @@ The primitives that came with them, in `@atelic-action/ui/primitives`: `ImageFra
 
 The entry also exports the helpers the sections use, for a site's own code: `formatClock`, `formatHoursRange`, and `isClosed` for hours, `isHoneypotFilled`, and `trackEvent`.
 
-Hours print on the 12 hour clock unless the site's config sets `clock: "24h"`, which turns "9a to 5p" into "09:00 to 17:00" everywhere hours appear: `LocationSection` and `HoursTable` (which takes `clock` as a prop when used on its own). `meridiem: "word"` (8.3.0) marks the 12 hour clock with a word, "9 am to 5 pm", wherever hours print (`HoursTable`'s `meridiem` when used on its own). The footer prints the short form, a whole hour's minutes dropped ("8a to 5p"), unless `footer.hoursShort` is false, so "8:00 am to 5:00 pm" in the footer is `meridiem: "word"` with `footer: { hoursShort: false }`, no site code. `formatClock` and `formatHoursRange` take the same `clock`, `meridiem`, and `short` options for a site's own code.
+Hours print one of two ways, everywhere they appear (the footer, `LocationSection`, and `HoursTable`, which takes `clock` as a prop when used on its own): "9:00 am to 5:00 pm" on the 12 hour clock, the default, or "09:00 to 17:00" when the site's config sets `clock: "24h"`. The 12 hour mark joins its time with a no break space, so "pm" never wraps alone. `formatClock` and `formatHoursRange` take the same `clock` option for a site's own code.
 
 ### The Marketing Vite Config and Commands
 

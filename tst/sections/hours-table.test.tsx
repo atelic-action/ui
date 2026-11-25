@@ -20,7 +20,7 @@ const times = (container: HTMLElement) =>
 describe("HoursTable", () => {
 	it("prints the 12 hour clock by default", () => {
 		const { container } = render(<HoursTable hours={hours} />);
-		expect(times(container)).toEqual(["9:00a to 5:00p", "Closed"]);
+		expect(times(container)).toEqual(["9:00\u00a0am to 5:00\u00a0pm", "Closed"]);
 	});
 
 	it("prints the 24 hour clock when asked", () => {
@@ -33,7 +33,7 @@ describe("HoursTable", () => {
 describe("LocationSection", () => {
 	it("hands the site's clock to its hours table", () => {
 		const twelve = render(<LocationSection site={{ ...testSite, hours }} title="Find us" />);
-		expect(times(twelve.container)).toEqual(["9:00a to 5:00p", "Closed"]);
+		expect(times(twelve.container)).toEqual(["9:00\u00a0am to 5:00\u00a0pm", "Closed"]);
 		twelve.unmount();
 
 		const twentyFour = render(

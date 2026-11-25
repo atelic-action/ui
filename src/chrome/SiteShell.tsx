@@ -212,11 +212,7 @@ export function SiteShell({
 			? undefined
 			: site.hours?.map((row) => ({
 					label: row.labelShort,
-					range: formatHoursRange(row, {
-						short: site.footer?.hoursShort ?? true,
-						clock: site.clock,
-						meridiem: site.meridiem,
-					}),
+					range: formatHoursRange(row, { clock: site.clock }),
 				}));
 	// The rating links to the Google profile: the site's own link for it, else
 	// the profile the address already links to.

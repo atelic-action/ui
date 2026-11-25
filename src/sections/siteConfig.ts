@@ -86,15 +86,8 @@ export interface CTA {
 	menuLabel?: string;
 }
 
-/** How opening hours print: "12h" reads "9a to 5p", "24h" reads "09:00 to 17:00". */
+/** How opening hours print: "12h" reads "9:00 am to 5:00 pm", "24h" reads "09:00 to 17:00". */
 export type Clock = "12h" | "24h";
-
-/**
- * How the 12 hour clock marks morning and afternoon: "letter" (the default)
- * reads "9a" and "9:30a", "word" reads "9 am" and "9:30 am". The 24 hour
- * clock marks neither.
- */
-export type Meridiem = "letter" | "word";
 
 export interface OpeningHours {
 	/** Row label as displayed, e.g. "Monday" or "Friday to Sunday". */
@@ -235,17 +228,12 @@ export interface SiteConfig {
 	hours: OpeningHours[];
 	/**
 	 * The clock the hours print on, wherever they appear (the footer, the
-	 * hours table, the location section). "12h" (the default) reads "9a to 5p"
-	 * in the footer and "9:00a to 5:00p" in the table; "24h" reads "09:00 to
-	 * 17:00" in both, with leading zeros. Structured data is unaffected, since
-	 * `opens` and `closes` are already 24 hour.
+	 * hours table, the location section). "12h" (the default) reads "9:00 am
+	 * to 5:00 pm"; "24h" reads "09:00 to 17:00", with leading zeros. These
+	 * are the only two styles. Structured data is unaffected, since `opens`
+	 * and `closes` are already 24 hour.
 	 */
 	clock?: Clock;
-	/**
-	 * How the 12 hour clock marks the time of day, wherever hours print:
-	 * "letter" (the default) reads "9a to 5p", "word" reads "9 am to 5 pm".
-	 */
-	meridiem?: Meridiem;
 	/** Neighborhoods or cities served; feeds local SEO copy and structured data. */
 	serviceAreas: string[];
 	priceRange?: string;
@@ -305,12 +293,6 @@ export interface SiteConfig {
 		 * email, or "column", a column of their own beside the link columns.
 		 */
 		hoursPlacement?: FooterHoursPlacement;
-		/**
-		 * Whether the footer's hours drop a whole hour's minutes ("8a to 5p").
-		 * Defaults to true; false prints them as the hours table does
-		 * ("8:00a to 5:00p", or "8:00 am to 5:00 pm" with `meridiem: "word"`).
-		 */
-		hoursShort?: boolean;
 	};
 	ogImage?: string;
 	/** Profile URLs for the schema.org sameAs entity graph (socials, listings). */
