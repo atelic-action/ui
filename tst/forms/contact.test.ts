@@ -870,6 +870,40 @@ describe("a site's own fields", () => {
 });
 
 describe("a site's settings", () => {
+	const DSN = "https://abc@o1.ingest.us.sentry.io/1";
+
+	async function reported(body: unknown, environment: string): Promise<string[]> {
+		vi.stubEnv("RESEND_API_KEY", "re_test_key");
+		vi.stubEnv("SENTRY_DSN", "");
+		vi.stubEnv("VITE_SENTRY_DSN", DSN);
+		vi.stubEnv("VERCEL_ENV", environment);
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 200 })));
+		const response = await createContact({ from: FROM })(request(body));
+		expect(response.status).toBe(200);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		const sent = vi
+			.mocked(fetch)
+			.mock.calls.filter(([url]) => String(url).includes("ingest"))
+			.map(([, init]) => String(init?.body));
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
+		return sent;
+	}
+
+	it("reports a form that sends a field the function does not list, and still sends the rest", async () => {
+		const sent = await reported({ ...VALID, phone: "(303) 555-0142", address: {} }, "production");
+		expect(sent).toHaveLength(1);
+		expect(sent[0]).toContain(
+			"Contact form sends phone, address, which the endpoint's fields do not list",
+		);
+		expect(sent[0]).not.toContain("555-0142");
+	});
+
+	it("says nothing of a stranger's key, or off production", async () => {
+		expect(await reported({ ...VALID, injected: "x", utm: "y" }, "production")).toEqual([]);
+		expect(await reported({ ...VALID, phone: "(303) 555-0142" }, "preview")).toEqual([]);
+	});
+
 	it.each(["company", "canary"])(
 		"refuses a field under %s, a key the endpoint reads for itself",
 		(key) => {
@@ -924,6 +958,22 @@ describe("the office's email", () => {
 		await post(request(VALID));
 		const { text } = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
 		expect(text).toBe("Email: jane@example.com");
+	});
+
+	it("counts a field's characters as a visitor would, a pictograph being one", async () => {
+		const post = createContact({ from: FROM });
+		const response = await post(request({ ...VALID, message: "\u{1F3E0}".repeat(3000) }));
+		expect(response.status).toBe(200);
+	});
+
+	it("takes a services picker's joined choices as the plain form's topic", async () => {
+		const post = createContact({ from: FROM });
+		const topic = Array.from(
+			{ length: 8 },
+			(_, index) => `Residential window replacement ${index}`,
+		).join(", ");
+		const response = await post(request({ ...VALID, topic }));
+		expect(response.status).toBe(200);
 	});
 
 	it("never lets an address set the subject or the body of the office's reply", async () => {

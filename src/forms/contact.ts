@@ -117,7 +117,9 @@ export interface ContactOptions {
 export const PLAIN_FIELDS: ContactField[] = [
 	{ key: "name", label: "Name", required: true },
 	{ key: "email", label: "Email", kind: "email", required: true },
-	{ key: "topic", label: "Topic" },
+	// Room for a services picker's choices joined, which the form sends as
+	// the topic: twenty of a hundred characters, and what joins them.
+	{ key: "topic", label: "Topic", limit: 2100 },
 	{ key: "message", label: "Message", required: true, limit: 5000 },
 ];
 
@@ -192,6 +194,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+/** How many characters a visitor would count, a pictograph being one. */
+function count(value: string): number {
+	return Array.from(value).length;
+}
+
 /** The address, or none when no part of it was written. */
 function readAddress(value: unknown): Address | null {
 	if (!isRecord(value)) return null;
@@ -237,14 +244,14 @@ function readField(
 			return { refusal: `${field.label}: each choice must be text.` };
 		}
 		const choices = listed.map(text).filter(Boolean);
-		if (choices.some((choice) => choice.length > CHOICE_LIMIT)) {
+		if (choices.some((choice) => count(choice) > CHOICE_LIMIT)) {
 			return { refusal: `${field.label}: a choice is over ${CHOICE_LIMIT} characters.` };
 		}
 		return { value: choices };
 	}
 	const words = text(raw);
 	const limit = field.limit ?? TEXT_LIMITS[kind];
-	if (words.length > limit) return { refusal: `${field.label} is over ${limit} characters.` };
+	if (count(words) > limit) return { refusal: `${field.label} is over ${limit} characters.` };
 	if (kind === "email" && words && !EMAIL_PATTERN.test(words)) {
 		return { refusal: `${field.label} is not an email address we can write to.` };
 	}
@@ -363,13 +370,8 @@ export function officeEmail(
 		.map((field) => ({ field, value: read[field.key] ?? null }))
 		.filter(({ value }) => words(value) !== "");
 
-	const byKey = new Map(fields.map((field) => [field.key, field]));
-	const topic = (options.subject ?? ["topic"])
-		.map((key) => {
-			const field = byKey.get(key);
-			return field ? words(read[key] ?? null) : "";
-		})
-		.find(Boolean);
+	// A key the site did not list was never read, so it holds nothing here.
+	const topic = (options.subject ?? ["topic"]).map((key) => words(read[key] ?? null)).find(Boolean);
 	const subject = `${options.canary ? "[Canary] " : ""}Website inquiry: ${subjectText(topic ?? "") || "General"}`;
 
 	const replyField = fields.find((field) => field.kind === "email" && read[field.key]);
@@ -424,6 +426,14 @@ function sameSecret(given: string, secret: string): boolean {
 }
 
 /**
+ * The keys `ContactForm` sends when a site turns on one of its opt in
+ * fields. One of these arriving unlisted is a site whose form and function
+ * disagree, which is reported; any other unlisted key is a stranger's and
+ * is ignored without a word.
+ */
+const FORM_KEYS = ["firstName", "lastName", "phone", "address", "services", "consent"];
+
+/**
  * The keys the endpoint reads for itself: `company` is the honeypot, whose
  * any value drops the submission, and `canary` carries the canary's token.
  * A site's field under either would be lost without a word.
@@ -473,6 +483,19 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 
 			const read = readFields(data, fields, !canary);
 			if ("refusal" in read) return json(400, { ok: false, error: read.refusal });
+
+			// The form sent a field this function does not list, so the office
+			// and every destination would never see it. The submission goes on,
+			// and the practice hears that the list is short.
+			const unlisted = FORM_KEYS.filter((key) => key in data && !keys.includes(key));
+			if (unlisted.length > 0 && isProduction()) {
+				reportServerErrorLater(
+					new Error(
+						`Contact form sends ${unlisted.join(", ")}, which the endpoint's fields do not list, so it is dropped`,
+					),
+					{ request, tags },
+				);
+			}
 
 			const apiKey = process.env.RESEND_API_KEY;
 			const to = recipients(process.env.CONTACT_TO);
