@@ -628,11 +628,13 @@ export const POST = createContact({
 ```
 
 ```tsx
+const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
+
 <ContactForm
 	endpoint="/api/contact"
 	successMessage="Thank you."
 	source={source}
-	guard={{ siteKey: import.meta.env.VITE_TURNSTILE_SITE_KEY }}
+	guard={siteKey ? { siteKey } : undefined}
 	blockedMessage={<>Please call us at <PhoneLink phone="(555) 555-0142" />.</>}
 />
 ```
@@ -673,7 +675,7 @@ const crm: Destination<ContactFields> = {
 
 **The rate limit** is not package code. It is a Vercel firewall rule on the endpoint's path, set per project, and the platform answers what it stops with a 429, which the form shows as the blocked message.
 
-**Previews and local runs** use Cloudflare's documented test keys, never the live ones. Site keys: `1x00000000000000000000BB` is invisible and always passes, `2x00000000000000000000BB` invisible and always fails. Secrets: `1x0000000000000000000000000000000AA` always passes, `2x0000000000000000000000000000000AA` always fails. A test secret accepts only the dummy token `XXXX.DUMMY.TOKEN.XXXX`, which a test site key produces.
+**A local run** uses Cloudflare's documented test keys, never the live ones, and no deployed environment ever carries them. Site keys: `1x00000000000000000000BB` is invisible and always passes, `2x00000000000000000000BB` invisible and always fails. Secrets: `1x0000000000000000000000000000000AA` always passes, `2x0000000000000000000000000000000AA` always fails. The always passes secret passes every token, real or made up (siteverify answers `success: true` with `metadata.result_with_testing_key`), so an endpoint running on it has no check at all: on a preview deploy, whose address is public, anyone could pass it and, with a receipt on, have mail sent to any address. A site's Preview environment therefore gets no Turnstile keys, and a site turns all three pieces on together, only when a key is set: the function names `guard` and `receipt` (a function naming `turnstileGuard()` with no secret delivers every submission unchecked, and `createContact` throws for a receipt with no guard), and the page passes `guard` to `ContactForm` (a guard whose site key is undefined is a check that cannot run, reported on every send). The marketing template's `api/contact.ts` and contact page are the wiring to copy; the examples above show the pieces, not the switch. The guard is proven on a production deploy with the real secret, where a made up token is refused with a 403. Cloudflare lists the test keys on its Turnstile testing page; that the always passes secret takes any token was read from siteverify's own answer on 2026-11-25.
 
 **Failures are never silent.** Each destination that fails is reported after the answer has gone (`reportServerErrorLater`), tagged with the `route`, the `destination`, and the `reason`, and saying whether it refused or was down on both tries, with the cause chained under it. A destination that took the submission but could not be sure of it answers with a `warning`, which is reported the same way under the reason `unconfirmed`. A report never carries the submission, and the relay takes anything shaped like an address or a phone number out of a destination's own words (`scrub`) before reporting them; a destination still builds its cause from the service's status and error name, as `refusalError` does.
 
@@ -957,7 +959,7 @@ The space a section leaves above and below itself is one token, `--section-space
 
 ### Moving to 9.2.0
 
-Nothing breaks. Three pieces a site turns on or off ([The Form Relay](#the-form-relay)): a spam check (`guard: turnstileGuard()` in the function with `TURNSTILE_SECRET_KEY` set, and `guard={{ siteKey }}` on `ContactForm`), a receipt to the visitor (`receipt`, which requires the guard, sends from a no-reply address with no reply address, and holds only the site's own words unless `copy` is set; the sending domain is the one `from` already uses, so no new domain is verified), and the Source Selector (one `Source`, handed to `ContactForm`'s `source` and to `sourceField`). A success now answers `{ ok: true, receipt }`; a relay or a test that compared the answer to `{ ok: true }` exactly reads `receipt` too. `Submission` says whether a check vouched for it (`checked`). `onError` is handed `{ blocked }` as a second argument. The field rules moved from `sections.css` to `fields.css`, which `sections.css` imports, so a site that loads `sections.css` sees no change. On the form, a 403 from the guard and any 429 show `blockedMessage`; set a Vercel firewall rate limit on the endpoint, and use Cloudflare's test keys on previews.
+Nothing breaks. Three pieces a site turns on or off ([The Form Relay](#the-form-relay)): a spam check (`guard: turnstileGuard()` in the function with `TURNSTILE_SECRET_KEY` set, and `guard={{ siteKey }}` on `ContactForm`, each named only when the site's key is set), a receipt to the visitor (`receipt`, which requires the guard, sends from a no-reply address with no reply address, and holds only the site's own words unless `copy` is set; the sending domain is the one `from` already uses, so no new domain is verified), and the Source Selector (one `Source`, handed to `ContactForm`'s `source` and to `sourceField`). A success now answers `{ ok: true, receipt }`; a relay or a test that compared the answer to `{ ok: true }` exactly reads `receipt` too. `Submission` says whether a check vouched for it (`checked`). `onError` is handed `{ blocked }` as a second argument. The field rules moved from `sections.css` to `fields.css`, which `sections.css` imports, so a site that loads `sections.css` sees no change. On the form, a 403 from the guard and any 429 show `blockedMessage`; set a Vercel firewall rate limit on the endpoint, and keep Cloudflare's test keys to a local run: no deployed environment carries them, a preview included ([The Form Relay](#the-form-relay)).
 
 ### Moving to 9.1.0
 
