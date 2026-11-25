@@ -300,7 +300,8 @@ describe("ContactForm stopped as a bot's", () => {
 		expect(screen.queryByText("Sending failed.")).toBeNull();
 		expect(fetch).toHaveBeenCalledOnce();
 		expect(onError).toHaveBeenCalledOnce();
-		expect(onError).toHaveBeenCalledWith(undefined);
+		// A site showing failures itself can tell a blocked send from the rest.
+		expect(onError).toHaveBeenCalledWith(undefined, { blocked: true });
 		expect(screen.getByRole("status")).toHaveTextContent("call us instead");
 	});
 
@@ -324,12 +325,14 @@ describe("ContactForm stopped as a bot's", () => {
 		);
 	});
 
-	it("keeps the general message for a 403 that is not the guard's", async () => {
+	it("keeps the general message for a 403 that is not the guard's, and says it was not blocked", async () => {
 		answering(403, { ok: false });
-		render(<ContactForm {...BASE} />);
+		const onError = vi.fn();
+		render(<ContactForm {...BASE} onError={onError} />);
 		fillIn();
 		send();
 		expect(await screen.findByText("Sending failed.")).toBeInTheDocument();
+		expect(onError).toHaveBeenCalledWith(undefined, { blocked: false });
 	});
 
 	it("leaves the blocked message to the site when inlineError is off", async () => {

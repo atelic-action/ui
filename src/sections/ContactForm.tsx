@@ -118,6 +118,12 @@ export interface ContactFormConsent {
 	inline?: boolean;
 }
 
+/** What `onError` is told of a failed send beside the endpoint's words. */
+export interface ContactFormFailure {
+	/** Stopped as a bot's: a 403 from the guard, or a rate limit's 429. */
+	blocked: boolean;
+}
+
 /**
  * What the endpoint said of a send beside its success, handed to the
  * thanks's words: whether a copy went back to the visitor (9.2.0), so a
@@ -184,11 +190,14 @@ export interface ContactFormProps {
 	 * Called once each time a send fails (the endpoint answered a failure, or
 	 * never answered), so a site can say so its own way, in a toast. Passed
 	 * the endpoint's own words when it refused what was written (a field over
-	 * its limit), which are the visitor's to read, and nothing otherwise. The
-	 * form's own message still shows unless `inlineError` is false. A throw
-	 * from it is swallowed.
+	 * its limit), which are the visitor's to read, and nothing otherwise.
+	 * The second argument says whether the send was stopped as a bot's
+	 * (`blocked`: a 403 from the guard, or a rate limit's 429), so a site
+	 * that shows failures itself can say "call us instead" rather than "try
+	 * again" (9.2.0). The form's own message still shows unless
+	 * `inlineError` is false. A throw from it is swallowed.
 	 */
-	onError?: (refusal?: string) => void;
+	onError?: (refusal: string | undefined, failure: ContactFormFailure) => void;
 	/**
 	 * False keeps the form's own failure message off, for a site that shows a
 	 * failure itself through `onError`. Without an `onError` a visitor would
@@ -466,9 +475,9 @@ export function ContactForm({
 	);
 
 	/** Hands a failure to the site. A throw from the site's handler stops here. */
-	function handUp(refused?: string) {
+	function handUp(refused?: string, blocked = false) {
 		try {
-			onError?.(refused);
+			onError?.(refused, { blocked });
 		} catch {
 			// The form has already said what it has to say.
 		}
@@ -518,6 +527,7 @@ export function ContactForm({
 		setRefusal(null);
 		setBlocked(false);
 		let refused: string | undefined;
+		let stopped = false;
 		try {
 			// The spam check's token. A check that cannot run is reported and
 			// the message goes without a token: the endpoint lets it through,
@@ -564,6 +574,7 @@ export function ContactForm({
 							} | null)
 						: null;
 				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
+					stopped = true;
 					setBlocked(true);
 				} else if (response.status === 400 && typeof answer?.error === "string" && answer.error) {
 					refused = answer.error;
@@ -581,7 +592,7 @@ export function ContactForm({
 			if (thanks) setFocusOn("thanks");
 		} catch {
 			setStatus("failed");
-			handUp(refused);
+			handUp(refused, stopped);
 			return;
 		}
 		// The conversion: only a relay the endpoint accepted counts, never a

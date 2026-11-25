@@ -37,6 +37,7 @@ export {
 	ContactForm,
 	type ContactFormAddress,
 	type ContactFormConsent,
+	type ContactFormFailure,
 	type ContactFormLabels,
 	type ContactFormPlaceholders,
 	type ContactFormProps,
