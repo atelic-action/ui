@@ -390,8 +390,12 @@ const PHONE = new RegExp(
 	"giu",
 );
 
-/** A refusal's field with every address and phone number in it replaced. */
-function scrub(text: string): string {
+/**
+ * Text with every email address in it replaced by `[address]` and every
+ * phone number by `[number]`: what a report's own words pass through when
+ * they quote a service's answer.
+ */
+export function scrub(text: string): string {
 	return text.replace(ADDRESS, "[address]").replace(PHONE, "[number]");
 }
 

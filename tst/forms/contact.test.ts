@@ -677,6 +677,30 @@ describe("destinations beside the email", () => {
 		expect(sent[0]).toContain('"reason":"unconfirmed"');
 	});
 
+	it("takes an address and a number out of a destination's own words before reporting them", async () => {
+		const lead = crm(refused(new Error("Contact exists: jane@example.com, (303) 555-0142")));
+		const post = createContact({ from: FROM, destinations: [lead] });
+		await post(request(VALID));
+		const sent = await reports();
+		expect(sent).toHaveLength(1);
+		expect(sent[0]).toContain("Contact exists: [address], [number]");
+		expect(sent[0]).not.toContain("jane@example.com");
+		expect(sent[0]).not.toContain("555-0142");
+	});
+
+	it("still hands the submission to the other destinations when the email has no key", async () => {
+		vi.stubEnv("RESEND_API_KEY", "");
+		vi.stubEnv("VERCEL_ENV", "production");
+		const lead = crm({ status: "delivered" });
+		const post = createContact({ from: FROM, destinations: [lead] });
+		const response = await post(request(VALID));
+		expect(response.status).toBe(200);
+		expect(lead.send).toHaveBeenCalledOnce();
+		const sent = await reports();
+		expect(sent).toHaveLength(1);
+		expect(sent[0]).toContain("RESEND_API_KEY unset");
+	});
+
 	it("refuses a key reused with other words rather than trying again", async () => {
 		resendAnswers(
 			() => new Response(JSON.stringify({ name: "invalid_idempotent_request" }), { status: 409 }),
@@ -878,6 +902,28 @@ describe("the office's email", () => {
 	afterEach(() => {
 		vi.unstubAllEnvs();
 		vi.unstubAllGlobals();
+	});
+
+	it("keeps a pictograph whole where the subject is cut", async () => {
+		const post = createContact({ from: FROM });
+		await post(request({ ...VALID, topic: `${"x".repeat(118)}\u{1F3E0}${"y".repeat(20)}` }));
+		const { subject } = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
+		expect(subject.isWellFormed()).toBe(true);
+		expect(subject.endsWith("\u{1F3E0}\u2026")).toBe(true);
+	});
+
+	it("keeps the name and the message out of the email when a site says so", async () => {
+		const post = createContact({
+			from: FROM,
+			fields: [
+				{ key: "name", label: "Name", required: true, show: false },
+				{ key: "email", label: "Email", kind: "email", required: true },
+				{ key: "message", label: "Message", required: true, show: false },
+			],
+		});
+		await post(request(VALID));
+		const { text } = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
+		expect(text).toBe("Email: jane@example.com");
 	});
 
 	it("never lets an address set the subject or the body of the office's reply", async () => {

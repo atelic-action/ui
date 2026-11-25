@@ -16,7 +16,7 @@
  * Built with the gate (`@atelic-action/ui/forms/relay`): plain TypeScript, no
  * React, relative imports carrying `.js`.
  */
-import { reportServerErrorLater, type WaitUntilContext } from "../monitoring/server.js";
+import { reportServerErrorLater, scrub, type WaitUntilContext } from "../monitoring/server.js";
 
 /** What a form sent, as every destination receives it. */
 export interface Submission<Fields = Record<string, unknown>> {
@@ -235,7 +235,9 @@ export function legError(leg: Leg): Error | undefined {
 		reason === "refused"
 			? "refused the submission"
 			: `was down on ${leg.attempts === 2 ? "both tries" : "its one try"}, and the submission was dropped for it`;
-	return new Error(`Form relay: ${leg.destination} ${what}: ${cause.message}`, { cause });
+	// The words of the cause pass through the scrub here, since the reporter
+	// scrubs a chained cause and never the error it is handed.
+	return new Error(`Form relay: ${leg.destination} ${what}: ${scrub(cause.message)}`, { cause });
 }
 
 /**
@@ -278,7 +280,7 @@ export async function relay<Fields>(
 			const { warning } = leg.result;
 			report(
 				new Error(
-					`Form relay: ${leg.destination} took the submission, unconfirmed: ${warning.message}`,
+					`Form relay: ${leg.destination} took the submission, unconfirmed: ${scrub(warning.message)}`,
 					{
 						cause: warning,
 					},

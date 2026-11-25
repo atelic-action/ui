@@ -25,7 +25,9 @@
  * carries the configured inbox and Resend's message id so the canary can
  * assert both.
  *
- * Errors: an unset variable is reported on the production deploy alone, a
+ * Errors: an unset RESEND_API_KEY, or a canary with no CONTACT_CANARY_TO,
+ * is reported on the production deploy alone (an unset CONTACT_TO is no
+ * fault: inquiries go to the practice's inbox until a site names its own), a
  * destination that fails is reported by the relay, and anything else the
  * handler throws is reported before the platform answers it. A report
  * carries the method, the path, and the user agent, never the submission
@@ -127,11 +129,16 @@ export const DEFAULT_CONTACT_TO = "matt@atelic.me";
  * Unset or holding no address, it is the practice's inbox alone.
  */
 export function recipients(value: string | undefined): string[] {
-	const named = (value ?? "")
+	const named = addresses(value);
+	return named.length > 0 ? named : [DEFAULT_CONTACT_TO];
+}
+
+/** A variable's addresses: one, or several split by commas; none when unset. */
+function addresses(value: string | undefined): string[] {
+	return (value ?? "")
 		.split(",")
 		.map((address) => address.trim())
 		.filter(Boolean);
-	return named.length > 0 ? named : [DEFAULT_CONTACT_TO];
 }
 
 const TEXT_LIMITS: Record<"text" | "email" | "phone", number> = {
@@ -162,7 +169,14 @@ export function subjectText(value: string): string {
 		.replace(/\p{Cc}+/gu, " ")
 		.replace(/\s+/g, " ")
 		.trim();
-	return flat.length > SUBJECT_LIMIT ? `${flat.slice(0, SUBJECT_LIMIT - 1).trimEnd()}…` : flat;
+	// Counted and cut by character, never by code unit, so a pictograph at
+	// the cut is kept whole or dropped whole.
+	const characters = Array.from(flat);
+	if (characters.length <= SUBJECT_LIMIT) return flat;
+	return `${characters
+		.slice(0, SUBJECT_LIMIT - 1)
+		.join("")
+		.trimEnd()}\u2026`;
 }
 
 /**
@@ -336,8 +350,13 @@ export function officeEmail(
 	fields: ContactField[],
 	options: { subject?: string[]; canary?: boolean } = {},
 ): Email {
-	const name = typeof read.name === "string" ? read.name : "";
-	const message = typeof read.message === "string" ? read.message : "";
+	const shown = (key: string) =>
+		fields.some((field) => field.key === key && field.show !== false) &&
+		typeof read[key] === "string"
+			? String(read[key])
+			: "";
+	const name = shown("name");
+	const message = shown("message");
 	const messageLabel = fields.find((field) => field.key === "message")?.label ?? "Message";
 	const rows = fields
 		.filter((field) => field.show !== false && field.key !== "name" && field.key !== "message")
@@ -457,6 +476,7 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 
 			const apiKey = process.env.RESEND_API_KEY;
 			const to = recipients(process.env.CONTACT_TO);
+			const others = canary ? [] : (options.destinations ?? []);
 			if (!apiKey) {
 				if (isProduction()) {
 					reportServerErrorLater(new Error("Contact form not configured: RESEND_API_KEY unset"), {
@@ -464,13 +484,13 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 						tags,
 					});
 				}
-				return json(500, { ok: false, error: "The contact form isn't configured yet." });
+				// With no key there is no email to send, but a destination beside
+				// it is independent of it and still gets the submission.
+				if (others.length === 0) {
+					return json(500, { ok: false, error: "The contact form isn't configured yet." });
+				}
 			}
-			// Read as CONTACT_TO is: one address, or several split by commas.
-			const canaryTo = (process.env.CONTACT_CANARY_TO ?? "")
-				.split(",")
-				.map((address) => address.trim())
-				.filter(Boolean);
+			const canaryTo = addresses(process.env.CONTACT_CANARY_TO);
 			if (canary && canaryTo.length === 0) {
 				if (isProduction()) {
 					reportServerErrorLater(
@@ -481,21 +501,23 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 				return json(500, { ok: false, error: "The contact canary isn't configured yet." });
 			}
 
-			const email = resendDestination<ContactFields>({
-				apiKey,
-				from: options.from,
-				to: canary ? canaryTo : to,
-				timeoutMs: options.emailTimeoutMs,
-				compose: (submission) =>
-					officeEmail(submission.fields, fields, { subject: options.subject, canary }),
-			});
+			const email = !apiKey
+				? null
+				: resendDestination<ContactFields>({
+						apiKey,
+						from: options.from,
+						to: canary ? canaryTo : to,
+						timeoutMs: options.emailTimeoutMs,
+						compose: (submission) =>
+							officeEmail(submission.fields, fields, { subject: options.subject, canary }),
+					});
 			const submission: Submission<ContactFields> = {
 				id: crypto.randomUUID(),
 				fields: read.fields,
 			};
 			// A canary proves the email and nothing else: no other destination
 			// ever sees one.
-			const destinations = canary ? [email] : [email, ...(options.destinations ?? [])];
+			const destinations = [...(email ? [email] : []), ...others];
 			const result = await relay(submission, destinations, {
 				retryWaitMs: options.retryWaitMs,
 				deadlineMs: options.deadlineMs,

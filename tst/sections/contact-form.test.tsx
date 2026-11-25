@@ -61,7 +61,7 @@ describe("ContactForm (endpoint mode)", () => {
 		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
 
 		await waitFor(() => expect(onError).toHaveBeenCalledOnce());
-		expect(onError).toHaveBeenCalledWith();
+		expect(onError).toHaveBeenCalledWith(undefined);
 		expect(screen.getByText("Sending failed.")).toBeInTheDocument();
 	});
 
@@ -117,6 +117,26 @@ describe("ContactForm (endpoint mode)", () => {
 			expect(screen.getByText("Message is over 5000 characters.")).toBeInTheDocument();
 		});
 		expect(screen.queryByText("Sending failed.")).toBeNull();
+	});
+
+	it("hands the endpoint's words up with the failure, and survives a handler that throws", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response('{"ok":false,"error":"Message is over 5000 characters."}', { status: 400 }),
+				),
+		);
+		const onError = vi.fn(() => {
+			throw new Error("no toast provider");
+		});
+		render(<ContactForm {...PROPS} onError={onError} inlineError={false} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(onError).toHaveBeenCalledWith("Message is over 5000 characters."));
+		expect(screen.getByLabelText("Your name")).toHaveValue("Jane");
 	});
 
 	it("keeps the general message for a failure that is not the visitor's to fix", async () => {

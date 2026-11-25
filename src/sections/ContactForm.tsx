@@ -158,10 +158,12 @@ export interface ContactFormProps {
 	/**
 	 * Called once each time a send fails (the endpoint answered a failure, or
 	 * never answered), so a site can say so its own way, in a toast. Passed
-	 * nothing. The form's own message still shows unless `inlineError` is
-	 * false.
+	 * the endpoint's own words when it refused what was written (a field over
+	 * its limit), which are the visitor's to read, and nothing otherwise. The
+	 * form's own message still shows unless `inlineError` is false. A throw
+	 * from it is swallowed.
 	 */
-	onError?: () => void;
+	onError?: (refusal?: string) => void;
 	/**
 	 * False keeps the form's own failure message off, for a site that shows a
 	 * failure itself through `onError`. Without an `onError` a visitor would
@@ -402,6 +404,15 @@ export function ContactForm({
 		</div>
 	);
 
+	/** Hands a failure to the site. A throw from the site's handler stops here. */
+	function handUp(refused?: string) {
+		try {
+			onError?.(refused);
+		} catch {
+			// The form has already said what it has to say.
+		}
+	}
+
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (status === "sending") return;
@@ -423,7 +434,7 @@ export function ContactForm({
 			if (!toEmail) {
 				setRefusal(null);
 				setStatus("failed");
-				onError?.();
+				handUp();
 				return;
 			}
 			const subject = encodeURIComponent(`Website inquiry: ${topic}`);
@@ -443,6 +454,7 @@ export function ContactForm({
 
 		setStatus("sending");
 		setRefusal(null);
+		let refused: string | undefined;
 		try {
 			const response = await fetch(withBase(endpoint), {
 				method: "POST",
@@ -457,7 +469,8 @@ export function ContactForm({
 					response.status === 400
 						? ((await response.json().catch(() => null)) as { error?: unknown } | null)
 						: null;
-				setRefusal(typeof answer?.error === "string" && answer.error ? answer.error : null);
+				if (typeof answer?.error === "string" && answer.error) refused = answer.error;
+				setRefusal(refused ?? null);
 				throw new Error(`status ${response.status}`);
 			}
 			setSentValues(values);
@@ -467,7 +480,7 @@ export function ContactForm({
 			if (thanks) setFocusOn("thanks");
 		} catch {
 			setStatus("failed");
-			onError?.();
+			handUp(refused);
 			return;
 		}
 		// The conversion: only a relay the endpoint accepted counts, never a
