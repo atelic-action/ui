@@ -130,7 +130,8 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 		name: "turnstile",
 		tokenKey: TURNSTILE_TOKEN_KEY,
 		async check(token, { id, request }) {
-			if (!token) return unanswered("the form sent no token");
+			// The secret is looked for first, so a site whose guard is not set
+			// up yet reads as one missing setting, whatever its form sent.
 			const secret = options.secret ?? process.env.TURNSTILE_SECRET_KEY;
 			if (!secret) {
 				return {
@@ -139,6 +140,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 					unset: true,
 				};
 			}
+			if (!token) return unanswered("the form sent no token");
 			const remoteip = visitorAddress(request);
 			const controller = new AbortController();
 			let timer: ReturnType<typeof setTimeout> | undefined;

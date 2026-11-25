@@ -136,6 +136,13 @@ describe("turnstileGuard", () => {
 		expect(fetch).not.toHaveBeenCalled();
 	});
 
+	it("reads a missing token with no secret as the missing setting, not the missing token", async () => {
+		vi.stubEnv("TURNSTILE_SECRET_KEY", "");
+		const verdict = await turnstileGuard().check("", { id: ID, request: request() });
+		expect(verdict).toMatchObject({ status: "unanswered", unset: true });
+		expect(fetch).not.toHaveBeenCalled();
+	});
+
 	it("lets a token through when the fetch throws, the error chained under the cause", async () => {
 		const thrown = new TypeError("fetch failed");
 		vi.mocked(fetch).mockRejectedValue(thrown);
