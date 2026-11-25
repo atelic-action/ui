@@ -234,7 +234,7 @@ describe("SiteShell", () => {
 		expect(screen.queryByRole("heading", { name: "Hours" })).toBeNull();
 	});
 
-	it("prints the footer's hours as the config says: short on the 12 hour letter clock by default, whole with words when asked, and inside the brand column", () => {
+	it("prints the footer's hours as 8:00 am to 5:00 pm by default, inside the brand column, and on the 24 hour clock when asked", () => {
 		const hours = [
 			{
 				label: "Monday to Friday",
@@ -249,24 +249,16 @@ describe("SiteShell", () => {
 				.getAllByRole("definition")
 				.map((d) => d.textContent);
 		const { unmount } = renderShell({}, { ...testSite, hours });
-		expect(ranges()).toEqual(["8a to 5p"]);
-		unmount();
-
-		const words = renderShell(
-			{},
-			{
-				...testSite,
-				hours,
-				meridiem: "word",
-				footer: { hoursShort: false, hoursPlacement: "brand" },
-			},
-		);
 		expect(ranges()).toEqual(["8:00\u00a0am to 5:00\u00a0pm"]);
 		const footer = screen.getByRole("contentinfo");
 		// Inside the brand column: the address's block holds the hours' heading.
 		const nap = footer.querySelector("address") as HTMLElement;
 		expect(nap.parentElement).toContainElement(screen.getByRole("heading", { name: "Hours" }));
-		words.unmount();
+		unmount();
+
+		const twentyFour = renderShell({}, { ...testSite, hours, clock: "24h" });
+		expect(ranges()).toEqual(["08:00 to 17:00"]);
+		twentyFour.unmount();
 	});
 
 	it("leaves out the columns the config has nothing for, and the address when told to", () => {

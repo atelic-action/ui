@@ -39,7 +39,7 @@ export const Default: Story = {
 				"On Alder Street, by the old mill",
 			);
 			await expect(canvas.getByRole("heading", { level: 3, name: "Hours" })).toBeVisible();
-			await expect(canvas.getByText("7:00a to 3:00p")).toBeVisible();
+			await expect(canvas.getByText("7:00 am to 3:00 pm")).toBeVisible();
 		});
 		await step("directions open a new tab, the call never does", async () => {
 			await expect(canvas.getByRole("link", { name: /^Get Directions/ })).toHaveAttribute(

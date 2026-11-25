@@ -33,12 +33,12 @@ const top = (element: Element) => Math.round(element.getBoundingClientRect().top
 export const Default: Story = {
 	play: async ({ canvas }) => {
 		const day = canvas.getByText("Tuesday to Friday");
-		const times = canvas.getByText("7:00a to 3:00p");
+		const times = canvas.getByText("7:00 am to 3:00 pm");
 		await expect(top(day)).toBe(top(times));
 		await expect(times.getBoundingClientRect().left).toBeGreaterThan(
 			day.getBoundingClientRect().right,
 		);
-		await expect(canvas.getByText("8:00a to 2:00p")).toBeVisible();
+		await expect(canvas.getByText("8:00 am to 2:00 pm")).toBeVisible();
 		await expect(canvas.getByText("Closed")).toBeVisible();
 	},
 };
@@ -95,7 +95,7 @@ export const LongestContent: Story = {
 		],
 	},
 	play: async ({ canvas }) => {
-		await expect(canvas.getAllByText("6:30a to 3:30p")).toHaveLength(5);
+		await expect(canvas.getAllByText("6:30 am to 3:30 pm")).toHaveLength(5);
 		await expectNoSidewaysScroll();
 	},
 };

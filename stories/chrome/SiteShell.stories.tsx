@@ -389,7 +389,7 @@ export const FooterFromTheConfig: Story = {
 		const footer = within(canvas.getByRole("contentinfo"));
 		await expect(footer.getByRole("heading", { name: "Hours" })).toBeVisible();
 		await expect(footer.getByText("Tue to Fri")).toBeVisible();
-		await expect(footer.getByText("7a to 3p")).toBeVisible();
+		await expect(footer.getByText("7:00 am to 3:00 pm")).toBeVisible();
 		const rating = footer.getByRole("link", { name: "4.9 on Google" });
 		await expect(rating).toHaveAttribute("href", site.mapLinkURL);
 		await expect(rating).toHaveAttribute("target", "_blank");
@@ -588,58 +588,52 @@ function hoursInBrand(canvas: ReturnType<typeof within>) {
 	return brand ? brand.contains(heading) : false;
 }
 
-/** `meridiem: "word"`: the footer's hours read "7 am to 3 pm", short, in their own column. */
-export const HoursWordMeridiemColumn: Story = {
+/** The 12 hour clock, the default: the footer's hours read "7:00 am to 3:00 pm", in their own column. */
+export const HoursTwelveColumn: Story = {
 	args: {
 		...visitPage,
-		site: { ...site, meridiem: "word", footer: { ...site.footer, hoursPlacement: "column" } },
+		site: { ...site, footer: { ...site.footer, hoursPlacement: "column" } },
 	},
 	play: async ({ canvas }) => {
-		await expect(footerRanges(canvas)).toEqual(["7 am to 3 pm", "8 am to 2 pm", "Closed"]);
+		await expect(footerRanges(canvas)).toEqual([
+			"7:00\u00a0am to 3:00\u00a0pm",
+			"8:00\u00a0am to 2:00\u00a0pm",
+			"Closed",
+		]);
+		await expect(hoursInBrand(canvas)).toBe(false);
+	},
+};
+
+/** The same in the brand column, the default placement. */
+export const HoursTwelveBrand: Story = {
+	args: visitPage,
+	play: async ({ canvas }) => {
+		await expect(footerRanges(canvas)).toEqual([
+			"7:00\u00a0am to 3:00\u00a0pm",
+			"8:00\u00a0am to 2:00\u00a0pm",
+			"Closed",
+		]);
+		await expect(hoursInBrand(canvas)).toBe(true);
+	},
+};
+
+/** `clock: "24h"`, the one alternative: "07:00 to 15:00", in their own column. */
+export const HoursTwentyFourColumn: Story = {
+	args: {
+		...visitPage,
+		site: { ...site, clock: "24h", footer: { ...site.footer, hoursPlacement: "column" } },
+	},
+	play: async ({ canvas }) => {
+		await expect(footerRanges(canvas)).toEqual(["07:00 to 15:00", "08:00 to 14:00", "Closed"]);
 		await expect(hoursInBrand(canvas)).toBe(false);
 	},
 };
 
 /** The same in the brand column. */
-export const HoursWordMeridiemBrand: Story = {
-	args: {
-		...visitPage,
-		site: { ...site, meridiem: "word", footer: { ...site.footer, hoursPlacement: "brand" } },
-	},
+export const HoursTwentyFourBrand: Story = {
+	args: { ...visitPage, site: { ...site, clock: "24h" } },
 	play: async ({ canvas }) => {
-		await expect(footerRanges(canvas)).toEqual(["7 am to 3 pm", "8 am to 2 pm", "Closed"]);
-		await expect(hoursInBrand(canvas)).toBe(true);
-	},
-};
-
-/** `footer.hoursShort: false`: the footer's hours keep their minutes, "7:00a to 3:00p", in their own column. */
-export const HoursWholeColumn: Story = {
-	args: {
-		...visitPage,
-		site: { ...site, footer: { ...site.footer, hoursShort: false, hoursPlacement: "column" } },
-	},
-	play: async ({ canvas }) => {
-		await expect(footerRanges(canvas)).toEqual(["7:00a to 3:00p", "8:00a to 2:00p", "Closed"]);
-		await expect(hoursInBrand(canvas)).toBe(false);
-	},
-};
-
-/** The same in the brand column, with the word meridiem: "7:00 am to 3:00 pm". */
-export const HoursWholeBrand: Story = {
-	args: {
-		...visitPage,
-		site: {
-			...site,
-			meridiem: "word",
-			footer: { ...site.footer, hoursShort: false, hoursPlacement: "brand" },
-		},
-	},
-	play: async ({ canvas }) => {
-		await expect(footerRanges(canvas)).toEqual([
-			"7:00 am to 3:00 pm",
-			"8:00 am to 2:00 pm",
-			"Closed",
-		]);
+		await expect(footerRanges(canvas)).toEqual(["07:00 to 15:00", "08:00 to 14:00", "Closed"]);
 		await expect(hoursInBrand(canvas)).toBe(true);
 	},
 };

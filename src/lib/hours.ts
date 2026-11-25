@@ -1,34 +1,25 @@
-import type { Clock, Meridiem, OpeningHours } from "../sections/siteConfig";
+import type { Clock, OpeningHours } from "../sections/siteConfig";
 
-/** How a time prints: `short` drops a whole hour's minutes on the 12 hour clock. */
+/** How a time prints. */
 export interface ClockOptions {
-	short?: boolean;
 	/** "12h" (the default) or "24h"; see `SiteConfig.clock`. */
 	clock?: Clock;
-	/** "letter" (the default, "9a") or "word" ("9 am"); see `SiteConfig.meridiem`. */
-	meridiem?: Meridiem;
 }
 
 /**
  * Formats a 24 hour "HH:MM" time as the display style used across the
- * marketing components: "11:00" -> "11:00a", "19:00" -> "7:00p".
- * With short: true, whole hours drop their minutes: "11a", "7p".
- * With meridiem: "word", the mark is a word after a no break space:
- * "11:00 am", "7 pm" short.
+ * marketing components: "08:00" -> "8:00 am", "17:30" -> "5:30 pm", the
+ * mark joined by a no break space so a time never breaks before it.
  * With clock: "24h", the time prints as "HH:MM" with a leading zero
- * ("09:00", "17:00") and short changes nothing.
+ * ("08:00", "17:30").
  */
 export function formatClock(time: string, opts: ClockOptions = {}): string {
 	const [hourStr, minuteStr = "00"] = time.split(":");
 	const hour24 = Number(hourStr);
 	if (opts.clock === "24h") return `${String(hour24 % 24).padStart(2, "0")}:${minuteStr}`;
-	const afternoon = hour24 % 24 >= 12;
-	// A word joins with a no break space, so "5:00 pm" never breaks before its mark.
-	const word = afternoon ? "\u00a0pm" : "\u00a0am";
-	const suffix = opts.meridiem === "word" ? word : afternoon ? "p" : "a";
+	const mark = hour24 % 24 >= 12 ? "pm" : "am";
 	const hour = hour24 % 12 || 12;
-	if (opts.short && minuteStr === "00") return `${hour}${suffix}`;
-	return `${hour}:${minuteStr}${suffix}`;
+	return `${hour}:${minuteStr} ${mark}`;
 }
 
 export function isClosed(row: OpeningHours): boolean {
@@ -36,9 +27,9 @@ export function isClosed(row: OpeningHours): boolean {
 }
 
 /**
- * "11:00a to 7:00p" (or "11a to 7p" with short: true, or "11:00 to 19:00"
- * with clock: "24h"). Rows without times render their note ("By
- * appointment") when present, else "Closed".
+ * "8:00 am to 5:00 pm" (or "08:00 to 17:00" with clock: "24h"). Rows
+ * without times render their note ("By appointment") when present, else
+ * "Closed".
  */
 export function formatHoursRange(row: OpeningHours, opts: ClockOptions = {}): string {
 	if (!row.opens || !row.closes) return row.note ?? "Closed";

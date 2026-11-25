@@ -97,7 +97,7 @@ describe("Footer", () => {
 
 	it("sets the hours inside the brand column by default, under the address, headed Hours", () => {
 		const hours = [
-			{ label: "Mon to Fri", range: "9a to 5p" },
+			{ label: "Mon to Fri", range: "9:00 am to 5:00 pm" },
 			{ label: "Sat", range: "Closed" },
 		];
 		const { container } = render(<Footer {...props} hours={hours} />);
@@ -108,7 +108,7 @@ describe("Footer", () => {
 			within(heading.parentElement as HTMLElement)
 				.getAllByRole("definition")
 				.map((d) => d.textContent),
-		).toEqual(["9a to 5p", "Closed"]);
+		).toEqual(["9:00 am to 5:00 pm", "Closed"]);
 		const grid = container.querySelector(".footer-grid") as HTMLElement;
 		expect(grid).toHaveClass("has-brand-hours");
 		expect(grid).not.toHaveClass("has-hours");
@@ -116,7 +116,7 @@ describe("Footer", () => {
 
 	it("draws the hours as a column of their own, headed Hours, and counts it in the grid, when asked", () => {
 		const hours = [
-			{ label: "Mon to Fri", range: "9a to 5p" },
+			{ label: "Mon to Fri", range: "9:00 am to 5:00 pm" },
 			{ label: "Sat", range: "Closed" },
 		];
 		const { container } = render(<Footer {...props} hours={hours} hoursPlacement="column" />);
@@ -131,7 +131,7 @@ describe("Footer", () => {
 			within(column)
 				.getAllByRole("definition")
 				.map((d) => d.textContent),
-		).toEqual(["9a to 5p", "Closed"]);
+		).toEqual(["9:00 am to 5:00 pm", "Closed"]);
 		const grid = container.querySelector(".footer-grid") as HTMLElement;
 		expect(grid).toHaveClass("has-hours");
 	});
@@ -141,7 +141,11 @@ describe("Footer", () => {
 		expect(screen.queryByRole("heading", { name: "Hours" })).toBeNull();
 		unmount();
 		render(
-			<Footer {...props} hours={[{ label: "Daily", range: "7a to 3p" }]} hoursHeading="Open" />,
+			<Footer
+				{...props}
+				hours={[{ label: "Daily", range: "7:00 am to 3:00 pm" }]}
+				hoursHeading="Open"
+			/>,
 		);
 		expect(screen.getByRole("heading", { name: "Open" })).toBeInTheDocument();
 	});
@@ -239,12 +243,14 @@ describe("Footer", () => {
 		render(
 			<Footer
 				{...props}
-				hours={[{ label: "Daily", range: "7a to 3p" }]}
+				hours={[{ label: "Daily", range: "7:00 am to 3:00 pm" }]}
 				hoursPlacement={"sidebar" as unknown as "column"}
 			/>,
 		);
 		const heading = screen.getByRole("heading", { name: "Hours" });
-		expect(within(heading.parentElement as HTMLElement).getByText("7a to 3p")).toBeInTheDocument();
+		expect(
+			within(heading.parentElement as HTMLElement).getByText("7:00 am to 3:00 pm"),
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole("contentinfo").querySelector("address")?.parentElement,
 		).toContainElement(heading);

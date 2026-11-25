@@ -21,7 +21,7 @@ const columns: FooterColumn[] = [
 /** The bakery's hours as SiteShell formats them for the footer. */
 const hours: HoursRow[] = site.hours.map((row) => ({
 	label: row.labelShort,
-	range: formatHoursRange(row, { short: true }),
+	range: formatHoursRange(row),
 }));
 
 const profile = "https://maps.example.com/?q=418+Alder+Street";
@@ -446,8 +446,8 @@ export const HoursColumn: Story = {
 				"Mon",
 			]);
 			await expect(definitions.map((definition) => definition.textContent)).toEqual([
-				"7a to 3p",
-				"8a to 2p",
+				"7:00\u00a0am to 3:00\u00a0pm",
+				"8:00\u00a0am to 2:00\u00a0pm",
 				"Closed",
 			]);
 		});
@@ -981,7 +981,7 @@ const shortBrand = {
 	rating: undefined,
 	email: "hi@kh.example.com",
 	address: { ...address, street: "4 Elm" },
-	hours: [{ label: "Daily", range: "7a to 2p" }],
+	hours: [{ label: "Daily", range: "7:00\u00a0am to 2:00\u00a0pm" }],
 	hoursPlacement: "brand" as const,
 };
 

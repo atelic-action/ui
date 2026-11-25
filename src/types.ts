@@ -313,7 +313,7 @@ export type FooterHoursPlacement = "column" | "brand";
 export interface HoursRow {
 	/** The day label as printed, e.g. "Mon" or "Fri to Sun". */
 	label: string;
-	/** The range as printed, e.g. "11a to 7p" or "Closed". */
+	/** The range as printed, e.g. "11:00 am to 7:00 pm" or "Closed". */
 	range: string;
 }
 

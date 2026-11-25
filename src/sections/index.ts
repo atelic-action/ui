@@ -100,7 +100,6 @@ export type {
 	Density,
 	Founder,
 	GateConfig,
-	Meridiem,
 	NavItem,
 	OpeningHours,
 	SiteConfig,

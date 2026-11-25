@@ -17,48 +17,41 @@ const weekend: OpeningHours = {
 };
 
 describe("formatClock", () => {
-	it("formats morning times", () => {
-		expect(formatClock("07:00")).toBe("7:00a");
+	// The mark joins with a no break space, so "pm" never wraps alone.
+	it("formats morning times with their minutes and am", () => {
+		expect(formatClock("07:00")).toBe("7:00\u00a0am");
+		expect(formatClock("09:30")).toBe("9:30\u00a0am");
 	});
 
-	it("formats afternoon times", () => {
-		expect(formatClock("19:00")).toBe("7:00p");
+	it("formats afternoon times with pm", () => {
+		expect(formatClock("19:00")).toBe("7:00\u00a0pm");
+		expect(formatClock("17:30")).toBe("5:30\u00a0pm");
 	});
 
 	it("formats noon and midnight correctly", () => {
-		expect(formatClock("12:00")).toBe("12:00p");
-		expect(formatClock("00:00")).toBe("12:00a");
-	});
-
-	it("drops minutes on whole hours in short mode", () => {
-		expect(formatClock("11:00", { short: true })).toBe("11a");
-		expect(formatClock("15:30", { short: true })).toBe("3:30p");
+		expect(formatClock("12:00")).toBe("12:00\u00a0pm");
+		expect(formatClock("00:00")).toBe("12:00\u00a0am");
+		expect(formatClock("12:00")).not.toContain(" ");
 	});
 
 	it("stays on the 12 hour clock when asked for it by name", () => {
-		expect(formatClock("09:00", { clock: "12h" })).toBe("9:00a");
-		expect(formatClock("17:00", { short: true, clock: "12h" })).toBe("5p");
+		expect(formatClock("09:00", { clock: "12h" })).toBe("9:00\u00a0am");
 	});
 
-	it("prints the 24 hour clock with leading zeros, short or not", () => {
+	it("prints the 24 hour clock with leading zeros", () => {
 		expect(formatClock("09:00", { clock: "24h" })).toBe("09:00");
 		expect(formatClock("17:00", { clock: "24h" })).toBe("17:00");
 		expect(formatClock("9:30", { clock: "24h" })).toBe("09:30");
 		expect(formatClock("00:00", { clock: "24h" })).toBe("00:00");
-		expect(formatClock("12:00", { short: true, clock: "24h" })).toBe("12:00");
 	});
 });
 
 describe("formatHoursRange", () => {
 	it("formats an open row", () => {
-		expect(formatHoursRange(monday)).toBe("11:00a to 7:00p");
+		expect(formatHoursRange(monday)).toBe("11:00\u00a0am to 7:00\u00a0pm");
 	});
 
-	it("formats compactly in short mode", () => {
-		expect(formatHoursRange(monday, { short: true })).toBe("11a to 7p");
-	});
-
-	it("formats on the 24 hour clock, and short changes nothing there", () => {
+	it("formats on the 24 hour clock", () => {
 		const weekdays: OpeningHours = {
 			label: "Monday to Friday",
 			labelShort: "Mon to Fri",
@@ -67,8 +60,7 @@ describe("formatHoursRange", () => {
 			closes: "17:00",
 		};
 		expect(formatHoursRange(weekdays, { clock: "24h" })).toBe("09:00 to 17:00");
-		expect(formatHoursRange(weekdays, { short: true, clock: "24h" })).toBe("09:00 to 17:00");
-		expect(formatHoursRange(weekdays, { short: true, clock: "12h" })).toBe("9a to 5p");
+		expect(formatHoursRange(weekdays, { clock: "12h" })).toBe("9:00\u00a0am to 5:00\u00a0pm");
 		expect(formatHoursRange(weekend, { clock: "24h" })).toBe("Closed");
 	});
 
@@ -84,22 +76,7 @@ describe("formatHoursRange", () => {
 			note: "By appointment",
 		};
 		expect(formatHoursRange(byAppointment)).toBe("By appointment");
-		expect(formatHoursRange(byAppointment, { short: true })).toBe("By appointment");
-	});
-});
-
-describe("the word meridiem", () => {
-	it("reads am and pm after a space, short or whole, and leaves the 24 hour clock alone", () => {
-		// The mark joins with a no break space, so "pm" never wraps alone.
-		expect(formatClock("08:00", { meridiem: "word" })).toBe("8:00\u00a0am");
-		expect(formatClock("17:30", { meridiem: "word" })).toBe("5:30\u00a0pm");
-		expect(formatClock("08:00", { meridiem: "word", short: true })).toBe("8\u00a0am");
-		expect(formatClock("12:00", { meridiem: "word" })).toBe("12:00\u00a0pm");
-		expect(formatClock("12:00", { meridiem: "word" })).not.toContain(" ");
-		expect(formatClock("17:00", { meridiem: "word", clock: "24h" })).toBe("17:00");
-		const day: OpeningHours = { ...monday, opens: "08:00", closes: "17:00" };
-		expect(formatHoursRange(day, { meridiem: "word" })).toBe("8:00\u00a0am to 5:00\u00a0pm");
-		expect(formatHoursRange(day, { short: true })).toBe("8a to 5p");
+		expect(formatHoursRange(byAppointment, { clock: "24h" })).toBe("By appointment");
 	});
 });
 
