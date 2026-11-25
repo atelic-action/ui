@@ -8,12 +8,14 @@
  *   });
  *
  * The handler reads the body, drops a honeypot catch behind a quiet success,
- * asks the site's guard whether a person sent it (when the site names one),
- * checks each listed field by its kind, and hands the submission to the form
- * relay: the office's email through Resend first, then the site's other
+ * checks each listed field by its kind, asks the site's guard whether a
+ * person sent it (when the site names one), and hands the submission to the
+ * form relay: the office's email through Resend first, then the site's other
  * destinations, all at once. The visitor is answered 200 when any
- * destination took the submission and 502 only when none did, and 403 when
- * the guard refused it. With a receipt turned on, a submission the guard
+ * destination took the submission and 502 only when none did, 400 when a
+ * field is refused, and 403 when the guard refused it. The fields are read
+ * before the guard is asked, so a submission about to be refused costs no
+ * check and spends no token. With a receipt turned on, a submission the guard
  * passed and a destination took gets a copy sent back to the visitor.
  *
  * Env (set on the Vercel project):
@@ -31,9 +33,12 @@
  * assert both. A canary skips the guard, since a token cannot be made
  * without a browser, and never gets a receipt.
  *
- * Time: the guard's one try takes 3 seconds at most, the relay 8, and the
- * receipt's one try 3, so a visitor waits 14 seconds in the worst case,
- * inside the 15 a site states to the platform.
+ * Time: the endpoint holds the guard to what the guard says its one try
+ * takes and half a second more (3.5 seconds for Turnstile's 3), the relay to
+ * 8, and the receipt's one try to 3, so a visitor waits 14.5 seconds in the
+ * worst case, inside the 15 a site states to the platform. A report sent
+ * after that worst case answer may still be cut short by the limit, as the
+ * README's Form Relay chapter says.
  *
  * Errors: an unset RESEND_API_KEY or TURNSTILE_SECRET_KEY, or a canary with
  * no CONTACT_CANARY_TO, is reported on the production deploy alone (an
@@ -51,6 +56,7 @@
 import { EMAIL_PATTERN, toE164 } from "../lib/contactLinks.js";
 import { escapeHTML } from "../lib/escapeHTML.js";
 import { isHoneypotFilled } from "../lib/honeypot.js";
+import { within } from "../lib/within.js";
 import { reportServerErrorLater, scrub, withErrorReporting } from "../monitoring/server.js";
 import { fieldRows, LOOK, rowsTable, shownWords, words } from "./emailParts.js";
 import type { Guard, GuardVerdict } from "./guard.js";
@@ -361,6 +367,13 @@ export function readFields(
 	return { fields: read, offList };
 }
 
+/**
+ * The office's email: an `Email` whose reply goes to one address, the
+ * visitor's, as it always has. `Email.replyTo` took a list in 9.2.0 for the
+ * receipt; this stays a string, so code that read it as one still compiles.
+ */
+export type OfficeEmail = Omit<Email, "replyTo"> & { replyTo?: string };
+
 /** The footer line of a submission the guard could not vouch for. */
 export const UNCHECKED_LINE = "This one was not checked for spam.";
 
@@ -382,7 +395,7 @@ export function officeEmail(
 	read: ContactFields,
 	fields: ContactField[],
 	options: { subject?: string[]; canary?: boolean; checked?: boolean } = {},
-): Email {
+): OfficeEmail {
 	const name = shownWords(read, fields, "name");
 	const message = shownWords(read, fields, "message");
 	const messageLabel = fields.find((field) => field.key === "message")?.label ?? "Message";
@@ -463,40 +476,36 @@ export const RESERVED_KEYS = ["company", "canary", "turnstile"];
 export const GUARD_REFUSAL =
 	"We could not confirm this came from a person. Please call us instead.";
 
-/**
- * Settles with `task`, or with `late()` once `ms` pass, whichever is first.
- * The signal handed to `task` is aborted at the limit, so a fetch inside it
- * stops too.
- */
-async function within<T>(
-	ms: number,
-	task: (signal: AbortSignal) => Promise<T>,
-	late: () => T,
-): Promise<T> {
-	const controller = new AbortController();
-	let timer: ReturnType<typeof setTimeout> | undefined;
-	const cutOff = new Promise<T>((resolve) => {
-		timer = setTimeout(() => {
-			controller.abort();
-			resolve(late());
-		}, ms);
-	});
-	try {
-		return await Promise.race([task(controller.signal), cutOff]);
-	} finally {
-		clearTimeout(timer);
-	}
-}
+/** The time a guard that names none is held to, the grace included. */
+export const DEFAULT_GUARD_BOUND_MS = 3_500;
 
-/** The guard's verdict, a throw from a guard read as one that could not answer. */
-async function ask(guard: Guard, token: string, id: string, request: Request) {
+/** What the endpoint allows beyond the time a guard says it takes. */
+const GUARD_GRACE_MS = 500;
+
+/**
+ * The guard's verdict, held to what the guard says its one try takes and
+ * half a second more, since a site may pass its own guard: a cutoff, and a
+ * throw, are read as a guard that could not answer.
+ */
+async function ask(
+	guard: Guard,
+	token: string,
+	id: string,
+	request: Request,
+): Promise<GuardVerdict> {
+	const bound =
+		guard.timeoutMs === undefined ? DEFAULT_GUARD_BOUND_MS : guard.timeoutMs + GUARD_GRACE_MS;
 	try {
-		return await guard.check(token, { id, request });
+		return await within<GuardVerdict>(
+			bound,
+			() => guard.check(token, { id, request }),
+			() => ({
+				status: "unanswered",
+				cause: new Error(`${guard.name} sent no verdict within ${bound} ms`),
+			}),
+		);
 	} catch (error) {
-		return {
-			status: "unanswered",
-			cause: new Error(`${guard.name} threw`, { cause: error }),
-		} satisfies GuardVerdict;
+		return { status: "unanswered", cause: new Error(`${guard.name} threw`, { cause: error }) };
 	}
 }
 
@@ -559,6 +568,11 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 				Boolean(canaryToken) && sameSecret(String(data.canary ?? ""), canaryToken ?? "");
 			const id = crypto.randomUUID();
 
+			// The fields first: a submission about to be refused for what was
+			// written costs no check and spends no token.
+			const read = readFields(data, fields, !canary);
+			if ("refusal" in read) return json(400, { ok: false, error: read.refusal });
+
 			// The guard: a canary skips it, since a token cannot be made without
 			// a browser. A check that answers no refuses the submission before
 			// any destination sees it; one that cannot answer lets it through,
@@ -581,9 +595,6 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 					);
 				}
 			}
-
-			const read = readFields(data, fields, !canary);
-			if ("refusal" in read) return json(400, { ok: false, error: read.refusal });
 
 			// A choice answered off its list was read as not given. The visitor
 			// is never refused for it, and the practice hears that the form and

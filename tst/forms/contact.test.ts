@@ -1086,7 +1086,11 @@ describe("the guard and the receipt", () => {
 			expect(receipt.from).toBe(FROM);
 			expect(receipt.reply_to).toEqual(["inbox@example.com", "front@example.com"]);
 			expect(receipt.subject).toBe("We have your message");
-			expect(receipt.text).toContain("We have your message, Jane Doe.");
+			// The default receipt repeats nothing the visitor wrote.
+			expect(receipt.text.split("\n")[0]).toBe("We have your message.");
+			for (const value of [VALID.name, VALID.topic, VALID.message]) {
+				expect(`${receipt.subject}${receipt.html}${receipt.text}`).not.toContain(value);
+			}
 			// The receipt carries a key of its own, so it never collides with the office's.
 			const office = new Headers(officeCalls()[0]?.[1]?.headers).get("Idempotency-Key");
 			const own = new Headers(receiptCalls()[0]?.[1]?.headers).get("Idempotency-Key");
@@ -1271,6 +1275,72 @@ describe("the guard and the receipt", () => {
 			expect(sent[0]).toContain("TURNSTILE_SECRET_KEY unset");
 			expect(siteverifyCalls()).toEqual([]);
 			expect(receiptCalls()).toEqual([]);
+		});
+	});
+
+	describe("the endpoint's bound on the guard", () => {
+		/** A guard whose check never answers, saying it takes `timeoutMs`. */
+		function stuck(timeoutMs?: number) {
+			const check = vi.fn(() => new Promise<never>(() => {}));
+			return { name: "custom", tokenKey: "proof", timeoutMs, check };
+		}
+
+		it.each([
+			["the time the guard names and half a second", 1000, 1500],
+			["3500 ms for a guard that names none", undefined, 3500],
+		])(
+			"cuts off a check that never answers at %s, delivering unchecked and reporting",
+			async (_name, timeoutMs, bound) => {
+				vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+				const guard = stuck(timeoutMs);
+				const lead = crm();
+				let answered = false;
+				const pending = createContact({ from: FROM, guard, receipt: {}, destinations: [lead] })(
+					request({ ...VALID, proof: "x" }),
+				).then((response) => {
+					answered = true;
+					return response;
+				});
+				await vi.advanceTimersByTimeAsync(bound - 1);
+				expect(answered).toBe(false);
+				expect(lead.send).not.toHaveBeenCalled();
+				await vi.advanceTimersByTimeAsync(1);
+				const response = await pending;
+				vi.useRealTimers();
+				await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+				expect(guard.check).toHaveBeenCalledOnce();
+				expect(lead.send.mock.calls[0]?.[0].checked).toBe(false);
+				expect(receiptCalls()).toEqual([]);
+				const sent = await reports();
+				expect(sent).toHaveLength(1);
+				expect(sent[0]).toContain(`custom sent no verdict within ${bound} ms`);
+				expect(sent[0]).toContain('"reason":"guard-unanswered"');
+			},
+		);
+
+		it("holds Turnstile to its own limit and half a second", () => {
+			expect(turnstileGuard().timeoutMs).toBe(3000);
+			expect(turnstileGuard({ timeoutMs: 1200 }).timeoutMs).toBe(1200);
+		});
+	});
+
+	describe("fields before the check", () => {
+		it("refuses a field with 400 without calling Cloudflare, so no token is spent", async () => {
+			const response = await guarded()(request({ ...SIGNED, email: "not-an-email" }));
+			expect(response.status).toBe(400);
+			expect(siteverifyCalls()).toEqual([]);
+			expect(fetch).not.toHaveBeenCalled();
+		});
+
+		it("never asks a site's own guard about a submission it refuses", async () => {
+			const check = vi.fn(async () => ({ status: "passed" }) as const);
+			const post = createContact({
+				from: FROM,
+				guard: { name: "custom", tokenKey: "proof", check },
+			});
+			const response = await post(request({ ...VALID, message: "", proof: "x" }));
+			expect(response.status).toBe(400);
+			expect(check).not.toHaveBeenCalled();
 		});
 	});
 

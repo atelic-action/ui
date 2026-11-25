@@ -13,6 +13,7 @@
  * Built with the gate (`@atelic-action/ui/forms/guard`): plain TypeScript,
  * no React, relative imports carrying `.js`.
  */
+import { within } from "../lib/within.js";
 
 /** What a guard made of one submission. */
 export type GuardVerdict =
@@ -40,6 +41,13 @@ export interface Guard {
 	name: string;
 	/** The body key the form sends the token under: "turnstile". */
 	tokenKey: string;
+	/**
+	 * How long the guard says its one try may take, in milliseconds. The
+	 * endpoint cuts the check off at this and half a second more (3500 when
+	 * a guard names none) and takes the cutoff as `unanswered`, so a guard
+	 * that never answers cannot hold a visitor.
+	 */
+	timeoutMs?: number;
 	/**
 	 * Checks the token the form sent, empty when it sent none. Must never
 	 * throw; the endpoint takes a throw as `unanswered` all the same. A
@@ -129,6 +137,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 	return {
 		name: "turnstile",
 		tokenKey: TURNSTILE_TOKEN_KEY,
+		timeoutMs,
 		async check(token, { id, request }) {
 			// The secret is looked for first, so a site whose guard is not set
 			// up yet reads as one missing setting, whatever its form sent.
@@ -142,40 +151,29 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 			}
 			if (!token) return unanswered("the form sent no token");
 			const remoteip = visitorAddress(request);
-			const controller = new AbortController();
-			let timer: ReturnType<typeof setTimeout> | undefined;
-			// The limit answers for the call, so a fetch that ignores its signal
-			// still cannot hold the visitor past it.
-			const cutOff = new Promise<GuardVerdict>((resolve) => {
-				timer = setTimeout(() => {
-					controller.abort();
-					resolve(unanswered(`Turnstile sent no answer within ${timeoutMs} ms`));
-				}, timeoutMs);
-			});
-			const asked = (async (): Promise<GuardVerdict> => {
-				let response: Response;
-				try {
-					response = await fetch(SITEVERIFY_URL, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							secret,
-							response: token,
-							...(remoteip && { remoteip }),
-							idempotency_key: id,
-						}),
-						signal: controller.signal,
-					});
-				} catch (error) {
-					return unanswered("Turnstile could not be reached", error);
-				}
-				return verdictOf(response);
-			})();
-			try {
-				return await Promise.race([asked, cutOff]);
-			} finally {
-				clearTimeout(timer);
-			}
+			return within(
+				timeoutMs,
+				async (signal): Promise<GuardVerdict> => {
+					let response: Response;
+					try {
+						response = await fetch(SITEVERIFY_URL, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								secret,
+								response: token,
+								...(remoteip && { remoteip }),
+								idempotency_key: id,
+							}),
+							signal,
+						});
+					} catch (error) {
+						return unanswered("Turnstile could not be reached", error);
+					}
+					return verdictOf(response);
+				},
+				() => unanswered(`Turnstile sent no answer within ${timeoutMs} ms`),
+			);
 		},
 	};
 }
