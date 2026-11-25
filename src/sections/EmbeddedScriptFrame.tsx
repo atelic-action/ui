@@ -44,10 +44,12 @@ export interface EmbeddedScriptFrameProps {
 	/**
 	 * A CSS selector for what the vendor's script draws on the host page
 	 * outside the mount, such as its own whole page loader or overlay, kept
-	 * hidden (`display: none !important`) for as long as the frame is
-	 * mounted, so the reader sees one loader, ours. The rule goes into the
-	 * head before the script does, so the vendor's loader never flashes, and
-	 * leaves with the frame. It is the site's selector and is not checked:
+	 * hidden (`display: none !important`) for the life of the page, so the
+	 * reader sees one loader, ours. The rule goes into the head before the
+	 * script does, so the vendor's loader never flashes, and stays when the
+	 * frame leaves, since a frame unmounted mid load would otherwise uncover
+	 * a loader nothing is left to call off. It is the site's selector and is
+	 * not checked:
 	 * aim it at a loader or an overlay, never at any part of the vendor's
 	 * tool. Fixed for the frame's life.
 	 */
@@ -202,22 +204,29 @@ export function EmbeddedScriptFrame({
 	const chrome = useRef(hostChrome);
 
 	// The vendor's script, once per page, after the rule that hides its host
-	// page loader, so that loader never shows.
+	// page loader, so that loader never shows. The rule is added once per
+	// selector and stays for the life of the page, never leaving with the
+	// frame: the vendor takes its loader away only on word from its iframe,
+	// so a frame unmounted mid load (a client side link) would otherwise
+	// leave that loader uncovered over the next page, with no iframe left to
+	// call it off.
 	useEffect(() => {
-		let rule: HTMLStyleElement | undefined;
-		if (chrome.current) {
-			rule = document.createElement("style");
-			rule.dataset.embedHostChrome = "";
-			rule.textContent = `${chrome.current} { display: none !important; }`;
-			document.head.appendChild(rule);
+		const selector = chrome.current;
+		if (selector) {
+			const rules = Array.from(
+				document.head.querySelectorAll<HTMLStyleElement>("style[data-embed-host-chrome]"),
+			);
+			if (!rules.some((rule) => rule.dataset.embedHostChrome === selector)) {
+				const rule = document.createElement("style");
+				rule.dataset.embedHostChrome = selector;
+				rule.textContent = `${selector} { display: none !important; }`;
+				document.head.appendChild(rule);
+			}
 		}
 		const script = addScriptOnce(src);
 		const onError = () => setStatus(endWait);
 		script.addEventListener("error", onError);
-		return () => {
-			script.removeEventListener("error", onError);
-			rule?.remove();
-		};
+		return () => script.removeEventListener("error", onError);
 	}, [src, endWait]);
 
 	// The vendor's iframe: watched for in the mount, then waited for to load,

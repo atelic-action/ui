@@ -352,6 +352,10 @@ describe("EmbeddedScriptFrame with a ready message", () => {
 
 describe("EmbeddedScriptFrame with host chrome", () => {
 	const rules = () => Array.from(document.head.querySelectorAll("style[data-embed-host-chrome]"));
+	// The rule outlives its frame by design, so each test starts without one.
+	beforeEach(() => {
+		for (const rule of rules()) rule.remove();
+	});
 
 	it("hides the vendor's host page loader by a rule added before the script", () => {
 		const src = nextSrc();
@@ -364,13 +368,17 @@ describe("EmbeddedScriptFrame with host chrome", () => {
 		expect(children.indexOf(rule as Element)).toBeLessThan(children.indexOf(script as Element));
 	});
 
-	it("keeps it hidden while mounted, and takes the rule out with the frame", () => {
+	it("adds the rule once, and leaves it for the life of the page when the frame goes", () => {
+		// The vendor calls its loader off only on word from its iframe, so a
+		// frame unmounted mid load must not uncover that loader.
 		const { unmount } = render(
 			<StrictMode>{frame(nextSrc(), { hostChrome: "#vendor-page-spinner" })}</StrictMode>,
 		);
 		expect(rules()).toHaveLength(1);
 		unmount();
-		expect(rules()).toHaveLength(0);
+		expect(rules()).toHaveLength(1);
+		render(frame(nextSrc(), { hostChrome: "#vendor-page-spinner" }));
+		expect(rules()).toHaveLength(1);
 	});
 
 	it("adds no rule without host chrome", () => {
