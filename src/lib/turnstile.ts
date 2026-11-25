@@ -125,10 +125,17 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 	/**
 	 * An error the widget raised while no submit was waiting (a site key
 	 * Cloudflare refuses, a domain it does not allow, at render): the next
-	 * submit rejects with it at once rather than waiting out the limit. A
-	 * fresh widget, or a token that arrives, clears it.
+	 * submit rejects with it at once rather than waiting out the limit. That
+	 * rejection drops the widget, so the submit after renders a fresh one
+	 * and the error goes with it; a token that arrives clears it too.
 	 */
 	const raised = useRef<Error | null>(null);
+	/**
+	 * Which widget is live. Every widget made, and every drop, moves it on,
+	 * so a callback from a widget already dropped (a token that arrives after
+	 * its submit gave up) is recognized and ignored.
+	 */
+	const live = useRef(0);
 	const gone = useRef(false);
 	/** The element the live widget was rendered into, once it has been. */
 	const renderedInto = useRef<HTMLElement | null>(null);
@@ -138,6 +145,8 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 		const made = widget.current;
 		widget.current = null;
 		renderedInto.current = null;
+		raised.current = null;
+		live.current += 1;
 		made?.then(
 			({ api, id }) => {
 				try {
@@ -162,6 +171,8 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 			if (!into || (into === containerRef.current && into.isConnected)) return;
 			drop();
 		}
+		live.current += 1;
+		const generation = live.current;
 		const made = loadTurnstile().then((api) => {
 			const container = containerRef.current;
 			if (gone.current || !container) {
@@ -174,12 +185,14 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 				sitekey: siteKey,
 				execution: "execute",
 				callback: (token) => {
+					if (live.current !== generation) return;
 					raised.current = null;
 					const waiter = waiting.current;
 					waiting.current = null;
 					waiter?.resolve(token);
 				},
 				"error-callback": (code) => {
+					if (live.current !== generation) return true;
 					const error = new Error(`The Turnstile challenge failed (${code})`);
 					const waiter = waiting.current;
 					waiting.current = null;
@@ -188,6 +201,7 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 					return true;
 				},
 				"unsupported-callback": () => {
+					if (live.current !== generation) return;
 					unsupported.current = true;
 					const waiter = waiting.current;
 					waiting.current = null;
@@ -223,6 +237,10 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 					done = true;
 					clearTimeout(timer);
 					if (waiting.current === waiter) waiting.current = null;
+					// A widget that failed a submit is dropped, so the next focus or
+					// submit renders a fresh one; a browser that cannot run the
+					// challenge at all keeps it, since a fresh one would fail alike.
+					if (!unsupported.current && widget.current === made) drop();
 					reject(error);
 				},
 			};
@@ -251,7 +269,7 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 				(error: unknown) => waiter.reject(asError(error)),
 			);
 		});
-	}, [prepare]);
+	}, [prepare, drop]);
 
 	const reset = useCallback(() => {
 		widget.current?.then(

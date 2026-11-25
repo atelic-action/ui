@@ -98,7 +98,7 @@ function unanswered(message: string, cause?: unknown): GuardVerdict {
 }
 
 /** The visitor's address as the platform saw it: the first entry of `x-forwarded-for`. */
-function visitorAddress(request: Request): string | undefined {
+function visitorIP(request: Request): string | undefined {
 	const forwarded = request.headers?.get?.("x-forwarded-for");
 	const first = forwarded?.split(",")[0]?.trim();
 	return first || undefined;
@@ -162,7 +162,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 			if (!token) {
 				return { status: "unanswered", cause: new Error("the form sent no token"), quiet: true };
 			}
-			const remoteip = visitorAddress(request);
+			const remoteip = visitorIP(request);
 			return within(
 				timeoutMs,
 				async (signal): Promise<GuardVerdict> => {

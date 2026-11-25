@@ -53,7 +53,11 @@ export interface ReceiptOptions {
 	 * `DEFAULT_RECEIPT_NOTE`; an empty string prints none.
 	 */
 	note?: string;
-	/** How long the one try may take, in milliseconds. Defaults to 3000. */
+	/**
+	 * How long the one try may take, in milliseconds. Defaults to 3000, and
+	 * the endpoint never waits longer than that whatever this says, so its
+	 * stated worst case holds.
+	 */
 	timeoutMs?: number;
 }
 

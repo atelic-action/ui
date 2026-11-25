@@ -170,6 +170,64 @@ describe("useTurnstile", () => {
 		expect(api.execute).not.toHaveBeenCalled();
 	});
 
+	it("drops a widget that failed a submit, so the next submit renders a fresh one and gets a token", async () => {
+		const rendered: TurnstileRenderOptions[] = [];
+		const api = {
+			render: vi.fn((_container: HTMLElement, given: TurnstileRenderOptions) => {
+				rendered.push(given);
+				// The first widget is refused at render; the second is fine.
+				if (rendered.length === 1) given["error-callback"]("110100");
+				return `widget-${rendered.length}`;
+			}),
+			execute: vi.fn((id: string) => {
+				if (id === "widget-2") rendered[1]?.callback("fresh");
+			}),
+			reset: vi.fn(),
+			remove: vi.fn(),
+		};
+		window.turnstile = api as unknown as TurnstileAPI;
+		const { result } = mounted();
+		await expect(result.current.token()).rejects.toThrow("(110100)");
+		await vi.waitFor(() => expect(api.remove).toHaveBeenCalledWith("widget-1"));
+		await expect(result.current.token()).resolves.toBe("fresh");
+		expect(api.render).toHaveBeenCalledTimes(2);
+	});
+
+	it("ignores a late token from a widget dropped when its submit gave up", async () => {
+		vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+		const rendered: TurnstileRenderOptions[] = [];
+		const api = {
+			render: vi.fn((_container: HTMLElement, given: TurnstileRenderOptions) => {
+				rendered.push(given);
+				return `widget-${rendered.length}`;
+			}),
+			execute: vi.fn(),
+			reset: vi.fn(),
+			remove: vi.fn(),
+		};
+		window.turnstile = api as unknown as TurnstileAPI;
+		const { result } = mounted();
+		const first = result.current.token().catch((error: Error) => error.message);
+		await vi.advanceTimersByTimeAsync(TOKEN_WAIT_MS);
+		await expect(first).resolves.toContain("no token within");
+		vi.useRealTimers();
+
+		// The next submit renders a fresh widget and waits on it.
+		let second: string | undefined;
+		const pending = result.current.token().then((value) => {
+			second = value;
+		});
+		await vi.waitFor(() => expect(api.render).toHaveBeenCalledTimes(2));
+		// The first widget's token arrives late: it resolves nothing.
+		rendered[0]?.callback("late");
+		rendered[0]?.["error-callback"]("300030");
+		await new Promise((resolve) => setTimeout(resolve, 20));
+		expect(second).toBeUndefined();
+		rendered[1]?.callback("fresh");
+		await pending;
+		expect(second).toBe("fresh");
+	});
+
 	it("forgets a raised error once a token arrives", async () => {
 		let options: TurnstileRenderOptions | undefined;
 		const api = {

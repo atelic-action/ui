@@ -257,6 +257,8 @@ export interface ContactFormProps {
 	 * run (the script fails to load, the challenge errors, no token in ten
 	 * seconds) is reported, and the message is sent all the same, with no
 	 * token, so a visitor is never stopped by a check that could not load.
+	 * It runs only when the form posts to an `endpoint`; with the mail
+	 * handoff alone it does nothing.
 	 */
 	guard?: { siteKey: string };
 	/**
@@ -401,7 +403,10 @@ export function ContactForm({
 	/** Whether the last send was stopped as a bot's or by a rate limit. */
 	const [blocked, setBlocked] = useState(false);
 	const [sourceAnswer, setSourceAnswer] = useState("");
-	const turnstile = useTurnstile(guard?.siteKey);
+	// The check runs only on a send to the endpoint; the mail handoff alone
+	// posts nothing a token could go with, so it loads nothing.
+	const checking = endpoint ? guard : undefined;
+	const turnstile = useTurnstile(checking?.siteKey);
 	const formRef = useRef<HTMLFormElement>(null);
 	const thanksRef = useRef<HTMLDivElement>(null);
 	// Where focus goes once the form or the thanks is drawn: the thanks's
@@ -534,7 +539,7 @@ export function ContactForm({
 			// the message goes without a token: the endpoint lets it through,
 			// unvouched, so a lead is never lost to a check that did not load.
 			let token = "";
-			if (guard) {
+			if (checking) {
 				try {
 					token = await turnstile.token();
 				} catch (error) {
@@ -554,12 +559,12 @@ export function ContactForm({
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						...contactFormBody(values, shape),
-						...(guard && { [TURNSTILE_TOKEN_KEY]: token }),
+						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
 					}),
 				});
 			} finally {
 				// A token is good once, whatever the endpoint made of it.
-				if (guard) turnstile.reset();
+				if (checking) turnstile.reset();
 			}
 			if (!response.ok) {
 				// A 400 is the endpoint refusing what was written (a field over
@@ -655,7 +660,7 @@ export function ContactForm({
 			onSubmit={handleSubmit}
 			// The spam check's script loads on the first focus inside the form,
 			// never with the page, so a visitor who never writes never loads it.
-			onFocus={guard ? turnstile.prepare : undefined}
+			onFocus={checking ? turnstile.prepare : undefined}
 			noValidate
 		>
 			{/* One shot status: the thanks or the failure is announced once when it
@@ -876,7 +881,7 @@ export function ContactForm({
 			</div>
 			{/* The spam check's widget, rendered here by the script once it loads.
 			    The widget made for the form is invisible, so nothing shows. */}
-			{guard && <div ref={turnstile.containerRef} className="contact-guard" />}
+			{checking && <div ref={turnstile.containerRef} className="contact-guard" />}
 			<Button type="submit" size="lg" arrow style={{ width: "100%" }}>
 				{status === "sending" ? labels.sending : labels.submit}
 			</Button>

@@ -13,10 +13,12 @@
  * form relay: the office's email through Resend first, then the site's other
  * destinations, all at once. The visitor is answered 200 when any
  * destination took the submission and 502 only when none did, 400 when a
- * field is refused, and 403 when the guard refused it. The fields are read
- * before the guard is asked, so a submission about to be refused costs no
- * check and spends no token. With a receipt turned on, a submission the guard
- * passed and a destination took gets a copy sent back to the visitor.
+ * field is refused, 500 when it cannot deliver at all, and 403 when the
+ * guard refused it. The order is the body, the honeypot, the canary, the
+ * fields, whether it can deliver, the guard, the relay, then the receipt, so
+ * a submission about to be refused, or a deploy that cannot deliver, costs no
+ * check and spends no token. With a receipt turned on, a submission the
+ * guard passed and a destination took gets a receipt sent to the visitor.
  *
  * Env (set on the Vercel project):
  * - RESEND_API_KEY        sending only Resend API key
@@ -380,7 +382,7 @@ export function readFields(
 export const UNCHECKED_LINE = "This one was not checked for spam.";
 
 /** The first email field's address, when the submission holds one. */
-function visitorAddress(read: ContactFields, fields: ContactField[]): string | undefined {
+function visitorEmail(read: ContactFields, fields: ContactField[]): string | undefined {
 	const field = fields.find((one) => one.kind === "email" && read[one.key]);
 	return field ? String(read[field.key]) : undefined;
 }
@@ -407,7 +409,7 @@ export function officeEmail(
 	const topic = (options.subject ?? ["topic"]).map((key) => words(read[key] ?? null)).find(Boolean);
 	const subject = `${options.canary ? "[Canary] " : ""}Website inquiry: ${subjectText(topic ?? "") || "General"}`;
 
-	const replyTo = visitorAddress(read, fields);
+	const replyTo = visitorEmail(read, fields);
 	const unchecked = options.checked === false;
 
 	const html = `
@@ -564,11 +566,14 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			if (!isRecord(data)) return json(400, { ok: false, error: "Invalid request body." });
 
 			// Honeypot: a bot that fills it gets the same quiet success a real
-			// send without a receipt gets, so it never adapts. It is caught
-			// before the guard, so a bot that fills it costs no check.
+			// send through this endpoint usually gets, a receipt when the
+			// endpoint sends one, so it never adapts. It is caught before
+			// everything else, so a bot that fills it costs no check.
 			// ContactForm runs the same predicate to keep the catch out of the
 			// lead event.
-			if (isHoneypotFilled(data.company)) return json(200, { ok: true, receipt: false });
+			if (isHoneypotFilled(data.company)) {
+				return json(200, { ok: true, receipt: Boolean(receipt) });
+			}
 
 			const canaryToken = process.env.CONTACT_CANARY_TOKEN;
 			const canary =
@@ -579,6 +584,35 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			// written costs no check and spends no token.
 			const read = readFields(data, fields, !canary);
 			if ("refusal" in read) return json(400, { ok: false, error: read.refusal });
+
+			// Whether the endpoint can deliver at all, before the guard, so a
+			// deploy that cannot deliver spends no check.
+			const apiKey = process.env.RESEND_API_KEY;
+			const to = recipients(process.env.CONTACT_TO);
+			const others = canary ? [] : (options.destinations ?? []);
+			if (!apiKey) {
+				if (isProduction()) {
+					reportServerErrorLater(new Error("Contact form not configured: RESEND_API_KEY unset"), {
+						request,
+						tags,
+					});
+				}
+				// With no key there is no email to send, but a destination beside
+				// it is independent of it and still gets the submission.
+				if (others.length === 0) {
+					return json(500, { ok: false, error: "The contact form isn't configured yet." });
+				}
+			}
+			const canaryTo = addresses(process.env.CONTACT_CANARY_TO);
+			if (canary && canaryTo.length === 0) {
+				if (isProduction()) {
+					reportServerErrorLater(
+						new Error("Contact canary not configured: CONTACT_CANARY_TO unset"),
+						{ request, tags },
+					);
+				}
+				return json(500, { ok: false, error: "The contact canary isn't configured yet." });
+			}
 
 			// The guard: a canary skips it, since a token cannot be made without
 			// a browser. A check that answers no refuses the submission before
@@ -650,33 +684,6 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 				);
 			}
 
-			const apiKey = process.env.RESEND_API_KEY;
-			const to = recipients(process.env.CONTACT_TO);
-			const others = canary ? [] : (options.destinations ?? []);
-			if (!apiKey) {
-				if (isProduction()) {
-					reportServerErrorLater(new Error("Contact form not configured: RESEND_API_KEY unset"), {
-						request,
-						tags,
-					});
-				}
-				// With no key there is no email to send, but a destination beside
-				// it is independent of it and still gets the submission.
-				if (others.length === 0) {
-					return json(500, { ok: false, error: "The contact form isn't configured yet." });
-				}
-			}
-			const canaryTo = addresses(process.env.CONTACT_CANARY_TO);
-			if (canary && canaryTo.length === 0) {
-				if (isProduction()) {
-					reportServerErrorLater(
-						new Error("Contact canary not configured: CONTACT_CANARY_TO unset"),
-						{ request, tags },
-					);
-				}
-				return json(500, { ok: false, error: "The contact canary isn't configured yet." });
-			}
-
 			const email = !apiKey
 				? null
 				: resendDestination<ContactFields>({
@@ -718,10 +725,15 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			// The receipt: only behind a guard that passed, never for a canary,
 			// and only once a destination took the submission, so it never goes
 			// to an address a bot typed and never promises a message nobody has.
-			const address = visitorAddress(read.fields, fields);
+			const address = visitorEmail(read.fields, fields);
 			let sentReceipt = false;
 			if (receipt && checked === true && apiKey && address) {
-				const timeoutMs = receipt.timeoutMs ?? DEFAULT_RECEIPT_TIMEOUT_MS;
+				// Never more than 3000 ms, whatever a site sets, so the endpoint's
+				// stated worst case holds.
+				const timeoutMs = Math.min(
+					receipt.timeoutMs ?? DEFAULT_RECEIPT_TIMEOUT_MS,
+					DEFAULT_RECEIPT_TIMEOUT_MS,
+				);
 				// From a no-reply address, with no reply address of its own.
 				const copy = resendDestination<ContactFields>({
 					apiKey,

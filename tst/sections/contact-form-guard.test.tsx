@@ -172,6 +172,19 @@ describe("ContactForm with the guard", () => {
 		expect(scripts()).toHaveLength(1);
 	});
 
+	it("does nothing with the mail handoff alone: no script, no widget, no wait", () => {
+		const { container } = render(
+			<ContactForm successMessage="Thank you." toEmail="hello@example.com" guard={GUARD} />,
+		);
+		fireEvent.focus(screen.getByLabelText("Your name"));
+		expect(scripts()).toHaveLength(0);
+		expect(container.querySelector(".contact-guard")).toBeNull();
+		fillIn();
+		send();
+		expect(scripts()).toHaveLength(0);
+		expect(screen.getByText("Thank you.")).toBeInTheDocument();
+	});
+
 	it("loads nothing on focus without a guard", () => {
 		render(<ContactForm {...BASE} />);
 		fireEvent.focus(screen.getByLabelText("Your name"));

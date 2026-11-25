@@ -1151,6 +1151,24 @@ describe("the guard and the receipt", () => {
 			expect(receiptCalls()).toHaveLength(1);
 		});
 
+		it("never waits on the receipt past 3000 ms, whatever a site sets", async () => {
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+			answers.receipt = () => new Promise<Response>(() => {});
+			let answered = false;
+			const pending = guarded({ receipt: { timeoutMs: 10_000 } })(request(SIGNED)).then(
+				(response) => {
+					answered = true;
+					return response;
+				},
+			);
+			await vi.advanceTimersByTimeAsync(2999);
+			expect(answered).toBe(false);
+			await vi.advanceTimersByTimeAsync(1);
+			const response = await pending;
+			vi.useRealTimers();
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+		});
+
 		it("sends the receipt from the site's own sender when it names one", async () => {
 			await guarded({ receipt: { from: "Front Desk <desk@example.com>" } })(request(SIGNED));
 			const receipt = JSON.parse(String(receiptCalls()[0]?.[1]?.body));
@@ -1382,8 +1400,30 @@ describe("the guard and the receipt", () => {
 		it("answers the honeypot before Cloudflare is called", async () => {
 			const response = await guarded()(request({ ...SIGNED, company: "Totally Real LLC" }));
 			expect(response.status).toBe(200);
-			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 			expect(fetch).not.toHaveBeenCalled();
+			// A bot cannot tell its catch from a real send through the same endpoint.
+			const real = await guarded()(request(SIGNED));
+			expect(await response.text()).toBe(await real.text());
+			expect(
+				JSON.parse(await (await guarded()(request({ ...SIGNED, company: "x" }))).text()),
+			).toEqual({
+				ok: true,
+				receipt: true,
+			});
+		});
+
+		it("answers the honeypot as a real send without a receipt where the endpoint sends none", async () => {
+			const post = createContact({ from: FROM, guard: turnstileGuard() });
+			const caught = await post(request({ ...SIGNED, company: "Totally Real LLC" }));
+			const real = await post(request(SIGNED));
+			expect(await caught.text()).toBe(await real.text());
+		});
+
+		it("refuses an endpoint that cannot deliver with 500 before calling Cloudflare", async () => {
+			vi.stubEnv("RESEND_API_KEY", "");
+			const response = await guarded()(request(SIGNED));
+			expect(response.status).toBe(500);
+			expect(siteverifyCalls()).toEqual([]);
 		});
 
 		it("passes a canary with no token, never calling Cloudflare, and sends it no receipt", async () => {
