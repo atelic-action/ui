@@ -71,6 +71,21 @@ describe("a choice field", () => {
 		expect(read).toMatchObject({ fields: { source: "" }, offList: [] });
 	});
 
+	it("matches an option written with a stray space, and records it trimmed", () => {
+		const spaced = [
+			...PLAIN_FIELDS,
+			sourceField({ label: "How?", options: [" Google ", "A friend  "] }),
+		];
+		expect(readFields({ ...VALID, source: "Google" }, spaced)).toMatchObject({
+			fields: { source: "Google" },
+			offList: [],
+		});
+		expect(readFields({ ...VALID, source: " A friend " }, spaced)).toMatchObject({
+			fields: { source: "A friend" },
+			offList: [],
+		});
+	});
+
 	it("reads an answer off the list as not given, and names it", () => {
 		const read = readFields({ ...VALID, source: "A billboard" }, fields);
 		expect(read).toMatchObject({ fields: { source: "" }, offList: ["source"] });

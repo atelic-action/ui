@@ -10,6 +10,12 @@
  * submission through and reports it, because a lead lost to a check that
  * could not answer costs more than a stray piece of spam.
  *
+ * A missing token is the one unanswered cause the endpoint does not report
+ * (`quiet`). A real visitor whose browser could not run the check was
+ * already reported by the form, and a bot that leaves the token out would
+ * otherwise file one report for every submission and bury the rest. The
+ * submission is still delivered unchecked, with no receipt.
+ *
  * Built with the gate (`@atelic-action/ui/forms/guard`): plain TypeScript,
  * no React, relative imports carrying `.js`.
  */
@@ -24,9 +30,11 @@ export type GuardVerdict =
 	 * The check could not answer: the submission is let through and the
 	 * cause reported. `unset` marks a cause that is a missing setting (the
 	 * secret), which is reported on the production deploy alone, as the
-	 * endpoint's other unset settings are.
+	 * endpoint's other unset settings are. `quiet` marks a cause the
+	 * endpoint does not report at all (a form that sent no token, which the
+	 * form reports itself when a real visitor's browser could not run it).
 	 */
-	| { status: "unanswered"; cause: Error; unset?: boolean };
+	| { status: "unanswered"; cause: Error; unset?: boolean; quiet?: boolean };
 
 /** What a guard's `check` is handed beside the token. */
 export interface GuardContext {
@@ -43,9 +51,10 @@ export interface Guard {
 	tokenKey: string;
 	/**
 	 * How long the guard says its one try may take, in milliseconds. The
-	 * endpoint cuts the check off at this and half a second more (3500 when
-	 * a guard names none) and takes the cutoff as `unanswered`, so a guard
-	 * that never answers cannot hold a visitor.
+	 * endpoint cuts the check off at this and half a second more, and never
+	 * later than 3500 ms whatever a guard names (3500 when it names none), and
+	 * takes the cutoff as `unanswered`: a check gets at most 3.5 seconds, so
+	 * the endpoint's worst case holds for any guard.
 	 */
 	timeoutMs?: number;
 	/**
@@ -73,12 +82,13 @@ export const DEFAULT_GUARD_TIMEOUT_MS = 3_000;
 
 /**
  * The error codes that mean Cloudflare looked at the token and said no: a
- * token that is not one, one already spent or expired, or a request it
- * could not read. Every other code (a wrong or missing secret, its own
- * fault, a missing token it says it never got) is Cloudflare unable to
- * answer for this visitor, and lets the submission through.
+ * token that is not one, or one already spent or expired. Every other code
+ * (a wrong or missing secret, a request it could not read, which is the
+ * endpoint's own fault, its own fault, a missing token it says it never
+ * got) is Cloudflare unable to answer for this visitor, and lets the
+ * submission through.
  */
-export const REFUSING_CODES = ["invalid-input-response", "timeout-or-duplicate", "bad-request"];
+export const REFUSING_CODES = ["invalid-input-response", "timeout-or-duplicate"];
 
 function unanswered(message: string, cause?: unknown): GuardVerdict {
 	return {
@@ -149,7 +159,9 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 					unset: true,
 				};
 			}
-			if (!token) return unanswered("the form sent no token");
+			if (!token) {
+				return { status: "unanswered", cause: new Error("the form sent no token"), quiet: true };
+			}
 			const remoteip = visitorAddress(request);
 			return within(
 				timeoutMs,

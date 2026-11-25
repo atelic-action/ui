@@ -59,7 +59,7 @@ import { isHoneypotFilled } from "../lib/honeypot.js";
 import { within } from "../lib/within.js";
 import { reportServerErrorLater, scrub, withErrorReporting } from "../monitoring/server.js";
 import { fieldRows, LOOK, rowsTable, shownWords, words } from "./emailParts.js";
-import type { Guard, GuardVerdict } from "./guard.js";
+import { type Guard, type GuardVerdict, TURNSTILE_TOKEN_KEY } from "./guard.js";
 import { DEFAULT_RECEIPT_TIMEOUT_MS, type ReceiptOptions, receiptEmail } from "./receipt.js";
 import { type Destination, type DestinationResult, down, relay, type Submission } from "./relay.js";
 import { type Email, resendDestination } from "./resend.js";
@@ -273,7 +273,11 @@ function readField(
 		// list no longer holds: it is read as not given, never refused, so a
 		// visitor never loses a message over a question about how they heard.
 		const answer = text(raw);
-		if (!answer || field.options?.includes(answer)) return { value: answer };
+		if (!answer) return { value: "" };
+		// The options are compared trimmed, as the answer is, so an option
+		// written with a stray space still matches; the trimmed one is kept.
+		const option = field.options?.map((one) => one.trim()).find((one) => one === answer);
+		if (option !== undefined) return { value: option };
 		return { value: "", offList: true };
 	}
 	if (kind === "address") {
@@ -470,13 +474,16 @@ const FORM_KEYS = ["firstName", "lastName", "phone", "address", "services", "con
  * `turnstile` the guard's token. A site's field under any of them would be
  * lost without a word.
  */
-export const RESERVED_KEYS = ["company", "canary", "turnstile"];
+export const RESERVED_KEYS = ["company", "canary", TURNSTILE_TOKEN_KEY];
 
 /** The words a visitor reads when the guard refused the submission. */
 export const GUARD_REFUSAL =
 	"We could not confirm this came from a person. Please call us instead.";
 
-/** The time a guard that names none is held to, the grace included. */
+/**
+ * The longest the endpoint waits on any guard: the time a guard that names
+ * none is held to, and the ceiling on one that names more.
+ */
 export const DEFAULT_GUARD_BOUND_MS = 3_500;
 
 /** What the endpoint allows beyond the time a guard says it takes. */
@@ -484,8 +491,8 @@ const GUARD_GRACE_MS = 500;
 
 /**
  * The guard's verdict, held to what the guard says its one try takes and
- * half a second more, since a site may pass its own guard: a cutoff, and a
- * throw, are read as a guard that could not answer.
+ * half a second more, never past 3.5 seconds, since a site may pass its own
+ * guard: a cutoff, and a throw, are read as a guard that could not answer.
  */
 async function ask(
 	guard: Guard,
@@ -494,7 +501,9 @@ async function ask(
 	request: Request,
 ): Promise<GuardVerdict> {
 	const bound =
-		guard.timeoutMs === undefined ? DEFAULT_GUARD_BOUND_MS : guard.timeoutMs + GUARD_GRACE_MS;
+		guard.timeoutMs === undefined
+			? DEFAULT_GUARD_BOUND_MS
+			: Math.min(guard.timeoutMs + GUARD_GRACE_MS, DEFAULT_GUARD_BOUND_MS);
 	try {
 		return await within<GuardVerdict>(
 			bound,
@@ -585,7 +594,14 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 					return json(403, { ok: false, code: "guard", error: GUARD_REFUSAL });
 				}
 				checked = verdict.status === "passed";
-				if (verdict.status === "unanswered" && (!verdict.unset || isProduction())) {
+				// A missing token is quiet: the form reported a real visitor whose
+				// browser could not run the check, and a bot that leaves it out
+				// would otherwise file a report for every submission.
+				if (
+					verdict.status === "unanswered" &&
+					!verdict.quiet &&
+					(!verdict.unset || isProduction())
+				) {
 					reportServerErrorLater(
 						new Error(
 							`Form guard: ${guard.name} could not answer, and the submission was let through: ${scrub(verdict.cause.message)}`,
@@ -618,6 +634,19 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 				reportServerErrorLater(
 					new Error(
 						`Contact form sends ${unlisted.join(", ")}, which the endpoint's fields do not list, so it is dropped`,
+					),
+					{ request, tags },
+				);
+			}
+
+			// The form runs the spam check and the function names no guard, so
+			// every token goes unread. The submission goes on, and the practice
+			// hears that the check is on in one half alone.
+			const token = data[TURNSTILE_TOKEN_KEY];
+			if (!guard && typeof token === "string" && token && isProduction()) {
+				reportServerErrorLater(
+					new Error(
+						"Contact form sends a spam check token and the endpoint names no guard, so nothing is checked",
 					),
 					{ request, tags },
 				);

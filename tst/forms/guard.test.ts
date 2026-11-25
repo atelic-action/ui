@@ -85,12 +85,12 @@ describe("turnstileGuard", () => {
 
 	it("calls an empty token unanswered without calling Cloudflare", async () => {
 		const verdict = await turnstileGuard().check("", { id: ID, request: request() });
-		expect(verdict.status).toBe("unanswered");
+		expect(verdict).toMatchObject({ status: "unanswered", quiet: true });
 		expect(causeOf(verdict)).toBe("the form sent no token");
 		expect(fetch).not.toHaveBeenCalled();
 	});
 
-	it.each([["invalid-input-response"], ["timeout-or-duplicate"], ["bad-request"]])(
+	it.each([["invalid-input-response"], ["timeout-or-duplicate"]])(
 		"refuses a token Cloudflare answers %s",
 		async (code) => {
 			vi.mocked(fetch).mockResolvedValue(answer({ success: false, "error-codes": [code] }));
@@ -105,11 +105,14 @@ describe("turnstileGuard", () => {
 		["invalid-input-secret"],
 		["missing-input-secret"],
 		["missing-input-response"],
+		// A request Cloudflare could not read is the endpoint's fault, never the visitor's.
+		["bad-request"],
 	])("lets a token through unanswered when Cloudflare answers %s", async (code) => {
 		vi.mocked(fetch).mockResolvedValue(answer({ success: false, "error-codes": [code] }));
 		const verdict = await turnstileGuard().check(TOKEN, { id: ID, request: request() });
 		expect(verdict).toMatchObject({ status: "unanswered" });
 		expect(verdict).not.toHaveProperty("unset");
+		expect(verdict).not.toHaveProperty("quiet");
 		expect(causeOf(verdict)).toBe(`Turnstile could not answer: ${code}`);
 	});
 

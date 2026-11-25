@@ -10,6 +10,7 @@ import {
 	useState,
 } from "react";
 import { MultiSelect } from "../components/MultiSelect";
+import { TURNSTILE_TOKEN_KEY } from "../forms/guard";
 import type { Source } from "../forms/source";
 import {
 	addressLine,
@@ -553,7 +554,7 @@ export function ContactForm({
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						...contactFormBody(values, shape),
-						...(guard && { turnstile: token }),
+						...(guard && { [TURNSTILE_TOKEN_KEY]: token }),
 					}),
 				});
 			} finally {

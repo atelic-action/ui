@@ -1198,7 +1198,11 @@ describe("the guard and the receipt", () => {
 
 	describe("a check that cannot answer", () => {
 		it.each([
-			["the form sent no token", VALID, () => new Response('{"success":true}')],
+			[
+				"Cloudflare could not read the request",
+				SIGNED,
+				() => new Response('{"success":false,"error-codes":["bad-request"]}'),
+			],
 			[
 				"Cloudflare's own fault",
 				SIGNED,
@@ -1235,6 +1239,22 @@ describe("the guard and the receipt", () => {
 		it("does not call Cloudflare for a submission with no token", async () => {
 			await guarded()(request(VALID));
 			expect(siteverifyCalls()).toEqual([]);
+		});
+
+		it("delivers a submission with no token unchecked and with no receipt, and files no report", async () => {
+			// The form reported a real visitor whose browser could not run the
+			// check; a bot that leaves the token out would bury every other report.
+			vi.stubEnv("VERCEL_ENV", "production");
+			const lead = crm();
+			const response = await guarded({ destinations: [lead] })(request(VALID));
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(officeCalls()).toHaveLength(1);
+			expect(receiptCalls()).toEqual([]);
+			expect(lead.send.mock.calls[0]?.[0].checked).toBe(false);
+			expect(JSON.parse(String(officeCalls()[0]?.[1]?.body)).text).toContain(
+				"This one was not checked for spam.",
+			);
+			expect(await reports()).toEqual([]);
 		});
 
 		it("says so in the office's email, in both bodies", async () => {
@@ -1288,6 +1308,7 @@ describe("the guard and the receipt", () => {
 		it.each([
 			["the time the guard names and half a second", 1000, 1500],
 			["3500 ms for a guard that names none", undefined, 3500],
+			["3500 ms for a guard that names more, the ceiling", 10_000, 3500],
 		])(
 			"cuts off a check that never answers at %s, delivering unchecked and reporting",
 			async (_name, timeoutMs, bound) => {
@@ -1382,6 +1403,32 @@ describe("the guard and the receipt", () => {
 			const lead = crm();
 			await createContact({ from: FROM, destinations: [lead] })(request(VALID));
 			expect(lead.send.mock.calls[0]?.[0]).not.toHaveProperty("checked");
+		});
+	});
+
+	describe("a form with the check and a function without it", () => {
+		it("reports a token sent to an endpoint that names no guard, on production, and delivers", async () => {
+			vi.stubEnv("VERCEL_ENV", "production");
+			const lead = crm();
+			const response = await createContact({ from: FROM, destinations: [lead] })(request(SIGNED));
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(lead.send).toHaveBeenCalledOnce();
+			expect(siteverifyCalls()).toEqual([]);
+			const sent = await reports();
+			expect(sent).toHaveLength(1);
+			expect(sent[0]).toContain(
+				"Contact form sends a spam check token and the endpoint names no guard, so nothing is checked",
+			);
+			expect(sent[0]).not.toContain(TOKEN);
+		});
+
+		it("says nothing of an empty token, of a guarded endpoint, or off production", async () => {
+			vi.stubEnv("VERCEL_ENV", "production");
+			await createContact({ from: FROM })(request({ ...VALID, turnstile: "" }));
+			await guarded()(request(SIGNED));
+			vi.stubEnv("VERCEL_ENV", "preview");
+			await createContact({ from: FROM })(request(SIGNED));
+			expect(await reports()).toEqual([]);
 		});
 	});
 
