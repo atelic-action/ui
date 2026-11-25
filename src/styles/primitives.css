@@ -800,4 +800,42 @@
 		outline-offset: 2px;
 		border-radius: 2px;
 	}
+
+	/* Spinner: a ring in the primary color turning on a faint track of it.
+	   Under reduced motion it holds still and its label shows beside it. */
+	.atelic-ui .spinner {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6em;
+		color: var(--ink-soft);
+		font-size: 0.95rem;
+	}
+	.atelic-ui .spinner-ring {
+		flex: none;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		border: 3px solid color-mix(in srgb, var(--primary) 18%, transparent);
+		border-top-color: var(--primary);
+		animation: spinner-turn 0.9s linear infinite;
+	}
+	@keyframes spinner-turn {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .spinner-ring {
+			animation: none;
+		}
+		.atelic-ui .spinner-label.visually-hidden {
+			position: static;
+			width: auto;
+			height: auto;
+			margin: 0;
+			overflow: visible;
+			clip-path: none;
+			white-space: normal;
+		}
+	}
 }

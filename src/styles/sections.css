@@ -3051,4 +3051,36 @@
 	.atelic-ui .split.align-center {
 		align-items: center;
 	}
+
+	/* ---- EmbeddedScriptFrame ----
+	   The mount is the vendor's: nothing here styles what it draws beyond
+	   holding its iframe to the column, so a wide frame never pushes the
+	   page sideways. The status sits over the held space, beside the mount,
+	   until the iframe has loaded. */
+	.atelic-ui .esf-frame {
+		position: relative;
+		min-width: 0;
+	}
+	.atelic-ui .esf-mount {
+		min-width: 0;
+	}
+	.atelic-ui .esf-mount iframe {
+		display: block;
+		max-width: 100%;
+	}
+	.atelic-ui .esf-status {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--gutter);
+		text-align: center;
+	}
+	.atelic-ui .esf-fallback {
+		max-width: 40ch;
+		color: var(--ink-soft);
+		font-size: 1.05rem;
+		line-height: 1.5;
+	}
 }

@@ -36,6 +36,16 @@ export const image = (name: string) => `/images/sections/${name}.svg`;
  */
 export const mapEmbedStandIn = "/images/sections/map-embed.html";
 
+/**
+ * A stand in for a vendor's embedded tool script (`EmbeddedScriptFrame`),
+ * served from this group's folder so a story never reaches a real vendor.
+ * It mounts an iframe into the element named by `mount`, after `delay`
+ * milliseconds, or never with `never`; each story passes its own `story`
+ * so its script is a tag of its own.
+ */
+export const embeddedWidget = (query: Record<string, string>) =>
+	`/images/sections/embedded-widget.js?${new URLSearchParams(query)}`;
+
 /** The bakery with no map screenshot but a live embed, so the map shows its click to load facade. */
 export const siteWithEmbed: SiteConfig = {
 	...site,

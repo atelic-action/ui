@@ -28,5 +28,6 @@ export { type ProseBlock, ProseBlocks, type ProseBlocksProps } from "./ProseBloc
 export { QuoteCard, type QuoteCardProps } from "./QuoteCard";
 export { SectionHeading, type SectionHeadingProps } from "./SectionHeading";
 export { SourceSelector, type SourceSelectorProps } from "./SourceSelector";
+export { Spinner, type SpinnerProps } from "./Spinner";
 export { StarRow, type StarRowProps } from "./StarRow";
 export { TickList, type TickListProps } from "./TickList";
