@@ -36,6 +36,24 @@ export const CustomLabel: Story = {
 	},
 };
 
+/** The three sizes: small beside a line of text or in a button, the default, and large for a wait that holds a space. */
+export const Sizes: Story = {
+	render: () => (
+		<div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+			<Spinner size="sm" label="Loading small" />
+			<Spinner label="Loading medium" />
+			<Spinner size="lg" label="Loading large" />
+		</div>
+	),
+	play: async ({ canvas }) => {
+		const ring = (label: string) =>
+			(canvas.getByText(label).previousElementSibling as HTMLElement).getBoundingClientRect();
+		await expect(ring("Loading small").width).toBe(20);
+		await expect(ring("Loading medium").width).toBe(32);
+		await expect(ring("Loading large").width).toBe(72);
+	},
+};
+
 /** Under reduced motion nothing turns, and the label shows beside the ring. */
 export const ReducedMotion: Story = {
 	beforeEach: withReducedMotion,
@@ -44,5 +62,26 @@ export const ReducedMotion: Story = {
 		const spinner = label.parentElement as HTMLElement;
 		await expect(spinner.getAnimations({ subtree: true })).toHaveLength(0);
 		await expect(label.getBoundingClientRect().width).toBeGreaterThan(1);
+	},
+};
+
+/** Reduced motion is the same at every size: still rings, each with its label shown. */
+export const SizesReducedMotion: Story = {
+	render: () => (
+		<div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+			<Spinner size="sm" label="Loading small" />
+			<Spinner label="Loading medium" />
+			<Spinner size="lg" label="Loading large" />
+		</div>
+	),
+	beforeEach: withReducedMotion,
+	play: async ({ canvas }) => {
+		for (const label of ["Loading small", "Loading medium", "Loading large"]) {
+			const words = canvas.getByText(label);
+			await expect(
+				(words.parentElement as HTMLElement).getAnimations({ subtree: true }),
+			).toHaveLength(0);
+			await expect(words.getBoundingClientRect().width).toBeGreaterThan(1);
+		}
 	},
 };

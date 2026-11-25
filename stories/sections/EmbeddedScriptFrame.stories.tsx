@@ -139,7 +139,7 @@ export const Loads: Story = {
 	},
 };
 
-/** While the tool is on its way: the cover over the held space, the spinner near its top. */
+/** While the tool is on its way: the cover over the held space, the large spinner centered in it. */
 export const Waiting: Story = {
 	args: {
 		src: embeddedWidget({ mount: "order-tool-waiting", story: "waiting", never: "" }),
@@ -159,21 +159,56 @@ export const Waiting: Story = {
 	},
 };
 
-/** On a phone the spinner sits near the top of a tall held space, in view without a scroll. */
+/**
+ * On a phone, with the frame starting about 340px down the page, the large
+ * spinner sits centered in the held space (the first `minHeight`, 600px)
+ * and in view, and stays there when the vendor's iframe grows the frame
+ * past the held height under the cover.
+ */
 export const WaitingPhone: Story = {
 	args: {
 		src: embeddedWidget({ mount: "order-tool-waiting-phone", story: "waiting-phone", never: "" }),
 		mountId: "order-tool-waiting-phone",
 		timeoutMS: 600_000,
-		minHeight: "1400px",
+		minHeight: "600px",
 	},
+	decorators: [
+		(Story) => (
+			<>
+				<div style={{ height: 300 }} />
+				<Story />
+			</>
+		),
+	],
 	globals: pin("phone"),
-	play: async ({ canvas }) => {
+	play: async ({ canvas, canvasElement, step }) => {
 		const status = canvas.getByRole("status");
-		const top = coverOf(status).getBoundingClientRect().top;
-		const spinner = status.getBoundingClientRect();
-		await expect(spinner.top - top).toBeLessThan(160);
-		await expect(spinner.bottom).toBeLessThan(window.innerHeight);
+		const cover = coverOf(status);
+		const spinner = within(status).getByText("Loading").parentElement as HTMLElement;
+		const middle = () => {
+			const box = spinner.getBoundingClientRect();
+			return box.top + box.height / 2;
+		};
+		const top = cover.getBoundingClientRect().top;
+		await step("the frame starts about 340px down a 390 by 844 page", async () => {
+			await expect(window.innerHeight).toBe(844);
+			await expect(top).toBeGreaterThan(300);
+			await expect(top).toBeLessThan(420);
+		});
+		const before = middle();
+		await step("the spinner is centered in the held space, and in view", async () => {
+			await expect(Math.abs(before - (top + 300))).toBeLessThanOrEqual(3);
+			await expect(spinner.getBoundingClientRect().bottom).toBeLessThan(window.innerHeight);
+		});
+		await step("it stays put when the frame grows past the held height", async () => {
+			// Playing the vendor: what it draws in the mount grows the frame.
+			const mount = canvasElement.querySelector("#order-tool-waiting-phone") as HTMLElement;
+			const grown = document.createElement("div");
+			grown.style.height = "1200px";
+			mount.appendChild(grown);
+			await expect(cover.getBoundingClientRect().height).toBeGreaterThan(1000);
+			await expect(Math.abs(middle() - before)).toBeLessThanOrEqual(1);
+		});
 	},
 };
 

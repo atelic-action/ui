@@ -1,4 +1,5 @@
 import {
+	type CSSProperties,
 	memo,
 	type ReactNode,
 	type RefObject,
@@ -111,9 +112,11 @@ const Mount = memo(function Mount({
  *
  * The reader sees one loader, ours. Until the tool is ready, an opaque
  * cover in the band's own color lies over the whole frame, beside the
- * mount, never inside it, with the spinner near its top so it shows on a
- * phone without a scroll; whatever the vendor draws in its iframe meanwhile
- * (its own loader) stays under it. The mount and the iframe stay at full
+ * mount, never inside it, with a large spinner centered in the held space
+ * (the first `minHeight` of the frame), where it stays as the vendor's
+ * iframe grows the frame under it; whatever the vendor draws in its iframe
+ * meanwhile (its own loader) stays under the cover. The fallback line sits
+ * in the same place. The mount and the iframe stay at full
  * size underneath, never hidden, since a vendor measures itself. When the
  * tool is ready the cover fades away (at once under reduced motion). Ready
  * is the iframe's `load`, or, with `readyMessage`, the vendor's own message
@@ -253,7 +256,7 @@ export function EmbeddedScriptFrame({
 			aria-label={title}
 		>
 			<div className="wrap">
-				<div className="esf-frame" style={{ minHeight }}>
+				<div className="esf-frame" style={{ minHeight, "--_esf-held": minHeight } as CSSProperties}>
 					<Mount id={mountId} holder={mount} />
 					{/* The cover over the tool while it loads: drawn always, so it can
 					    fade when the tool is ready, and clear while the fallback shows. */}
@@ -271,7 +274,7 @@ export function EmbeddedScriptFrame({
 							// fallback is announced where the spinner was.
 							<output className="esf-status">
 								{status === "loading" ? (
-									<Spinner label={loadingLabel} />
+									<Spinner label={loadingLabel} size="lg" />
 								) : (
 									<span className="esf-fallback">{fallback}</span>
 								)}

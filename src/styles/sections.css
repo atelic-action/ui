@@ -3058,10 +3058,13 @@
 	   page sideways. The cover lies over the whole frame, beside the mount,
 	   in the band's own color while the tool loads, so nothing the vendor
 	   draws meanwhile shows; the mount stays at full size under it. The
-	   spinner sits --embed-status-offset from the top, in view on a phone.
-	   When the tool is ready the cover fades and takes no pointer; while the
-	   fallback shows it is clear and takes no pointer either, and only the
-	   fallback's own words do, so a link in them still works. */
+	   status is centered in the held space, a box at the cover's top as tall
+	   as the frame's minHeight (--_esf-held, set by the component) or the
+	   cover, whichever is less, so it stays put when the vendor's iframe
+	   grows the frame under it. When the tool is ready the cover fades and
+	   takes no pointer; while the fallback shows it is clear and takes no
+	   pointer either, and only the fallback's own words do, so a link in
+	   them still works. */
 	.atelic-ui .embedded-script-frame {
 		--_esf-ground: var(--surface);
 	}
@@ -3083,11 +3086,6 @@
 		position: absolute;
 		inset: 0;
 		z-index: 1;
-		display: flex;
-		align-items: flex-start;
-		justify-content: center;
-		padding: var(--embed-status-offset) var(--gutter) var(--gutter);
-		text-align: center;
 		pointer-events: none;
 		transition:
 			opacity 0.3s ease,
@@ -3103,7 +3101,13 @@
 		visibility: hidden;
 	}
 	.atelic-ui .esf-status {
-		display: block;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: min(100%, var(--_esf-held));
+		padding: var(--gutter);
+		text-align: center;
 	}
 	.atelic-ui .esf-fallback {
 		pointer-events: auto;
