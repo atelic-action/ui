@@ -155,6 +155,19 @@ export interface ContactFormProps {
 	successMessage: string;
 	/** Message shown when the endpoint submission fails. */
 	errorMessage?: string;
+	/**
+	 * Called once each time a send fails (the endpoint answered a failure, or
+	 * never answered), so a site can say so its own way, in a toast. Passed
+	 * nothing. The form's own message still shows unless `inlineError` is
+	 * false.
+	 */
+	onError?: () => void;
+	/**
+	 * False keeps the form's own failure message off, for a site that shows a
+	 * failure itself through `onError`. Without an `onError` a visitor would
+	 * be told nothing, so it is only read beside one. Defaults to true.
+	 */
+	inlineError?: boolean;
 	/** Small footer line under the submit button. */
 	footnote?: ReactNode;
 	/**
@@ -261,6 +274,8 @@ export function ContactForm({
 	errorMessage = "Something went wrong sending your message. Please try again.",
 	footnote,
 	onLead = sendLead,
+	onError,
+	inlineError = true,
 	splitName = false,
 	phone,
 	address,
@@ -442,6 +457,7 @@ export function ContactForm({
 			if (!isHoneypotFilled(company)) onLead();
 		} catch {
 			setStatus("failed");
+			onError?.();
 		}
 	}
 
@@ -489,7 +505,9 @@ export function ContactForm({
 			    reader is already watching it when the words arrive. */}
 			<output className="form-status">
 				{status === "sent" && <span className="form-success">{successMessage}</span>}
-				{status === "failed" && <span className="form-error">{errorMessage}</span>}
+				{status === "failed" && (inlineError || !onError) && (
+					<span className="form-error">{errorMessage}</span>
+				)}
 			</output>
 			{errorSummary && refusedCount > 0 && (
 				<div className="form-alert" role="alert">
