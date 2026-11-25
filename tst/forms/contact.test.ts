@@ -7,6 +7,7 @@ import {
 	PLAIN_FIELDS,
 	SUBJECT_LIMIT,
 } from "../../src/forms/contact";
+import { turnstileGuard } from "../../src/forms/guard";
 import { type DestinationResult, refused, type Submission } from "../../src/forms/relay";
 
 const FROM = "Summit Movement Studio <forms@example.com>";
@@ -49,7 +50,7 @@ describe("createContact", () => {
 	it("relays a valid submission through Resend", async () => {
 		const response = await POST(request(VALID));
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ ok: true });
+		await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 
 		const send = vi.mocked(fetch).mock.calls[0];
 		expect(send?.[0]).toBe("https://api.resend.com/emails");
@@ -82,7 +83,7 @@ describe("createContact", () => {
 	it("quietly drops honeypot submissions without sending", async () => {
 		const response = await POST(request({ ...VALID, company: "Totally Real LLC" }));
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ ok: true });
+		await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 		expect(fetch).not.toHaveBeenCalled();
 	});
 
@@ -485,7 +486,7 @@ describe("createContact", () => {
 	it("never exposes the destination or message id on a normal submission", async () => {
 		vi.mocked(fetch).mockResolvedValue(new Response('{"id":"re_123"}', { status: 200 }));
 		const response = await POST(request(VALID));
-		await expect(response.json()).resolves.toEqual({ ok: true });
+		await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 	});
 
 	describe("canary", () => {
@@ -510,7 +511,7 @@ describe("createContact", () => {
 
 		it("treats a wrong token as an ordinary submission", async () => {
 			const response = await POST(request({ ...VALID, canary: "guess" }));
-			await expect(response.json()).resolves.toEqual({ ok: true });
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 			const payload = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
 			expect(payload.to).toEqual(["inbox@example.com"]);
 			expect(payload.subject).toBe("Website inquiry: Dry needling");
@@ -519,7 +520,7 @@ describe("createContact", () => {
 		it("ignores the field entirely when no token is configured", async () => {
 			vi.stubEnv("CONTACT_CANARY_TOKEN", "");
 			const response = await POST(request({ ...VALID, canary: "" }));
-			await expect(response.json()).resolves.toEqual({ ok: true });
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 			const payload = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
 			expect(payload.to).toEqual(["inbox@example.com"]);
 		});
@@ -599,7 +600,7 @@ describe("destinations beside the email", () => {
 		const post = createContact({ from: FROM, destinations: [lead] });
 		const response = await post(request(VALID));
 		expect(response.status).toBe(200);
-		await expect(response.json()).resolves.toEqual({ ok: true });
+		await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 
 		const sent = await reports();
 		expect(sent).toHaveLength(1);
@@ -904,7 +905,7 @@ describe("a site's settings", () => {
 		expect(await reported({ ...VALID, phone: "(303) 555-0142" }, "preview")).toEqual([]);
 	});
 
-	it.each(["company", "canary"])(
+	it.each(["company", "canary", "turnstile"])(
 		"refuses a field under %s, a key the endpoint reads for itself",
 		(key) => {
 			expect(() =>
@@ -1001,7 +1002,342 @@ describe("the office's email", () => {
 			vi.stubEnv("CONTACT_CANARY_TO", "monitor@example.com");
 			const post = createContact({ from: FROM });
 			const response = await post(request({ ...VALID, canary: guess }));
-			await expect(response.json()).resolves.toEqual({ ok: true });
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
 		},
 	);
+});
+
+describe("the guard and the receipt", () => {
+	const DSN = "https://abc@o1.ingest.us.sentry.io/1";
+	const INGEST = "https://o1.ingest.us.sentry.io/api/1/envelope/";
+	const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+	const RESEND = "https://api.resend.com/emails";
+	const TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
+	const SIGNED = { ...VALID, turnstile: TOKEN };
+
+	/** How each service answers this test's calls. */
+	let answers: {
+		siteverify: () => Response | Promise<Response>;
+		office: () => Response | Promise<Response>;
+		receipt: (init?: RequestInit) => Response | Promise<Response>;
+	};
+
+	const isReceipt = (init?: RequestInit) =>
+		String(new Headers(init?.headers).get("Idempotency-Key")).endsWith("-receipt");
+
+	const calls = (url: string) =>
+		vi.mocked(fetch).mock.calls.filter(([called]) => String(called).startsWith(url));
+	const siteverifyCalls = () => calls(SITEVERIFY);
+	const officeCalls = () => calls(RESEND).filter(([, init]) => !isReceipt(init));
+	const receiptCalls = () => calls(RESEND).filter(([, init]) => isReceipt(init));
+
+	async function reports(): Promise<string[]> {
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		return calls(INGEST).map(([, init]) => String(init?.body));
+	}
+
+	function crm() {
+		const send = vi.fn(async (_: Submission<ContactFields>) => ({ status: "delivered" }) as const);
+		return { name: "crm", send };
+	}
+
+	const guarded = (extra: Partial<Parameters<typeof createContact>[0]> = {}) =>
+		createContact({ from: FROM, guard: turnstileGuard(), receipt: {}, ...extra });
+
+	beforeEach(() => {
+		vi.stubEnv("RESEND_API_KEY", "re_test_key");
+		vi.stubEnv("CONTACT_TO", "inbox@example.com, front@example.com");
+		vi.stubEnv("TURNSTILE_SECRET_KEY", "1x0000000000000000000000000000000AA");
+		vi.stubEnv("SENTRY_DSN", "");
+		vi.stubEnv("VITE_SENTRY_DSN", DSN);
+		answers = {
+			siteverify: () => new Response('{"success":true}', { status: 200 }),
+			office: () => new Response('{"id":"re_office"}', { status: 200 }),
+			receipt: () => new Response('{"id":"re_receipt"}', { status: 200 }),
+		};
+		vi.stubGlobal(
+			"fetch",
+			vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+				const url = String(input);
+				if (url.startsWith(INGEST)) return new Response("{}", { status: 200 });
+				if (url.startsWith(SITEVERIFY)) return answers.siteverify();
+				if (isReceipt(init)) return answers.receipt(init);
+				return answers.office();
+			}),
+		);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
+	});
+
+	describe("a check that passes", () => {
+		it("delivers and sends exactly one receipt to the visitor, replies going to the office", async () => {
+			const lead = crm();
+			const response = await guarded({ destinations: [lead] })(request(SIGNED));
+			expect(response.status).toBe(200);
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: true });
+			expect(officeCalls()).toHaveLength(1);
+			expect(receiptCalls()).toHaveLength(1);
+			const receipt = JSON.parse(String(receiptCalls()[0]?.[1]?.body));
+			expect(receipt.to).toEqual(["jane@example.com"]);
+			expect(receipt.from).toBe(FROM);
+			expect(receipt.reply_to).toEqual(["inbox@example.com", "front@example.com"]);
+			expect(receipt.subject).toBe("We have your message");
+			expect(receipt.text).toContain("We have your message, Jane Doe.");
+			// The receipt carries a key of its own, so it never collides with the office's.
+			const office = new Headers(officeCalls()[0]?.[1]?.headers).get("Idempotency-Key");
+			const own = new Headers(receiptCalls()[0]?.[1]?.headers).get("Idempotency-Key");
+			expect(own).toBe(`${office}-receipt`);
+			expect(lead.send.mock.calls[0]?.[0].checked).toBe(true);
+			expect(await reports()).toEqual([]);
+		});
+
+		it("checks the token once, under the submission's id", async () => {
+			await guarded()(request(SIGNED));
+			expect(siteverifyCalls()).toHaveLength(1);
+			const body = JSON.parse(String(siteverifyCalls()[0]?.[1]?.body));
+			expect(body.response).toBe(TOKEN);
+			const office = new Headers(officeCalls()[0]?.[1]?.headers).get("Idempotency-Key");
+			expect(body.idempotency_key).toBe(office);
+		});
+
+		it("sends no receipt when no destination took the submission", async () => {
+			answers.office = () => new Response("{}", { status: 422 });
+			const response = await guarded()(request(SIGNED));
+			expect(response.status).toBe(502);
+			expect(receiptCalls()).toEqual([]);
+		});
+
+		it("answers 200 with receipt false, and reports it, when the receipt fails", async () => {
+			answers.receipt = () =>
+				new Response(JSON.stringify({ name: "validation_error", message: "Bad to" }), {
+					status: 422,
+				});
+			const response = await guarded()(request(SIGNED));
+			expect(response.status).toBe(200);
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(receiptCalls()).toHaveLength(1);
+			const sent = await reports();
+			expect(sent).toHaveLength(1);
+			expect(sent[0]).toContain("Form receipt: the copy to the visitor was not sent");
+			expect(sent[0]).toContain('"reason":"receipt"');
+			expect(sent[0]).not.toContain("jane@example.com");
+		});
+
+		it("gives the receipt one try, cut off at its limit, and still answers 200", async () => {
+			vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+			answers.receipt = (init) =>
+				new Promise<Response>((_resolve, reject) => {
+					init?.signal?.addEventListener("abort", () =>
+						reject(new DOMException("This operation was aborted", "AbortError")),
+					);
+				});
+			const pending = guarded()(request(SIGNED));
+			await vi.advanceTimersByTimeAsync(3000);
+			const response = await pending;
+			vi.useRealTimers();
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(receiptCalls()).toHaveLength(1);
+		});
+
+		it("sends no receipt when the site turned none on, and says so", async () => {
+			const response = await createContact({ from: FROM, guard: turnstileGuard() })(
+				request(SIGNED),
+			);
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(receiptCalls()).toEqual([]);
+		});
+
+		it("sends no receipt when the submission holds no email address", async () => {
+			const post = guarded({
+				fields: [
+					{ key: "name", label: "Name", required: true },
+					{ key: "email", label: "Email", kind: "email" },
+					{ key: "message", label: "Message", required: true },
+				],
+			});
+			const response = await post(request({ ...SIGNED, email: "" }));
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(receiptCalls()).toEqual([]);
+		});
+
+		it("keeps the office's email free of the unchecked line", async () => {
+			await guarded()(request(SIGNED));
+			const office = JSON.parse(String(officeCalls()[0]?.[1]?.body));
+			expect(office.text).not.toContain("not checked for spam");
+			expect(office.html).not.toContain("not checked for spam");
+		});
+	});
+
+	describe("a check that fails", () => {
+		it("refuses with 403, reaching no destination and sending no receipt", async () => {
+			answers.siteverify = () =>
+				new Response('{"success":false,"error-codes":["invalid-input-response"]}', {
+					status: 200,
+				});
+			const lead = crm();
+			const response = await guarded({ destinations: [lead] })(request(SIGNED));
+			expect(response.status).toBe(403);
+			await expect(response.json()).resolves.toEqual({
+				ok: false,
+				code: "guard",
+				error: "We could not confirm this came from a person. Please call us instead.",
+			});
+			expect(calls(RESEND)).toEqual([]);
+			expect(lead.send).not.toHaveBeenCalled();
+			expect(await reports()).toEqual([]);
+		});
+	});
+
+	describe("a check that cannot answer", () => {
+		it.each([
+			["the form sent no token", VALID, () => new Response('{"success":true}')],
+			[
+				"Cloudflare's own fault",
+				SIGNED,
+				() => new Response('{"success":false,"error-codes":["internal-error"]}'),
+			],
+			["Cloudflare unreachable", SIGNED, () => Promise.reject(new TypeError("fetch failed"))],
+		])("delivers, sends no receipt, and reports when %s", async (_name, body, siteverify) => {
+			answers.siteverify = siteverify;
+			const lead = crm();
+			const response = await guarded({ destinations: [lead] })(request(body));
+			expect(response.status).toBe(200);
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(officeCalls()).toHaveLength(1);
+			expect(receiptCalls()).toEqual([]);
+			expect(lead.send.mock.calls[0]?.[0].checked).toBe(false);
+			const sent = await reports();
+			expect(sent).toHaveLength(1);
+			expect(sent[0]).toContain(
+				"Form guard: turnstile could not answer, and the submission was let through",
+			);
+			const event = JSON.parse(sent[0]?.split("\n")[2] ?? "{}");
+			expect(event.tags).toMatchObject({
+				route: "contact",
+				guard: "turnstile",
+				reason: "guard-unanswered",
+			});
+			expect(sent[0]).not.toContain(TOKEN);
+			expect(sent[0]).not.toContain("1x0000000000000000000000000000000AA");
+			for (const value of [VALID.name, VALID.email, VALID.message]) {
+				expect(sent[0]).not.toContain(value);
+			}
+		});
+
+		it("does not call Cloudflare for a submission with no token", async () => {
+			await guarded()(request(VALID));
+			expect(siteverifyCalls()).toEqual([]);
+		});
+
+		it("says so in the office's email, in both bodies", async () => {
+			await guarded()(request(VALID));
+			const office = JSON.parse(String(officeCalls()[0]?.[1]?.body));
+			expect(office.text.endsWith("This one was not checked for spam.")).toBe(true);
+			expect(office.html).toContain("This one was not checked for spam.");
+		});
+
+		it("takes a guard that throws as one that could not answer", async () => {
+			const post = createContact({
+				from: FROM,
+				guard: {
+					name: "custom",
+					tokenKey: "proof",
+					check: async () => {
+						throw new Error("broken");
+					},
+				},
+				receipt: {},
+			});
+			const response = await post(request({ ...VALID, proof: "x" }));
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			const sent = await reports();
+			expect(sent).toHaveLength(1);
+			expect(sent[0]).toContain("Form guard: custom could not answer");
+		});
+
+		it("reports an unset secret on production alone, and delivers either way", async () => {
+			vi.stubEnv("TURNSTILE_SECRET_KEY", "");
+			vi.stubEnv("VERCEL_ENV", "preview");
+			expect((await guarded()(request(SIGNED))).status).toBe(200);
+			expect(await reports()).toEqual([]);
+			vi.stubEnv("VERCEL_ENV", "production");
+			expect((await guarded()(request(SIGNED))).status).toBe(200);
+			const sent = await reports();
+			expect(sent).toHaveLength(1);
+			expect(sent[0]).toContain("TURNSTILE_SECRET_KEY unset");
+			expect(siteverifyCalls()).toEqual([]);
+			expect(receiptCalls()).toEqual([]);
+		});
+	});
+
+	describe("before and around the check", () => {
+		it("answers the honeypot before Cloudflare is called", async () => {
+			const response = await guarded()(request({ ...SIGNED, company: "Totally Real LLC" }));
+			expect(response.status).toBe(200);
+			await expect(response.json()).resolves.toEqual({ ok: true, receipt: false });
+			expect(fetch).not.toHaveBeenCalled();
+		});
+
+		it("passes a canary with no token, never calling Cloudflare, and sends it no receipt", async () => {
+			vi.stubEnv("CONTACT_CANARY_TOKEN", "canary-secret");
+			vi.stubEnv("CONTACT_CANARY_TO", "monitor@example.com");
+			const lead = crm();
+			const response = await guarded({ destinations: [lead] })(
+				request({ ...VALID, canary: "canary-secret" }),
+			);
+			expect(response.status).toBe(200);
+			await expect(response.json()).resolves.toEqual({
+				ok: true,
+				id: "re_office",
+				to: "inbox@example.com, front@example.com",
+			});
+			expect(siteverifyCalls()).toEqual([]);
+			expect(receiptCalls()).toEqual([]);
+			expect(lead.send).not.toHaveBeenCalled();
+			expect(await reports()).toEqual([]);
+		});
+
+		it("hands a canary's office email no checked mark and no unchecked line", async () => {
+			vi.stubEnv("CONTACT_CANARY_TOKEN", "canary-secret");
+			vi.stubEnv("CONTACT_CANARY_TO", "monitor@example.com");
+			await guarded()(request({ ...SIGNED, canary: "canary-secret" }));
+			expect(JSON.parse(String(officeCalls()[0]?.[1]?.body)).text).not.toContain("not checked");
+		});
+
+		it("leaves checked unset on a submission to an endpoint with no guard", async () => {
+			const lead = crm();
+			await createContact({ from: FROM, destinations: [lead] })(request(VALID));
+			expect(lead.send.mock.calls[0]?.[0]).not.toHaveProperty("checked");
+		});
+	});
+
+	describe("a site's settings", () => {
+		it("throws at load for a receipt with no guard", () => {
+			expect(() => createContact({ from: FROM, receipt: {} })).toThrow(
+				"a receipt is only ever sent behind a guard",
+			);
+		});
+
+		it("throws at load for a field under the guard's token key", () => {
+			const guard = { ...turnstileGuard(), tokenKey: "proof" };
+			expect(() =>
+				createContact({
+					from: FROM,
+					guard,
+					fields: [...PLAIN_FIELDS, { key: "proof", label: "Proof" }],
+				}),
+			).toThrow(`"proof" is the key the guard's token arrives under`);
+			expect(() =>
+				createContact({
+					from: FROM,
+					guard: turnstileGuard(),
+					fields: [...PLAIN_FIELDS, { key: "turnstile", label: "Token" }],
+				}),
+			).toThrow('"turnstile" is a key the endpoint reads for itself');
+		});
+	});
 });

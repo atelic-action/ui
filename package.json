@@ -1,6 +1,6 @@
 {
 	"name": "@atelic-action/ui",
-	"version": "9.1.0",
+	"version": "9.2.0",
 	"description": "Shared UI for the Atelic templates: site chrome, base styles, the component library, the access gate, and the app shell they install",
 	"type": "module",
 	"license": "UNLICENSED",
@@ -78,6 +78,14 @@
 			"types": "./dist/forms/contact.d.ts",
 			"default": "./dist/forms/contact.js"
 		},
+		"./forms/guard": {
+			"types": "./dist/forms/guard.d.ts",
+			"default": "./dist/forms/guard.js"
+		},
+		"./forms/receipt": {
+			"types": "./dist/forms/receipt.d.ts",
+			"default": "./dist/forms/receipt.js"
+		},
 		"./forms/relay": {
 			"types": "./dist/forms/relay.d.ts",
 			"default": "./dist/forms/relay.js"
@@ -85,6 +93,10 @@
 		"./forms/resend": {
 			"types": "./dist/forms/resend.d.ts",
 			"default": "./dist/forms/resend.js"
+		},
+		"./forms/source": {
+			"types": "./dist/forms/source.d.ts",
+			"default": "./dist/forms/source.js"
 		},
 		"./gate": {
 			"types": "./dist/gate/index.d.ts",
@@ -114,7 +126,7 @@
 	},
 	"scripts": {
 		"build": "rm -rf dist && tsc -p tsconfig.server.json",
-		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path', 'monitoring/server', 'scripts/contacts', 'forms/contact', 'forms/relay', 'forms/resend']) await import('@atelic-action/ui/' + entry)\"",
+		"build:smoke": "node --input-type=module -e \"for (const entry of ['gate', 'gate/middleware', 'gate/request-link', 'gate/verify', 'vite', 'vite/private-chunks', 'artifact/readers', 'routing/base-path', 'monitoring/server', 'scripts/contacts', 'forms/contact', 'forms/guard', 'forms/receipt', 'forms/relay', 'forms/resend', 'forms/source']) await import('@atelic-action/ui/' + entry)\"",
 		"prepack": "bun run build",
 		"lint": "biome check .",
 		"lint:fix": "biome check . --write",

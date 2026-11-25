@@ -19,8 +19,12 @@ export interface Email {
 	subject: string;
 	html: string;
 	text: string;
-	/** Where a reply goes: the visitor's address. Left out, a reply goes to the sender. */
-	replyTo?: string;
+	/**
+	 * Where a reply goes: the visitor's address on the office's email, the
+	 * office's inboxes on the visitor's receipt. Left out, or an empty list, a
+	 * reply goes to the sender.
+	 */
+	replyTo?: string | string[];
 }
 
 export interface ResendOptions<Fields = Record<string, unknown>> {
@@ -95,6 +99,9 @@ export function resendDestination<Fields = Record<string, unknown>>(
 		timeoutMs: options.timeoutMs,
 		async send(submission, { signal }) {
 			const email = options.compose(submission);
+			const replyTo = (Array.isArray(email.replyTo) ? email.replyTo : [email.replyTo]).filter(
+				(address): address is string => Boolean(address),
+			);
 			let response: Response;
 			try {
 				response = await fetch(ENDPOINT, {
@@ -107,7 +114,7 @@ export function resendDestination<Fields = Record<string, unknown>>(
 					body: JSON.stringify({
 						from: options.from,
 						to: options.to,
-						...(email.replyTo && { reply_to: [email.replyTo] }),
+						...(replyTo.length > 0 && { reply_to: replyTo }),
 						subject: email.subject,
 						html: email.html,
 						text: email.text,

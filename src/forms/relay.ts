@@ -27,6 +27,15 @@ export interface Submission<Fields = Record<string, unknown>> {
 	id: string;
 	/** The fields by key, already read and checked by the endpoint. */
 	fields: Fields;
+	/**
+	 * Whether a spam check vouched for the submission: true when the
+	 * endpoint's guard passed it, false when the endpoint has a guard and it
+	 * could not answer (the submission is let through rather than lost), and
+	 * left out when the endpoint has no guard or the submission is a canary.
+	 * A destination may read it to decide what to do with a submission no
+	 * check vouched for (a CRM may hold such a lead on a line of its own).
+	 */
+	checked?: boolean;
 }
 
 /** The destination took the submission. */
