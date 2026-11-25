@@ -21,7 +21,57 @@ const SPLIT: ContactField[] = [
 	{ key: "message", label: "Message", required: true, limit: 5000 },
 ];
 
-describe("receiptEmail", () => {
+describe("receiptEmail without a copy, the default", () => {
+	const read = {
+		name: "Jane Doe",
+		firstName: "Jane",
+		email: "jane@example.com",
+		phone: "(303) 555-0142",
+		topic: "Saturday class",
+		source: "A friend",
+		message: "Do you have room on Saturday?",
+	};
+	const pieces = [
+		"Jane",
+		"Doe",
+		"jane@example.com",
+		"303",
+		"555-0142",
+		"5550142",
+		"Saturday",
+		"A friend",
+		"room",
+	];
+
+	it("holds nothing the visitor wrote, in its subject, its HTML, or its text", () => {
+		const email = receiptEmail(read, SPLIT, { from: FROM, replyTo: OFFICE });
+		for (const piece of pieces) {
+			expect(email.subject).not.toContain(piece);
+			expect(email.html).not.toContain(piece);
+			expect(email.text).not.toContain(piece);
+		}
+		expect(email.text).toBe(
+			["We have your message.", "", DEFAULT_RECEIPT_NEXT, "", "Summit Movement Studio"].join("\n"),
+		);
+		expect(email.html).not.toContain("What you sent");
+		expect(email.replyTo).toEqual(OFFICE);
+	});
+
+	it("holds nothing the visitor wrote with copy set false, and the site's own words still", () => {
+		const email = receiptEmail(read, SPLIT, {
+			from: FROM,
+			copy: false,
+			subject: "Thanks for writing",
+			next: "We call back within a day.",
+		});
+		for (const piece of pieces)
+			expect(`${email.subject}${email.html}${email.text}`).not.toContain(piece);
+		expect(email.subject).toBe("Thanks for writing");
+		expect(email.text).toContain("We call back within a day.");
+	});
+});
+
+describe("receiptEmail with a copy", () => {
 	it("greets by first name and reads back what was sent, the name and message aside", () => {
 		const email = receiptEmail(
 			{
@@ -34,7 +84,7 @@ describe("receiptEmail", () => {
 				message: "Do you have room on Saturday?",
 			},
 			SPLIT,
-			{ from: FROM, replyTo: OFFICE },
+			{ from: FROM, replyTo: OFFICE, copy: true },
 		);
 		expect(email.subject).toBe(DEFAULT_RECEIPT_SUBJECT);
 		expect(email.replyTo).toEqual(OFFICE);
@@ -65,13 +115,13 @@ describe("receiptEmail", () => {
 		const plain = receiptEmail(
 			{ name: "Jane Doe", email: "jane@example.com", topic: "", message: "Hi" },
 			PLAIN_FIELDS,
-			{ from: FROM },
+			{ from: FROM, copy: true },
 		);
 		expect(plain.text.split("\n")[0]).toBe("We have your message, Jane Doe.");
 		const empty = receiptEmail(
 			{ name: "Jane Doe", firstName: "", email: "jane@example.com", message: "Hi" },
 			SPLIT,
-			{ from: FROM },
+			{ from: FROM, copy: true },
 		);
 		expect(empty.text.split("\n")[0]).toBe("We have your message, Jane Doe.");
 	});
@@ -109,7 +159,7 @@ describe("receiptEmail", () => {
 		const email = receiptEmail(
 			{ name: "Jane", email: "jane@example.com", topic: "", message: "Hi" },
 			PLAIN_FIELDS,
-			{ from: "forms@example.com" },
+			{ from: "forms@example.com", copy: true },
 		);
 		expect(email.text.endsWith("Hi")).toBe(true);
 	});
@@ -122,7 +172,7 @@ describe("receiptEmail", () => {
 			topic: hostile,
 			message: hostile,
 		};
-		const receipt = receiptEmail(read, PLAIN_FIELDS, { from: FROM });
+		const receipt = receiptEmail(read, PLAIN_FIELDS, { from: FROM, copy: true });
 		const office = officeEmail(read, PLAIN_FIELDS);
 		for (const html of [receipt.html, office.html]) {
 			expect(html).not.toContain("<img");

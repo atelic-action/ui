@@ -1,10 +1,18 @@
 /**
  * The visitor's receipt: a short email back to whoever wrote, saying the
- * message arrived and what it said, with replies going to the office. The
- * contact endpoint sends it when a site turns it on (`receipt`), only
- * behind a guard that passed, and only once a destination took the
- * submission, so a receipt never goes to an address a bot typed and never
- * promises a message nobody has.
+ * message arrived, with replies going to the office. The contact endpoint
+ * sends it when a site turns it on (`receipt`), only behind a guard that
+ * passed, and only once a destination took the submission, so a receipt
+ * never goes to an address a bot typed and never promises a message nobody
+ * has.
+ *
+ * By default it carries nothing the visitor wrote. The address it goes to
+ * is whatever was typed into the form, so a receipt that repeated the
+ * visitor's words would let anyone who solves the challenge send their own
+ * text, under the business's name, to any inbox: an open relay. A solved
+ * challenge proves a browser, not that the address belongs to the person
+ * who typed it. `copy: true` adds the name and what was sent, for a site
+ * that accepts that.
  *
  * Built with the gate (`@atelic-action/ui/forms/receipt`): plain TypeScript,
  * no React, relative imports carrying `.js`.
@@ -16,6 +24,15 @@ import type { Email } from "./resend.js";
 
 /** A site's words for its receipt, each with a neutral default. */
 export interface ReceiptOptions {
+	/**
+	 * Whether the receipt repeats what the visitor wrote: the greeting by
+	 * name, a table of what was sent, and the message. Defaults to false,
+	 * when the receipt holds nothing the visitor wrote, only the site's own
+	 * words. The address is whatever was typed, so a copy would let anyone
+	 * who solves the challenge send their own words, under the business's
+	 * name, to any inbox. Turn it on only when that is acceptable.
+	 */
+	copy?: boolean;
 	/** The subject. Defaults to "We have your message". */
 	subject?: string;
 	/** The line saying what happens next. Defaults to "Someone from our office will be in touch soon." */
@@ -54,23 +71,25 @@ function greetingName(read: ContactFields, fields: ContactField[]): string {
 }
 
 /**
- * The receipt: the greeting, what happens next, a table of what was sent in
- * the site's order (the name and the message aside, and no row for a field
- * left empty), the message, and the signature. Everything the visitor wrote
- * is escaped as the office's email escapes it, by the same code. `replyTo`
- * is the office's inboxes.
+ * The receipt. By default, the site's words alone: "We have your message.",
+ * what happens next, and the signature. With `copy`, the greeting names the
+ * visitor, and a table of what was sent in the site's order (the name and
+ * the message aside, and no row for a field left empty) and the message
+ * follow, everything the visitor wrote escaped as the office's email
+ * escapes it, by the same code. `replyTo` is the office's inboxes.
  */
 export function receiptEmail(
 	read: ContactFields,
 	fields: ContactField[],
 	options: ReceiptOptions & { from: string; replyTo?: string[] },
 ): Email {
-	const name = greetingName(read, fields);
+	const copy = options.copy === true;
+	const name = copy ? greetingName(read, fields) : "";
 	const greeting = name ? `We have your message, ${name}.` : "We have your message.";
 	const next = options.next ?? DEFAULT_RECEIPT_NEXT;
 	const signature = options.signature ?? displayName(options.from);
-	const rows = fieldRows(read, fields);
-	const message = shownWords(read, fields, "message");
+	const rows = copy ? fieldRows(read, fields) : [];
+	const message = copy ? shownWords(read, fields, "message") : "";
 	const messageLabel = fields.find((field) => field.key === "message")?.label ?? "Message";
 
 	const html = `
