@@ -4,6 +4,7 @@ import {
 	type ContactFields,
 	createContact,
 	DEFAULT_CONTACT_TO,
+	PLAIN_FIELDS,
 	SUBJECT_LIMIT,
 } from "../../src/forms/contact";
 import { type DestinationResult, refused, type Submission } from "../../src/forms/relay";
@@ -659,7 +660,21 @@ describe("destinations beside the email", () => {
 		expect(keys).toHaveLength(2);
 		expect(keys[0]).toBeTruthy();
 		expect(keys[1]).toBe(keys[0]);
-		expect(await reports()).toEqual([]);
+	});
+
+	it("reports a first try it never saw land, though the visitor is answered success", async () => {
+		const answers = [
+			() => new Response("{}", { status: 503 }),
+			() =>
+				new Response(JSON.stringify({ name: "concurrent_idempotent_requests" }), { status: 409 }),
+		];
+		resendAnswers(() => (answers.shift() ?? answers[0])?.() as Response);
+		const post = createContact({ from: FROM, retryWaitMs: 1 });
+		expect((await post(request(VALID))).status).toBe(200);
+		const sent = await reports();
+		expect(sent).toHaveLength(1);
+		expect(sent[0]).toContain("Form relay: email took the submission, unconfirmed");
+		expect(sent[0]).toContain('"reason":"unconfirmed"');
 	});
 
 	it("refuses a key reused with other words rather than trying again", async () => {
@@ -828,4 +843,69 @@ describe("a site's own fields", () => {
 		expect(response.status).toBe(200);
 		await expect(response.json()).resolves.toMatchObject({ id: "re_9" });
 	});
+});
+
+describe("a site's settings", () => {
+	it.each(["company", "canary"])(
+		"refuses a field under %s, a key the endpoint reads for itself",
+		(key) => {
+			expect(() =>
+				createContact({ from: FROM, fields: [...PLAIN_FIELDS, { key, label: "Company" }] }),
+			).toThrow(`"${key}" is a key the endpoint reads for itself`);
+		},
+	);
+
+	it("refuses a key listed twice", () => {
+		expect(() =>
+			createContact({
+				from: FROM,
+				fields: [...PLAIN_FIELDS, { key: "name", label: "Name again" }],
+			}),
+		).toThrow('the field "name" is listed twice');
+	});
+});
+
+describe("the office's email", () => {
+	beforeEach(() => {
+		vi.stubEnv("RESEND_API_KEY", "re_test_key");
+		vi.stubEnv("CONTACT_TO", "inbox@example.com");
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(new Response('{"id":"re_1"}', { status: 200 })),
+		);
+	});
+
+	afterEach(() => {
+		vi.unstubAllEnvs();
+		vi.unstubAllGlobals();
+	});
+
+	it("never lets an address set the subject or the body of the office's reply", async () => {
+		const post = createContact({ from: FROM });
+		await post(request({ ...VALID, email: "x@example.com?subject=Invoice&body=Wire%20it" }));
+		const { html } = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
+		expect(html).toContain('href="mailto:x@example.com%3Fsubject%3DInvoice%26body%3DWire%2520it"');
+		expect(html).not.toContain("mailto:x@example.com?subject");
+	});
+
+	it("sends a canary to every address CONTACT_CANARY_TO names", async () => {
+		vi.stubEnv("CONTACT_CANARY_TOKEN", "canary-secret");
+		vi.stubEnv("CONTACT_CANARY_TO", "ops@example.com, monitor@example.com");
+		const post = createContact({ from: FROM });
+		const response = await post(request({ ...VALID, canary: "canary-secret" }));
+		expect(response.status).toBe(200);
+		const { to } = JSON.parse(String(vi.mocked(fetch).mock.calls[0]?.[1]?.body));
+		expect(to).toEqual(["ops@example.com", "monitor@example.com"]);
+	});
+
+	it.each(["canary-secre", "canary-secret-", "Canary-secret", ""])(
+		"takes %j as no canary",
+		async (guess) => {
+			vi.stubEnv("CONTACT_CANARY_TOKEN", "canary-secret");
+			vi.stubEnv("CONTACT_CANARY_TO", "monitor@example.com");
+			const post = createContact({ from: FROM });
+			const response = await post(request({ ...VALID, canary: guess }));
+			await expect(response.json()).resolves.toEqual({ ok: true });
+		},
+	);
 });

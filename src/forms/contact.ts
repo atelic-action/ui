@@ -305,7 +305,13 @@ function words(value: FieldValue): string {
 function cell(field: ContactField, value: FieldValue): string {
 	const shown = escapeHTML(words(value));
 	if (typeof value !== "string") return shown;
-	if (field.kind === "email") return `<a href="mailto:${escapeHTML(value)}">${shown}</a>`;
+	if (field.kind === "email") {
+		// The characters that would start a mailto link's own parameters are
+		// encoded, so an address can never set the subject or the body of the
+		// reply the office opens.
+		const address = value.replace(/[?&=#%]/g, (character) => encodeURIComponent(character));
+		return `<a href="mailto:${escapeHTML(address)}">${shown}</a>`;
+	}
 	if (field.kind === "phone") {
 		// A number to dial is a link; anything else is the visitor's words alone.
 		const number = toE164(value);
@@ -383,9 +389,45 @@ function isProduction(): boolean {
 	return process.env.VERCEL_ENV === "production";
 }
 
-/** The handler a site's `api/contact.ts` exports as `POST`. */
+/**
+ * Whether two secrets are the same, in time that does not depend on where
+ * they first differ, so the canary's token cannot be felt out by timing.
+ */
+function sameSecret(given: string, secret: string): boolean {
+	const encoder = new TextEncoder();
+	const a = encoder.encode(given);
+	const b = encoder.encode(secret);
+	let difference = a.length ^ b.length;
+	for (let index = 0; index < b.length; index++) {
+		difference |= (a[index % Math.max(a.length, 1)] ?? 0) ^ (b[index] ?? 0);
+	}
+	return difference === 0;
+}
+
+/**
+ * The keys the endpoint reads for itself: `company` is the honeypot, whose
+ * any value drops the submission, and `canary` carries the canary's token.
+ * A site's field under either would be lost without a word.
+ */
+export const RESERVED_KEYS = ["company", "canary"];
+
+/**
+ * The handler a site's `api/contact.ts` exports as `POST`. Throws at once,
+ * when the function loads, for a field list that names a reserved key or
+ * the same key twice: a mistake in a site's settings should stop its tests
+ * and its first request, never lose a visitor's words quietly.
+ */
 export function createContact(options: ContactOptions): (request: Request) => Promise<Response> {
 	const fields = options.fields ?? PLAIN_FIELDS;
+	const keys = fields.map((field) => field.key);
+	const reserved = keys.find((key) => RESERVED_KEYS.includes(key));
+	if (reserved) {
+		throw new Error(
+			`createContact: "${reserved}" is a key the endpoint reads for itself (${RESERVED_KEYS.join(", ")}); give the field another key`,
+		);
+	}
+	const twice = keys.find((key, index) => keys.indexOf(key) !== index);
+	if (twice) throw new Error(`createContact: the field "${twice}" is listed twice`);
 	const tags = { route: options.route ?? "contact" };
 
 	return withErrorReporting(
@@ -407,7 +449,8 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			if (isHoneypotFilled(data.company)) return json(200, { ok: true });
 
 			const canaryToken = process.env.CONTACT_CANARY_TOKEN;
-			const canary = Boolean(canaryToken) && String(data.canary ?? "") === canaryToken;
+			const canary =
+				Boolean(canaryToken) && sameSecret(String(data.canary ?? ""), canaryToken ?? "");
 
 			const read = readFields(data, fields, !canary);
 			if ("refusal" in read) return json(400, { ok: false, error: read.refusal });
@@ -423,8 +466,12 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 				}
 				return json(500, { ok: false, error: "The contact form isn't configured yet." });
 			}
-			const canaryTo = process.env.CONTACT_CANARY_TO;
-			if (canary && !canaryTo) {
+			// Read as CONTACT_TO is: one address, or several split by commas.
+			const canaryTo = (process.env.CONTACT_CANARY_TO ?? "")
+				.split(",")
+				.map((address) => address.trim())
+				.filter(Boolean);
+			if (canary && canaryTo.length === 0) {
 				if (isProduction()) {
 					reportServerErrorLater(
 						new Error("Contact canary not configured: CONTACT_CANARY_TO unset"),
@@ -437,7 +484,7 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			const email = resendDestination<ContactFields>({
 				apiKey,
 				from: options.from,
-				to: canary && canaryTo ? [canaryTo] : to,
+				to: canary ? canaryTo : to,
 				timeoutMs: options.emailTimeoutMs,
 				compose: (submission) =>
 					officeEmail(submission.fields, fields, { subject: options.subject, canary }),

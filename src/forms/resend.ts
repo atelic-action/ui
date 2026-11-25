@@ -50,7 +50,8 @@ const STILL_SENDING = "concurrent_idempotent_requests";
  *   carrying the same key is answered the first try's response and sends
  *   nothing more, so it reads as delivered too.
  * - 409 naming a send still in flight: the first try is landing, so the
- *   second counts as a duplicate, never a second email.
+ *   second counts as a duplicate, never a second email, with a warning the
+ *   relay reports, since the first try's outcome is never seen.
  * - 429 and 5xx: Resend is down or shedding load, worth the second try.
  * - Anything else: Resend refused the email, and would again.
  */
@@ -65,7 +66,17 @@ async function read(response: Response): Promise<DestinationResult> {
 			.clone()
 			.json()
 			.catch(() => ({}))) as { name?: unknown };
-		if (body.name === STILL_SENDING) return { status: "duplicate" };
+		if (body.name === STILL_SENDING) {
+			return {
+				status: "duplicate",
+				// The first try was given up here while Resend was still working
+				// on it. It usually lands, but nothing confirms it, so the
+				// practice is told.
+				warning: new Error(
+					"Resend says the first try is still sending, and its outcome was not seen",
+				),
+			};
+		}
 	}
 	const cause = await refusalError(response, "Resend");
 	return response.status === 429 || response.status >= 500 ? down(cause) : refused(cause);

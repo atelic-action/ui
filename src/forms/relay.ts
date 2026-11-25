@@ -34,12 +34,22 @@ export interface Delivered {
 	status: "delivered";
 	/** The destination's own id for what it made (a message id, a lead id). */
 	reference?: string;
+	/**
+	 * Something the practice should hear about though the submission was
+	 * taken. The relay reports it, so a doubt is never silent.
+	 */
+	warning?: Error;
 }
 
 /** The destination already had this submission, from an earlier try. */
 export interface Duplicate {
 	status: "duplicate";
 	reference?: string;
+	/**
+	 * Why the duplicate is not certain (a first try the destination says is
+	 * still landing, which nothing here can confirm). The relay reports it.
+	 */
+	warning?: Error;
 }
 
 /**
@@ -231,8 +241,9 @@ export function legError(leg: Leg): Error | undefined {
 /**
  * Hands the submission to every destination at once and resolves when each
  * has answered, been given up, or been cut off by the deadline. Never
- * throws. Every failed leg is reported after the caller's answer, tagged
- * with the destination's name and the reason.
+ * throws. Every failed leg, and every leg taken with a warning, is reported
+ * after the caller's answer, tagged with the destination's name and the
+ * reason.
  */
 export async function relay<Fields>(
 	submission: Submission<Fields>,
@@ -254,13 +265,27 @@ export async function relay<Fields>(
 		clearTimeout(deadlineTimer);
 	}
 	for (const leg of legs) {
-		const error = legError(leg);
-		if (!error || leg.result.status !== "failed") continue;
-		reportServerErrorLater(error, {
-			request: options.request,
-			context: options.context,
-			tags: { ...options.tags, destination: leg.destination, reason: leg.result.reason },
-		});
+		const report = (error: Error, reason: string) =>
+			reportServerErrorLater(error, {
+				request: options.request,
+				context: options.context,
+				tags: { ...options.tags, destination: leg.destination, reason },
+			});
+		if (leg.result.status === "failed") {
+			const error = legError(leg);
+			if (error) report(error, leg.result.reason);
+		} else if (leg.result.warning) {
+			const { warning } = leg.result;
+			report(
+				new Error(
+					`Form relay: ${leg.destination} took the submission, unconfirmed: ${warning.message}`,
+					{
+						cause: warning,
+					},
+				),
+				"unconfirmed",
+			);
+		}
 	}
 	return { taken: legs.some((leg) => isTaken(leg.result)), legs };
 }

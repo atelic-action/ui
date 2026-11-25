@@ -323,6 +323,8 @@ export function ContactForm({
 		address?.attribution ?? (google ? <GoogleMapsAttribution /> : undefined);
 	const [errors, setErrors] = useState<ContactFormRefusals>({});
 	const [status, setStatus] = useState<Status>("idle");
+	/** The endpoint's own words for refusing what was written, when it gave any. */
+	const [refusal, setRefusal] = useState<string | null>(null);
 	const [place, setPlace] = useState<AddressParts>(startAddress);
 	// Whether a chosen suggestion's parts are still on their way.
 	const choosing = useRef(false);
@@ -419,7 +421,9 @@ export function ContactForm({
 
 		if (!endpoint) {
 			if (!toEmail) {
+				setRefusal(null);
 				setStatus("failed");
+				onError?.();
 				return;
 			}
 			const subject = encodeURIComponent(`Website inquiry: ${topic}`);
@@ -438,26 +442,44 @@ export function ContactForm({
 		}
 
 		setStatus("sending");
+		setRefusal(null);
 		try {
 			const response = await fetch(withBase(endpoint), {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(contactFormBody(values, shape)),
 			});
-			if (!response.ok) throw new Error(`status ${response.status}`);
+			if (!response.ok) {
+				// A 400 is the endpoint refusing what was written (a field over
+				// its limit, say), in words meant for the visitor: shown in place
+				// of the general message, since trying again would not help.
+				const answer =
+					response.status === 400
+						? ((await response.json().catch(() => null)) as { error?: unknown } | null)
+						: null;
+				setRefusal(typeof answer?.error === "string" && answer.error ? answer.error : null);
+				throw new Error(`status ${response.status}`);
+			}
 			setSentValues(values);
 			setStatus("sent");
 			form.reset();
 			setPlace(startAddress());
 			if (thanks) setFocusOn("thanks");
-			// The conversion: only a relay the endpoint accepted counts, never a
-			// press of the button, a failed send, or a honeypot catch (which the
-			// relay answers with the same success so the bot never learns). No
-			// personal data rides along.
-			if (!isHoneypotFilled(company)) onLead();
 		} catch {
 			setStatus("failed");
 			onError?.();
+			return;
+		}
+		// The conversion: only a relay the endpoint accepted counts, never a
+		// press of the button, a failed send, or a honeypot catch (which the
+		// relay answers with the same success so the bot never learns). No
+		// personal data rides along. It sits outside the send's own try: a lead
+		// event that throws is no reason to tell the visitor a message that was
+		// delivered had failed.
+		try {
+			if (!isHoneypotFilled(company)) onLead();
+		} catch {
+			// The message was sent; the count of it was not.
 		}
 	}
 
@@ -506,7 +528,7 @@ export function ContactForm({
 			<output className="form-status">
 				{status === "sent" && <span className="form-success">{successMessage}</span>}
 				{status === "failed" && (inlineError || !onError) && (
-					<span className="form-error">{errorMessage}</span>
+					<span className="form-error">{refusal ?? errorMessage}</span>
 				)}
 			</output>
 			{errorSummary && refusedCount > 0 && (

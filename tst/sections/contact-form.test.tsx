@@ -100,6 +100,79 @@ describe("ContactForm (endpoint mode)", () => {
 		expect(onError).not.toHaveBeenCalled();
 	});
 
+	it("shows the endpoint's own words when it refuses what was written", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response('{"ok":false,"error":"Message is over 5000 characters."}', { status: 400 }),
+				),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => {
+			expect(screen.getByText("Message is over 5000 characters.")).toBeInTheDocument();
+		});
+		expect(screen.queryByText("Sending failed.")).toBeNull();
+	});
+
+	it("keeps the general message for a failure that is not the visitor's to fix", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response('{"ok":false,"error":"Sending failed upstream."}', { status: 502 }),
+				),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(screen.getByText("Sending failed.")).toBeInTheDocument());
+		expect(screen.queryByText("Sending failed upstream.")).toBeNull();
+	});
+
+	it("tells the visitor a delivered message was sent even when the lead event throws", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 })));
+		const onError = vi.fn();
+		render(
+			<ContactForm
+				{...PROPS}
+				onError={onError}
+				onLead={() => {
+					throw new Error("no analytics here");
+				}}
+			/>,
+		);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => {
+			expect(screen.getByText("Your message is on its way!")).toBeInTheDocument();
+		});
+		expect(onError).not.toHaveBeenCalled();
+		expect(screen.queryByText("Sending failed.")).toBeNull();
+	});
+
+	it("hands up the failure of a form with nowhere to send", () => {
+		const onError = vi.fn();
+		render(
+			<ContactForm
+				successMessage="Sent."
+				errorMessage="Sending failed."
+				onError={onError}
+				inlineError={false}
+			/>,
+		);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+		expect(onError).toHaveBeenCalledOnce();
+	});
+
 	it("shows it is working, and takes no second press, for as long as the relay takes to answer", async () => {
 		let answer: (response: Response) => void = () => {};
 		const pending = new Promise<Response>((resolve) => {
