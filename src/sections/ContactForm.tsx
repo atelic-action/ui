@@ -898,6 +898,11 @@ function ContactThanks({
 	const level = thanks.headingLevel ?? 3;
 	const read = (words: ContactThanksWords) =>
 		typeof words === "function" ? words(values, sent) : words;
+	// The lead as read: a function may answer none (null or false) for one
+	// send and words for another, a copy on its way only when one is, and none
+	// draws no element at all, as a lead of null does.
+	const lead =
+		thanks.lead === null || thanks.lead === false ? null : read(thanks.lead ?? successMessage);
 	const labels =
 		thanks.summary === false
 			? null
@@ -948,8 +953,8 @@ function ContactThanks({
 			>
 				{read(thanks.title)}
 			</div>
-			{thanks.lead !== null && thanks.lead !== false && (
-				<p className="contact-thanks-lead">{read(thanks.lead ?? successMessage)}</p>
+			{lead !== null && lead !== false && lead !== undefined && (
+				<p className="contact-thanks-lead">{lead}</p>
 			)}
 			{rows.length > 0 && (
 				<dl className="contact-thanks-summary">

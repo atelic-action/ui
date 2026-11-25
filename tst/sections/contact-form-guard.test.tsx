@@ -338,6 +338,23 @@ describe("ContactForm's thanks and the receipt", () => {
 		expect(lead.mock.calls.at(-1)?.[1]).toEqual({ receipt });
 	});
 
+	it("draws no lead at all when the lead's function answers none", async () => {
+		answering(200, { ok: true, receipt: false });
+		const { container } = render(
+			<ContactForm
+				{...BASE}
+				thanks={{
+					title: "Sent",
+					lead: (_values, sent) => (sent.receipt ? "A copy is on its way." : null),
+				}}
+			/>,
+		);
+		fillIn();
+		send();
+		expect(await screen.findByRole("heading")).toHaveTextContent("Sent");
+		expect(container.querySelector(".contact-thanks-lead")).toBeNull();
+	});
+
 	it("reads an answer with no receipt flag as no receipt", async () => {
 		answering(200, {});
 		const lead = vi.fn((_values: unknown, sent: { receipt: boolean }) => String(sent.receipt));
