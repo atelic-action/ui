@@ -85,7 +85,21 @@ const box = (element: Element) => element.getBoundingClientRect();
 const toBottom = () =>
 	window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "instant" });
 
+/**
+ * The desktop page, with the footer's hours off: in the brand column they make
+ * the footer taller than the room the header leaves, where the footer holds
+ * the dock under the header instead (`FullPagePhoneTallFooter`), so the dock
+ * is seen riding above a footer that fits.
+ */
 export const FullPage: Story = {
+	args: {
+		site: {
+			...site,
+			nav: groupedNav,
+			header: { phones },
+			footer: { ...site.footer, showHours: false },
+		},
+	},
 	play: async ({ canvas, userEvent, step }) => {
 		const launcher = canvas.getByRole("button", { name: "Talk to us" });
 		await step("every landmark, once", async () => {
@@ -366,7 +380,7 @@ const visitPage = {
 
 /**
  * The footer the config fills by default: the hours the config already holds
- * for its structured data, as their own column, and the rating linked to the
+ * for its structured data, under the address in the brand column, and the rating linked to the
  * Google profile (`mapLinkURL`) the address links to.
  */
 export const FooterFromTheConfig: Story = {
@@ -576,7 +590,10 @@ function hoursInBrand(canvas: ReturnType<typeof within>) {
 
 /** `meridiem: "word"`: the footer's hours read "7 am to 3 pm", short, in their own column. */
 export const HoursWordMeridiemColumn: Story = {
-	args: { ...visitPage, site: { ...site, meridiem: "word" } },
+	args: {
+		...visitPage,
+		site: { ...site, meridiem: "word", footer: { ...site.footer, hoursPlacement: "column" } },
+	},
 	play: async ({ canvas }) => {
 		await expect(footerRanges(canvas)).toEqual(["7 am to 3 pm", "8 am to 2 pm", "Closed"]);
 		await expect(hoursInBrand(canvas)).toBe(false);
@@ -597,7 +614,10 @@ export const HoursWordMeridiemBrand: Story = {
 
 /** `footer.hoursShort: false`: the footer's hours keep their minutes, "7:00a to 3:00p", in their own column. */
 export const HoursWholeColumn: Story = {
-	args: { ...visitPage, site: { ...site, footer: { ...site.footer, hoursShort: false } } },
+	args: {
+		...visitPage,
+		site: { ...site, footer: { ...site.footer, hoursShort: false, hoursPlacement: "column" } },
+	},
 	play: async ({ canvas }) => {
 		await expect(footerRanges(canvas)).toEqual(["7:00a to 3:00p", "8:00a to 2:00p", "Closed"]);
 		await expect(hoursInBrand(canvas)).toBe(false);

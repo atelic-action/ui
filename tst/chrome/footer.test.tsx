@@ -95,12 +95,31 @@ describe("Footer", () => {
 		).toHaveTextContent("4.8 on Google");
 	});
 
-	it("draws the hours as a column of their own, headed Hours, and counts it in the grid", () => {
+	it("sets the hours inside the brand column by default, under the address, headed Hours", () => {
 		const hours = [
 			{ label: "Mon to Fri", range: "9a to 5p" },
 			{ label: "Sat", range: "Closed" },
 		];
 		const { container } = render(<Footer {...props} hours={hours} />);
+		const heading = screen.getByRole("heading", { name: "Hours", level: 2 });
+		const nap = screen.getByRole("contentinfo").querySelector("address") as HTMLElement;
+		expect(nap.parentElement).toContainElement(heading);
+		expect(
+			within(heading.parentElement as HTMLElement)
+				.getAllByRole("definition")
+				.map((d) => d.textContent),
+		).toEqual(["9a to 5p", "Closed"]);
+		const grid = container.querySelector(".footer-grid") as HTMLElement;
+		expect(grid).toHaveClass("has-brand-hours");
+		expect(grid).not.toHaveClass("has-hours");
+	});
+
+	it("draws the hours as a column of their own, headed Hours, and counts it in the grid, when asked", () => {
+		const hours = [
+			{ label: "Mon to Fri", range: "9a to 5p" },
+			{ label: "Sat", range: "Closed" },
+		];
+		const { container } = render(<Footer {...props} hours={hours} hoursPlacement="column" />);
 		const heading = screen.getByRole("heading", { name: "Hours", level: 2 });
 		const column = heading.parentElement as HTMLElement;
 		expect(
@@ -216,7 +235,7 @@ describe("Footer", () => {
 		);
 	});
 
-	it("takes a placement it does not know as a column, never hiding the hours", () => {
+	it("takes a placement it does not know as the default, never hiding the hours", () => {
 		render(
 			<Footer
 				{...props}
@@ -228,7 +247,7 @@ describe("Footer", () => {
 		expect(within(heading.parentElement as HTMLElement).getByText("7a to 3p")).toBeInTheDocument();
 		expect(
 			screen.getByRole("contentinfo").querySelector("address")?.parentElement,
-		).not.toContainElement(heading);
+		).toContainElement(heading);
 	});
 
 	it("hands its ref the footer element, forwarded so a React 18 host keeps it", () => {

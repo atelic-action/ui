@@ -390,11 +390,49 @@ export const UnderASiteHeadingRule: Story = {
 };
 
 /**
- * The hours, when the site gives them: a column of their own headed Hours,
- * beside the link columns and on their row, each day's range by its days.
+ * The hours, when the site gives them, where they sit by default: inside the
+ * brand column under the address, the phone, and the email, as a compact list
+ * under a small Hours label, each day's range by its days.
  */
 export const WithHours: Story = {
 	args: { hours },
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		const heading = within(footer).getByRole("heading", { name: "Hours", level: 2 });
+		const nap = footer.querySelector("address") as HTMLElement;
+		await expect(nap.parentElement).toContainElement(heading);
+		await expect(heading.getBoundingClientRect().top).toBeGreaterThan(
+			nap.getBoundingClientRect().bottom - 1,
+		);
+		const list = heading.parentElement as HTMLElement;
+		await expect(
+			within(list)
+				.getAllByRole("term")
+				.map((term) => term.textContent),
+		).toEqual(["Tue to Fri", "Sat and Sun", "Mon"]);
+		await expect(brokenLabels(footer)).toEqual([]);
+	},
+};
+
+/** The same on a phone. */
+export const WithHoursPhone: Story = {
+	...WithHours,
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		const heading = within(footer).getByRole("heading", { name: "Hours" });
+		await expect(footer.querySelector("address")?.parentElement).toContainElement(heading);
+		await expect(brokenLabels(footer)).toEqual([]);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * The hours as a column of their own (`hoursPlacement: "column"`), headed
+ * Hours, beside the link columns and on their row.
+ */
+export const HoursColumn: Story = {
+	args: { hours, hoursPlacement: "column" },
 	play: async ({ canvas, step }) => {
 		const footer = within(canvas.getByRole("contentinfo"));
 		const heading = footer.getByRole("heading", { name: "Hours", level: 2 });
@@ -423,12 +461,12 @@ export const WithHours: Story = {
 };
 
 /**
- * On a phone the hours take the row's whole width under the brand column,
+ * As a column on a phone the hours take the row's whole width under the brand column,
  * their rows two across, and the link columns pair up under them, where a
  * column of hours beside a taller link column left a hole under the hours.
  */
-export const WithHoursPhone: Story = {
-	args: { hours },
+export const HoursColumnPhone: Story = {
+	args: { hours, hoursPlacement: "column" },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		const footer = within(canvas.getByRole("contentinfo"));
@@ -636,7 +674,7 @@ async function expectWholeWords(canvas: ReturnType<typeof within>) {
 
 /** The hours as their own column beside four full link columns, at 1280. */
 export const CrowdedHoursColumn: Story = {
-	args: { hours, columns: fullColumns },
+	args: { hours, columns: fullColumns, hoursPlacement: "column" },
 	play: async ({ canvas }) => {
 		await expectWholeWords(canvas);
 	},
@@ -655,7 +693,7 @@ export const CrowdedHoursColumnPhone: Story = {
 };
 
 /**
- * The hours inside the brand column (`hoursPlacement: "brand"`), under the
+ * The hours inside the brand column (the default placement), under the
  * address, the phone, and the email as a compact list under a small label,
  * so four full link columns keep the row: at 1280 every three word label
  * holds one line, and no label breaks inside a word. The footer is set 4%
@@ -876,9 +914,9 @@ async function expectNoCellAlone(canvas: ReturnType<typeof within>, linkColumns:
 	await expectNoSidewaysScroll();
 }
 
-/** Two link columns on a phone: the hours span the row, the two columns pair under them. */
+/** Two link columns on a phone, the hours as a column: the hours span the row, the two columns pair under them. */
 export const HoursPhoneTwoColumns: Story = {
-	args: { hours, columns: columns.slice(0, 2) },
+	args: { hours, columns: columns.slice(0, 2), hoursPlacement: "column" },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expectNoCellAlone(canvas, 2);
@@ -890,7 +928,11 @@ export const HoursPhoneTwoColumns: Story = {
  * link column, as in 8.1.0, so the other two pair and none hangs alone.
  */
 export const HoursPhoneThreeColumns: Story = {
-	args: { hours, columns: [columns[0], columns[1], columns[3]] as FooterColumn[] },
+	args: {
+		hours,
+		columns: [columns[0], columns[1], columns[3]] as FooterColumn[],
+		hoursPlacement: "column",
+	},
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expectNoCellAlone(canvas, 3);
@@ -899,7 +941,7 @@ export const HoursPhoneThreeColumns: Story = {
 
 /** Four link columns on a phone: the hours span the row, the four columns two by two under them. */
 export const HoursPhoneFourColumns: Story = {
-	args: { hours, columns },
+	args: { hours, columns, hoursPlacement: "column" },
 	globals: pin("phone"),
 	play: async ({ canvas }) => {
 		await expectNoCellAlone(canvas, 4);
