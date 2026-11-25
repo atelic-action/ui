@@ -3051,4 +3051,82 @@
 	.atelic-ui .split.align-center {
 		align-items: center;
 	}
+
+	/* ---- EmbeddedScriptFrame ----
+	   The mount is the vendor's: nothing here styles what it draws beyond
+	   holding its iframe to the column, so a wide frame never pushes the
+	   page sideways. The cover lies over the whole frame, beside the mount,
+	   in the band's own color while the tool loads, so nothing the vendor
+	   draws meanwhile shows; the mount stays at full size under it. The
+	   status is centered in the held space, a box at the cover's top as tall
+	   as the frame's minHeight (--_esf-held, set by the component) or the
+	   cover, whichever is less, so it stays put when the vendor's iframe
+	   grows the frame under it. When the tool is ready the cover fades and
+	   takes no pointer; while the fallback shows it is clear and takes no
+	   pointer either, and only the fallback's own words do, so a link in
+	   them still works. */
+	.atelic-ui .embedded-script-frame {
+		--_esf-ground: var(--surface);
+	}
+	.atelic-ui .embedded-script-frame.surface-alt {
+		--_esf-ground: var(--surface-alt);
+	}
+	.atelic-ui .esf-frame {
+		position: relative;
+		min-width: 0;
+	}
+	.atelic-ui .esf-mount {
+		min-width: 0;
+	}
+	.atelic-ui .esf-mount iframe {
+		display: block;
+		max-width: 100%;
+	}
+	.atelic-ui .esf-cover,
+	.atelic-ui .esf-noscript {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+	}
+	.atelic-ui .esf-cover {
+		transition:
+			opacity 0.3s ease,
+			visibility 0s linear 0.3s;
+	}
+	.atelic-ui .esf-cover.is-covering {
+		background: var(--_esf-ground);
+		pointer-events: auto;
+	}
+	.atelic-ui .esf-cover.is-lifted {
+		background: var(--_esf-ground);
+		opacity: 0;
+		visibility: hidden;
+	}
+	/* Ready after the fallback: the tool is already in sight, so the cover
+	   goes at once, with no ground to bring back and fade. */
+	.atelic-ui .esf-cover.is-gone {
+		visibility: hidden;
+		transition: none;
+	}
+	.atelic-ui .esf-status {
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: min(100%, var(--_esf-held));
+		padding: var(--gutter);
+		text-align: center;
+	}
+	.atelic-ui .esf-fallback {
+		pointer-events: auto;
+		color: var(--ink-soft);
+		font-size: 1.05rem;
+		line-height: 1.5;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.atelic-ui .esf-cover {
+			transition: none;
+		}
+	}
 }
