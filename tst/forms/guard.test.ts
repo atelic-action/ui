@@ -2,9 +2,22 @@
 import {
 	type GuardVerdict,
 	SITEVERIFY_URL,
+	TURNSTILE_PRIVACY_ADDENDUM_URL,
+	TURNSTILE_PRIVACY_NOTICE,
 	TURNSTILE_TOKEN_KEY,
 	turnstileGuard,
 } from "../../src/forms/guard";
+
+describe("the privacy notice", () => {
+	it("names Cloudflare Turnstile and references its Privacy Addendum, as the invisible widget requires", () => {
+		expect(TURNSTILE_PRIVACY_NOTICE).toContain("Cloudflare Turnstile");
+		expect(TURNSTILE_PRIVACY_NOTICE).toContain("Turnstile Privacy Addendum");
+		expect(TURNSTILE_PRIVACY_NOTICE).toContain(TURNSTILE_PRIVACY_ADDENDUM_URL);
+		expect(TURNSTILE_PRIVACY_ADDENDUM_URL).toBe(
+			"https://www.cloudflare.com/turnstile-privacy-policy/",
+		);
+	});
+});
 
 const TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
 const SECRET = "1x0000000000000000000000000000000AA";
