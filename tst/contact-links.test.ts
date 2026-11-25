@@ -5,7 +5,9 @@ import { join, relative } from "node:path";
  * Component Rules 17 is met by two primitives: PhoneLink and EmailLink build
  * every tel: and mailto: link the package draws. A protocol written by hand
  * anywhere else in src/ fails here. The files left alone only test or name
- * the protocols; the contact form's mail handoff is a navigation, not a link.
+ * the protocols; the contact form's mail handoff is a navigation, not a link;
+ * and the contact endpoint writes the office's email, HTML for a mail client
+ * where no component renders, so its two links are written there.
  */
 
 const SRC = join(import.meta.dirname, "..", "src");
@@ -14,6 +16,7 @@ const ALLOWED = new Set([
 	"primitives/EmailLink.tsx",
 	"lib/newTabProps.ts",
 	"lib/phoneText.tsx",
+	"forms/contact.ts",
 	"routing/basePath.ts",
 	"scripts/check-contacts.ts",
 	"types.ts",

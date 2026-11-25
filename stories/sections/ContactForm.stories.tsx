@@ -234,6 +234,29 @@ export const RelayRefuses: Story = {
 	},
 };
 
+const onError = fn();
+
+/**
+ * A site that shows a failure its own way, in a toast: `onError` hands the
+ * failure up, and `inlineError` off keeps the form's own message away, so
+ * the visitor is told once. What was written stays.
+ */
+export const FailureHandedUp: Story = {
+	beforeEach: answering(() => Promise.resolve(new Response("{}", { status: 502 }))),
+	args: { onError, inlineError: false, errorMessage: "That did not go through." },
+	play: async ({ canvas, userEvent }) => {
+		onError.mockClear();
+		await fillIn(canvas, userEvent);
+		await userEvent.click(send(canvas));
+		await waitFor(() => expect(onError).toHaveBeenCalledOnce());
+		await expect(canvas.queryByText(/That did not go through/)).toBeNull();
+		await expect(canvas.getByLabelText("Message")).toHaveValue(
+			"A round cake for Saturday, please.",
+		);
+		await expect(onLead).not.toHaveBeenCalled();
+	},
+};
+
 /** The network fails outright: the default error, and a second try that works clears it. */
 export const NetworkFailsThenRetries: Story = {
 	beforeEach: answering(() => Promise.reject(new TypeError("Failed to fetch"))),

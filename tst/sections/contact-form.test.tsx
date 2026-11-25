@@ -53,6 +53,169 @@ describe("ContactForm (endpoint mode)", () => {
 		expect(screen.getByLabelText("Your name")).toHaveValue("Jane");
 	});
 
+	it("hands a failure up to the site, beside its own message", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 502 })));
+		const onError = vi.fn();
+		render(<ContactForm {...PROPS} onError={onError} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(onError).toHaveBeenCalledOnce());
+		expect(onError).toHaveBeenCalledWith(undefined);
+		expect(screen.getByText("Sending failed.")).toBeInTheDocument();
+	});
+
+	it("keeps its own failure message off when the site shows the failure itself", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("offline")));
+		const onError = vi.fn();
+		render(<ContactForm {...PROPS} onError={onError} inlineError={false} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(onError).toHaveBeenCalledOnce());
+		expect(screen.queryByText("Sending failed.")).toBeNull();
+		expect(screen.getByLabelText("Your name")).toHaveValue("Jane");
+	});
+
+	it("still shows its own message with the message turned off and nothing to hand the failure to", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("{}", { status: 502 })));
+		render(<ContactForm {...PROPS} inlineError={false} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(screen.getByText("Sending failed.")).toBeInTheDocument());
+	});
+
+	it("never calls onError for a send that worked or a press that failed validation", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 })));
+		const onError = vi.fn();
+		render(<ContactForm {...PROPS} onError={onError} />);
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => {
+			expect(screen.getByText("Your message is on its way!")).toBeInTheDocument();
+		});
+		expect(onError).not.toHaveBeenCalled();
+	});
+
+	it("shows the endpoint's own words when it refuses what was written", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response('{"ok":false,"error":"Message is over 5000 characters."}', { status: 400 }),
+				),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => {
+			expect(screen.getByText("Message is over 5000 characters.")).toBeInTheDocument();
+		});
+		expect(screen.queryByText("Sending failed.")).toBeNull();
+	});
+
+	it("hands the endpoint's words up with the failure, and survives a handler that throws", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response('{"ok":false,"error":"Message is over 5000 characters."}', { status: 400 }),
+				),
+		);
+		const onError = vi.fn(() => {
+			throw new Error("no toast provider");
+		});
+		render(<ContactForm {...PROPS} onError={onError} inlineError={false} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(onError).toHaveBeenCalledWith("Message is over 5000 characters."));
+		expect(screen.getByLabelText("Your name")).toHaveValue("Jane");
+	});
+
+	it("keeps the general message for a failure that is not the visitor's to fix", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi
+				.fn()
+				.mockResolvedValue(
+					new Response('{"ok":false,"error":"Sending failed upstream."}', { status: 502 }),
+				),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => expect(screen.getByText("Sending failed.")).toBeInTheDocument());
+		expect(screen.queryByText("Sending failed upstream.")).toBeNull();
+	});
+
+	it("tells the visitor a delivered message was sent even when the lead event throws", async () => {
+		vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 })));
+		const onError = vi.fn();
+		render(
+			<ContactForm
+				{...PROPS}
+				onError={onError}
+				onLead={() => {
+					throw new Error("no analytics here");
+				}}
+			/>,
+		);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		await waitFor(() => {
+			expect(screen.getByText("Your message is on its way!")).toBeInTheDocument();
+		});
+		expect(onError).not.toHaveBeenCalled();
+		expect(screen.queryByText("Sending failed.")).toBeNull();
+	});
+
+	it("hands up the failure of a form with nowhere to send", () => {
+		const onError = vi.fn();
+		render(
+			<ContactForm
+				successMessage="Sent."
+				errorMessage="Sending failed."
+				onError={onError}
+				inlineError={false}
+			/>,
+		);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+		expect(onError).toHaveBeenCalledOnce();
+	});
+
+	it("shows it is working, and takes no second press, for as long as the relay takes to answer", async () => {
+		let answer: (response: Response) => void = () => {};
+		const pending = new Promise<Response>((resolve) => {
+			answer = resolve;
+		});
+		const fetchMock = vi.fn().mockReturnValue(pending);
+		vi.stubGlobal("fetch", fetchMock);
+		render(<ContactForm {...PROPS} labels={{ sending: "Sending" }} />);
+		fillForm();
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+
+		const working = await screen.findByRole("button", { name: /Sending/ });
+		fireEvent.click(working);
+		expect(fetchMock).toHaveBeenCalledOnce();
+		// Still working however long the relay's two tries take.
+		expect(screen.getByRole("button", { name: /Sending/ })).toBeInTheDocument();
+
+		answer(new Response('{"ok":true}', { status: 200 }));
+		await waitFor(() => {
+			expect(screen.getByText("Your message is on its way!")).toBeInTheDocument();
+		});
+	});
+
 	it("validates before sending anything", () => {
 		const fetchMock = vi.fn();
 		vi.stubGlobal("fetch", fetchMock);

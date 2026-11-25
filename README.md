@@ -76,7 +76,7 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `CalloutPanel` | `@atelic-action/ui/sections` | Short callouts on the primary field, a heavy title over a subtitle each, four across and two by two below, titles and subtitles each on a shared line (8.0.0) | [Sections/CalloutPanel](https://ui.atelic.me/?path=/docs/sections-calloutpanel--docs) |
 | `CTASection` | `@atelic-action/ui/sections` | The standard closer: the site's own primary action and an optional ghost second | [Sections/CTASection](https://ui.atelic.me/?path=/docs/sections-ctasection--docs) |
 | `ComparisonTable` | `@atelic-action/ui/sections` | A graded before and after that scrolls sideways on a phone rather than reflowing; a row's label can link to what explains it (`stageHref`, 3.14.0) | [Sections/ComparisonTable](https://ui.atelic.me/?path=/docs/sections-comparisontable--docs) |
-| `ContactForm` | `@atelic-action/ui/sections` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event; opt in props add a split name, a phone, the address with its search, a services picker, a consent line, a count of fields to fix, and a thanks that replaces the form (8.5.0) | [Sections/ContactForm](https://ui.atelic.me/?path=/docs/sections-contactform--docs) |
+| `ContactForm` | `@atelic-action/ui/sections` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event; `onError` hands a failed send up to the site and `inlineError` turns the form's own failure message off (9.1.0); opt in props add a split name, a phone, the address with its search, a services picker, a consent line, a count of fields to fix, and a thanks that replaces the form (8.5.0) | [Sections/ContactForm](https://ui.atelic.me/?path=/docs/sections-contactform--docs) |
 | `ContactFormAddress`, `ContactFormConsent`, `ContactFormLabels`, `ContactFormPlaceholders`, `ContactFormThanks`, `ContactFormValues`, `ContactFormField`, `isPhoneNumber`, `isZIP` | `@atelic-action/ui/sections` | The shapes the form's opt in props take, what a visitor wrote, and the form's default phone and ZIP checks (8.5.0) | none |
 | `ContactInfoCard` | `@atelic-action/ui/sections` | A dark card of direct contact rows: call, email, visit, portal; `layout="stacked"` sets each label over its number (8.5.0) | [Sections/ContactInfoCard](https://ui.atelic.me/?path=/docs/sections-contactinfocard--docs) |
 | `ContactSection`, `ContactSectionProps` | `@atelic-action/ui/sections` | A contact page's body: the form in a card with an optional heading and lead, beside a side column of what the site stacks there; one column, the card first, when the two no longer fit; the ratio, bases, gaps, and card padding by token (8.6.0) | [Sections/ContactSection](https://ui.atelic.me/?path=/docs/sections-contactsection--docs) |
@@ -117,7 +117,10 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `isMiss`, `MissMatch`, `CATCH_ALL_ROUTE_ID` | `@atelic-action/ui/routing` | Whether a router's matches are a miss (the catch all route, or a route whose params name no page), router free, for a site's root route (8.1.0) | none |
 | `routerErrorOptions`, `RouteErrorFallback`, `RouteErrorProps`, `reportRouteError` | `@atelic-action/ui/routing` | The router options that report a route's render crash and draw the package's error page in its place, router free (8.2.0; see [Error Reporting](#error-reporting)) | [Routing/RouteErrorFallback](https://ui.atelic.me/?path=/docs/routing-routeerrorfallback--docs) |
 | `startErrorReporting`, `ErrorCatcherScript` (`enabled`, 8.2.0), `ErrorCatcherScriptProps`, `errorCatcherScript`, `reportError`, `installCatcher`, `readCatcher`, `afterFirstPaint`, `throwLaunchCheck`, `LAUNCH_CHECK_MESSAGE` | `@atelic-action/ui/monitoring` | Error reporting in the browser: the inline early catcher, and the start function that loads the Sentry SDK after first paint, errors only (8.1.0; see [Error Reporting](#error-reporting)) | none |
-| `reportServerError`, `reportServerErrorLater`, `WaitUntilContext`, `refusalError`, `reportRefusedResponse`, `withErrorReporting`, `parseDSN`, `parseStack`, `buildEnvelope` | `@atelic-action/ui/monitoring/server` | Error reporting from a function or the middleware, dependency free and built, for what Vercel runs uncompiled (8.1.0); the later one sends without holding the answer, on the platform's `waitUntil` (8.2.0) | none |
+| `reportServerError`, `reportServerErrorLater`, `WaitUntilContext`, `refusalError`, `scrub` (9.1.0), `reportRefusedResponse`, `withErrorReporting`, `parseDSN`, `parseStack`, `buildEnvelope` | `@atelic-action/ui/monitoring/server` | Error reporting from a function or the middleware, dependency free and built, for what Vercel runs uncompiled (8.1.0); the later one sends without holding the answer, on the platform's `waitUntil` (8.2.0) | none |
+| `createContact`, `ContactOptions`, `ContactField`, `FieldKind`, `ContactFields`, `PLAIN_FIELDS`, `readFields`, `officeEmail`, `recipients`, `subjectText` | `@atelic-action/ui/forms/contact` | The contact form's endpoint as one call: a site names its sender, its fields, and its destinations (9.1.0; see [The Form Relay](#the-form-relay)) | none |
+| `relay`, `Destination`, `DestinationResult`, `Submission`, `RelayOptions`, `RelayResult`, `Leg`, `down`, `refused`, `isTaken`, `legError` | `@atelic-action/ui/forms/relay` | Hands one submission to a list of destinations at once, with one more try for a destination that is down and a report for each that fails (9.1.0) | none |
+| `resendDestination`, `ResendOptions`, `Email` | `@atelic-action/ui/forms/resend` | Email through Resend as a destination of the relay (9.1.0) | none |
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
 | `AppProvider`, `AppConfigProvider`, `useAppConfig`, `useNav`, `useUser`, `configureApp`, `getAppConfig`, `AppConfig`, `NavItem`, `AppUser`, `Register` | `@atelic-action/ui/app` | The app shell's seam: the app hands in its config and nav, registers its user type, and reads them back | [App/AppProvider](https://ui.atelic.me/?path=/docs/app-appprovider--docs) |
 | `AppLayout`, `AppPage`, `AppPageToolbar`, `Breadcrumbs`, `SectionCards`, `DesktopRail`, `MobileTabBar`, `MobileMenu`, `UserMenu`, `PageSkeleton`, `PageError`, `ActionButton`, `FormActionButtons`, `activeSection` | `@atelic-action/ui/app` | The app frame: the rails, the tab bar, the page scaffold with its toolbar and right rail | [App/AppLayout](https://ui.atelic.me/?path=/docs/app-applayout--docs) |
@@ -539,22 +542,7 @@ import { ErrorCatcherScript } from "@atelic-action/ui/monitoring";
 </head>
 ```
 
-`api/contact.ts` wraps its handler, and reports a refused send by hand, since that path answers rather than throws:
-
-```ts
-import { reportRefusedResponse, withErrorReporting } from "@atelic-action/ui/monitoring/server";
-
-export const POST = withErrorReporting(
-	async (request: Request): Promise<Response> => {
-		// ...the handler as it was, and where Resend refuses:
-		if (!response.ok) {
-			await reportRefusedResponse(response, { service: "Resend", request, tags: { route: "contact" } });
-			return json(502, { ok: false, error: "Sending failed. Please try again in a moment." });
-		}
-	},
-	{ tags: { route: "contact" } },
-);
-```
+`api/contact.ts` reports through the endpoint the package makes (9.1.0, [The Form Relay](#the-form-relay)): the handler is wrapped, an unset variable is reported on production, and each destination that fails is reported by the relay, so a site's function holds no reporting of its own.
 
 `package.json` runs the check first in `build` and drops its own `@sentry/react` dependency:
 
@@ -563,6 +551,90 @@ export const POST = withErrorReporting(
 ```
 
 A site with a real reason to launch without Sentry runs `atelic-check-sentry --allow-missing`, which lets the build through under a loud warning. `middleware.ts` changes nothing: the gate's middleware reports on its own.
+
+## The Form Relay
+
+A form's endpoint hands each submission to a list of destinations behind one contract (9.1.0). The office's inbox is a destination exactly as a CRM is, and a site's function names its destinations and holds no delivery logic. Three built entries, each usable alone by another form's endpoint:
+
+| Entry | What it is |
+|---|---|
+| `@atelic-action/ui/forms/relay` | `relay(submission, destinations, options)` and the `Destination` contract |
+| `@atelic-action/ui/forms/resend` | `resendDestination(options)`, email through Resend as a destination |
+| `@atelic-action/ui/forms/contact` | `createContact(options)`, the contact form's whole endpoint |
+
+**A site's function.** `api/contact.ts` is the sender and, when the form draws more than the plain four fields, the list of what it sends:
+
+```ts
+import { createContact } from "@atelic-action/ui/forms/contact";
+
+export const POST = createContact({
+	from: "Summit Movement Studio <forms@atelic.me>",
+});
+```
+
+```ts
+export const POST = createContact({
+	from: "Alder Roofing <forms@atelic.me>",
+	fields: [
+		{ key: "name", label: "Name", required: true, limit: 201 },
+		{ key: "firstName", label: "First name", show: false },
+		{ key: "lastName", label: "Last name", show: false },
+		{ key: "email", label: "Email", kind: "email", required: true },
+		{ key: "phone", label: "Phone", kind: "phone", required: true },
+		{ key: "services", label: "Services", kind: "list" },
+		{ key: "topic", label: "Topic", show: false, limit: 2100 },
+		{ key: "address", label: "Property", kind: "address" },
+		{ key: "consent", label: "Text consent", kind: "checkbox" },
+		{ key: "message", label: "Message", required: true, limit: 5000 },
+	],
+	subject: ["services", "topic"],
+	destinations: [crm],
+});
+```
+
+**Fields.** A field has a `key`, a `label`, a `kind`, and whether it is `required`. The six kinds are `text`, `email`, `phone`, `list`, `address` (`{ street, city, state, zip }`), and `checkbox`. Each is read and checked by its kind: words that are not a string read as empty, an email must be well formed, a required phone must be one a phone can dial, a list holds 20 choices of 100 characters at most, and words hold 200 characters unless `limit` says otherwise. A key the site did not list is never read; when it is one `ContactForm` sends for an opt in field (`phone`, `address`, `services`, and the rest), the form and the function disagree, and production reports it while the submission goes on. Limits count characters as a visitor would. Beyond that, `company` and `canary` are the endpoint's own (the honeypot and the canary's token): `createContact` throws when the function loads for a field under either, or for a key listed twice, so a mistake in a site's settings stops its tests and never loses a visitor's words. A new field of an existing kind is one line in the site's list and no change to the package; a new kind is a change here. `PLAIN_FIELDS`, the default, is the form with no opt in: a name, an email, a topic, and a message.
+
+**The office's email** is one layout on every site: the `name` field as the heading, a table of every other shown field that holds something in the order the site listed them, then the `message` field. An email address and a number a phone can dial are links. `show: false` keeps a field out of the email, the name and the message included, while still handing it to every destination. The subject is `Website inquiry:` and the first of the `subject` keys that holds anything, with line breaks taken out and cut at 120 characters. A reply goes to the first email field's address.
+
+**The contract.** A destination is a `name`, an optional `timeoutMs`, and one `send(submission, { signal, attempt })` that answers `delivered`, `duplicate`, or `failed`, where a failure is `down` (worth one more try) or `refused` (never tried again). The submission is `{ id, fields }`: the fields by key, and one id that is the same on both tries, which a destination hands its service as the key that makes a second send safe. `send` must be safe to call twice with the same submission, and a throw counts as down. A destination's name is what a report calls it, never a client's name.
+
+```ts
+import { type Destination, down, refused } from "@atelic-action/ui/forms/relay";
+import type { ContactFields } from "@atelic-action/ui/forms/contact";
+
+const crm: Destination<ContactFields> = {
+	name: "crm",
+	async send({ id, fields }, { signal }) {
+		const response = await fetch(url, { method: "POST", signal, body: lead(id, fields) });
+		if (response.ok) return { status: "delivered" };
+		if (response.status === 409) return { status: "duplicate" };
+		const cause = new Error(`The CRM answered ${response.status}`);
+		return response.status >= 500 ? down(cause) : refused(cause);
+	},
+};
+```
+
+**What the relay does.** Every destination is tried at once, and none waits on another. A try not answered within the destination's limit (3 seconds by default) is given up, its signal aborted, and counts as down. A destination that is down is tried once more after `retryWaitMs` (1 second by default). The whole relay is held to `deadlineMs` (8 seconds by default) whatever the limits add up to, so a lengthened setting cannot outlast the platform. On the defaults the longest a visitor waits is 7 seconds. Nothing is stored and no delivery is tried after the relay resolves.
+
+**The visitor's answer.** `createContact` answers 200 when any destination took the submission and 502 only when none did. `ContactForm` shows its failure message on a 502, and on a 400 the endpoint's own words for what to fix (a field over its limit), since trying again would not help; a site that shows failures its own way passes `onError`, which is handed those words when the endpoint gave any, and `inlineError={false}` to keep the form's own message off.
+
+**Failures are never silent.** Each destination that fails is reported after the answer has gone (`reportServerErrorLater`), tagged with the `route`, the `destination`, and the `reason`, and saying whether it refused or was down on both tries, with the cause chained under it. A destination that took the submission but could not be sure of it answers with a `warning`, which is reported the same way under the reason `unconfirmed`. A report never carries the submission, and the relay takes anything shaped like an address or a phone number out of a destination's own words (`scrub`) before reporting them; a destination still builds its cause from the service's status and error name, as `refusalError` does.
+
+**The canary.** A submission whose `canary` field matches `CONTACT_CANARY_TOKEN` goes to `CONTACT_CANARY_TO` (one address, or several split by commas) by email and to no other destination, so a canary never creates a lead in a CRM. It is not held to the form's required fields, since `atelic-contact-canary` sends the plain four whatever the form asks.
+
+**Resend.** Each try carries the submission's id as the `Idempotency-Key`, which Resend remembers for a day. A second try whose first landed late sends nothing more, and a first try still in flight (409 `concurrent_idempotent_requests`) reads as a duplicate with a warning, since its outcome is never seen. A 429 or a 5xx is down; any other refusal is refused.
+
+**The platform's limit.** A site states its function's limit in `vercel.json`, above the relay's deadline plus the two seconds a report may take after the answer:
+
+```json
+{ "functions": { "api/contact.ts": { "maxDuration": 15 } } }
+```
+
+| Variable | What it does |
+|---|---|
+| `RESEND_API_KEY` | The sending only Resend key. Unset, it is reported on production alone, and the form answers 500 unless the site names another destination, which still gets the submission |
+| `CONTACT_TO` | The inbox for inquiries, or several split by commas. Unset, the practice's inbox |
+| `CONTACT_CANARY_TOKEN`, `CONTACT_CANARY_TO` | The canary's shared secret and the inbox its submissions land in |
 
 ## The Artifact Documents
 
@@ -825,6 +897,10 @@ The space a section leaves above and below itself is one token, `--section-space
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
 
+### Moving to 9.1.0
+
+Nothing breaks. `api/contact.ts` becomes a call to `createContact` from `@atelic-action/ui/forms/contact` ([The Form Relay](#the-form-relay)): delete the function's body, its honeypot copy, and its tests of delivery, keep the sender's name as `from`, list the form's fields when it draws more than the plain four, and state the function's limit in `vercel.json`. The office's email takes the one layout (the name, a table of the fields, the message), and a field over its limit is refused by name. `ContactForm` gains `onError` and `inlineError`.
+
 ### Moving to 9.0.0
 
 Hours print two ways and no others: "8:00 am to 5:00 pm", the default, or "08:00 to 17:00" with `clock: "24h"`. That is a change on every site that sets no clock: the footer's "8a to 5p" and the hours table's "8:00a to 5:00p" both read "8:00 am to 5:00 pm". `meridiem` (with its `Meridiem` type), `footer.hoursShort`, `HoursTable`'s `meridiem` prop, and the `short` and `meridiem` options of `formatClock` and `formatHoursRange` are gone, so a config or a call that sets one no longer compiles: delete the line, since what it asked for is now the default or no longer exists. A site on `clock: "24h"` changes nothing. The longer ranges make the footer's hours wider, so look at the footer at 1280 and 390 wide after the move, the hours column placement above all.
@@ -1070,7 +1146,7 @@ A site that takes 0.19.0 deletes its copies and repoints its own files. The temp
 | `@/components/siteConfig` | `@atelic-action/ui/sections` (`SiteConfig`, `NavItem`, `CTA`, `OpeningHours`, `Address`, `Founder`, `GateConfig`, `SiteLink`, `SocialLink`) |
 | `@/components/newTabProps` | `@atelic-action/ui/artifact` (`newTabProps`) |
 | `@/shared/lib/hours` | `@atelic-action/ui/sections` (`formatClock`, `formatHoursRange`, `isClosed`) |
-| `@/shared/lib/honeypot` | `@atelic-action/ui/sections` in a component; `api/contact.ts` keeps its own copy, since Vercel runs a function's package imports uncompiled |
+| `@/shared/lib/honeypot` | `@atelic-action/ui/sections` in a component; `api/contact.ts` kept its own copy until 9.1.0, when the whole function became `createContact` from `@atelic-action/ui/forms/contact` |
 | `@/shared/lib/analytics` (`trackEvent` only) | `@atelic-action/ui/sections`; the rest of the module, the click listener, stays in the site |
 | `@/shared/lib/basePath` (`normalizeBasePath`, `joinBase`, `stripBase`, `hasBase`) | `@atelic-action/ui/routing`; in a component, `useWithBase()` in place of `withBase`; in `e2e/`, `@atelic-action/ui/routing/base-path` |
 | `@/shared/lib/basePathAudit`, `@/shared/lib/sitemap` | Gone, inside `atelic-check-base-path` and `atelic-clean-sitemap` |

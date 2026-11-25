@@ -155,6 +155,21 @@ export interface ContactFormProps {
 	successMessage: string;
 	/** Message shown when the endpoint submission fails. */
 	errorMessage?: string;
+	/**
+	 * Called once each time a send fails (the endpoint answered a failure, or
+	 * never answered), so a site can say so its own way, in a toast. Passed
+	 * the endpoint's own words when it refused what was written (a field over
+	 * its limit), which are the visitor's to read, and nothing otherwise. The
+	 * form's own message still shows unless `inlineError` is false. A throw
+	 * from it is swallowed.
+	 */
+	onError?: (refusal?: string) => void;
+	/**
+	 * False keeps the form's own failure message off, for a site that shows a
+	 * failure itself through `onError`. Without an `onError` a visitor would
+	 * be told nothing, so it is only read beside one. Defaults to true.
+	 */
+	inlineError?: boolean;
 	/** Small footer line under the submit button. */
 	footnote?: ReactNode;
 	/**
@@ -261,6 +276,8 @@ export function ContactForm({
 	errorMessage = "Something went wrong sending your message. Please try again.",
 	footnote,
 	onLead = sendLead,
+	onError,
+	inlineError = true,
 	splitName = false,
 	phone,
 	address,
@@ -308,6 +325,8 @@ export function ContactForm({
 		address?.attribution ?? (google ? <GoogleMapsAttribution /> : undefined);
 	const [errors, setErrors] = useState<ContactFormRefusals>({});
 	const [status, setStatus] = useState<Status>("idle");
+	/** The endpoint's own words for refusing what was written, when it gave any. */
+	const [refusal, setRefusal] = useState<string | null>(null);
 	const [place, setPlace] = useState<AddressParts>(startAddress);
 	// Whether a chosen suggestion's parts are still on their way.
 	const choosing = useRef(false);
@@ -385,6 +404,15 @@ export function ContactForm({
 		</div>
 	);
 
+	/** Hands a failure to the site. A throw from the site's handler stops here. */
+	function handUp(refused?: string) {
+		try {
+			onError?.(refused);
+		} catch {
+			// The form has already said what it has to say.
+		}
+	}
+
 	async function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 		if (status === "sending") return;
@@ -404,7 +432,9 @@ export function ContactForm({
 
 		if (!endpoint) {
 			if (!toEmail) {
+				setRefusal(null);
 				setStatus("failed");
+				handUp();
 				return;
 			}
 			const subject = encodeURIComponent(`Website inquiry: ${topic}`);
@@ -423,25 +453,46 @@ export function ContactForm({
 		}
 
 		setStatus("sending");
+		setRefusal(null);
+		let refused: string | undefined;
 		try {
 			const response = await fetch(withBase(endpoint), {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(contactFormBody(values, shape)),
 			});
-			if (!response.ok) throw new Error(`status ${response.status}`);
+			if (!response.ok) {
+				// A 400 is the endpoint refusing what was written (a field over
+				// its limit, say), in words meant for the visitor: shown in place
+				// of the general message, since trying again would not help.
+				const answer =
+					response.status === 400
+						? ((await response.json().catch(() => null)) as { error?: unknown } | null)
+						: null;
+				if (typeof answer?.error === "string" && answer.error) refused = answer.error;
+				setRefusal(refused ?? null);
+				throw new Error(`status ${response.status}`);
+			}
 			setSentValues(values);
 			setStatus("sent");
 			form.reset();
 			setPlace(startAddress());
 			if (thanks) setFocusOn("thanks");
-			// The conversion: only a relay the endpoint accepted counts, never a
-			// press of the button, a failed send, or a honeypot catch (which the
-			// relay answers with the same success so the bot never learns). No
-			// personal data rides along.
-			if (!isHoneypotFilled(company)) onLead();
 		} catch {
 			setStatus("failed");
+			handUp(refused);
+			return;
+		}
+		// The conversion: only a relay the endpoint accepted counts, never a
+		// press of the button, a failed send, or a honeypot catch (which the
+		// relay answers with the same success so the bot never learns). No
+		// personal data rides along. It sits outside the send's own try: a lead
+		// event that throws is no reason to tell the visitor a message that was
+		// delivered had failed.
+		try {
+			if (!isHoneypotFilled(company)) onLead();
+		} catch {
+			// The message was sent; the count of it was not.
 		}
 	}
 
@@ -489,7 +540,9 @@ export function ContactForm({
 			    reader is already watching it when the words arrive. */}
 			<output className="form-status">
 				{status === "sent" && <span className="form-success">{successMessage}</span>}
-				{status === "failed" && <span className="form-error">{errorMessage}</span>}
+				{status === "failed" && (inlineError || !onError) && (
+					<span className="form-error">{refusal ?? errorMessage}</span>
+				)}
 			</output>
 			{errorSummary && refusedCount > 0 && (
 				<div className="form-alert" role="alert">
