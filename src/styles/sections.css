@@ -3056,7 +3056,9 @@
 	   The mount is the vendor's: nothing here styles what it draws beyond
 	   holding its iframe to the column, so a wide frame never pushes the
 	   page sideways. The status sits over the held space, beside the mount,
-	   until the iframe has loaded. */
+	   until the iframe has loaded, and takes no pointer, so it can never
+	   block the tool; only the fallback's own words do, so a link in them
+	   still works. */
 	.atelic-ui .esf-frame {
 		position: relative;
 		min-width: 0;
@@ -3076,9 +3078,10 @@
 		justify-content: center;
 		padding: var(--gutter);
 		text-align: center;
+		pointer-events: none;
 	}
 	.atelic-ui .esf-fallback {
-		max-width: 40ch;
+		pointer-events: auto;
 		color: var(--ink-soft);
 		font-size: 1.05rem;
 		line-height: 1.5;

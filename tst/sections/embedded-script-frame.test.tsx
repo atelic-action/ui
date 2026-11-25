@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
-import { StrictMode } from "react";
-import { EMBED_WAIT_MS, EmbeddedScriptFrame } from "../../src/sections";
+import { StrictMode, useLayoutEffect } from "react";
+import { EMBED_GRACE_MS, EMBED_WAIT_MS, EmbeddedScriptFrame } from "../../src/sections";
 
 /** Each test its own script, since the record of what was added is shared by the page. */
 let count = 0;
@@ -42,7 +42,19 @@ async function vendorArrives(): Promise<HTMLIFrameElement> {
 	return iframe;
 }
 
+/**
+ * Puts an iframe in the mount before the frame's own effects first look, as
+ * a vendor that mounted early would: a layout effect runs before them.
+ */
+function EarlyVendor() {
+	useLayoutEffect(() => {
+		document.getElementById("vendor-mount")?.appendChild(document.createElement("iframe"));
+	}, []);
+	return null;
+}
+
 afterEach(() => {
+	vi.restoreAllMocks();
 	vi.useRealTimers();
 	for (const script of Array.from(document.head.querySelectorAll("script"))) script.remove();
 });
@@ -185,5 +197,59 @@ describe("EmbeddedScriptFrame", () => {
 		document.head.appendChild(theirs);
 		render(frame(src));
 		expect(scripts(src)).toEqual([theirs]);
+	});
+
+	it("ends the wait as ready when the timeout finds an iframe whose load was never heard", async () => {
+		vi.useFakeTimers();
+		render(frame(nextSrc()));
+		await vendorArrives();
+		act(() => {
+			vi.advanceTimersByTime(EMBED_WAIT_MS);
+		});
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
+		expect(screen.queryByText(/Call us instead/)).not.toBeInTheDocument();
+	});
+
+	it("ends the wait as ready when the script fails late with an iframe already mounted", async () => {
+		const src = nextSrc();
+		render(frame(src));
+		await vendorArrives();
+		act(() => {
+			scripts(src)[0]?.dispatchEvent(new Event("error"));
+		});
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
+		expect(screen.queryByText(/Call us instead/)).not.toBeInTheDocument();
+	});
+
+	it("gives an iframe already in the mount at the first look a short grace, then ends the wait", () => {
+		vi.useFakeTimers();
+		render(
+			<>
+				{frame(nextSrc())}
+				<EarlyVendor />
+			</>,
+		);
+		expect(mountElement().querySelector("iframe")).not.toBeNull();
+		act(() => {
+			vi.advanceTimersByTime(EMBED_GRACE_MS - 1);
+		});
+		expect(screen.getByRole("status")).toHaveTextContent("Loading");
+		act(() => {
+			vi.advanceTimersByTime(1);
+		});
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
+	});
+
+	it("stops watching the mount once the tool is ready", async () => {
+		const disconnect = vi.spyOn(MutationObserver.prototype, "disconnect");
+		render(frame(nextSrc()));
+		const iframe = await vendorArrives();
+		const before = disconnect.mock.calls.length;
+		act(() => {
+			iframe.dispatchEvent(new Event("load"));
+		});
+		expect(screen.queryByRole("status")).not.toBeInTheDocument();
+		// Still mounted: the watch ended because the tool is ready, not because the frame left.
+		expect(disconnect.mock.calls.length).toBeGreaterThan(before);
 	});
 });

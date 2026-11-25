@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
+import { PhoneLink } from "../../src/primitives";
 import { EmbeddedScriptFrame } from "../../src/sections";
 import { embeddedWidget } from "../fixtures/sections";
 import { expectNoSidewaysScroll } from "../support/geometry";
@@ -31,6 +32,12 @@ type Story = StoryObj<typeof meta>;
 const region = (canvas: ReturnType<typeof within>) =>
 	canvas.getByRole("region", { name: "Build a custom cake order" });
 
+/** The element a pointer at the middle of `element` would land on. */
+const hitAt = (element: Element) => {
+	const box = element.getBoundingClientRect();
+	return document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+};
+
 /** The spinner holds the space until the vendor's iframe has loaded, then gives way to it. */
 export const Loads: Story = {
 	play: async ({ canvas, canvasElement, step }) => {
@@ -41,10 +48,15 @@ export const Loads: Story = {
 			await expect(mount.contains(status)).toBe(false);
 		});
 		await step("the tool arrives in the mount and the spinner goes", async () => {
-			await waitFor(() => expect(within(mount).getByTitle("The stand in tool")).toBeVisible(), {
-				timeout: 5000,
-			});
-			await waitFor(() => expect(canvas.queryByRole("status")).toBeNull(), { timeout: 5000 });
+			// One wait for both, generous because a full run loads the stand in's
+			// page slowly; the story's own time still bounds it.
+			await waitFor(
+				async () => {
+					await expect(within(mount).getByTitle("The stand in tool")).toBeVisible();
+					await expect(canvas.queryByRole("status")).toBeNull();
+				},
+				{ timeout: 10_000 },
+			);
 			await expect(region(canvas)).toContainElement(mount);
 		});
 	},
@@ -57,25 +69,49 @@ export const Waiting: Story = {
 		mountId: "order-tool-waiting",
 		timeoutMS: 600_000,
 	},
-	play: async ({ canvas }) => {
-		const box = region(canvas).getBoundingClientRect();
-		await expect(box.height).toBeGreaterThanOrEqual(420);
-		await expect(canvas.getByRole("status")).toHaveTextContent("Loading");
+	play: async ({ canvas, step }) => {
+		const status = canvas.getByRole("status");
+		await step("the held space is there, with the spinner in it", async () => {
+			const box = region(canvas).getBoundingClientRect();
+			await expect(box.height).toBeGreaterThanOrEqual(420);
+			await expect(status).toHaveTextContent("Loading");
+		});
+		await step("a pointer passes through the spinner to whatever is under it", async () => {
+			await expect(status.contains(hitAt(status))).toBe(false);
+		});
 	},
 };
 
-/** A tool that never loads gives way to the site's own line when the wait runs out. */
+/**
+ * A tool that never loads gives way to the site's own line when the wait
+ * runs out. The line takes the column's width, and a link in it works.
+ */
 export const Fallback: Story = {
 	args: {
 		src: embeddedWidget({ mount: "order-tool-fallback", story: "fallback", never: "" }),
 		mountId: "order-tool-fallback",
 		timeoutMS: 800,
+		fallback: (
+			<>
+				The order tool did not load just now, which happens when a browser blocks it. Call the
+				bakery at <PhoneLink phone={{ e164: "+15555550142", display: "555-0142" }} /> and we will
+				take your order by phone, or try the page again in a minute.
+			</>
+		),
 	},
-	play: async ({ canvas }) => {
+	play: async ({ canvas, step }) => {
 		await waitFor(
-			() => expect(canvas.getByRole("status")).toHaveTextContent("The order tool did not load."),
+			() => expect(canvas.getByRole("status")).toHaveTextContent("The order tool did not load"),
 			{ timeout: 5000 },
 		);
+		const link = canvas.getByRole("link", { name: "555-0142" });
+		await step("the link in the fallback takes the pointer", async () => {
+			await expect(hitAt(link)).toBe(link);
+		});
+		await step("the line runs the column's width, with no width of its own", async () => {
+			const line = canvas.getByText(/The order tool did not load/);
+			await expect(line.getBoundingClientRect().width).toBeGreaterThan(600);
+		});
 	},
 };
 
@@ -115,7 +151,7 @@ export const Phone: Story = {
 	globals: pin("phone"),
 	play: async ({ canvas, canvasElement }) => {
 		const mount = canvasElement.querySelector("#order-tool-phone") as HTMLElement;
-		await waitFor(() => expect(canvas.queryByRole("status")).toBeNull(), { timeout: 5000 });
+		await waitFor(() => expect(canvas.queryByRole("status")).toBeNull(), { timeout: 10_000 });
 		await expect(within(mount).getByTitle("The stand in tool")).toBeVisible();
 		await expectNoSidewaysScroll();
 	},

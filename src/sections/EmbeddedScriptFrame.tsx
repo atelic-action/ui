@@ -1,4 +1,12 @@
-import { memo, type ReactNode, type RefObject, useEffect, useRef, useState } from "react";
+import {
+	memo,
+	type ReactNode,
+	type RefObject,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { addScriptOnce } from "../lib/scriptOnce";
 import { Spinner } from "../primitives/Spinner";
 import type { Surface } from "./siteConfig";
@@ -6,10 +14,17 @@ import type { Surface } from "./siteConfig";
 /** How long the frame waits for the vendor's iframe before it shows the fallback. */
 export const EMBED_WAIT_MS = 15_000;
 
+/**
+ * How long an iframe already in the mount when the frame first looks is
+ * given to fire its load before the wait ends anyway: its load may have
+ * fired before the listener was there to hear it.
+ */
+export const EMBED_GRACE_MS = 2_000;
+
 export interface EmbeddedScriptFrameProps {
-	/** The vendor's script, e.g. "https://vendor.example.com/widget.js?id=abc". */
+	/** The vendor's script, e.g. "https://vendor.example.com/widget.js?id=abc". Fixed for the frame's life. */
 	src: string;
-	/** The id of the element the vendor's script looks for and mounts its iframe into. */
+	/** The id of the element the vendor's script looks for and mounts its iframe into. Fixed for the frame's life. */
 	mountId: string;
 	/** The region's accessible name, e.g. "Instant roof estimate". Site copy, so it comes in as a prop. */
 	title: string;
@@ -56,10 +71,15 @@ const Mount = memo(function Mount({
  * roof estimator such as Roofle's, whose widget script mounts into
  * `roof-quote-pro-embedded`). The frame draws the empty mount, holds
  * `minHeight` so the page does not jump, and keeps a spinner beside the
- * mount, never inside it, until the vendor's iframe has loaded. If none has
- * within `timeoutMS`, or the script fails, the spinner gives way to the
- * consumer's `fallback`, so the page never spins forever; an iframe that
- * loads after that still takes its place.
+ * mount, never inside it, until the vendor's iframe has loaded. The spinner
+ * and the fallback sit over the held space and never take a pointer (a link
+ * in the fallback still does), so neither can block the tool. If no iframe
+ * is in the mount when `timeoutMS` runs out, or the script fails first, the
+ * spinner gives way to the consumer's `fallback`, so the page never spins
+ * forever. An iframe in the mount at either moment means the vendor
+ * arrived: the wait ends and no fallback is drawn over the tool, whether or
+ * not its load was heard. An iframe that loads after the fallback still
+ * takes its place.
  *
  * The script loads when the page opens, with no click to load step. That
  * is deliberate, an exception to the load on request habit every other
@@ -70,12 +90,16 @@ const Mount = memo(function Mount({
  *
  * The script is added once per `src`, in an effect after hydration, as an
  * `async` tag in the head, and never during a prerender: a strict mode
- * effect run twice, a remount, and a second frame on the page all share
- * the one tag. A tag that fails is taken back out, so a later mount tries
- * again. A vendor script runs once per page load, though, so a frame
- * mounted again after a client side navigation away and back gets a fresh,
- * empty mount the vendor never revisits, and shows the fallback; link to a
- * page that carries it with a full page load.
+ * effect run twice and a remount share the one tag. A tag that fails is
+ * taken back out, so a later mount tries again. Use one frame per page for
+ * a `src`: the vendor mounts into one id. `src` and `mountId` are fixed for
+ * the frame's life; a change to either is not followed. Do not also put
+ * the vendor's tag in the site's own head: the vendor could then mount
+ * before hydration, and React would find children in the mount it never
+ * drew. A vendor script runs once per page load, so a frame mounted again
+ * after a client side navigation away and back gets a fresh, empty mount
+ * the vendor never revisits, and shows the fallback; link to a page that
+ * carries it with a full page load.
  */
 export function EmbeddedScriptFrame({
 	src,
@@ -91,19 +115,31 @@ export function EmbeddedScriptFrame({
 }: EmbeddedScriptFrameProps) {
 	const mount = useRef<HTMLDivElement>(null);
 	const [status, setStatus] = useState<Status>("loading");
+	const ready = status === "ready";
+
+	/**
+	 * Where the wait ends without a load heard: an iframe in the mount means
+	 * the vendor arrived, so it is ready; none means the fallback.
+	 */
+	const endWait = useCallback(
+		(now: Status): Status =>
+			now === "ready" || mount.current?.querySelector("iframe") ? "ready" : "failed",
+		[],
+	);
 
 	// The vendor's script, once per page.
 	useEffect(() => {
 		const script = addScriptOnce(src);
-		const onError = () => setStatus((now) => (now === "ready" ? now : "failed"));
+		const onError = () => setStatus(endWait);
 		script.addEventListener("error", onError);
 		return () => script.removeEventListener("error", onError);
-	}, [src]);
+	}, [src, endWait]);
 
-	// The vendor's iframe: watched for in the mount, then waited for to load.
+	// The vendor's iframe: watched for in the mount, then waited for to
+	// load. The watch stops once the tool is ready.
 	useEffect(() => {
 		const element = mount.current;
-		if (!element) return;
+		if (!element || ready) return;
 		let frame: HTMLIFrameElement | null = null;
 		const onLoad = () => setStatus("ready");
 		const watch = () => {
@@ -114,20 +150,24 @@ export function EmbeddedScriptFrame({
 			found.addEventListener("load", onLoad);
 		};
 		watch();
+		// An iframe already there at the first look may have loaded unheard:
+		// it gets a short grace rather than the whole wait.
+		const grace = frame ? setTimeout(onLoad, EMBED_GRACE_MS) : undefined;
 		const observer = new MutationObserver(watch);
 		observer.observe(element, { childList: true, subtree: true });
 		return () => {
+			clearTimeout(grace);
 			observer.disconnect();
 			frame?.removeEventListener("load", onLoad);
 		};
-	}, []);
+	}, [ready]);
 
 	// The wait, so the page never spins forever.
 	useEffect(() => {
 		if (status !== "loading") return;
-		const timer = setTimeout(() => setStatus("failed"), timeoutMS);
+		const timer = setTimeout(() => setStatus(endWait), timeoutMS);
 		return () => clearTimeout(timer);
-	}, [status, timeoutMS]);
+	}, [status, timeoutMS, endWait]);
 
 	return (
 		<section
