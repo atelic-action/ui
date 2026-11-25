@@ -192,6 +192,43 @@ describe("ContactForm with the guard", () => {
 		await waitFor(() => expect(api.reset).toHaveBeenCalledWith("widget-1"));
 	});
 
+	it("gets a token promptly on a send after the thanks, from a widget in the new form", async () => {
+		// Like the real one, a widget answers only while its container is on the page.
+		const containers: HTMLElement[] = [];
+		const callbacks: TurnstileRenderOptions[] = [];
+		const api = {
+			render: vi.fn((container: HTMLElement, options: TurnstileRenderOptions) => {
+				containers.push(container);
+				callbacks.push(options);
+				return `widget-${containers.length}`;
+			}),
+			execute: vi.fn((id: string) => {
+				const at = Number(id.split("-")[1]) - 1;
+				if (containers[at]?.isConnected) callbacks[at]?.callback(`token-${at + 1}`);
+			}),
+			reset: vi.fn(),
+			remove: vi.fn(),
+		};
+		window.turnstile = api as unknown as TurnstileAPI;
+		render(<ContactForm {...BASE} guard={GUARD} thanks={{ title: "Sent" }} />);
+		fillIn();
+		send();
+		await screen.findByRole("button", { name: "Send another message" });
+		expect(posted().turnstile).toBe("token-1");
+
+		fireEvent.click(screen.getByRole("button", { name: "Send another message" }));
+		fillIn();
+		send();
+		// Well inside the ten seconds a stranded widget would cost.
+		await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2), { timeout: 1000 });
+		expect(posted(1).turnstile).toBe("token-2");
+		expect(api.render).toHaveBeenCalledTimes(2);
+		// The second widget went into the new form's own container; token-2
+		// arriving at all says that container was on the page when it ran.
+		expect(containers[1]).not.toBe(containers[0]);
+		await waitFor(() => expect(api.remove).toHaveBeenCalledWith("widget-1"));
+	});
+
 	it("posts no turnstile key without a guard", async () => {
 		render(<ContactForm {...BASE} />);
 		fillIn();

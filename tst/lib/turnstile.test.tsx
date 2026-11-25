@@ -169,6 +169,56 @@ describe("useTurnstile", () => {
 		expect(scripts()).toHaveLength(0);
 	});
 
+	it("renders a fresh widget into a new container when the old one left the page", async () => {
+		// Like the real one, a widget answers only while its container is on the page.
+		const containers = new Map<string, HTMLElement>();
+		const callbacks = new Map<string, TurnstileRenderOptions>();
+		const api = {
+			render: vi.fn((container: HTMLElement, options: TurnstileRenderOptions) => {
+				const id = `widget-${containers.size + 1}`;
+				containers.set(id, container);
+				callbacks.set(id, options);
+				return id;
+			}),
+			execute: vi.fn((id: string) => {
+				if (containers.get(id)?.isConnected) callbacks.get(id)?.callback(`token-for-${id}`);
+			}),
+			reset: vi.fn(),
+			remove: vi.fn(),
+		};
+		window.turnstile = api as unknown as TurnstileAPI;
+		const { result } = renderHook(() => useTurnstile("site-key"));
+		const first = document.body.appendChild(document.createElement("div"));
+		result.current.containerRef.current = first;
+		await expect(result.current.token()).resolves.toBe("token-for-widget-1");
+
+		// The form gives way to its thanks, and a new form draws a new container.
+		first.remove();
+		const second = document.body.appendChild(document.createElement("div"));
+		result.current.containerRef.current = second;
+		const prompt = new Promise<string>((resolve) => setTimeout(() => resolve("no token yet"), 200));
+		await expect(Promise.race([result.current.token(), prompt])).resolves.toBe(
+			"token-for-widget-2",
+		);
+		expect(api.render).toHaveBeenCalledTimes(2);
+		expect(api.render.mock.calls[1]?.[0]).toBe(second);
+		await vi.waitFor(() => expect(api.remove).toHaveBeenCalledWith("widget-1"));
+		second.remove();
+	});
+
+	it("keeps the widget while its container stays on the page", async () => {
+		const api = fakeTurnstile();
+		window.turnstile = api as unknown as TurnstileAPI;
+		const { result } = renderHook(() => useTurnstile("site-key"));
+		const container = document.body.appendChild(document.createElement("div"));
+		result.current.containerRef.current = container;
+		await result.current.token();
+		await result.current.token();
+		expect(api.render).toHaveBeenCalledOnce();
+		expect(api.remove).not.toHaveBeenCalled();
+		container.remove();
+	});
+
 	it("resets the widget when asked, and removes it when the form leaves the page", async () => {
 		const api = fakeTurnstile();
 		window.turnstile = api as unknown as TurnstileAPI;

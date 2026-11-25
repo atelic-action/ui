@@ -123,9 +123,38 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 	const waiting = useRef<Waiter | null>(null);
 	const unsupported = useRef(false);
 	const gone = useRef(false);
+	/** The element the live widget was rendered into, once it has been. */
+	const renderedInto = useRef<HTMLElement | null>(null);
+
+	/** Takes the widget out of the page, once it is made, and forgets it. */
+	const drop = useCallback(() => {
+		const made = widget.current;
+		widget.current = null;
+		renderedInto.current = null;
+		made?.then(
+			({ api, id }) => {
+				try {
+					api.remove(id);
+				} catch {
+					// The widget is already gone with its container.
+				}
+			},
+			() => {},
+		);
+	}, []);
 
 	const prepare = useCallback(() => {
-		if (!siteKey || widget.current) return;
+		if (!siteKey) return;
+		if (widget.current) {
+			// A widget still loading renders into whatever container is there
+			// when it arrives. One already rendered is kept only while its
+			// container is the form's and still on the page: the form is swapped
+			// for its thanks after a send and drawn anew on "send another", and
+			// a widget left in the old container would never answer again.
+			const into = renderedInto.current;
+			if (!into || (into === containerRef.current && into.isConnected)) return;
+			drop();
+		}
 		const made = loadTurnstile().then((api) => {
 			const container = containerRef.current;
 			if (gone.current || !container) {
@@ -153,6 +182,7 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 				},
 			});
 			if (!id) throw new Error("Turnstile rendered no widget");
+			if (widget.current === made) renderedInto.current = container;
 			return { api, id };
 		});
 		// A load or a render that failed is tried again on the next focus.
@@ -160,7 +190,7 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 			if (widget.current === made) widget.current = null;
 		});
 		widget.current = made;
-	}, [siteKey]);
+	}, [siteKey, drop]);
 
 	const token = useCallback((): Promise<string> => {
 		prepare();
@@ -224,21 +254,10 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 		gone.current = false;
 		return () => {
 			gone.current = true;
-			const made = widget.current;
-			widget.current = null;
 			waiting.current = null;
-			made?.then(
-				({ api, id }) => {
-					try {
-						api.remove(id);
-					} catch {
-						// The widget is already gone with the page.
-					}
-				},
-				() => {},
-			);
+			drop();
 		};
-	}, []);
+	}, [drop]);
 
 	return { containerRef, prepare, token, reset };
 }
