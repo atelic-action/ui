@@ -89,6 +89,20 @@ export const TURNSTILE_TOKEN_KEY = "turnstile";
 
 export const DEFAULT_GUARD_TIMEOUT_MS = 3_000;
 
+/** Cloudflare's Turnstile Privacy Addendum, which the notice below references. */
+export const TURNSTILE_PRIVACY_ADDENDUM_URL =
+	"https://www.cloudflare.com/turnstile-privacy-policy/";
+
+/**
+ * The one sentence every site's privacy policy carries once its contact
+ * form runs the guard. Cloudflare allows the invisible widget only on a site
+ * whose privacy policy references its Turnstile Privacy Addendum, so each
+ * site's policy imports this as a paragraph of its legal document, and a
+ * change here reaches every policy on its next update of this package. The
+ * address is written out because a legal document's blocks are plain text.
+ */
+export const TURNSTILE_PRIVACY_NOTICE = `Our contact form uses Cloudflare Turnstile to tell people from automated spam. Turnstile processes signals about your device and browser, such as your IP address, and Cloudflare's Turnstile Privacy Addendum describes how Cloudflare handles them: ${TURNSTILE_PRIVACY_ADDENDUM_URL}`;
+
 /**
  * The error codes that mean Cloudflare looked at the token and said no: a
  * token that is not one, or one already spent or expired. Every other code
