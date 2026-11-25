@@ -72,15 +72,17 @@ describe("the token each quiet word reads", () => {
 
 	it("sets the contact form's error words in the primary's ink, never the deep fill", () => {
 		// The words read --field-error first (8.5.0), and unset fall back to
-		// exactly the primary's ink, as they always did.
-		expect(sections).toMatch(
+		// exactly the primary's ink, as they always did. A field's own error
+		// is in fields.css, which every field sheet imports (9.2.0).
+		const fields = sheet("fields.css");
+		expect(fields).toMatch(
 			/\.field \.err \{[^}]*color: var\(--field-error, var\(--primary-ink, var\(--primary\)\)\);/,
 		);
+		expect(fields).not.toMatch(/\.field \.err \{[^}]*color: var\(--primary-deep\)/);
 		expect(sections).toMatch(
 			/\.form-alert \{[^}]*color: var\(--field-error, var\(--primary-ink, var\(--primary\)\)\);/,
 		);
 		expect(sections).toMatch(/\.form-error \{[^}]*color: var\(--primary-ink, var\(--primary\)\);/);
-		expect(sections).not.toMatch(/\.field \.err \{[^}]*color: var\(--primary-deep\)/);
 	});
 
 	it("sets the carousel's denominator in the quiet gray, never the rule gray", () => {
