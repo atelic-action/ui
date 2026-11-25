@@ -18,8 +18,13 @@ export const CATCHER_GLOBAL = "__atelicErrors";
 /** How many errors the buffer holds before it counts the rest as dropped. */
 export const CATCHER_CAP = 20;
 
-/** What raised a held error: the window's error event, an unhandled rejection, or a render crash. */
-export type CaughtKind = "error" | "unhandledrejection" | "boundary";
+/**
+ * What raised a held error: the window's error event, an unhandled
+ * rejection, a render crash, or a failure a component caught and handled
+ * itself, reported so it is never silent (`handled`, 9.2.0: the contact
+ * form's spam check failing to load, the form sending anyway).
+ */
+export type CaughtKind = "error" | "unhandledrejection" | "boundary" | "handled";
 
 /** One held error: what was thrown (an Error, a reason, or a message), how, and when. */
 export interface CaughtError {

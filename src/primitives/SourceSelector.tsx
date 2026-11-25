@@ -1,0 +1,77 @@
+import { type ReactNode, useId } from "react";
+import { DEFAULT_SOURCE_PLACEHOLDER, SOURCE_KEY, type Source } from "../forms/source";
+
+export interface SourceSelectorProps {
+	/** The question, the answers, and whether one is required: the site's one `Source`. */
+	source: Source;
+	/** The answer chosen, empty for none. */
+	value: string;
+	/** Called with the answer the visitor chooses, empty when they go back to none. */
+	onChange: (value: string) => void;
+	/** The select's id. A unique one by default. */
+	id?: string;
+	/** The name the answer is submitted under. Defaults to "source". */
+	name?: string;
+	/** A quiet note beside the label, such as "(optional)". */
+	hint?: ReactNode;
+	/** Why the answer is refused; the select is marked invalid and described by it while set. */
+	error?: string;
+	className?: string;
+}
+
+/**
+ * How did you hear about us: a labeled native select of the site's answers,
+ * an empty first row before them. Controlled, so it sits on any form; a
+ * native select, so a phone shows its own picker.
+ */
+export function SourceSelector({
+	source,
+	value,
+	onChange,
+	id,
+	name = SOURCE_KEY,
+	hint,
+	error,
+	className,
+}: SourceSelectorProps) {
+	const ownId = useId();
+	const selectId = id ?? `${ownId}-source`;
+	const errorId = `${selectId}-error`;
+	return (
+		<div
+			className={["field", "source-selector", error && "invalid", className]
+				.filter(Boolean)
+				.join(" ")}
+		>
+			<label htmlFor={selectId}>
+				{source.label}
+				{hint && (
+					<>
+						{" "}
+						<small className="field-hint">{hint}</small>
+					</>
+				)}
+			</label>
+			<select
+				id={selectId}
+				name={name}
+				required={source.required}
+				value={value}
+				onChange={(event) => onChange(event.target.value)}
+				{...(error && { "aria-invalid": true, "aria-describedby": errorId })}
+			>
+				<option value="">{source.placeholder ?? DEFAULT_SOURCE_PLACEHOLDER}</option>
+				{source.options.map((option) => (
+					<option key={option} value={option}>
+						{option}
+					</option>
+				))}
+			</select>
+			{error && (
+				<span className="err" id={errorId}>
+					{error}
+				</span>
+			)}
+		</div>
+	);
+}

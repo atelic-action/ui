@@ -6,6 +6,7 @@
  * its own.
  */
 
+export type { Source } from "../forms/source";
 export {
 	type ContactFormField,
 	type ContactFormValues,
@@ -15,6 +16,10 @@ export {
 export { isHoneypotFilled } from "../lib/honeypot";
 export { type ClockOptions, formatClock, formatHoursRange, isClosed } from "../lib/hours";
 export { type EventParams, trackEvent } from "../lib/trackEvent";
+export {
+	SourceSelector,
+	type SourceSelectorProps,
+} from "../primitives/SourceSelector";
 export { BlogIndex, type BlogIndexItem, type BlogIndexProps } from "./BlogIndex";
 export { BlogPost, type BlogPostDoc, type BlogPostProps } from "./BlogPost";
 export {
@@ -35,7 +40,9 @@ export {
 	type ContactFormLabels,
 	type ContactFormPlaceholders,
 	type ContactFormProps,
+	type ContactFormSent,
 	type ContactFormThanks,
+	type ContactThanksWords,
 } from "./ContactForm";
 export {
 	ContactInfoCard,

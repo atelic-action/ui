@@ -257,3 +257,33 @@ describe("the helpers", () => {
 		expect(addressLine({ street: "", city: "", state: "", zip: "" })).toBe("");
 	});
 });
+
+describe("the Source Selector", () => {
+	const withSource = (source: "optional" | "required") => ({ ...PLAIN_SHAPE, source });
+
+	it("reads and posts the answer, empty when none was chosen", () => {
+		const shape = withSource("optional");
+		const chosen = readContactForm(data([...plainEntries, ["source", "A friend"]]), shape);
+		expect(contactFormBody(chosen, shape).source).toBe("A friend");
+		const none = readContactForm(data(plainEntries), shape);
+		expect(checkContactForm(none, shape)).toEqual({});
+		expect(contactFormBody(none, shape).source).toBe("");
+	});
+
+	it("refuses a required question left unanswered, between the address and the message", () => {
+		const shape = withSource("required");
+		const refused = checkContactForm(
+			readContactForm(data([...plainEntries, ["source", ""]]), shape),
+			shape,
+		);
+		expect(refused).toEqual({ source: true });
+		expect(firstRefused({ ...refused, message: true })).toBe("source");
+		expect(firstRefused({ ...refused, zip: true })).toBe("zip");
+	});
+
+	it("reads and posts nothing of the selector when it is off", () => {
+		const values = readContactForm(data([...plainEntries, ["source", "Google"]]), PLAIN_SHAPE);
+		expect(values.source).toBe("");
+		expect(contactFormBody(values, PLAIN_SHAPE)).not.toHaveProperty("source");
+	});
+});
