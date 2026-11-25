@@ -303,8 +303,9 @@ export interface PostalAddress {
 }
 
 /**
- * Where the footer sets the hours: `column`, a column of their own beside
- * the link columns, or `brand`, a compact list inside the brand column.
+ * Where the footer sets the hours: `brand` (the default), a compact list
+ * inside the brand column, or `column`, a column of their own beside the
+ * link columns.
  */
 export type FooterHoursPlacement = "column" | "brand";
 

@@ -168,17 +168,18 @@ export interface FooterProps {
 	email?: string;
 	/**
 	 * The opening hours, already formatted by the site (`SiteShell` formats
-	 * the config's `hours`), drawn as their own column beside the link
-	 * columns: each row's days and its range. Left out when empty.
+	 * the config's `hours`): each row's days and its range, under the brand
+	 * column's address by default (see `hoursPlacement`). Optional, and left
+	 * out when empty.
 	 */
 	hours?: HoursRow[];
 	/** The hours column's heading. Defaults to "Hours". */
 	hoursHeading?: string;
 	/**
-	 * Where the hours sit: `column` (the default) is a column of their own
-	 * beside the link columns; `brand` sets them inside the brand column,
-	 * under the address, the phone, and the email, as a compact list of two
-	 * columns under a small label, so the link columns keep the row's room.
+	 * Where the hours sit: `brand` (the default, 8.8.0) sets them inside the
+	 * brand column, under the address, the phone, and the email, as a compact
+	 * list of two columns under a small label, so the link columns keep the
+	 * row's room; `column` is a column of their own beside the link columns.
 	 */
 	hoursPlacement?: FooterHoursPlacement;
 	/**
@@ -231,7 +232,7 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 		email,
 		hours,
 		hoursHeading = "Hours",
-		hoursPlacement = "column",
+		hoursPlacement = "brand",
 		columns,
 		attribution,
 		note,
@@ -247,9 +248,10 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 	const mark = resolveMark(logo, "dark");
 	const shown = (columns ?? []).filter((column) => column.links.length > 0);
 	const hoursGiven = hours && hours.length > 0 ? hours : null;
-	// The hours as a column of their own, or inside the brand column.
-	// Any value but "brand" (a typo, a value from a later version) is a column.
-	const inBrand = hoursPlacement === "brand";
+	// The hours inside the brand column, or as a column of their own.
+	// Any value but "column" (a typo, a value from a later version) takes the
+	// default, the brand column.
+	const inBrand = hoursPlacement !== "column";
 	const hoursShown = inBrand ? null : hoursGiven;
 	const hoursInBrand = inBrand ? hoursGiven : null;
 	const hoursList = (rows: HoursRow[]) => (

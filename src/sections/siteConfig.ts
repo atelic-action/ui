@@ -300,9 +300,9 @@ export interface SiteConfig {
 		 */
 		showHours?: boolean;
 		/**
-		 * Where the footer's hours sit: "column" (the default), a column of
-		 * their own beside the link columns, or "brand", a compact list inside
-		 * the brand column under the address, the phone, and the email.
+		 * Where the footer's hours sit: "brand" (the default, 8.8.0), a compact
+		 * list inside the brand column under the address, the phone, and the
+		 * email, or "column", a column of their own beside the link columns.
 		 */
 		hoursPlacement?: FooterHoursPlacement;
 		/**
