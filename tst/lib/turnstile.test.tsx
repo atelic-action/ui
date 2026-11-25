@@ -146,6 +146,51 @@ describe("useTurnstile", () => {
 		await expect(result.current.token()).rejects.toThrow("cannot run the Turnstile challenge");
 	});
 
+	it("rejects at once with an error the widget raised before any submit, such as a refused site key", async () => {
+		const api = {
+			render: vi.fn((_container: HTMLElement, given: TurnstileRenderOptions) => {
+				// Cloudflare refuses the site key while the widget renders.
+				given["error-callback"]("110100");
+				return "widget-1";
+			}),
+			execute: vi.fn(),
+			reset: vi.fn(),
+			remove: vi.fn(),
+		};
+		window.turnstile = api as unknown as TurnstileAPI;
+		const { result } = mounted();
+		result.current.prepare();
+		await vi.waitFor(() => expect(api.render).toHaveBeenCalledOnce());
+		const prompt = new Promise<string>((resolve) =>
+			setTimeout(() => resolve("still waiting"), 200),
+		);
+		await expect(
+			Promise.race([result.current.token().catch((error: Error) => error.message), prompt]),
+		).resolves.toBe("The Turnstile challenge failed (110100)");
+		expect(api.execute).not.toHaveBeenCalled();
+	});
+
+	it("forgets a raised error once a token arrives", async () => {
+		let options: TurnstileRenderOptions | undefined;
+		const api = {
+			render: vi.fn((_container: HTMLElement, given: TurnstileRenderOptions) => {
+				options = given;
+				return "widget-1";
+			}),
+			execute: vi.fn(() => options?.callback("tok")),
+			reset: vi.fn(),
+			remove: vi.fn(),
+		};
+		window.turnstile = api as unknown as TurnstileAPI;
+		const { result } = mounted();
+		result.current.prepare();
+		await vi.waitFor(() => expect(api.render).toHaveBeenCalledOnce());
+		// An error with no submit waiting, then the widget recovers on its own.
+		options?.["error-callback"]("300030");
+		options?.callback("recovered");
+		await expect(result.current.token()).resolves.toBe("tok");
+	});
+
 	it("rejects when no token arrives within ten seconds", async () => {
 		vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
 		const api = fakeTurnstile(() => {});

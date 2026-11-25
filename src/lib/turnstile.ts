@@ -122,6 +122,13 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 	const widget = useRef<Promise<{ api: TurnstileAPI; id: string }> | null>(null);
 	const waiting = useRef<Waiter | null>(null);
 	const unsupported = useRef(false);
+	/**
+	 * An error the widget raised while no submit was waiting (a site key
+	 * Cloudflare refuses, a domain it does not allow, at render): the next
+	 * submit rejects with it at once rather than waiting out the limit. A
+	 * fresh widget, or a token that arrives, clears it.
+	 */
+	const raised = useRef<Error | null>(null);
 	const gone = useRef(false);
 	/** The element the live widget was rendered into, once it has been. */
 	const renderedInto = useRef<HTMLElement | null>(null);
@@ -160,18 +167,24 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 			if (gone.current || !container) {
 				throw new Error("The form left the page before Turnstile loaded");
 			}
+			// A fresh widget starts with nothing raised.
+			raised.current = null;
+			unsupported.current = false;
 			const id = api.render(container, {
 				sitekey: siteKey,
 				execution: "execute",
 				callback: (token) => {
+					raised.current = null;
 					const waiter = waiting.current;
 					waiting.current = null;
 					waiter?.resolve(token);
 				},
 				"error-callback": (code) => {
+					const error = new Error(`The Turnstile challenge failed (${code})`);
 					const waiter = waiting.current;
 					waiting.current = null;
-					waiter?.reject(new Error(`The Turnstile challenge failed (${code})`));
+					if (waiter) waiter.reject(error);
+					else raised.current = error;
 					return true;
 				},
 				"unsupported-callback": () => {
@@ -222,6 +235,10 @@ export function useTurnstile(siteKey: string | undefined): Turnstile {
 					if (done) return;
 					if (unsupported.current) {
 						waiter.reject(new Error("This browser cannot run the Turnstile challenge"));
+						return;
+					}
+					if (raised.current) {
+						waiter.reject(raised.current);
 						return;
 					}
 					waiting.current = waiter;
