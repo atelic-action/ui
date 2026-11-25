@@ -715,6 +715,9 @@
 		text-align: right;
 	}
 
+	/* ---- SourceSelector (9.2.0) wears .field, whose rules are in fields.css,
+	   which this sheet imports, so it needs none of its own here. ---- */
+
 	/* ---- ExpandableText: long text drawn to a few lines, the rest a Show
 	   more away. The cut is a line clamp, so every word stays in the page. ---- */
 	.atelic-ui .expandable-text {

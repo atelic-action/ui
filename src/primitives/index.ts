@@ -1,3 +1,4 @@
+export type { Source } from "../forms/source";
 export { EMAIL_PATTERN, isE164, isEmail, toE164 } from "../lib/contactLinks";
 export {
 	type AddressComponent,
@@ -26,5 +27,6 @@ export { PhoneLink, type PhoneLinkProps, phoneHref } from "./PhoneLink";
 export { type ProseBlock, ProseBlocks, type ProseBlocksProps } from "./ProseBlocks";
 export { QuoteCard, type QuoteCardProps } from "./QuoteCard";
 export { SectionHeading, type SectionHeadingProps } from "./SectionHeading";
+export { SourceSelector, type SourceSelectorProps } from "./SourceSelector";
 export { StarRow, type StarRowProps } from "./StarRow";
 export { TickList, type TickListProps } from "./TickList";

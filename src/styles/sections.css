@@ -284,69 +284,9 @@
 			gap: 56px;
 		}
 	}
-	/* Contact form fields. */
-	.atelic-ui .field {
-		display: flex;
-		flex-direction: column;
-		gap: 7px;
-		margin-bottom: 18px;
-	}
-	/* A field's label and the note beside it are in fields.css, with the
-	   pickers' labels (8.5.0). */
-	.atelic-ui .field input,
-	.atelic-ui .field textarea,
-	.atelic-ui .field select {
-		font: inherit;
-		padding: var(--field-padding-block) var(--field-padding-inline);
-		border-radius: var(--radius-md);
-		border: 1.5px solid var(--field-border, var(--neutral-200));
-		background: var(--card);
-		color: var(--ink);
-		transition:
-			border-color 0.15s,
-			box-shadow 0.15s;
-		width: 100%;
-	}
-	.atelic-ui .field input:focus,
-	.atelic-ui .field textarea:focus,
-	.atelic-ui .field select:focus {
-		outline: none;
-		border-color: var(--primary);
-		box-shadow: 0 0 0 4px var(--primary-focus-ring);
-	}
-	.atelic-ui .field textarea {
-		min-height: 130px;
-		resize: vertical;
-	}
-	/* Replace the inconsistent native select arrow with a styled chevron. */
-	.atelic-ui .field select {
-		appearance: none;
-		-webkit-appearance: none;
-		padding-right: 44px;
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2364748b' d='M6 8 0 2 1.4.6 6 5.2 10.6.6 12 2z'/%3E%3C/svg%3E");
-		background-repeat: no-repeat;
-		background-position: right 16px center;
-	}
-	/* The error words read the primary's ink, which clears 4.5 to 1 on the
-	   surface and on the tint (--primary-deep, a fill, read 4.17 and 3.96). */
-	/* --field-error, --field-error-border, and --field-error-bg (8.5.0) let a
-	   theme set the errors in its own color (the tone palette's bad, say);
-	   unset, each reads in place what it always did. */
-	.atelic-ui .field .err {
-		color: var(--field-error, var(--primary-ink, var(--primary)));
-		font-size: var(--field-error-size);
-		font-weight: var(--field-error-weight, inherit);
-		display: none;
-	}
-	.atelic-ui .field.invalid .err {
-		display: block;
-	}
-	.atelic-ui .field.invalid input,
-	.atelic-ui .field.invalid textarea,
-	.atelic-ui .field.invalid select {
-		border-color: var(--field-error-border, var(--primary-deep));
-		border-width: var(--field-error-border-width);
-	}
+	/* A form field (.field): its label, its control, its focus, the select's
+	   chevron, and its error are in fields.css, the one sheet a section's form
+	   and a lone SourceSelector both load (9.2.0). */
 	/* Fields that share a line where there is room: a first and a last name,
 	   a phone and an email (two up), a city, a state, and a ZIP (three up).
 	   Each wraps to its own line before it would go narrower than it reads. */

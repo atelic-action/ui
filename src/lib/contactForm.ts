@@ -10,6 +10,8 @@ export interface ContactFormShape {
 	/** The services multi select in place of the topic select. */
 	services: boolean;
 	consent: boolean;
+	/** The Source Selector (9.2.0); off when left out. */
+	source?: "off" | "optional" | "required";
 }
 
 /** The shape the form had before 8.5.0, and still has with no opt in prop. */
@@ -35,6 +37,8 @@ export interface ContactFormValues {
 	address: AddressParts;
 	message: string;
 	consent: boolean;
+	/** The Source Selector's answer, empty when none was chosen or the selector is off. */
+	source: string;
 	/** The honeypot, verbatim. */
 	company: string;
 }
@@ -50,6 +54,7 @@ export type ContactFormField =
 	| "city"
 	| "state"
 	| "zip"
+	| "source"
 	| "message";
 
 /** Every refusable field in the page's order, so focus goes to the first refused. */
@@ -63,6 +68,7 @@ export const FIELD_ORDER: ContactFormField[] = [
 	"city",
 	"state",
 	"zip",
+	"source",
 	"message",
 ];
 
@@ -115,6 +121,7 @@ export function readContactForm(data: FormData, shape: ContactFormShape): Contac
 				: { street, city, state: unwritten ? "" : text("state"), zip },
 		message: text("message"),
 		consent: shape.consent && data.get("consent") !== null,
+		source: (shape.source ?? "off") === "off" ? "" : text("source"),
 		company: String(data.get("company") ?? ""),
 	};
 }
@@ -125,6 +132,7 @@ export function readContactForm(data: FormData, shape: ContactFormShape): Contac
  * phone must be a number `validPhone` accepts; an optional one is refused
  * only when something is written that it does not accept. A required
  * address needs every part and a ZIP code; an optional one is not checked.
+ * A required Source Selector needs an answer.
  */
 export function checkContactForm(
 	values: ContactFormValues,
@@ -145,6 +153,7 @@ export function checkContactForm(
 		if (!values.address.state) refused.state = true;
 		if (!isZIP(values.address.zip)) refused.zip = true;
 	}
+	if (shape.source === "required" && !values.source) refused.source = true;
 	if (!values.message) refused.message = true;
 	return refused;
 }
@@ -162,7 +171,8 @@ export function firstRefused(refused: ContactFormRefusals): ContactFormField | u
  * chosen services joined by commas. Each opt in field adds its own keys
  * only when it is drawn: `firstName` and `lastName`; `phone`; `address`, an
  * object of `street`, `city`, `state`, and `zip`; `services`, an array of
- * the chosen values; `consent`, a boolean.
+ * the chosen values; `consent`, a boolean; `source`, the Source Selector's
+ * answer, or empty when none was chosen.
  */
 export function contactFormBody(
 	values: ContactFormValues,
@@ -180,5 +190,6 @@ export function contactFormBody(
 		...(shape.address !== "off" && { address: values.address }),
 		...(shape.services && { services: values.services }),
 		...(shape.consent && { consent: values.consent }),
+		...((shape.source ?? "off") !== "off" && { source: values.source }),
 	};
 }

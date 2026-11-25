@@ -278,6 +278,138 @@ export const NetworkFailsThenRetries: Story = {
 	},
 };
 
+const heard = {
+	label: "How did you hear about us?",
+	options: ["Google", "A friend", "Instagram", "Walked past the bakery"],
+};
+
+/**
+ * With a Source Selector: the question sits after the topic and before the
+ * message, optional, and the answer chosen is posted as `source`.
+ */
+export const WithSource: Story = {
+	args: { source: heard },
+	play: async ({ canvas, userEvent, step }) => {
+		await step("the question sits after the topic, marked optional", async () => {
+			const fields = canvas.getAllByRole("combobox");
+			await expect(fields.map((field) => field.getAttribute("name"))).toEqual(["topic", "source"]);
+			await expect(canvas.getByLabelText(/How did you hear about us\?/)).toHaveAccessibleName(
+				/\(optional\)/,
+			);
+		});
+		await step("the answer chosen is posted as source", async () => {
+			await fillIn(canvas, userEvent);
+			await userEvent.selectOptions(
+				canvas.getByLabelText(/How did you hear about us\?/),
+				"Walked past the bakery",
+			);
+			await userEvent.click(send(canvas));
+			await waitFor(() => expect(relay).toHaveBeenCalledOnce());
+			await expect(sent().source).toBe("Walked past the bakery");
+		});
+		await step("the form clears the answer with the rest", async () => {
+			await expect(await canvas.findByText(/Thank you. We answer within a day/)).toBeVisible();
+			await expect(canvas.getByLabelText(/How did you hear about us\?/)).toHaveValue("");
+		});
+	},
+};
+
+/**
+ * A required question left unanswered: it complains in the site's words,
+ * marked invalid and described by them, focus goes to it, and nothing is
+ * sent until it is answered.
+ */
+export const RequiredSourceInError: Story = {
+	args: {
+		source: { ...heard, required: true },
+		errorText: { source: "Tell us how you found the bakery." },
+	},
+	play: async ({ canvas, userEvent, step }) => {
+		const question = () => canvas.getByLabelText("How did you hear about us?");
+		await step("sent unanswered, the question complains and nothing is sent", async () => {
+			await fillIn(canvas, userEvent);
+			await userEvent.click(send(canvas));
+			await expect(canvas.getByText("Tell us how you found the bakery.")).toBeVisible();
+			await expect(question()).toHaveAttribute("aria-invalid", "true");
+			await expect(question()).toHaveAccessibleDescription("Tell us how you found the bakery.");
+			await expect(question()).toHaveFocus();
+			await expect(relay).not.toHaveBeenCalled();
+		});
+		await step("answered, it sends", async () => {
+			await userEvent.selectOptions(question(), "A friend");
+			await userEvent.click(send(canvas));
+			await waitFor(() => expect(relay).toHaveBeenCalledOnce());
+			await expect(sent().source).toBe("A friend");
+		});
+	},
+};
+
+/**
+ * Stopped as a bot's: the endpoint's guard refused the send (a 403 naming
+ * the guard). The site's blocked message shows in place of the failure,
+ * with its phone link, announced once, and nothing more is posted.
+ */
+export const Blocked: Story = {
+	beforeEach: answering(() =>
+		Promise.resolve(
+			new Response(JSON.stringify({ ok: false, code: "guard", error: "Stopped." }), {
+				status: 403,
+			}),
+		),
+	),
+	args: {
+		blockedMessage: (
+			<>
+				We could not send this from your browser. Please call us at{" "}
+				<a href="tel:+15555550147">(555) 555-0147</a>.
+			</>
+		),
+	},
+	play: async ({ canvas, userEvent, step }) => {
+		await step("sent, the blocked message shows with the way to call", async () => {
+			await fillIn(canvas, userEvent);
+			await userEvent.click(send(canvas));
+			await expect(await canvas.findByText(/Please call us at/)).toBeVisible();
+			await expect(canvas.getByRole("link", { name: "(555) 555-0147" })).toHaveAttribute(
+				"href",
+				"tel:+15555550147",
+			);
+		});
+		await step("it is announced, the general failure is not, and no lead counts", async () => {
+			await expect(canvas.getByRole("status")).toHaveTextContent(/Please call us at/);
+			await expect(canvas.queryByText(/Something went wrong/)).toBeNull();
+			await expect(relay).toHaveBeenCalledOnce();
+			await expect(onLead).not.toHaveBeenCalled();
+		});
+	},
+};
+
+/**
+ * The thanks, told by the endpoint that a copy went back to the visitor,
+ * says so, with the address it went to.
+ */
+export const ThanksWithReceipt: Story = {
+	beforeEach: answering(() =>
+		Promise.resolve(new Response(JSON.stringify({ ok: true, receipt: true }), { status: 200 })),
+	),
+	args: {
+		thanks: {
+			title: "Thank you",
+			lead: (values, { receipt }) =>
+				receipt
+					? `A copy is on its way to ${values.email}.`
+					: "We have your note and answer within a day.",
+		},
+	},
+	play: async ({ canvas, userEvent }) => {
+		await fillIn(canvas, userEvent);
+		await userEvent.click(send(canvas));
+		await expect(
+			await canvas.findByText("A copy is on its way to robin@example.com."),
+		).toBeVisible();
+	},
+};
+
 /** Lets a held relay answer, in the story that holds it. */
 let releaseRelay = () => {};
 

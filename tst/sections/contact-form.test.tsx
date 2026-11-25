@@ -61,7 +61,7 @@ describe("ContactForm (endpoint mode)", () => {
 		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
 
 		await waitFor(() => expect(onError).toHaveBeenCalledOnce());
-		expect(onError).toHaveBeenCalledWith(undefined);
+		expect(onError).toHaveBeenCalledWith(undefined, { blocked: false });
 		expect(screen.getByText("Sending failed.")).toBeInTheDocument();
 	});
 
@@ -135,7 +135,11 @@ describe("ContactForm (endpoint mode)", () => {
 		fillForm();
 		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
 
-		await waitFor(() => expect(onError).toHaveBeenCalledWith("Message is over 5000 characters."));
+		await waitFor(() =>
+			expect(onError).toHaveBeenCalledWith("Message is over 5000 characters.", {
+				blocked: false,
+			}),
+		);
 		expect(screen.getByLabelText("Your name")).toHaveValue("Jane");
 	});
 

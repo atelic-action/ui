@@ -10,6 +10,8 @@ import {
 	useState,
 } from "react";
 import { MultiSelect } from "../components/MultiSelect";
+import { TURNSTILE_TOKEN_KEY } from "../forms/guard";
+import type { Source } from "../forms/source";
 import {
 	addressLine,
 	type ContactFormField,
@@ -26,6 +28,8 @@ import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePla
 import { isHoneypotFilled } from "../lib/honeypot";
 import { newTabProps } from "../lib/newTabProps";
 import { trackEvent } from "../lib/trackEvent";
+import { useTurnstile } from "../lib/turnstile";
+import { reportError } from "../monitoring/catcher";
 import {
 	type AddressParts,
 	type AddressProvider,
@@ -36,6 +40,7 @@ import { EmailLink } from "../primitives/EmailLink";
 import { ExpandableText } from "../primitives/ExpandableText";
 import { GoogleMapsAttribution } from "../primitives/GoogleMapsAttribution";
 import { PhoneLink } from "../primitives/PhoneLink";
+import { SourceSelector } from "../primitives/SourceSelector";
 import { useWithBase } from "../routing/BasePathProvider";
 
 /** Every word the form draws that is not a visitor's, each with a neutral default. */
@@ -68,9 +73,15 @@ export interface ContactFormLabels {
 	sending: string;
 }
 
-/** A placeholder for each text field that takes one; none by default but the two pickers'. */
+/** A field the form draws as a text input, every refusable field but the Source Selector. */
+type TextField = Exclude<ContactFormField, "source">;
+
+/**
+ * A placeholder for each text field that takes one; none by default but the
+ * two pickers'. The Source Selector's empty row is its `Source`'s own.
+ */
 export type ContactFormPlaceholders = Partial<
-	Record<Exclude<ContactFormField, "state"> | "addressSearch" | "services", string>
+	Record<Exclude<TextField, "state"> | "addressSearch" | "services", string>
 >;
 
 /** The property address block: an optional search over street, city, state, and ZIP. */
@@ -108,15 +119,36 @@ export interface ContactFormConsent {
 	inline?: boolean;
 }
 
+/** What `onError` is told of a failed send beside the endpoint's words. */
+export interface ContactFormFailure {
+	/** Stopped as a bot's: a 403 from the guard, or a rate limit's 429. */
+	blocked: boolean;
+}
+
+/**
+ * What the endpoint said of a send beside its success, handed to the
+ * thanks's words: whether a copy went back to the visitor (9.2.0), so a
+ * site says "a copy is on its way" only when one is.
+ */
+export interface ContactFormSent {
+	receipt: boolean;
+}
+
+/** Words of the thanks: fixed, or a function of what was sent and what the endpoint said. */
+export type ContactThanksWords =
+	| ReactNode
+	| ((values: ContactFormValues, sent: ContactFormSent) => ReactNode);
+
 /** The thanks that replaces the form once a message is sent. */
 export interface ContactFormThanks {
 	/** The heading; a function of what was sent, to greet by name. */
-	title: ReactNode | ((values: ContactFormValues) => ReactNode);
+	title: ContactThanksWords;
 	/**
 	 * The line under it. Defaults to the form's `successMessage`; `null` or
-	 * `false` draws none, no element at all.
+	 * `false` draws none, no element at all. A function is handed whether a
+	 * receipt went to the visitor beside what was sent.
 	 */
-	lead?: ReactNode | ((values: ContactFormValues) => ReactNode);
+	lead?: ContactThanksWords;
 	/**
 	 * What was sent, read back: the labels of its rows (services, topic,
 	 * address, and how to reach the visitor), or false for none. Shown by
@@ -159,11 +191,14 @@ export interface ContactFormProps {
 	 * Called once each time a send fails (the endpoint answered a failure, or
 	 * never answered), so a site can say so its own way, in a toast. Passed
 	 * the endpoint's own words when it refused what was written (a field over
-	 * its limit), which are the visitor's to read, and nothing otherwise. The
-	 * form's own message still shows unless `inlineError` is false. A throw
-	 * from it is swallowed.
+	 * its limit), which are the visitor's to read, and nothing otherwise.
+	 * The second argument says whether the send was stopped as a bot's
+	 * (`blocked`: a 403 from the guard, or a rate limit's 429), so a site
+	 * that shows failures itself can say "call us instead" rather than "try
+	 * again" (9.2.0). The form's own message still shows unless
+	 * `inlineError` is false. A throw from it is swallowed.
 	 */
-	onError?: (refusal?: string) => void;
+	onError?: (refusal: string | undefined, failure: ContactFormFailure) => void;
 	/**
 	 * False keeps the form's own failure message off, for a site that shows a
 	 * failure itself through `onError`. Without an `onError` a visitor would
@@ -208,6 +243,31 @@ export interface ContactFormProps {
 	 * aside), or a full international one starting with + and its country code.
 	 */
 	validatePhone?: (value: string) => boolean;
+	/**
+	 * How the visitor heard about the business: the `SourceSelector`, after
+	 * the services or the topic and before the message, its answer posted as
+	 * `source` (empty when none was chosen). The site's one `Source`, the
+	 * same object its function hands `sourceField` (9.2.0).
+	 */
+	source?: Source;
+	/**
+	 * The spam check, Cloudflare Turnstile, by the widget's site key (9.2.0).
+	 * The script loads on the form's first focus, the invisible challenge runs
+	 * at submit, and its token is posted as `turnstile`. A check that cannot
+	 * run (the script fails to load, the challenge errors, no token in ten
+	 * seconds) is reported, and the message is sent all the same, with no
+	 * token, so a visitor is never stopped by a check that could not load.
+	 * It runs only when the form posts to an `endpoint`; with the mail
+	 * handoff alone it does nothing.
+	 */
+	guard?: { siteKey: string };
+	/**
+	 * The site's words for a send the endpoint stopped as a bot's (a 403
+	 * from the guard) or a platform's rate limit stopped (a 429), with the
+	 * way to reach the business instead, such as its phone link. A neutral
+	 * default (9.2.0).
+	 */
+	blockedMessage?: ReactNode;
 }
 
 function sendLead() {
@@ -215,6 +275,8 @@ function sendLead() {
 }
 
 type Status = "idle" | "sending" | "sent" | "failed";
+
+const BLOCKED_MESSAGE = "We could not send this from your browser. Please call us instead.";
 
 const LABELS: ContactFormLabels = {
 	name: "Your name",
@@ -249,6 +311,7 @@ const ERRORS: Record<ContactFormField, string> = {
 	city: "Please enter the city.",
 	state: "Please enter the state.",
 	zip: "Please enter a 5 digit ZIP code.",
+	source: "Please choose an answer.",
 	message: "Please add a short message.",
 };
 
@@ -289,6 +352,9 @@ export function ContactForm({
 	errorSummary,
 	thanks,
 	validatePhone,
+	source,
+	guard,
+	blockedMessage = BLOCKED_MESSAGE,
 }: ContactFormProps) {
 	const withBase = useWithBase();
 	const labels = { ...LABELS, ...labelProps };
@@ -299,6 +365,7 @@ export function ContactForm({
 		address: address ? (address.required ? "required" : "optional") : "off",
 		services: Boolean(services),
 		consent: Boolean(consent),
+		source: source ? (source.required ? "required" : "optional") : "off",
 	};
 	// An empty list of topics is no topic select, as no list is.
 	const hasTopic = Boolean(topics?.length) && !services;
@@ -331,6 +398,15 @@ export function ContactForm({
 	// Whether a chosen suggestion's parts are still on their way.
 	const choosing = useRef(false);
 	const [sentValues, setSentValues] = useState<ContactFormValues | null>(null);
+	/** Whether the endpoint said a copy went back to the visitor. */
+	const [sentReceipt, setSentReceipt] = useState(false);
+	/** Whether the last send was stopped as a bot's or by a rate limit. */
+	const [blocked, setBlocked] = useState(false);
+	const [sourceAnswer, setSourceAnswer] = useState("");
+	// The check runs only on a send to the endpoint; the mail handoff alone
+	// posts nothing a token could go with, so it loads nothing.
+	const checking = endpoint ? guard : undefined;
+	const turnstile = useTurnstile(checking?.siteKey);
 	const formRef = useRef<HTMLFormElement>(null);
 	const thanksRef = useRef<HTMLDivElement>(null);
 	// Where focus goes once the form or the thanks is drawn: the thanks's
@@ -370,7 +446,7 @@ export function ContactForm({
 		</span>
 	);
 	const textField = (
-		field: ContactFormField,
+		field: TextField,
 		input: {
 			type?: string;
 			autoComplete?: string;
@@ -405,9 +481,9 @@ export function ContactForm({
 	);
 
 	/** Hands a failure to the site. A throw from the site's handler stops here. */
-	function handUp(refused?: string) {
+	function handUp(refused?: string, blocked = false) {
 		try {
-			onError?.(refused);
+			onError?.(refused, { blocked });
 		} catch {
 			// The form has already said what it has to say.
 		}
@@ -446,6 +522,7 @@ export function ContactForm({
 				`${name} (${email}) wrote:\n\n${message}${extra.length ? `\n\n${extra.join("\n")}` : ""}`,
 			);
 			setSentValues(values);
+			setSentReceipt(false);
 			setStatus("sent");
 			if (thanks) setFocusOn("thanks");
 			window.location.href = `mailto:${toEmail}?subject=${subject}&body=${body}`;
@@ -454,33 +531,74 @@ export function ContactForm({
 
 		setStatus("sending");
 		setRefusal(null);
+		setBlocked(false);
 		let refused: string | undefined;
+		let stopped = false;
 		try {
-			const response = await fetch(withBase(endpoint), {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(contactFormBody(values, shape)),
-			});
+			// The spam check's token. A check that cannot run is reported and
+			// the message goes without a token: the endpoint lets it through,
+			// unvouched, so a lead is never lost to a check that did not load.
+			let token = "";
+			if (checking) {
+				try {
+					token = await turnstile.token();
+				} catch (error) {
+					reportError(
+						new Error(
+							`Contact form: the spam check could not run, and the message was sent without it: ${error instanceof Error ? error.message : String(error)}`,
+							{ cause: error },
+						),
+						"handled",
+					);
+				}
+			}
+			let response: Response;
+			try {
+				response = await fetch(withBase(endpoint), {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						...contactFormBody(values, shape),
+						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
+					}),
+				});
+			} finally {
+				// A token is good once, whatever the endpoint made of it.
+				if (checking) turnstile.reset();
+			}
 			if (!response.ok) {
 				// A 400 is the endpoint refusing what was written (a field over
 				// its limit, say), in words meant for the visitor: shown in place
-				// of the general message, since trying again would not help.
+				// of the general message, since trying again would not help. A
+				// 403 from the guard, or a rate limit's 429, is a send stopped as
+				// a bot's, and the visitor is told how else to reach the business.
 				const answer =
-					response.status === 400
-						? ((await response.json().catch(() => null)) as { error?: unknown } | null)
+					response.status === 400 || response.status === 403
+						? ((await response.json().catch(() => null)) as {
+								error?: unknown;
+								code?: unknown;
+							} | null)
 						: null;
-				if (typeof answer?.error === "string" && answer.error) refused = answer.error;
+				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
+					stopped = true;
+					setBlocked(true);
+				} else if (response.status === 400 && typeof answer?.error === "string" && answer.error) {
+					refused = answer.error;
+				}
 				setRefusal(refused ?? null);
 				throw new Error(`status ${response.status}`);
 			}
+			const answer = (await response.json().catch(() => null)) as { receipt?: unknown } | null;
+			setSentReceipt(answer?.receipt === true);
 			setSentValues(values);
 			setStatus("sent");
 			form.reset();
 			setPlace(startAddress());
+			setSourceAnswer("");
 			if (thanks) setFocusOn("thanks");
 		} catch {
 			setStatus("failed");
-			handUp(refused);
+			handUp(refused, stopped);
 			return;
 		}
 		// The conversion: only a relay the endpoint accepted counts, never a
@@ -501,6 +619,7 @@ export function ContactForm({
 			<ContactThanks
 				thanks={thanks}
 				values={sentValues}
+				sent={{ receipt: sentReceipt }}
 				successMessage={successMessage}
 				shape={shape}
 				hasTopic={hasTopic}
@@ -511,7 +630,9 @@ export function ContactForm({
 					setStatus("idle");
 					setErrors({});
 					setSentValues(null);
+					setSentReceipt(false);
 					setPlace(startAddress());
+					setSourceAnswer("");
 					setFocusOn("form");
 				}}
 			/>
@@ -534,14 +655,21 @@ export function ContactForm({
 	const searchShown = Boolean(addressProvider);
 
 	return (
-		<form ref={formRef} onSubmit={handleSubmit} noValidate>
+		<form
+			ref={formRef}
+			onSubmit={handleSubmit}
+			// The spam check's script loads on the first focus inside the form,
+			// never with the page, so a visitor who never writes never loads it.
+			onFocus={checking ? turnstile.prepare : undefined}
+			noValidate
+		>
 			{/* One shot status: the thanks or the failure is announced once when it
 			    appears (Component Rules 14). The region is always drawn, so a screen
 			    reader is already watching it when the words arrive. */}
 			<output className="form-status">
 				{status === "sent" && <span className="form-success">{successMessage}</span>}
 				{status === "failed" && (inlineError || !onError) && (
-					<span className="form-error">{refusal ?? errorMessage}</span>
+					<span className="form-error">{blocked ? blockedMessage : (refusal ?? errorMessage)}</span>
 				)}
 			</output>
 			{errorSummary && refusedCount > 0 && (
@@ -689,6 +817,16 @@ export function ContactForm({
 					</div>
 				)
 			)}
+			{source && (
+				<SourceSelector
+					source={source}
+					value={sourceAnswer}
+					onChange={setSourceAnswer}
+					id={idOf("source")}
+					hint={source.required ? undefined : labels.optional}
+					error={errors.source ? errorWords.source : undefined}
+				/>
+			)}
 			<div className={fieldClass("message")}>
 				<label htmlFor={idOf("message")}>{labels.message}</label>
 				<textarea
@@ -741,6 +879,9 @@ export function ContactForm({
 				<label htmlFor={idOf("company")}>Company</label>
 				<input id={idOf("company")} name="company" type="text" tabIndex={-1} autoComplete="off" />
 			</div>
+			{/* The spam check's widget, rendered here by the script once it loads.
+			    The widget made for the form is invisible, so nothing shows. */}
+			{checking && <div ref={turnstile.containerRef} className="contact-guard" />}
 			<Button type="submit" size="lg" arrow style={{ width: "100%" }}>
 				{status === "sending" ? labels.sending : labels.submit}
 			</Button>
@@ -752,6 +893,7 @@ export function ContactForm({
 interface ContactThanksProps {
 	thanks: ContactFormThanks;
 	values: ContactFormValues;
+	sent: ContactFormSent;
 	successMessage: string;
 	shape: ContactFormShape;
 	hasTopic: boolean;
@@ -763,6 +905,7 @@ interface ContactThanksProps {
 function ContactThanks({
 	thanks,
 	values,
+	sent,
 	successMessage,
 	shape,
 	hasTopic,
@@ -770,8 +913,13 @@ function ContactThanks({
 	onAgain,
 }: ContactThanksProps) {
 	const level = thanks.headingLevel ?? 3;
-	const read = (words: ReactNode | ((values: ContactFormValues) => ReactNode)) =>
-		typeof words === "function" ? words(values) : words;
+	const read = (words: ContactThanksWords) =>
+		typeof words === "function" ? words(values, sent) : words;
+	// The lead as read: a function may answer none (null or false) for one
+	// send and words for another, a copy on its way only when one is, and none
+	// draws no element at all, as a lead of null does.
+	const lead =
+		thanks.lead === null || thanks.lead === false ? null : read(thanks.lead ?? successMessage);
 	const labels =
 		thanks.summary === false
 			? null
@@ -822,8 +970,8 @@ function ContactThanks({
 			>
 				{read(thanks.title)}
 			</div>
-			{thanks.lead !== null && thanks.lead !== false && (
-				<p className="contact-thanks-lead">{read(thanks.lead ?? successMessage)}</p>
+			{lead !== null && lead !== false && lead !== undefined && (
+				<p className="contact-thanks-lead">{lead}</p>
 			)}
 			{rows.length > 0 && (
 				<dl className="contact-thanks-summary">
