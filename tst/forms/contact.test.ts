@@ -9,7 +9,7 @@ import {
 } from "../../src/forms/contact";
 import { turnstileGuard } from "../../src/forms/guard";
 import { DEFAULT_RECEIPT_NOTE } from "../../src/forms/receipt";
-import { type DestinationResult, refused, type Submission } from "../../src/forms/relay";
+import { type DestinationResult, down, refused, type Submission } from "../../src/forms/relay";
 
 const FROM = "Summit Movement Studio <forms@example.com>";
 /** The endpoint with the wait between tries cut to a millisecond, so a down destination's second try needs no clock. */
@@ -210,6 +210,8 @@ describe("createContact", () => {
 			await expect(response.json()).resolves.toEqual({
 				ok: false,
 				error: "Sending failed. Please try again in a moment.",
+				// A definite refusal: the form makes a new id for its next try.
+				renew: true,
 			});
 			const envelope = await onlyReport();
 			expect(envelope).toContain("Resend answered 422: validation_error: Invalid `to` field.");
@@ -787,6 +789,35 @@ describe("destinations beside the email", () => {
 		expect(sent[0]).toContain("RESEND_API_KEY unset");
 	});
 
+	it("tells the form to renew its id when every destination definitely refused", async () => {
+		resendAnswers(() => new Response("{}", { status: 422 }));
+		const lead = crm(refused(new Error("crm answered 400")));
+		const post = createContact({ from: FROM, destinations: [lead] });
+		const response = await post(request(VALID));
+		expect(response.status).toBe(502);
+		expect(await response.json()).toMatchObject({ ok: false, renew: true });
+	});
+
+	it.each([
+		["Resend down on both tries", () => new Response("{}", { status: 503 })],
+		["Resend shedding load", () => new Response("{}", { status: 429 })],
+	])("keeps the form's id on a 502 whose outcome is not certain: %s", async (_, answer) => {
+		resendAnswers(answer);
+		const post = createContact({ from: FROM, retryWaitMs: 1 });
+		const response = await post(request(VALID));
+		expect(response.status).toBe(502);
+		expect(await response.json()).not.toHaveProperty("renew");
+	});
+
+	it("keeps the form's id when one destination refused and another was down", async () => {
+		resendAnswers(() => new Response("{}", { status: 422 }));
+		const lead = crm(down(new Error("crm sent no answer")));
+		const post = createContact({ from: FROM, retryWaitMs: 1, destinations: [lead] });
+		const response = await post(request(VALID));
+		expect(response.status).toBe(502);
+		expect(await response.json()).not.toHaveProperty("renew");
+	});
+
 	it("refuses a key reused with other words rather than trying again", async () => {
 		resendAnswers(
 			() => new Response(JSON.stringify({ name: "invalid_idempotent_request" }), { status: 409 }),
@@ -1222,6 +1253,21 @@ describe("the guard and the receipt", () => {
 				`localhost/${submissionID}/unchecked`,
 				`localhost/${submissionID}/checked`,
 			]);
+		});
+
+		it("sends byte identical Resend bodies on two tries of the same fill, the receipt's too", async () => {
+			const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			const post = guarded();
+			await post(request({ ...SIGNED, submissionID }));
+			await post(request({ ...SIGNED, submissionID }));
+			const office = officeCalls().map(([, init]) => String(init?.body));
+			const receipts = receiptCalls().map(([, init]) => String(init?.body));
+			expect(office).toHaveLength(2);
+			expect(office[1]).toBe(office[0]);
+			expect(receipts).toHaveLength(2);
+			expect(receipts[1]).toBe(receipts[0]);
+			const headers = (init?: RequestInit) => JSON.stringify([...new Headers(init?.headers)]);
+			expect(headers(officeCalls()[1]?.[1])).toBe(headers(officeCalls()[0]?.[1]));
 		});
 
 		it("hands the guard the submission's id and an id of the request beside it", async () => {

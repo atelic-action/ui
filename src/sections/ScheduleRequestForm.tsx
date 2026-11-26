@@ -1,5 +1,14 @@
 import { Check } from "lucide-react";
-import { type ReactNode, type RefObject, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+	type ReactNode,
+	type RefObject,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { MonthCalendar } from "../components/MonthCalendar";
 import {
 	clockLabel,
@@ -400,7 +409,9 @@ export function ScheduleRequestForm({
 		if (step === 1 && !pinnedToday) setToday(dayIn(config.timeZone));
 	}, [step, pinnedToday, config.timeZone]);
 
-	useEffect(() => {
+	// A layout effect, so focus moves to the done screen in the commit that
+	// draws it (ContactForm says why).
+	useLayoutEffect(() => {
 		if (!focusDone) return;
 		doneRef.current?.focus({ preventScroll: true });
 		rootRef.current?.scrollIntoView?.({ block: "start" });
@@ -537,7 +548,11 @@ export function ScheduleRequestForm({
 				const answer = (await response.json().catch(() => null)) as {
 					error?: unknown;
 					code?: unknown;
+					renew?: unknown;
 				} | null;
+				// Every destination definitely refused: the next try gets a new
+				// id (ContactForm says why); any other failure keeps it.
+				if (answer?.renew === true) held.current = null;
 				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
 					setNotice(blockedMessage);
 				} else if (

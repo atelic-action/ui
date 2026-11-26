@@ -3,8 +3,8 @@ import {
 	type FormEvent,
 	type ReactNode,
 	type RefObject,
-	useEffect,
 	useId,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -420,7 +420,11 @@ export function ContactForm({
 	const uid = useId();
 	const idOf = (key: string) => `${uid}-${key}`;
 
-	useEffect(() => {
+	// A layout effect, so focus moves in the same commit that draws the
+	// thanks or the form: with a passive one the focused button vanished and
+	// focus sat on the page for a moment, which a screen reader could catch
+	// and a check run right after the commit (CI's, 9.7.0) did.
+	useLayoutEffect(() => {
 		if (focusOn === "thanks") thanksRef.current?.focus();
 		if (focusOn === "form") {
 			const first = formRef.current?.elements.namedItem(splitName ? "firstName" : "name");
@@ -581,13 +585,19 @@ export function ContactForm({
 				// of the general message, since trying again would not help. A
 				// 403 from the guard, or a rate limit's 429, is a send stopped as
 				// a bot's, and the visitor is told how else to reach the business.
+				// A 502 says whether every destination definitely refused
+				// (`renew`): then the next try gets a new id, since the kept one
+				// would be refused again; any other failure keeps it, so a retry
+				// dedupes against a try that may yet have landed.
 				const answer =
-					response.status === 400 || response.status === 403
+					response.status === 400 || response.status === 403 || response.status === 502
 						? ((await response.json().catch(() => null)) as {
 								error?: unknown;
 								code?: unknown;
+								renew?: unknown;
 							} | null)
 						: null;
+				if (answer?.renew === true) held.current = null;
 				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
 					stopped = true;
 					setBlocked(true);

@@ -13,7 +13,7 @@
 import { within } from "../lib/within.js";
 import { reportServerErrorLater, scrub } from "../monitoring/server.js";
 import type { Guard, GuardVerdict } from "./guard.js";
-import { type DestinationResult, down } from "./relay.js";
+import { type DestinationResult, down, type RelayResult } from "./relay.js";
 import type { Email } from "./resend.js";
 import { resendDestination } from "./resend.js";
 
@@ -69,6 +69,22 @@ export function keyNamespace(request: Request): string {
 	} catch {
 		return "site";
 	}
+}
+
+/**
+ * Whether the browser should make a new id for its next try: only when every
+ * destination answered a definite no (a refusal, such as Resend's 4xx), so
+ * nothing of this try can land later. A destination that was down (a
+ * timeout, a 5xx, a 429, a connection that failed) may still have taken the
+ * submission, so its id is kept and a retry dedupes against it. A refusal
+ * under the kept id would be refused again (a 409 for a key Resend saw with
+ * other words), which a new id ends.
+ */
+export function shouldRenewID(result: RelayResult): boolean {
+	return (
+		result.legs.length > 0 &&
+		result.legs.every((leg) => leg.result.status === "failed" && leg.result.reason === "refused")
+	);
 }
 
 /**

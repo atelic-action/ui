@@ -280,6 +280,27 @@ describe("ContactForm submission id", () => {
 		expect(idOf(1)).not.toBe(idOf(0));
 	});
 
+	it("makes a new id after a 502 that says to renew, and keeps it after one that does not", async () => {
+		const answers = [
+			new Response(JSON.stringify({ ok: false, renew: true }), { status: 502 }),
+			new Response(JSON.stringify({ ok: false }), { status: 502 }),
+			new Response(JSON.stringify({ ok: false }), { status: 502 }),
+		];
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockImplementation(async () => answers.shift()),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		await send(1);
+		await send(2);
+		await send(3);
+		expect(idOf(1)).toMatch(UUID);
+		// Renewed after the definite refusal, then kept across the uncertain one.
+		expect(idOf(1)).not.toBe(idOf(0));
+		expect(idOf(2)).toBe(idOf(1));
+	});
+
 	it("makes a new id after a send went through, even for the same words", async () => {
 		vi.stubGlobal(
 			"fetch",

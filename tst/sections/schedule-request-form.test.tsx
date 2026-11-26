@@ -94,6 +94,56 @@ describe("ScheduleRequestForm", () => {
 		expect(idOf(2)).not.toBe(idOf(0));
 	});
 
+	it("makes a new id after a 502 that says to renew, and keeps it after one that does not", async () => {
+		const answers = [
+			new Response(JSON.stringify({ ok: false, renew: true }), { status: 502 }),
+			new Response(JSON.stringify({ ok: false }), { status: 502 }),
+			new Response(JSON.stringify({ ok: false }), { status: 502 }),
+		];
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockImplementation(async () => answers.shift()),
+		);
+		renderForm();
+		chooseWhat();
+		chooseWhen();
+		fillWho();
+		const idOf = (call: number) =>
+			JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionID as string;
+		const send = async (calls: number) => {
+			fireEvent.click(continueButton(/Send Request/));
+			await waitFor(() => expect(fetch).toHaveBeenCalledTimes(calls));
+			await waitFor(() => expect(continueButton(/Send Request/)).not.toBeDisabled());
+		};
+		await send(1);
+		await send(2);
+		await send(3);
+		expect(idOf(1)).not.toBe(idOf(0));
+		expect(idOf(2)).toBe(idOf(1));
+	});
+
+	it("has focus on the done screen in the same commit that draws it", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 })),
+		);
+		renderForm();
+		chooseWhat();
+		chooseWhen();
+		fillWho();
+		let focusedOnArrival: Element | null | undefined;
+		const watch = new MutationObserver(() => {
+			const done = screen.queryByRole("heading", { name: "We have your request, Dana." });
+			if (done && focusedOnArrival === undefined) focusedOnArrival = document.activeElement;
+		});
+		watch.observe(document.body, { childList: true, subtree: true });
+		fireEvent.click(continueButton(/Send Request/));
+		await screen.findByRole("heading", { name: "We have your request, Dana." });
+		watch.disconnect();
+		expect(focusedOnArrival).not.toBe(document.body);
+		expect(focusedOnArrival).toBe(document.activeElement);
+	});
+
 	it("offers a visit or a call as cards, with each one's length", () => {
 		renderForm();
 		fireEvent.change(screen.getByLabelText("What do you need help with?"), {

@@ -334,6 +334,43 @@ describe("createScheduleRequest", () => {
 		]);
 	});
 
+	it("sends byte identical Resend bodies on two tries of the same fill, the confirmation's too", async () => {
+		const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		let minute = 0;
+		const handler = createScheduleRequest({
+			from: FROM,
+			config: CONFIG,
+			guard: passing(),
+			confirmation: {},
+			// A minute apart, as a resubmit is: nothing of the clock reaches an email.
+			now: () => new Date(NOW().getTime() + 60_000 * minute++),
+		});
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
+		const calls = vi.mocked(fetch).mock.calls;
+		const byKey = new Map<string, string[]>();
+		for (const [, init] of calls) {
+			const key = String(new Headers(init?.headers).get("Idempotency-Key"));
+			byKey.set(key, [...(byKey.get(key) ?? []), String(init?.body)]);
+		}
+		expect(byKey.size).toBe(2);
+		for (const [key, bodies] of byKey) {
+			expect(bodies, key).toHaveLength(2);
+			expect(bodies[1], key).toBe(bodies[0]);
+		}
+	});
+
+	it("tells the form to renew its id only when every destination definitely refused", async () => {
+		vi.mocked(fetch).mockImplementation(async () => new Response("{}", { status: 422 }));
+		const refusedOnce = await POST(request(VALID));
+		expect(refusedOnce.status).toBe(502);
+		expect(await refusedOnce.json()).toMatchObject({ renew: true });
+		vi.mocked(fetch).mockImplementation(async () => new Response("{}", { status: 503 }));
+		const downTwice = await POST(request(VALID));
+		expect(downTwice.status).toBe(502);
+		expect(await downTwice.json()).not.toHaveProperty("renew");
+	});
+
 	it("falls back to CONTACT_TO, then to the practice's inbox", async () => {
 		vi.stubEnv("SCHEDULE_TO", "");
 		vi.stubEnv("CONTACT_TO", "front@example.com");

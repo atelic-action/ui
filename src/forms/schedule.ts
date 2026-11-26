@@ -65,6 +65,7 @@ import {
 	reportVerdict,
 	sameSecret,
 	sendCopy,
+	shouldRenewID,
 	verdictKey,
 } from "./endpoint.js";
 import { type Guard, TURNSTILE_TOKEN_KEY } from "./guard.js";
@@ -707,6 +708,9 @@ export function createScheduleRequest(
 				return json(502, {
 					ok: false,
 					error: "Sending failed. Please try again in a moment, or call us.",
+					// A new id for the next try, when every destination refused
+					// (`createContact` says why).
+					...(shouldRenewID(result) && { renew: true }),
 				});
 			}
 			if (canary) {

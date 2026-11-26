@@ -73,6 +73,7 @@ import {
 	reportVerdict,
 	sameSecret,
 	sendCopy,
+	shouldRenewID,
 	verdictKey,
 } from "./endpoint.js";
 import { type Guard, TURNSTILE_TOKEN_KEY } from "./guard.js";
@@ -683,7 +684,13 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			});
 
 			if (!result.taken) {
-				return json(502, { ok: false, error: "Sending failed. Please try again in a moment." });
+				// `renew` tells the form to make a new id, when every destination
+				// definitely refused, so the next try is not refused for its key.
+				return json(502, {
+					ok: false,
+					error: "Sending failed. Please try again in a moment.",
+					...(shouldRenewID(result) && { renew: true }),
+				});
 			}
 			if (canary) {
 				const sent = result.legs[0]?.result;

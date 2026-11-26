@@ -337,6 +337,28 @@ describe("ContactForm with the opt in fields", () => {
 		await waitFor(() => expect(screen.getByLabelText("First name")).toHaveFocus());
 	});
 
+	it("has focus on the thanks in the same commit that draws it, never a moment later", async () => {
+		// What the page holds the instant the heading lands: a check that runs
+		// after the commit's own work but before any effect React defers.
+		let focusedOnArrival: Element | null | undefined;
+		const watch = new MutationObserver(() => {
+			const heading = document.querySelector("[tabindex='-1']");
+			if (heading && focusedOnArrival === undefined && /Thanks/.test(heading.textContent ?? "")) {
+				focusedOnArrival = document.activeElement;
+			}
+		});
+		watch.observe(document.body, { childList: true, subtree: true });
+		render(<ContactForm {...BASE} splitName thanks={{ title: "Thanks." }} />);
+		change("First name", "Robin");
+		change("Last name", "Ash");
+		change("Email", "robin@example.com");
+		change("Message", "Hi");
+		send();
+		const title = await screen.findByRole("heading", { name: "Thanks." });
+		watch.disconnect();
+		expect(focusedOnArrival).toBe(title);
+	});
+
 	it("brings back an empty address after a mail handoff's thanks", async () => {
 		render(
 			<ContactForm
