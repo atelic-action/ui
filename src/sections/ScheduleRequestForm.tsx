@@ -494,7 +494,7 @@ export function ScheduleRequestForm({
 					? values.sourceDetail.trim()
 					: "",
 			note: values.note.trim(),
-			consent: values.consent,
+			...(consent && { consent: values.consent }),
 			company: honeypot.current?.value ?? "",
 		};
 		try {
@@ -922,7 +922,10 @@ export function ScheduleRequestForm({
 								source={config.source}
 								id={idOf("source")}
 								value={values.source}
-								onChange={(source) => set({ source })}
+								onChange={(source) => {
+									if (errors.source) clear("source");
+									set({ source, sourceDetail: "" });
+								}}
 								detail={values.sourceDetail}
 								onDetailChange={(sourceDetail) => set({ sourceDetail })}
 								hint={config.source.required ? undefined : labels.optional}

@@ -186,7 +186,6 @@ describe("ScheduleRequestForm", () => {
 			address: { street: "418 Alder Street" },
 			source: "Other",
 			sourceDetail: "The fall fair",
-			consent: false,
 			company: "",
 		});
 		expect(

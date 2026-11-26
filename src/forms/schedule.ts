@@ -184,8 +184,8 @@ export interface ScheduleFields {
 	sourceDetail: string;
 	/** Anything they want the office to know. */
 	note: string;
-	/** Whether they ticked the text consent. */
-	textConsent: boolean;
+	/** Whether they ticked the text consent; null when the form draws no such box. */
+	textConsent: boolean | null;
 }
 
 /** The step a refusal belongs to, so the form can send the visitor back to it. */
@@ -413,7 +413,7 @@ export function readScheduleRequest(
 			source,
 			sourceDetail,
 			note,
-			textConsent: body.consent === true,
+			textConsent: typeof body.consent === "boolean" ? body.consent : null,
 		},
 	};
 }
@@ -467,7 +467,11 @@ export function officeScheduleEmail(
 					],
 				] as [string, string, string][])
 			: []),
-		["Text consent", fields.textConsent ? "Checked" : "Not checked", "text"],
+		[
+			"Text consent",
+			fields.textConsent === null ? "" : fields.textConsent ? "Checked" : "Not checked",
+			"text",
+		],
 	];
 	const rows = shown
 		.filter(([, value]) => value)

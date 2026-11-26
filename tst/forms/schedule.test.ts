@@ -199,6 +199,16 @@ describe("readScheduleRequest", () => {
 	});
 });
 
+describe("the text consent row", () => {
+	it("is left out of the office email when the form never asked", () => {
+		const { consent: _asked, ...without } = { ...VALID, consent: true };
+		const result = readScheduleRequest(without, CONFIG, TODAY);
+		if (!("fields" in result)) throw new Error("refused");
+		expect(result.fields.textConsent).toBeNull();
+		expect(officeScheduleEmail(result.fields, CONFIG).text).not.toContain("Text consent");
+	});
+});
+
 describe("a required source answer", () => {
 	it("is refused when it is left out, and let through for a canary", () => {
 		const config = { ...CONFIG, source: { ...CONFIG.source, required: true } } as typeof CONFIG;
