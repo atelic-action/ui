@@ -108,6 +108,19 @@ export const LongestContent: Story = {
 	},
 };
 
+/** On a dark ground the band takes the dark surface, the facts keep light words, and the hairlines show. */
+export const Dark: Story = {
+	args: { ground: "dark" },
+	play: async ({ canvas }) => {
+		const region = band(canvas);
+		await expect(getComputedStyle(region).backgroundColor).not.toBe(
+			getComputedStyle(document.body).backgroundColor,
+		);
+		const item = within(region).getAllByRole("listitem")[0];
+		await expect(getComputedStyle(item).borderRightColor).not.toBe("rgba(21, 21, 21, 0.08)");
+	},
+};
+
 /** Without dividers the items sit apart on space alone. */
 export const NoDividers: Story = {
 	args: { dividers: false },

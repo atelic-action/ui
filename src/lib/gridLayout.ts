@@ -6,7 +6,7 @@
 
 /** How many items a closed grid shows at a column count: every cell of its visible rows. */
 export function shownCount(visibleRows: number, columns: number): number {
-	if (!(visibleRows > 0) || !(columns > 0)) return Number.POSITIVE_INFINITY;
+	if (!(Math.floor(visibleRows) > 0) || !(Math.floor(columns) > 0)) return Number.POSITIVE_INFINITY;
 	return Math.floor(visibleRows) * Math.floor(columns);
 }
 

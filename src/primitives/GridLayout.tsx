@@ -117,6 +117,7 @@ export function GridLayout(props: GridLayoutProps) {
 				className={classes}
 				id={gridID}
 				style={style}
+				role={Tag === "div" && ariaLabel ? "group" : undefined}
 				aria-label={ariaLabel}
 				data-open={(rows > 0 && open) || undefined}
 			>

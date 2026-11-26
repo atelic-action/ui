@@ -2428,6 +2428,16 @@
 	.atelic-ui .creds {
 		padding-block: 22px;
 	}
+	/* A dark band's own words and hairlines, for whatever its row holds. */
+	.atelic-ui .marquee-band[data-ground="dark"] {
+		color: var(--on-dark);
+	}
+	.atelic-ui .marquee-band[data-ground="dark"] .proof-strip-label {
+		color: var(--on-dark-chip);
+	}
+	.atelic-ui .marquee-band[data-ground="dark"].has-dividers .marquee-item {
+		border-right-color: var(--_marquee-ring);
+	}
 	.atelic-ui .creds .chip {
 		background: color-mix(in srgb, var(--on-dark) 6%, transparent);
 		color: var(--on-dark-chip);

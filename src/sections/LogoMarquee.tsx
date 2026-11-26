@@ -13,7 +13,7 @@ export interface LogoMarqueeProps {
 	pauseLabel?: string;
 }
 
-/** The band's pace in pixels a second: the speed its row always moved at. */
+/** The band's pace in pixels a second, near what its row's old loop (one row width in 32 seconds) gave a row about 1000px wide. */
 const LOGO_MARQUEE_SPEED = 32;
 
 /**

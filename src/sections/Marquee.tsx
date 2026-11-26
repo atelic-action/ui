@@ -119,18 +119,26 @@ export function Marquee({
 	useLayoutEffect(() => {
 		const track = trackRef.current;
 		if (!track || !measured) return;
+		const keepOut = () => {
+			for (const target of track.querySelectorAll<HTMLElement>(
+				":scope > .marquee-group:not(:first-child) :is(a[href], button, input, select, textarea, summary, [tabindex], [contenteditable])",
+			)) {
+				if (target.getAttribute("tabindex") !== "-1") target.setAttribute("tabindex", "-1");
+			}
+		};
+		keepOut();
+		// A child that mounts a link later is kept out the same way.
+		const watcher =
+			typeof MutationObserver === "undefined" ? undefined : new MutationObserver(keepOut);
+		watcher?.observe(track, { childList: true, subtree: true });
 		const groups = [...track.querySelectorAll<HTMLElement>(":scope > .marquee-group")];
 		const lead = groups[0]?.getAnimations?.()[0];
 		for (const group of groups.slice(1)) {
-			for (const target of group.querySelectorAll<HTMLElement>(
-				"a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]",
-			)) {
-				target.setAttribute("tabindex", "-1");
-			}
 			const animation = group.getAnimations?.()[0];
 			if (lead && animation && lead.currentTime !== null) animation.currentTime = lead.currentTime;
 		}
-	}, [row.copies, measured, seconds, children]);
+		return () => watcher?.disconnect();
+	}, [row.copies, measured, seconds]);
 	const trackStyle = measured
 		? ({ "--_marquee-duration": `${seconds.toFixed(2)}s` } as CSSProperties)
 		: undefined;
