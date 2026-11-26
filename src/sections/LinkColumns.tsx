@@ -20,6 +20,39 @@ export interface LinkColumnLink {
 	external?: boolean;
 }
 
+export interface LinkRowProps extends LinkColumnLink {
+	/** Sets a linked row bold in the primary's words, for the rows that lead somewhere among plain ones. */
+	strong?: boolean;
+}
+
+/**
+ * One row: its label, and a figure set right aligned on the same line in
+ * tabular numerals, so a column of rows lines up digit under digit. A link
+ * when it has an `href`; plain words, the label and the figure, when it does
+ * not. `LinkColumns` draws its links as these rows, and a `GridLayout` holds
+ * them as one aligned grid. It sets no space around itself; the column or
+ * the grid it sits in does.
+ */
+export function LinkRow({ label, href, count, external, strong = false }: LinkRowProps) {
+	const withBase = useWithBase();
+	const words = (
+		<>
+			<span className="lc-label">{label}</span>
+			{count != null && <span className="lc-count">{count}</span>}
+		</>
+	);
+	if (!href) return <span className="lc-link">{words}</span>;
+	return (
+		<a
+			className={["lc-link", strong && "is-strong"].filter(Boolean).join(" ")}
+			href={withBase(href)}
+			{...newTabProps(href, external)}
+		>
+			{words}
+		</a>
+	);
+}
+
 /** A column: a heading, itself a link when it has an `href`, over its links. */
 export interface LinkColumn {
 	heading: string;
@@ -54,22 +87,7 @@ export function LinkColumns({ columns, className }: LinkColumnsProps) {
 						{column.links.map((link, at) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: a column may link one page twice, so the place keeps the key unique; links never reorder
 							<li key={`${at} ${link.href ?? ""}`}>
-								{link.href ? (
-									<a
-										className="lc-link"
-										href={withBase(link.href)}
-										{...newTabProps(link.href, link.external)}
-									>
-										<span className="lc-label">{link.label}</span>
-										{link.count != null && <span className="lc-count">{link.count}</span>}
-									</a>
-								) : (
-									// No page yet: the name and its count as words, nothing to follow.
-									<span className="lc-link">
-										<span className="lc-label">{link.label}</span>
-										{link.count != null && <span className="lc-count">{link.count}</span>}
-									</span>
-								)}
+								<LinkRow {...link} />
 							</li>
 						))}
 					</ul>

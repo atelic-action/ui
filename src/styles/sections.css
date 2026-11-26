@@ -2542,16 +2542,28 @@
 	.atelic-ui .lc-head a:hover {
 		color: var(--primary-ink, var(--primary));
 	}
+	/* A row, LinkRow: the label and its figure on one line. It sets no space
+	   of its own; a column sets 7px above and below, and a ruled grid its own. */
 	.atelic-ui .lc-link {
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
 		gap: 12px;
-		padding: 7px 0;
 		color: var(--ink-soft);
+	}
+	.atelic-ui .link-columns .lc-link {
+		padding: 7px 0;
 	}
 	.atelic-ui a.lc-link:hover {
 		color: var(--primary-ink, var(--primary));
+	}
+	/* A strong row leads somewhere among plain ones: bold, in the primary's words. */
+	.atelic-ui a.lc-link.is-strong {
+		color: var(--primary-ink, var(--primary));
+		font-weight: var(--weight-bold);
+	}
+	.atelic-ui a.lc-link.is-strong:hover {
+		text-decoration: underline;
 	}
 	.atelic-ui .lc-label {
 		min-width: 0;
@@ -2563,6 +2575,7 @@
 		font-size: 0.86rem;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
+		font-weight: var(--weight-regular);
 		color: var(--neutral-600);
 	}
 
@@ -3557,6 +3570,11 @@
 		.atelic-ui .split.ratio-narrow-first {
 			grid-template-columns: 0.9fr 1.1fr;
 			gap: 72px;
+		}
+		/* A heading beside the paragraphs it opens, two parts to three. */
+		.atelic-ui .split.ratio-two-three {
+			grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+			gap: 56px;
 		}
 	}
 	/* Two columns from 761px, where a card row does, so the photo lines up. */

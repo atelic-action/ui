@@ -13,10 +13,13 @@ describe("SplitSection", () => {
 		expect(grid?.classList.contains("ratio-even")).toBe(true);
 	});
 
-	it.each(["narrow-first", "media"] as const)("renders the %s ratio class", (ratio) => {
-		const { container } = render(<SplitSection ratio={ratio} left="Shot" right="Copy" />);
-		const grid = container.querySelector(".split");
-		expect(grid?.classList.contains(`ratio-${ratio}`)).toBe(true);
-		expect(grid?.children).toHaveLength(2);
-	});
+	it.each(["narrow-first", "two-three", "media"] as const)(
+		"renders the %s ratio class",
+		(ratio) => {
+			const { container } = render(<SplitSection ratio={ratio} left="Shot" right="Copy" />);
+			const grid = container.querySelector(".split");
+			expect(grid?.classList.contains(`ratio-${ratio}`)).toBe(true);
+			expect(grid?.children).toHaveLength(2);
+		},
+	);
 });

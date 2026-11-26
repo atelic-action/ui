@@ -95,6 +95,8 @@ export {
 	type LinkColumnLink,
 	LinkColumns,
 	type LinkColumnsProps,
+	LinkRow,
+	type LinkRowProps,
 } from "./LinkColumns";
 export {
 	LocationSection,

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, type within } from "storybook/test";
-import { ImageFrame } from "../../src/primitives";
+import { ImageFrame, SectionHeading } from "../../src/primitives";
 import { SplitSection } from "../../src/sections";
 import { image, longEmail } from "../fixtures/sections";
 import { expectNoSidewaysScroll } from "../support/geometry";
@@ -153,6 +153,51 @@ export const LongAddressPhone: Story = {
 		),
 	},
 	play: async () => {
+		await expectNoSidewaysScroll();
+	},
+};
+
+const heading = (
+	<section aria-label="The heading">
+		<SectionHeading eyebrow="Wholesale" title="Bread for the cafes before they open" />
+	</section>
+);
+
+const paragraphs = (
+	<section aria-label="The paragraphs">
+		<p>
+			Eleven cafes take the morning bake. Their loaves leave the back door at five, sliced or whole,
+			with a note of what changed since the day before.
+		</p>
+		<p>
+			A standing order runs until a cafe changes it, and a change made by noon lands the next day.
+		</p>
+	</section>
+);
+
+const parts = (canvas: ReturnType<typeof within>) => ({
+	left: canvas.getByRole("region", { name: "The heading" }).getBoundingClientRect(),
+	right: canvas.getByRole("region", { name: "The paragraphs" }).getBoundingClientRect(),
+});
+
+/** A heading beside the paragraphs it opens, two parts to three. */
+export const TwoThree: Story = {
+	args: { ratio: "two-three", left: heading, right: paragraphs },
+	play: async ({ canvas }) => {
+		const { left, right } = parts(canvas);
+		await expect(right.left).toBeGreaterThan(left.right);
+		await expect(left.width / right.width).toBeCloseTo(2 / 3, 1);
+		await expect(Math.round(left.top)).toBe(Math.round(right.top));
+	},
+};
+
+/** Below 920px the heading stacks over its paragraphs. */
+export const TwoThreeTablet: Story = {
+	args: { ratio: "two-three", left: heading, right: paragraphs },
+	globals: pin("tablet"),
+	play: async ({ canvas }) => {
+		const { left, right } = parts(canvas);
+		await expect(right.top).toBeGreaterThanOrEqual(left.bottom);
 		await expectNoSidewaysScroll();
 	},
 };
