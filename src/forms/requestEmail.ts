@@ -190,8 +190,16 @@ export function requestEmailLook(look: Partial<RequestEmailLook> = {}): RequestE
 /** Each word escaped, for an attribute or a cell. */
 const e = escapeHTML;
 
+/** The look with each value made safe for a double quoted style attribute (a font stack often carries quotes). */
+function escapedLook(look: RequestEmailLook): RequestEmailLook {
+	return Object.fromEntries(
+		Object.entries(look).map(([key, value]) => [key, e(String(value))]),
+	) as unknown as RequestEmailLook;
+}
+
 /** The card: the head, the body, and the foot, 600 wide at most, as one table. */
-export function requestEmailCard(content: RequestEmailContent, look: RequestEmailLook): string {
+export function requestEmailCard(content: RequestEmailContent, rawLook: RequestEmailLook): string {
+	const look = escapedLook(rawLook);
 	const font = `font-family:${look.font};`;
 	const head = content.logo
 		? `<img src="${e(content.logo)}" alt="${e(content.brandName)}" height="44" style="display:block;height:44px;width:auto;border:0;">`
@@ -223,7 +231,11 @@ export function requestEmailCard(content: RequestEmailContent, look: RequestEmai
 }
 
 /** The whole document a mail client opens: the preheader, the ground, and the card centered on it. */
-export function requestEmailDocument(content: RequestEmailContent, look: RequestEmailLook): string {
+export function requestEmailDocument(
+	content: RequestEmailContent,
+	rawLook: RequestEmailLook,
+): string {
+	const look = escapedLook(rawLook);
 	return (
 		`<!doctype html><html lang="en"><head><meta charset="utf-8">` +
 		`<meta name="viewport" content="width=device-width, initial-scale=1">` +
@@ -231,7 +243,7 @@ export function requestEmailDocument(content: RequestEmailContent, look: Request
 		`<body style="margin:0;padding:0;background:${look.ground};-webkit-text-size-adjust:100%;">` +
 		`<span style="display:none;font-size:1px;color:${look.ground};max-height:0;overflow:hidden;">${e(content.preheader)}</span>` +
 		`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${look.ground};">` +
-		`<tr><td align="center" style="padding:20px 12px 32px;">${requestEmailCard(content, look)}</td></tr>` +
+		`<tr><td align="center" style="padding:20px 12px 32px;">${requestEmailCard(content, rawLook)}</td></tr>` +
 		`</table></body></html>`
 	);
 }

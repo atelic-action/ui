@@ -128,7 +128,7 @@ export interface ScheduleRequestLabels {
 	doneLead: (email: string, receipt: boolean) => string;
 	doneNextHead: string;
 	/** What happens next, in order. */
-	doneNext: (mode: ScheduleMode, within: string, receipt: boolean) => string[];
+	doneNext: (mode: ScheduleMode, within: string, receipt: boolean, next: string) => string[];
 	doneSooner: string;
 	/** The call link's words after it. */
 	call: (display: string) => string;
@@ -193,12 +193,10 @@ const LABELS: ScheduleRequestLabels = {
 	doneLead: (email, receipt) =>
 		`This is a request, not a booked appointment yet.${receipt && email ? ` A copy is on its way to ${email}.` : ""}`,
 	doneNextHead: "What Happens Next",
-	doneNext: (mode, within, receipt) => [
+	doneNext: (_mode, within, receipt, next) => [
 		...(receipt ? ["You get an email with a copy of this request."] : []),
 		`Our office confirms your time within ${within}, by phone or text.`,
-		mode === "call"
-			? "We call you at the confirmed time."
-			: "We come out at the confirmed time and take a look.",
+		next,
 	],
 	doneSooner: "Need us sooner?",
 	call: (display) => `Call ${display}`,
@@ -1080,7 +1078,7 @@ function ScheduleRequestDone({
 					{labels.doneNextHead}
 				</div>
 				<ol className="contact-thanks-steps">
-					{labels.doneNext(mode, within, receipt).map((line) => (
+					{labels.doneNext(mode, within, receipt, words.next).map((line) => (
 						<li key={line}>{line}</li>
 					))}
 				</ol>

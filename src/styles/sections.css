@@ -891,7 +891,6 @@
 	/* ---- ScheduleRequestForm (9.5.0) ---- */
 	/* The request received: one card, the contact form's thanks inside it. */
 	.atelic-ui .schedule-request-form.is-done .srf-done {
-		max-width: 720px;
 		margin: 0 auto;
 		padding: clamp(20px, 3vw, 34px);
 		background: var(--card);

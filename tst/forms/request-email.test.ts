@@ -92,3 +92,14 @@ describe("the customer's confirmation", () => {
 		expect(email.html).toContain("100 Main Street");
 	});
 });
+
+describe("a font stack with quotes", () => {
+	it("stays inside its style attribute", () => {
+		const email = requestEmail(VISIT, CONFIG, {
+			...brand,
+			look: { font: '"Inter", Arial, sans-serif' },
+		});
+		expect(email.html).not.toContain('font-family:"Inter"');
+		expect(email.html).toContain("font-family:&quot;Inter&quot;, Arial, sans-serif;");
+	});
+});
