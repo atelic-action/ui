@@ -649,7 +649,12 @@ export function ScheduleRequestForm({
 	const lead = [labels.whatLead, labels.whenLead, labels.whoLead][step];
 
 	return (
-		<div ref={rootRef} className={["schedule-request-form", className].filter(Boolean).join(" ")}>
+		// biome-ignore lint/a11y/noStaticElementInteractions: focus bubbling up from the fields only warms the Turnstile script, as ContactForm does on its form
+		<div
+			ref={rootRef}
+			className={["schedule-request-form", className].filter(Boolean).join(" ")}
+			onFocus={checking ? turnstile.prepare : undefined}
+		>
 			<StepForm
 				steps={labels.steps}
 				current={step}
