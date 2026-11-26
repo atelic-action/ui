@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, waitFor, within } from "storybook/test";
+import { expect, spyOn, waitFor, within } from "storybook/test";
 import { SiteShell } from "../../src/chrome";
 import type { Density } from "../../src/sections";
-import { Hero, LinkColumns, ProofStrip } from "../../src/sections";
+import { Hero, LinkColumns, ProofStrip, ScheduleRequestForm } from "../../src/sections";
 import { groupedNav, phones, site } from "../fixtures/bakery";
+import { exampleProvider } from "../fixtures/primitives";
+import { schedule, scheduleToday } from "../fixtures/sections";
 import { knownIssues } from "../support/known-issues";
 import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
@@ -793,5 +795,133 @@ export const LinkToThisPagePhone: Story = {
 		} finally {
 			clicks.stop();
 		}
+	},
+};
+
+/** The signed in reader the gate's readable cookie names, set the way the gate sets it. */
+const reader = "reader@example.com";
+const signedIn = () => {
+	// biome-ignore lint/suspicious/noDocumentCookie: the watermark reads document.cookie, so the story writes it the same way
+	document.cookie = `gate_email=${encodeURIComponent(reader)}; path=/`;
+	return () => {
+		// biome-ignore lint/suspicious/noDocumentCookie: clearing the cookie the story set
+		document.cookie = "gate_email=; path=/; max-age=0";
+	};
+};
+const gate = { headline: "Private preview", lead: "Sign in to see the new site." };
+
+/**
+ * A gated site's page for a signed in reader: no watermark, the default since
+ * 9.6.0. A marketing site's preview is the business's own future public site,
+ * so nothing on it is confidential, and the pill sat over the page's own
+ * controls on a phone.
+ */
+export const NoWatermarkByDefault: Story = {
+	args: { ...visitPage, site: { ...site, gate } },
+	beforeEach: signedIn,
+	play: async ({ canvasElement }) => {
+		// Two frames, past the effect where the watermark would read its cookie.
+		await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+		await expect(canvasElement.querySelector(".gate-wm")).toBeNull();
+		await expect(within(canvasElement).queryByText(reader)).toBeNull();
+	},
+};
+
+/** `gate.watermark: true` draws the signed in reader's pill on every page, as before 9.6.0. */
+export const WatermarkOn: Story = {
+	args: { ...visitPage, site: { ...site, gate: { ...gate, watermark: true } } },
+	beforeEach: signedIn,
+	play: async ({ canvas }) => {
+		await waitFor(() => expect(canvas.getByText(reader)).toBeInTheDocument());
+		await expect(canvas.getByText(/Confidential preview/)).toBeInTheDocument();
+	},
+};
+
+/** A page holding the schedule request form, opened on its last step with every answer in. */
+const schedulePage = {
+	heroNav: false,
+	currentPath: "/schedule",
+	children: (
+		<section className="section">
+			<div className="wrap">
+				<ScheduleRequestForm
+					config={schedule}
+					endpoint="/api/schedule"
+					today={scheduleToday}
+					address={{ provider: exampleProvider(), states: ["CO"] }}
+					initial={{
+						kind: "wedding",
+						material: "buttercream",
+						mode: "visit",
+						day: "2026-12-02",
+						time: "09:00",
+						firstName: "Robin",
+						lastName: "Ash",
+						phone: "(555) 555-0177",
+						email: "robin@example.com",
+						address: { street: "418 Alder Street", city: "Fairhaven", state: "CO", zip: "80000" },
+					}}
+					initialStep={2}
+				/>
+			</div>
+		</section>
+	),
+};
+
+/** The schedule endpoint, answered as the site's function would, so no story sends a real request. */
+const scheduleAnswers = () => {
+	const spy = spyOn(window, "fetch").mockImplementation(() =>
+		Promise.resolve(new Response(JSON.stringify({ ok: true, receipt: true }), { status: 200 })),
+	);
+	return () => spy.mockRestore();
+};
+
+/**
+ * On a phone, a page holding the schedule request form leaves the contact dock
+ * and the sticky call bar off at every state, the request received included,
+ * where the form's own bar is gone (9.6.0). The room kept under the page for
+ * that bar goes with it.
+ */
+export const ScheduleFormPagePhone: Story = {
+	args: schedulePage,
+	globals: pin("phone"),
+	beforeEach: scheduleAnswers,
+	play: async ({ canvas, canvasElement, userEvent, step }) => {
+		// Hidden from the accessibility tree while the rule holds, so found with `hidden`.
+		const launcher = canvas.getByRole("button", { name: "Talk to us", hidden: true });
+		const call = canvas.getByRole("link", { name: "Call us", hidden: true });
+		const root = canvasElement.querySelector(".atelic-ui") as HTMLElement;
+		await step("while the form's bar shows, the dock and the sticky bar are off", async () => {
+			await expect(launcher).not.toBeVisible();
+			await expect(call).not.toBeVisible();
+			await expect(Number.parseFloat(getComputedStyle(root).paddingBottom)).toBe(150);
+		});
+		await step("sent, the request received shows and the form's bar is gone", async () => {
+			await userEvent.click(canvas.getByRole("button", { name: "Send Request" }));
+			await expect(
+				await canvas.findByRole("heading", { name: "We have your request, Robin." }),
+			).toBeVisible();
+			await expect(canvasElement.querySelector(".stf-bar")).toBeNull();
+		});
+		await step("and the dock and the sticky bar stay off on the sent screen", async () => {
+			await expect(launcher).not.toBeVisible();
+			await expect(call).not.toBeVisible();
+			await expect(Number.parseFloat(getComputedStyle(root).paddingBottom)).toBe(0);
+		});
+	},
+};
+
+/** From 900px the same page keeps its contact dock, sent or not; the rule is a phone's alone. */
+export const ScheduleFormPage: Story = {
+	args: schedulePage,
+	beforeEach: scheduleAnswers,
+	play: async ({ canvas, userEvent }) => {
+		const launcher = canvas.getByRole("button", { name: "Talk to us" });
+		await expect(launcher).toBeVisible();
+		await userEvent.click(canvas.getByRole("button", { name: "Send Request" }));
+		await expect(
+			await canvas.findByRole("heading", { name: "We have your request, Robin." }),
+		).toBeVisible();
+		await expect(launcher).toBeVisible();
 	},
 };

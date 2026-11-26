@@ -130,10 +130,11 @@ export interface Founder {
 }
 
 /**
- * Copy for the access-gate login screen. Present in the config so the login
- * page is themed and worded per client with no code edits. The gate itself is
- * turned on by setting GATE_SESSION_SECRET on the Vercel project, not by this
- * block (README.md, The Access Gate).
+ * Copy for the access gate login screen, and whether the site's pages wear the
+ * watermark. Present in the config so the login page is themed and worded per
+ * client with no code edits. The gate itself is turned on by setting
+ * GATE_SESSION_SECRET on the Vercel project, not by this block (README.md, The
+ * Access Gate).
  */
 export interface GateConfig {
 	/** Mono eyebrow above the headline, e.g. "Private preview". */
@@ -146,6 +147,14 @@ export interface GateConfig {
 	builtBy?: string;
 	/** Contact email shown in the fine print. Defaults to `email`. */
 	contactEmail?: string;
+	/**
+	 * Whether `SiteShell` draws the signed in reader's watermark on every page.
+	 * Off by default (9.6.0): a marketing site's preview is the business's own
+	 * future public site, so it marks nothing confidential, and on a phone the
+	 * pill sat over the page's own controls. On draws it as before 9.6.0.
+	 * `ArtifactShell` draws it always, whatever this says.
+	 */
+	watermark?: boolean;
 }
 
 export interface SiteConfig {

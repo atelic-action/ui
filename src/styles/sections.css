@@ -879,9 +879,12 @@
 			min-height: 52px;
 		}
 		/* A page holding a step form leaves its corner dock and its sticky bar
-		   off a phone, where the form's own bar holds the call button. */
-		.atelic-ui:has(.stf-bar) .contact-dock,
-		.atelic-ui:has(.stf-bar) .sticky-cta {
+		   off a phone, where the form's own bar holds the call button. The rule
+		   is keyed to the forms' roots, never the bar: the schedule request
+		   form's root stays mounted on its request received screen, where the
+		   bar is gone, so the dock stays off through the sent state too (9.6.0). */
+		.atelic-ui:has(.step-form, .schedule-request-form) .contact-dock,
+		.atelic-ui:has(.step-form, .schedule-request-form) .sticky-cta {
 			display: none;
 		}
 	}

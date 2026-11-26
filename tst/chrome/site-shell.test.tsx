@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { SiteShell } from "../../src/chrome";
 import { Button } from "../../src/primitives";
 import type { SiteConfig } from "../../src/sections";
@@ -323,6 +323,40 @@ describe("SiteShell", () => {
 		expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/proto/contact");
 		// An external CTA is left as written.
 		expect(container.querySelector(".nav-cta a")).toHaveAttribute("href", testSite.cta.href);
+	});
+
+	describe("the watermark", () => {
+		const reader = "reader@example.com";
+		beforeEach(() => {
+			// biome-ignore lint/suspicious/noDocumentCookie: the watermark reads document.cookie, so the test writes it the same way
+			document.cookie = `gate_email=${encodeURIComponent(reader)}; path=/`;
+		});
+		afterEach(() => {
+			// biome-ignore lint/suspicious/noDocumentCookie: clearing the cookie the test set
+			document.cookie = "gate_email=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+		});
+		const gate = { headline: "Private preview", lead: "Sign in to see it." };
+
+		it("draws no watermark by default, even for a signed in reader (9.6.0)", async () => {
+			const { container } = renderShell({}, { ...testSite, gate });
+			// A moment past the effect where the watermark would read its cookie.
+			await new Promise((resolve) => setTimeout(resolve, 20));
+			expect(container.querySelector(".gate-wm")).toBeNull();
+			expect(screen.queryByText(reader)).toBeNull();
+		});
+
+		it("draws no watermark with no gate block at all", async () => {
+			const { container } = renderShell();
+			await new Promise((resolve) => setTimeout(resolve, 20));
+			expect(container.querySelector(".gate-wm")).toBeNull();
+		});
+
+		it("draws the signed in reader's pill when gate.watermark is on", async () => {
+			const { container } = renderShell({}, { ...testSite, gate: { ...gate, watermark: true } });
+			await waitFor(() => expect(screen.getByText(reader)).toBeInTheDocument());
+			// Inside the shell's own root, where its styles are scoped.
+			expect(container.querySelector(".atelic-ui > .gate-wm")).not.toBeNull();
+		});
 	});
 
 	it("marks the current path whether or not the router reports the base, and basePath wins", () => {
