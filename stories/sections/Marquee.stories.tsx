@@ -196,8 +196,8 @@ export const Links: Story = {
 			const copy = [...region.querySelectorAll("a")].filter((link) =>
 				link.closest("[aria-hidden='true']"),
 			)[0];
-			copy.focus();
-			await expect(copy).not.toHaveFocus();
+			// Out of the tab order, yet clickable where it passes under the pointer.
+			await expect(copy).toHaveAttribute("tabindex", "-1");
 		});
 		await step("focus inside the row holds it still", async () => {
 			within(region).getByRole("link", { name: "Order ahead" }).focus();
