@@ -36,13 +36,15 @@
  *
  * Time: the guard 3.5 seconds at most, the relay 8, the confirmation's one
  * try 3, so a visitor waits 14.5 seconds in the worst case, inside the 15 a
- * site states to the platform.
+ * site states to the platform. A 502 waits on the relay's reports first (2
+ * seconds at most, in place of the confirmation it never sends).
  *
  * Built with the gate (`@atelic-action/ui/forms/schedule`).
  */
 import { EMAIL_PATTERN, toE164 } from "../lib/contactLinks.js";
 import { escapeHTML } from "../lib/escapeHTML.js";
 import { isHoneypotFilled } from "../lib/honeypot.js";
+import { SUBMISSION_ID_KEY, submissionIDOf } from "../lib/submissionId.js";
 import { reportServerErrorLater, withErrorReporting } from "../monitoring/server.js";
 import {
 	checkDay,
@@ -59,6 +61,7 @@ import {
 	askGuard,
 	isProduction,
 	json,
+	keyNamespace,
 	reportVerdict,
 	sameSecret,
 	sendCopy,
@@ -197,7 +200,10 @@ export interface ScheduleRefusal {
 	code: ScheduleStep;
 }
 
-/** The keys the form sends, beside the endpoint's own (`company`, `canary`, `turnstile`). */
+/**
+ * The keys the form sends, beside the endpoint's own (`company`, `canary`,
+ * `turnstile`, and `submissionId`, the id the browser made for this fill).
+ */
 export const SCHEDULE_KEYS = [
 	"kind",
 	"material",
@@ -590,7 +596,13 @@ export function createScheduleRequest(
 			const canaryToken = process.env.CONTACT_CANARY_TOKEN;
 			const canary =
 				Boolean(canaryToken) && sameSecret(String(data.canary ?? ""), canaryToken ?? "");
-			const id = crypto.randomUUID();
+			// The browser's id for this fill, kept across a resubmit of the same
+			// request, so a resubmit after a timeout is sent once; a missing or
+			// malformed one is replaced by the server's own. The guard is handed
+			// an id of this request alone (`createContact` says why).
+			const id = submissionIDOf(data[SUBMISSION_ID_KEY]);
+			const requestID = crypto.randomUUID();
+			const namespace = keyNamespace(request);
 
 			// The request first, held to the calendar on the business's own day:
 			// one about to be refused costs no check and spends no token.
@@ -631,7 +643,12 @@ export function createScheduleRequest(
 			let checked: boolean | undefined;
 			if (guard && !canary) {
 				const token = data[guard.tokenKey];
-				const verdict = await askGuard(guard, typeof token === "string" ? token : "", id, request);
+				const verdict = await askGuard(
+					guard,
+					typeof token === "string" ? token : "",
+					requestID,
+					request,
+				);
 				if (verdict.status === "failed") {
 					return json(403, { ok: false, code: "guard", error: GUARD_REFUSAL });
 				}
@@ -664,6 +681,7 @@ export function createScheduleRequest(
 						from: options.from,
 						to: canary ? canaryTo : to,
 						timeoutMs: options.emailTimeoutMs,
+						keyNamespace: namespace,
 						compose: (submission) =>
 							officeScheduleEmail(submission.fields, config, {
 								canary,
@@ -705,6 +723,7 @@ export function createScheduleRequest(
 					from: confirmation.from ?? noReplySender(options.from),
 					to: fields.email,
 					id: `${id}-confirmation`,
+					keyNamespace: namespace,
 					email: requestEmail(
 						{
 							kindLabel: fields.kindLabel,

@@ -456,7 +456,7 @@ describe("createContact", () => {
 			expect(envelope).not.toContain("canary-secret");
 		});
 
-		it("answers before the report finishes sending", async () => {
+		it("sends the report before it answers 502, since the visitor is already waiting", async () => {
 			let release: () => void = () => {};
 			vi.mocked(fetch).mockImplementation((input) =>
 				String(input).startsWith(INGEST)
@@ -465,10 +465,30 @@ describe("createContact", () => {
 						})
 					: Promise.resolve(new Response("{}", { status: 422 })),
 			);
-			const response = await POST(request(VALID));
-			expect(response.status).toBe(502);
+			let answered = false;
+			const answering = POST(request(VALID)).then((response) => {
+				answered = true;
+				return response;
+			});
 			expect(await reports()).toHaveLength(1);
+			expect(answered).toBe(false);
 			release();
+			expect((await answering).status).toBe(502);
+		});
+
+		it("answers 200 before the report of a failed leg finishes sending", async () => {
+			vi.mocked(fetch).mockImplementation((input) =>
+				String(input).startsWith(INGEST)
+					? new Promise<Response>(() => {})
+					: Promise.resolve(new Response('{"id":"re_123"}', { status: 200 })),
+			);
+			const crm = {
+				name: "crm",
+				send: async () => refused(new Error("crm answered 422")),
+			};
+			const post = createContact({ from: FROM, destinations: [crm] });
+			expect((await post(request(VALID))).status).toBe(200);
+			expect(await reports()).toHaveLength(1);
 		});
 
 		it("sends no report for an ordinary relay, a canary, or a validation answer", async () => {
@@ -592,8 +612,72 @@ describe("destinations beside the email", () => {
 			message: VALID.message,
 		});
 		const sent = vi.mocked(fetch).mock.calls[0]?.[1];
-		expect(new Headers(sent?.headers).get("Idempotency-Key")).toBe(submission?.id);
+		expect(new Headers(sent?.headers).get("Idempotency-Key")).toBe(`localhost/${submission?.id}`);
 		expect(await reports()).toEqual([]);
+	});
+
+	describe("the browser's submission id", () => {
+		const BROWSER_ID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		const keys = () =>
+			vi
+				.mocked(fetch)
+				.mock.calls.filter(([url]) => !String(url).startsWith(INGEST))
+				.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
+		const from = (host: string, body: unknown) =>
+			new Request(`https://${host}/api/contact`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(body),
+			});
+
+		it("is the submission's id, so a resubmit of the same fill reaches Resend under the first key", async () => {
+			const lead = crm({ status: "delivered" });
+			const post = createContact({ from: FROM, destinations: [lead] });
+			await post(request({ ...VALID, submissionId: BROWSER_ID }));
+			await post(request({ ...VALID, submissionId: BROWSER_ID.toUpperCase() }));
+			expect(keys()).toEqual([`localhost/${BROWSER_ID}`, `localhost/${BROWSER_ID}`]);
+			// Every destination is handed the same id, so a CRM dedupes the resubmit too.
+			expect(lead.send.mock.calls.map(([submission]) => submission.id)).toEqual([
+				BROWSER_ID,
+				BROWSER_ID,
+			]);
+			// The id is the endpoint's to read, never a field.
+			expect(lead.send.mock.calls[0]?.[0].fields).not.toHaveProperty("submissionId");
+		});
+
+		it.each([
+			["missing", undefined],
+			["empty", ""],
+			["not a UUID", "resubmit-1"],
+			["a UUID with more after it", `${BROWSER_ID}x`],
+			["a UUID with a space before it", ` ${BROWSER_ID}`],
+			["a UUID without its hyphens", BROWSER_ID.replaceAll("-", "")],
+			["a number", 42],
+			["an object", { id: BROWSER_ID }],
+		])("falls back to an id of the server's own when it is %s", async (_, given) => {
+			const lead = crm({ status: "delivered" });
+			const post = createContact({ from: FROM, destinations: [lead] });
+			await post(request({ ...VALID, submissionId: given }));
+			await post(request({ ...VALID, submissionId: given }));
+			const ids = lead.send.mock.calls.map(([submission]) => submission.id);
+			for (const id of ids) {
+				expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+				expect(id).not.toBe(given);
+			}
+			// Two POSTs with no id of the browser's are two submissions, as before.
+			expect(ids[1]).not.toBe(ids[0]);
+			expect(keys()).toEqual(ids.map((id) => `localhost/${id}`));
+		});
+
+		it("writes the key under the site's host, so two sites never share one", async () => {
+			const post = createContact({ from: FROM });
+			await post(from("summit.example.com", { ...VALID, submissionId: BROWSER_ID }));
+			await post(from("roofs.example.com", { ...VALID, submissionId: BROWSER_ID }));
+			expect(keys()).toEqual([
+				`summit.example.com/${BROWSER_ID}`,
+				`roofs.example.com/${BROWSER_ID}`,
+			]);
+		});
 	});
 
 	it("answers success and reports the failed leg when the email lands and another destination refuses", async () => {
@@ -906,7 +990,7 @@ describe("a site's settings", () => {
 		expect(await reported({ ...VALID, phone: "(303) 555-0142" }, "preview")).toEqual([]);
 	});
 
-	it.each(["company", "canary", "turnstile"])(
+	it.each(["company", "canary", "turnstile", "submissionId"])(
 		"refuses a field under %s, a key the endpoint reads for itself",
 		(key) => {
 			expect(() =>
@@ -1103,13 +1187,17 @@ describe("the guard and the receipt", () => {
 			expect(await reports()).toEqual([]);
 		});
 
-		it("checks the token once, under the submission's id", async () => {
-			await guarded()(request(SIGNED));
-			expect(siteverifyCalls()).toHaveLength(1);
-			const body = JSON.parse(String(siteverifyCalls()[0]?.[1]?.body));
-			expect(body.response).toBe(TOKEN);
-			const office = new Headers(officeCalls()[0]?.[1]?.headers).get("Idempotency-Key");
-			expect(body.idempotency_key).toBe(office);
+		it("checks the token once, under a key of this request alone", async () => {
+			const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			await guarded()(request({ ...SIGNED, submissionId }));
+			await guarded()(request({ ...SIGNED, submissionId }));
+			expect(siteverifyCalls()).toHaveLength(2);
+			const [first, second] = siteverifyCalls().map(([, init]) => JSON.parse(String(init?.body)));
+			expect(first.response).toBe(TOKEN);
+			// A resubmit's token is never checked under the key an earlier one was.
+			expect(first.idempotency_key).toMatch(/^[0-9a-f-]{36}$/);
+			expect(second.idempotency_key).not.toBe(first.idempotency_key);
+			expect(first.idempotency_key).not.toBe(submissionId);
 		});
 
 		it("sends no receipt when no destination took the submission", async () => {

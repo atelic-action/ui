@@ -42,7 +42,14 @@ describe("ContactForm with the opt in fields", () => {
 		change("Message", "Hello");
 		send();
 		await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
-		expect(Object.keys(posted()).sort()).toEqual(["company", "email", "message", "name", "topic"]);
+		expect(Object.keys(posted()).sort()).toEqual([
+			"company",
+			"email",
+			"message",
+			"name",
+			"submissionId",
+			"topic",
+		]);
 	});
 
 	it("posts the split name, the phone, the address, and the consent, keeping name for an old relay", async () => {
@@ -78,6 +85,7 @@ describe("ContactForm with the opt in fields", () => {
 			message: "A round cake",
 			consent: true,
 			company: "",
+			submissionId: expect.any(String),
 		});
 	});
 

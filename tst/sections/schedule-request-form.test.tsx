@@ -69,6 +69,31 @@ function fillWho() {
 describe("ScheduleRequestForm", () => {
 	afterEach(() => vi.unstubAllGlobals());
 
+	it("keeps the request's id across a resubmit, and makes a new one once a field changes", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockImplementation(async () => new Response("{}", { status: 502 })),
+		);
+		renderForm();
+		chooseWhat();
+		chooseWhen();
+		fillWho();
+		const idOf = (call: number) =>
+			JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionId as string;
+		const send = async (calls: number) => {
+			fireEvent.click(continueButton(/Send Request/));
+			await waitFor(() => expect(fetch).toHaveBeenCalledTimes(calls));
+			await waitFor(() => expect(continueButton(/Send Request/)).not.toBeDisabled());
+		};
+		await send(1);
+		await send(2);
+		expect(idOf(0)).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+		expect(idOf(1)).toBe(idOf(0));
+		fireEvent.change(screen.getByLabelText("First name"), { target: { value: "Dane" } });
+		await send(3);
+		expect(idOf(2)).not.toBe(idOf(0));
+	});
+
 	it("offers a visit or a call as cards, with each one's length", () => {
 		renderForm();
 		fireEvent.change(screen.getByLabelText("What do you need help with?"), {

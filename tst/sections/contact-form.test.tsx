@@ -237,6 +237,64 @@ describe("ContactForm (endpoint mode)", () => {
 	});
 });
 
+describe("ContactForm submission id", () => {
+	const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+	const idOf = (call: number) =>
+		JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionId as string;
+	const send = async (calls: number) => {
+		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
+		await waitFor(() => expect(fetch).toHaveBeenCalledTimes(calls));
+		await waitFor(() =>
+			expect(screen.getByRole("button", { name: /Send Message/ })).not.toBeDisabled(),
+		);
+	};
+
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("sends one id for a fill, and the same one on a resubmit of the same words", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockImplementation(async () => new Response("{}", { status: 502 })),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		await send(1);
+		await send(2);
+		expect(idOf(0)).toMatch(UUID);
+		expect(idOf(1)).toBe(idOf(0));
+	});
+
+	it("makes a new id once a field changes, since an edited inquiry is a new one", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockImplementation(async () => new Response("{}", { status: 502 })),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		await send(1);
+		fireEvent.change(screen.getByLabelText("Message"), { target: { value: "Hello again" } });
+		await send(2);
+		expect(idOf(1)).toMatch(UUID);
+		expect(idOf(1)).not.toBe(idOf(0));
+	});
+
+	it("makes a new id after a send went through, even for the same words", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockImplementation(async () => new Response('{"ok":true}', { status: 200 })),
+		);
+		render(<ContactForm {...PROPS} />);
+		fillForm();
+		await send(1);
+		fillForm();
+		await send(2);
+		expect(idOf(1)).toMatch(UUID);
+		expect(idOf(1)).not.toBe(idOf(0));
+	});
+});
+
 describe("ContactForm generate_lead", () => {
 	let gtag: ReturnType<typeof vi.fn>;
 

@@ -10,13 +10,20 @@
  * A destination that is down is tried once more after a short wait; one that
  * refuses the submission is never tried again. A destination that fails is
  * reported, after the caller's answer has gone, by the package's error
- * reporter. Nothing is stored, and no delivery is tried after `relay`
- * resolves.
+ * reporter, except when no destination took the submission: then the
+ * caller is about to answer the visitor a failure they are already waiting
+ * for, so the reports are sent before `relay` resolves. Nothing is stored,
+ * and no delivery is tried after `relay` resolves.
  *
  * Built with the gate (`@atelic-action/ui/forms/relay`): plain TypeScript, no
  * React, relative imports carrying `.js`.
  */
-import { reportServerErrorLater, scrub, type WaitUntilContext } from "../monitoring/server.js";
+import {
+	reportServerError,
+	reportServerErrorLater,
+	scrub,
+	type WaitUntilContext,
+} from "../monitoring/server.js";
 
 /** What a form sent, as every destination receives it. */
 export interface Submission<Fields = Record<string, unknown>> {
@@ -252,9 +259,14 @@ export function legError(leg: Leg): Error | undefined {
 /**
  * Hands the submission to every destination at once and resolves when each
  * has answered, been given up, or been cut off by the deadline. Never
- * throws. Every failed leg, and every leg taken with a warning, is reported
- * after the caller's answer, tagged with the destination's name and the
- * reason.
+ * throws. Every failed leg, and every leg taken with a warning, is reported,
+ * tagged with the destination's name and the reason: after the caller's
+ * answer when a destination took the submission, and before `relay`
+ * resolves when none did. That answer is a failure the visitor is already
+ * waiting on, and a report left to run after it may be cut short when the
+ * runtime freezes, so the one report that matters most is never lost. It
+ * adds at most the reporter's 2 seconds (the reports go at once), which the
+ * endpoints' worst case already holds, since a failure sends no receipt.
  */
 export async function relay<Fields>(
 	submission: Submission<Fields>,
@@ -275,13 +287,17 @@ export async function relay<Fields>(
 	} finally {
 		clearTimeout(deadlineTimer);
 	}
+	const taken = legs.some((leg) => isTaken(leg.result));
+	const held: Promise<boolean>[] = [];
 	for (const leg of legs) {
-		const report = (error: Error, reason: string) =>
-			reportServerErrorLater(error, {
+		const report = (error: Error, reason: string) => {
+			const sent = {
 				request: options.request,
-				context: options.context,
 				tags: { ...options.tags, destination: leg.destination, reason },
-			});
+			};
+			if (taken) reportServerErrorLater(error, { ...sent, context: options.context });
+			else held.push(reportServerError(error, sent));
+		};
 		if (leg.result.status === "failed") {
 			const error = legError(leg);
 			if (error) report(error, leg.result.reason);
@@ -298,5 +314,8 @@ export async function relay<Fields>(
 			);
 		}
 	}
-	return { taken: legs.some((leg) => isTaken(leg.result)), legs };
+	// Nothing was taken: the caller answers a failure next, so its reports
+	// land first. The reporter never throws.
+	await Promise.all(held);
+	return { taken, legs };
 }

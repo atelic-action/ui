@@ -41,7 +41,12 @@ export type GuardVerdict =
 
 /** What a guard's `check` is handed beside the token. */
 export interface GuardContext {
-	/** The submission's id, the same one every destination is handed. */
+	/**
+	 * An id of this request alone, fresh on every POST (9.7.0). It is no
+	 * longer the submission's id, which the browser now makes and keeps
+	 * across a resubmit, so a fresh token on a resubmit is never checked
+	 * under a key an earlier token was checked under.
+	 */
 	id: string;
 	/** The request being handled; a guard may read the visitor's address from its headers. */
 	request: Request;
@@ -160,7 +165,7 @@ async function verdictOf(response: Response): Promise<GuardVerdict> {
 /**
  * The guard over Cloudflare Turnstile: one POST to siteverify carrying the
  * secret, the token, the visitor's address when the platform gave one, and
- * the submission's id as the idempotency key. One try, cut off at
+ * the request's id as the idempotency key. One try, cut off at
  * `timeoutMs`. An empty token is unanswered without a call, since a form
  * that could not load the challenge sends none and its visitor is still a
  * lead.

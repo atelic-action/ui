@@ -282,6 +282,34 @@ describe("createScheduleRequest", () => {
 		expect(payload.subject).toContain("Wednesday, December 2");
 	});
 
+	it("keys the office's email by the browser's id under the site's host, and makes its own for a bad one", async () => {
+		const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		const got: string[] = [];
+		const crm = {
+			name: "crm",
+			async send(submission: Submission<ScheduleFields>): Promise<DestinationResult> {
+				got.push(submission.id);
+				return { status: "delivered" };
+			},
+		};
+		const handler = createScheduleRequest({
+			from: FROM,
+			config: CONFIG,
+			destinations: [crm],
+			now: NOW,
+		});
+		await handler(request({ ...VALID, submissionId }));
+		await handler(request({ ...VALID, submissionId }));
+		await handler(request({ ...VALID, submissionId: "forged" }));
+		const keys = vi
+			.mocked(fetch)
+			.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
+		expect(keys.slice(0, 2)).toEqual([`localhost/${submissionId}`, `localhost/${submissionId}`]);
+		expect(got.slice(0, 2)).toEqual([submissionId, submissionId]);
+		expect(got[2]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+		expect(keys[2]).toBe(`localhost/${got[2]}`);
+	});
+
 	it("falls back to CONTACT_TO, then to the practice's inbox", async () => {
 		vi.stubEnv("SCHEDULE_TO", "");
 		vi.stubEnv("CONTACT_TO", "front@example.com");

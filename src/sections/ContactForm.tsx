@@ -27,6 +27,7 @@ import {
 import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePlaces";
 import { isHoneypotFilled } from "../lib/honeypot";
 import { newTabProps } from "../lib/newTabProps";
+import { type HeldSubmission, SUBMISSION_ID_KEY, submissionIDFor } from "../lib/submissionId";
 import { trackEvent } from "../lib/trackEvent";
 import { useTurnstile } from "../lib/turnstile";
 import { reportError } from "../monitoring/catcher";
@@ -409,6 +410,9 @@ export function ContactForm({
 	const turnstile = useTurnstile(checking?.siteKey);
 	const formRef = useRef<HTMLFormElement>(null);
 	const thanksRef = useRef<HTMLDivElement>(null);
+	// The id of this fill, held across a resubmit of the same words and let
+	// go once a send goes through (lib/submissionId says why).
+	const held = useRef<HeldSubmission | null>(null);
 	// Where focus goes once the form or the thanks is drawn: the thanks's
 	// heading when it replaces the form, the first field when the form comes back.
 	const [focusOn, setFocusOn] = useState<"thanks" | "form" | null>(null);
@@ -552,13 +556,18 @@ export function ContactForm({
 					);
 				}
 			}
+			const content = contactFormBody(values, shape);
+			// The same words as the last send keep its id, so a resubmit after a
+			// timeout is the same inquiry; changed words are a new one.
+			const submissionId = submissionIDFor(held, JSON.stringify(content));
 			let response: Response;
 			try {
 				response = await fetch(withBase(endpoint), {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
-						...contactFormBody(values, shape),
+						...content,
+						...(submissionId && { [SUBMISSION_ID_KEY]: submissionId }),
 						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
 					}),
 				});
@@ -588,6 +597,8 @@ export function ContactForm({
 				setRefusal(refused ?? null);
 				throw new Error(`status ${response.status}`);
 			}
+			// Sent: the next fill is a new inquiry, whatever it says.
+			held.current = null;
 			const answer = (await response.json().catch(() => null)) as { receipt?: unknown } | null;
 			setSentReceipt(answer?.receipt === true);
 			setSentValues(values);

@@ -47,7 +47,10 @@
  * unset CONTACT_TO is no fault: inquiries go to the practice's inbox until a
  * site names its own). A guard that could not answer for any other reason
  * is reported, and the submission is let through rather than lost. A
- * destination that fails is reported by the relay, a receipt that fails is
+ * destination that fails is reported by the relay (before the 502, when no
+ * destination took the submission, since the visitor is waiting on that
+ * answer anyway and a report sent after it may be cut short; within the
+ * worst case, since a failure sends no receipt), a receipt that fails is
  * reported while the visitor is still answered 200, and anything else the
  * handler throws is reported before the platform answers it. A report
  * carries the method, the path, and the user agent, never the submission,
@@ -58,6 +61,7 @@
 import { EMAIL_PATTERN, toE164 } from "../lib/contactLinks.js";
 import { escapeHTML } from "../lib/escapeHTML.js";
 import { isHoneypotFilled } from "../lib/honeypot.js";
+import { SUBMISSION_ID_KEY, submissionIDOf } from "../lib/submissionId.js";
 import { reportServerErrorLater, withErrorReporting } from "../monitoring/server.js";
 import { fieldRows, LOOK, rowsTable, shownWords, words } from "./emailParts.js";
 import {
@@ -65,6 +69,7 @@ import {
 	askGuard,
 	isProduction,
 	json,
+	keyNamespace,
 	reportVerdict,
 	sameSecret,
 	sendCopy,
@@ -445,11 +450,12 @@ const FORM_KEYS = ["firstName", "lastName", "phone", "address", "services", "con
 
 /**
  * The keys the endpoint reads for itself: `company` is the honeypot, whose
- * any value drops the submission, `canary` carries the canary's token, and
- * `turnstile` the guard's token. A site's field under any of them would be
- * lost without a word.
+ * any value drops the submission, `canary` carries the canary's token,
+ * `turnstile` the guard's token, and `submissionId` the id the browser made
+ * for this fill (`lib/submissionId`). A site's field under any of them would
+ * be lost without a word.
  */
-export const RESERVED_KEYS = ["company", "canary", TURNSTILE_TOKEN_KEY];
+export const RESERVED_KEYS = ["company", "canary", TURNSTILE_TOKEN_KEY, SUBMISSION_ID_KEY];
 
 /** The words a visitor reads when the guard refused the submission. */
 export const GUARD_REFUSAL =
@@ -519,7 +525,16 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			const canaryToken = process.env.CONTACT_CANARY_TOKEN;
 			const canary =
 				Boolean(canaryToken) && sameSecret(String(data.canary ?? ""), canaryToken ?? "");
-			const id = crypto.randomUUID();
+			// The submission's id is the browser's, made once per fill and kept
+			// across a resubmit of the same words, since only the browser knows
+			// a resubmit is the same inquiry: the office's email is then sent
+			// once however many times the visitor presses the button. A missing
+			// or malformed one is replaced by the server's own, as every POST
+			// got before. The guard is handed an id of this request alone, so a
+			// token checked on a resubmit is checked as it always was.
+			const id = submissionIDOf(data[SUBMISSION_ID_KEY]);
+			const requestID = crypto.randomUUID();
+			const namespace = keyNamespace(request);
 
 			// The fields first: a submission about to be refused for what was
 			// written costs no check and spends no token.
@@ -562,7 +577,12 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			let checked: boolean | undefined;
 			if (guard && !canary) {
 				const token = data[guard.tokenKey];
-				const verdict = await askGuard(guard, typeof token === "string" ? token : "", id, request);
+				const verdict = await askGuard(
+					guard,
+					typeof token === "string" ? token : "",
+					requestID,
+					request,
+				);
 				if (verdict.status === "failed") {
 					return json(403, { ok: false, code: "guard", error: GUARD_REFUSAL });
 				}
@@ -633,6 +653,7 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 						from: options.from,
 						to: canary ? canaryTo : to,
 						timeoutMs: options.emailTimeoutMs,
+						keyNamespace: namespace,
 						compose: (submission) =>
 							officeEmail(submission.fields, fields, {
 								subject: options.subject,
@@ -678,6 +699,7 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 					from: receiptSender(receipt, options.from),
 					to: address,
 					id: `${id}-receipt`,
+					keyNamespace: namespace,
 					email: receiptEmail(read.fields, fields, { ...receipt, endpointFrom: options.from }),
 					timeoutMs: receipt.timeoutMs ?? DEFAULT_RECEIPT_TIMEOUT_MS,
 					request,

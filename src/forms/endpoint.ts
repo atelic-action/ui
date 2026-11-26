@@ -57,6 +57,21 @@ export function addresses(value: string | undefined): string[] {
 }
 
 /**
+ * The namespace a site's Resend keys are written under: the host the form
+ * posted to. Every site of the practice may share one Resend account, and a
+ * key is the browser's id (`submissionIDOf`), so the host in front keeps one
+ * site's id from ever meeting another's. A request whose URL cannot be read
+ * falls back to "site", which still keeps the id whole.
+ */
+export function keyNamespace(request: Request): string {
+	try {
+		return new URL(request.url).host || "site";
+	} catch {
+		return "site";
+	}
+}
+
+/**
  * The longest the endpoint waits on any guard: the time a guard that names
  * none is held to, and the ceiling on one that names more.
  */
@@ -147,6 +162,8 @@ export async function sendCopy(options: {
 	id: string;
 	email: Email;
 	timeoutMs?: number;
+	/** The site's namespace for the idempotency key (`keyNamespace`). */
+	keyNamespace?: string;
 	request: Request;
 	tags: Record<string, string>;
 	reason: string;
@@ -159,6 +176,7 @@ export async function sendCopy(options: {
 		to: [options.to],
 		name: options.reason,
 		timeoutMs,
+		keyNamespace: options.keyNamespace,
 		compose: () => options.email,
 	});
 	const answer = await within<DestinationResult>(

@@ -36,6 +36,12 @@ export interface ResendOptions<Fields = Record<string, unknown>> {
 	name?: string;
 	/** How long one try may take, in milliseconds. Defaults to the relay's 3000. */
 	timeoutMs?: number;
+	/**
+	 * What the idempotency key is prefixed with, so the same id sent by two
+	 * sites can never meet under one Resend account. The endpoints pass the
+	 * site's host (`keyNamespace`). Left out, the key is the id alone.
+	 */
+	keyNamespace?: string;
 }
 
 const ENDPOINT = "https://api.resend.com/emails";
@@ -61,12 +67,16 @@ async function read(response: Response): Promise<DestinationResult> {
 		return { status: "delivered", reference: typeof body.id === "string" ? body.id : undefined };
 	}
 	if (response.status === 409) {
-		// A copy is read here, so the refusal below can still read the answer.
-		const body = (await response
-			.clone()
-			.json()
-			.catch(() => ({}))) as { name?: unknown };
-		if (body.name === STILL_SENDING) {
+		// The body is read once, as text, so nothing of the answer is left
+		// unread: the refusal below is built from the same words.
+		const words = await response.text().catch(() => "");
+		let name: unknown;
+		try {
+			name = (JSON.parse(words) as { name?: unknown } | null)?.name;
+		} catch {
+			name = undefined;
+		}
+		if (name === STILL_SENDING) {
 			return {
 				status: "duplicate",
 				// The first try was given up here while Resend was still working
@@ -77,6 +87,7 @@ async function read(response: Response): Promise<DestinationResult> {
 				),
 			};
 		}
+		return refused(await refusalError(new Response(words, { status: 409 }), "Resend"));
 	}
 	const cause = await refusalError(response, "Resend");
 	return response.status === 429 || response.status >= 500 ? down(cause) : refused(cause);
@@ -85,7 +96,10 @@ async function read(response: Response): Promise<DestinationResult> {
 /**
  * The destination. Each try is one POST carrying the submission's id as
  * Resend's idempotency key, which Resend remembers for a day, so the second
- * try of a submission whose first try landed late sends nothing.
+ * try of a submission whose first try landed late sends nothing. The id is
+ * the browser's when the form sent a well formed one (`submissionIDOf`), so
+ * a visitor's resubmit of the same words after a timeout sends nothing more
+ * either; the key carries the site's namespace in front of it.
  */
 export function resendDestination<Fields = Record<string, unknown>>(
 	options: ResendOptions<Fields>,
@@ -102,7 +116,9 @@ export function resendDestination<Fields = Record<string, unknown>>(
 					headers: {
 						Authorization: `Bearer ${options.apiKey}`,
 						"Content-Type": "application/json",
-						"Idempotency-Key": submission.id,
+						"Idempotency-Key": options.keyNamespace
+							? `${options.keyNamespace}/${submission.id}`
+							: submission.id,
 					},
 					body: JSON.stringify({
 						from: options.from,
