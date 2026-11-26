@@ -5,6 +5,7 @@ import type { Density } from "../../src/sections";
 import { Hero, LinkColumns, ProofStrip } from "../../src/sections";
 import { groupedNav, phones, site } from "../fixtures/bakery";
 import { knownIssues } from "../support/known-issues";
+import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
 
 /** A home page's body: the hero, the proof strip, and enough sections to scroll past. */
@@ -635,5 +636,125 @@ export const HoursTwentyFourBrand: Story = {
 	play: async ({ canvas }) => {
 		await expect(footerRanges(canvas)).toEqual(["07:00 to 15:00", "08:00 to 14:00", "Closed"]);
 		await expect(hoursInBrand(canvas)).toBe(true);
+	},
+};
+
+/**
+ * The address the story is read at, its query included, so a link to it is a
+ * link to the page being read. Read at render, in the browser.
+ */
+const thisPage = () => `${window.location.pathname}${window.location.search}`;
+
+/**
+ * Records, for each click on the page, whether the shell had cancelled it, read
+ * on the body: after the shell and the chrome's own handlers, and before the
+ * preview cancels every link click for itself.
+ */
+function watchClicks() {
+	const cancelled: boolean[] = [];
+	const record = (event: MouseEvent) => cancelled.push(event.defaultPrevented);
+	document.body.addEventListener("click", record);
+	return { cancelled, stop: () => document.body.removeEventListener("click", record) };
+}
+
+const orderToday = { label: "Order for today", href: "/order" };
+
+/**
+ * A page whose call to action links to the page itself, as a page holding a
+ * vendor's tool does. Clicked, the link does not load the page again: the
+ * click is cancelled and the window goes back to the top. A link to another
+ * page goes where it points.
+ */
+export const LinkToThisPage: Story = {
+	render: (args, { globals }) => (
+		<SiteShell
+			{...args}
+			site={{ ...args.site, cta: { ...orderToday, href: thisPage() } }}
+			density={args.density ?? (globals.density as Density | undefined)}
+		/>
+	),
+	play: async ({ canvas, userEvent, step }) => {
+		const clicks = watchClicks();
+		try {
+			await step("scrolled down, the header's link to this page goes back to the top", async () => {
+				toBottom();
+				await waitFor(() => expect(window.scrollY).toBeGreaterThan(0));
+				const banner = within(canvas.getByRole("banner"));
+				// The hero page's bar shows its call to action once the page scrolls.
+				await userEvent.click(await banner.findByRole("link", { name: /Order for today/ }));
+				await expect(clicks.cancelled).toEqual([true]);
+				await waitFor(() => expect(window.scrollY).toBe(0));
+			});
+			await step("a link to another page is left to the browser", async () => {
+				const footer = within(canvas.getByRole("contentinfo"));
+				await userEvent.click(footer.getByRole("link", { name: "Privacy" }));
+				await expect(clicks.cancelled).toEqual([true, false]);
+			});
+		} finally {
+			clicks.stop();
+		}
+	},
+};
+
+/**
+ * The same on a phone, under reduced motion, where the window jumps to the top
+ * at once: the menu's call to action and the contact dock's item to this page
+ * each close their panel and load nothing.
+ */
+export const LinkToThisPagePhone: Story = {
+	render: (args, { globals }) => {
+		const here = thisPage();
+		const dock = site.contactDock;
+		return (
+			<SiteShell
+				{...args}
+				site={{
+					...args.site,
+					cta: { ...orderToday, href: here },
+					contactDock: dock && {
+						...dock,
+						// The first item, the dock's lead, now points at this page.
+						items: dock.items.map((item, at) =>
+							at === 0
+								? {
+										label: item.label,
+										description: item.description,
+										icon: item.icon,
+										lead: item.lead,
+										href: here,
+									}
+								: item,
+						),
+					},
+				}}
+				density={args.density ?? (globals.density as Density | undefined)}
+			/>
+		);
+	},
+	args: visitPage,
+	globals: pin("phone"),
+	beforeEach: withReducedMotion,
+	play: async ({ canvas, userEvent, step }) => {
+		const clicks = watchClicks();
+		try {
+			await step("the menu's call to action closes the menu and stays on the page", async () => {
+				await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
+				const dialog = canvas.getByRole("dialog", { name: "Menu" });
+				await userEvent.click(within(dialog).getByRole("link", { name: /Order for today/ }));
+				await expect(clicks.cancelled.at(-1)).toBe(true);
+				await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
+				await expect(window.scrollY).toBe(0);
+			});
+			await step("the dock's item to this page closes the dock and stays on the page", async () => {
+				const launcher = canvas.getByRole("button", { name: "Talk to us" });
+				await userEvent.click(launcher);
+				await expect(launcher).toHaveAttribute("aria-expanded", "true");
+				await userEvent.click(canvas.getByRole("link", { name: /Order ahead/ }));
+				await expect(clicks.cancelled.at(-1)).toBe(true);
+				await waitFor(() => expect(launcher).toHaveAttribute("aria-expanded", "false"));
+			});
+		} finally {
+			clicks.stop();
+		}
 	},
 };
