@@ -7,11 +7,12 @@ export interface SplitSectionProps {
 	/**
 	 * Column proportions from 920px up (`media` from 761px, where a card row splits); below that every ratio stacks.
 	 * "even" (1/1); "narrow-first" (0.9/1.1, a looser media plus copy);
+	 * "two-three" (2/3, a heading beside the paragraphs it opens);
 	 * or "media", a fixed 420px media column and the gap a card row uses,
 	 * so a photo beside copy lines up with a case study entry above it,
 	 * with an `ImageFrame` in it held to the column's left edge.
 	 */
-	ratio?: "even" | "narrow-first" | "media";
+	ratio?: "even" | "narrow-first" | "two-three" | "media";
 	align?: "start" | "center";
 	/** Section background band. */
 	surface?: Surface;

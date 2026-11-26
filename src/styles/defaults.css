@@ -181,6 +181,8 @@
 		--closing-rule-inset: 0px;
 		/* The gap between the hero's actions, side by side or stacked. */
 		--hero-actions-gap: 14px;
+		/* The split hero's photo height, stacked over the copy on a phone (9.8.0). */
+		--hero-split-photo-min: 230px;
 		/* An HoursTable time's size (8.5.0). */
 		--hours-time-size: 0.85rem;
 		/* A refused field's message size and border width (8.5.0). */

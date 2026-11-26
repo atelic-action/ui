@@ -9,6 +9,27 @@ export interface ProofItem {
 	label: ReactNode;
 }
 
+export interface ProofFactProps extends ProofItem {
+	/** The element it is drawn as: `li` inside a list of its own, else a `div` (the default). */
+	as?: "div" | "li";
+}
+
+/**
+ * One proof fact: its figure over its label. `ProofStrip` draws a row of
+ * them, and a `Marquee` scrolls them when each is put inside it as a child,
+ * the same piece in both, styled in the package sheet (its value and label
+ * keep the classes `ProofStrip` has always worn, so a site's overrides
+ * still reach them).
+ */
+export function ProofFact({ value, label, as: Tag = "div" }: ProofFactProps) {
+	return (
+		<Tag className="proof-fact">
+			<strong className="proof-strip-value">{value}</strong>
+			<span className="proof-strip-label">{label}</span>
+		</Tag>
+	);
+}
+
 export interface ProofStripProps {
 	items: ProofItem[];
 	/** The band's background. Defaults to the page surface. */
@@ -22,7 +43,8 @@ export interface ProofStripProps {
  * A single row of short proof facts set right under a hero: a figure over
  * its label, as many as fit across, wrapping to a clean grid on a phone.
  * The facts are the business's own and arrive as data; a strip carries no
- * claim of its own.
+ * claim of its own. For a row that scrolls instead, put `ProofFact`s in a
+ * `Marquee`.
  */
 export function ProofStrip({ items, surface = "default", ariaLabel, id }: ProofStripProps) {
 	return (
@@ -33,10 +55,7 @@ export function ProofStrip({ items, surface = "default", ariaLabel, id }: ProofS
 			<ul className="wrap proof-strip-list" aria-label={ariaLabel}>
 				{items.map((item, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: proof facts are static content in a fixed order
-					<li key={i}>
-						<strong className="proof-strip-value">{item.value}</strong>
-						<span className="proof-strip-label">{item.label}</span>
-					</li>
+					<ProofFact key={i} as="li" value={item.value} label={item.label} />
 				))}
 			</ul>
 		</section>

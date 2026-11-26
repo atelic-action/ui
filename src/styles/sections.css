@@ -1611,6 +1611,20 @@
 	.atelic-ui .feature-detail .detail-ticks {
 		margin-top: 18px;
 	}
+	/* The link under the copy, in the copy column, so it sits under the words
+	   whichever side the photo is on. */
+	.atelic-ui .feature-detail-link {
+		display: flex;
+		width: fit-content;
+		gap: 6px;
+		margin-top: 16px;
+		font-weight: var(--weight-bold);
+		color: var(--primary-ink, var(--primary));
+		text-decoration: none;
+	}
+	.atelic-ui .feature-detail-link:hover {
+		text-decoration: underline;
+	}
 
 	/* ---- FeatureGrid (feature-grid.css) ---- */
 	/* Numbered feature/service card grid. */
@@ -1958,10 +1972,11 @@
 	.atelic-ui .hero.is-split .cta-row {
 		margin-top: var(--hero-gap-actions, var(--hero-stack-gap, 26px));
 	}
+	/* Stacked on a phone the photo stands --hero-split-photo-min tall (230px). */
 	.atelic-ui .hero-split-media {
 		position: relative;
 		order: -1;
-		min-height: 230px;
+		min-height: var(--hero-split-photo-min);
 		background: var(--primary-deep);
 	}
 	.atelic-ui .hero-split-media img,
@@ -2000,7 +2015,8 @@
 		gap: 14px 24px;
 		padding-block: 16px;
 	}
-	.atelic-ui .proof-strip-list li {
+	/* A fact, ProofFact: in the strip, or as an item of a Marquee. */
+	.atelic-ui .proof-fact {
 		display: flex;
 		flex-direction: column;
 		gap: 2px;
@@ -2302,47 +2318,70 @@
 		color: var(--primary);
 	}
 
-	/* ---- LogoMarquee (logo-marquee.css) ---- */
-	/* Dark credentials band with infinite marquee. */
-	.atelic-ui .creds {
+	/* ---- Marquee ----
+	   One row of anything scrolling without end. The row is a list drawn as
+	   often as the band needs (the component measures it), and every copy
+	   slides left by its own width over the same length of time, so they move
+	   as one track and the loop lands exactly where it began. The length is
+	   --_marquee-duration, set on the track from the row's width and the
+	   pace; before the first measure it is a default. A light band by
+	   default: the card ground with a hairline under it. */
+	.atelic-ui .marquee-band {
+		--_marquee-ground: var(--card);
+		--_marquee-ring: color-mix(in srgb, var(--ink) 18%, transparent);
+		--_marquee-ring-strong: color-mix(in srgb, var(--ink) 45%, transparent);
+		--_marquee-control: var(--ink-soft);
 		position: relative;
-		background: var(--surface-dark);
-		padding-block: 22px;
-	}
-	.atelic-ui .creds .chip {
-		background: color-mix(in srgb, var(--on-dark) 6%, transparent);
-		color: var(--on-dark-chip);
-		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 14%, transparent);
+		background: var(--_marquee-ground);
+		border-bottom: 1px solid var(--hairline-strong);
+		padding-block: 16px;
 	}
 	.atelic-ui .marquee {
 		overflow: hidden;
-		-webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 	}
-	/* The row and its copy, each closing on the gap, so the -50% translate
-	   lands the copy exactly where the row began. */
 	.atelic-ui .marquee-track {
 		display: flex;
+		align-items: center;
 		width: max-content;
-		animation: scroll-x 32s linear infinite;
 	}
 	.atelic-ui .marquee-group {
 		display: flex;
 		flex: none;
-		gap: 14px;
-		padding-right: 14px;
+		align-items: center;
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
-	.atelic-ui .marquee[data-paused] .marquee-track {
+	/* The loop starts once the row is measured, so its length is never
+	   changed under a running animation. */
+	.atelic-ui .marquee-track[data-measured] .marquee-group {
+		animation: marquee-scroll var(--_marquee-duration) linear infinite;
+	}
+	.atelic-ui .marquee-item {
+		display: flex;
+		align-items: center;
+		padding-inline: 36px;
+		white-space: nowrap;
+	}
+	.atelic-ui .marquee-band.has-dividers .marquee-item {
+		border-right: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .marquee[data-paused] .marquee-group,
+	.atelic-ui .marquee.pause-on-hover:is(:hover, :focus-within) .marquee-group {
 		animation-play-state: paused;
 	}
-	@keyframes scroll-x {
+	@keyframes marquee-scroll {
 		to {
-			transform: translateX(-50%);
+			transform: translateX(-100%);
 		}
 	}
+	/* A fact in the row keeps its figure and its label on one line each. */
+	.atelic-ui .marquee-item .proof-fact {
+		gap: 2px;
+	}
 	/* The pause control: a small round button at the band's right edge, as
-	   quiet as the chips, over the row's faded end, with a collar of the
-	   band's own color so a chip slides under it whole. */
+	   quiet as the row, over the row's end, with a collar of the band's own
+	   color so an item slides under it whole. */
 	.atelic-ui .marquee-pause {
 		position: absolute;
 		top: 50%;
@@ -2353,42 +2392,94 @@
 		width: 28px;
 		height: 28px;
 		border-radius: 50%;
-		color: var(--on-dark-chip);
-		/* Opaque, so the chips pass cleanly under it rather than through it. */
-		background: var(--surface-dark);
+		color: var(--_marquee-control);
+		/* Opaque, so the row passes cleanly under it rather than through it. */
+		background: var(--_marquee-ground);
 		box-shadow:
-			inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 24%, transparent),
-			0 0 0 6px var(--surface-dark);
+			inset 0 0 0 1px var(--_marquee-ring),
+			0 0 0 6px var(--_marquee-ground);
 	}
-	/* The ring brightens; the collar stays, or a chip would show beside the
+	/* The ring brightens; the collar stays, or an item would show beside the
 	   button's edge for as long as the pointer rests on it. */
 	.atelic-ui .marquee-pause:hover {
 		box-shadow:
-			inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 50%, transparent),
-			0 0 0 6px var(--surface-dark);
+			inset 0 0 0 1px var(--_marquee-ring-strong),
+			0 0 0 6px var(--_marquee-ground);
 	}
 	.atelic-ui .marquee-pause:focus-visible {
 		outline: 2px solid var(--primary-bright);
 		outline-offset: 2px;
 	}
-	/* Under reduced motion nothing moves: the row stands still and wraps to
-	   a centered block, its copy is not drawn, and there is nothing to pause. */
+	.atelic-ui .marquee:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: -2px;
+	}
+
+	/* ---- LogoMarquee (logo-marquee.css) ---- */
+	/* Dark credentials band, a Marquee of chips with a fade at each end. */
+	.atelic-ui .creds,
+	.atelic-ui .marquee-band[data-ground="dark"] {
+		--_marquee-ground: var(--surface-dark);
+		--_marquee-ring: color-mix(in srgb, var(--on-dark) 24%, transparent);
+		--_marquee-ring-strong: color-mix(in srgb, var(--on-dark) 50%, transparent);
+		--_marquee-control: var(--on-dark-chip);
+		border-bottom: none;
+	}
+	.atelic-ui .creds {
+		padding-block: 22px;
+	}
+	/* A dark band's own words and hairlines, for whatever its row holds. */
+	.atelic-ui .marquee-band[data-ground="dark"] {
+		color: var(--on-dark);
+	}
+	.atelic-ui .marquee-band[data-ground="dark"] .proof-strip-label {
+		color: var(--on-dark-chip);
+	}
+	.atelic-ui .marquee-band[data-ground="dark"].has-dividers .marquee-item {
+		border-right-color: var(--_marquee-ring);
+	}
+	.atelic-ui .creds .chip {
+		background: color-mix(in srgb, var(--on-dark) 6%, transparent);
+		color: var(--on-dark-chip);
+		box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--on-dark) 14%, transparent);
+	}
+	.atelic-ui .creds .marquee {
+		-webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+		mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+	}
+	/* The chips sit 14px apart, each copy closing on the same gap, so the
+	   loop's seam is one gap like every other. */
+	.atelic-ui .creds .marquee-group {
+		gap: 14px;
+		padding-right: 14px;
+	}
+	.atelic-ui .creds .marquee-item {
+		padding-inline: 0;
+	}
+	/* Under reduced motion nothing moves: the copies are not drawn, there is
+	   nothing to pause, and the row can be scrolled sideways inside its band.
+	   The credentials band wraps to a centered block instead. */
 	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .marquee-track {
+		.atelic-ui .marquee-track[data-measured] .marquee-group {
 			animation: none;
-			width: auto;
 		}
-		.atelic-ui .marquee-group {
-			flex: 1 1 auto;
-			flex-wrap: wrap;
-			justify-content: center;
-			padding-right: 0;
+		.atelic-ui .marquee {
+			overflow-x: auto;
 		}
 		.atelic-ui .marquee-group[aria-hidden] {
 			display: none;
 		}
 		.atelic-ui .marquee-pause {
 			display: none;
+		}
+		.atelic-ui .creds .marquee-track {
+			width: auto;
+		}
+		.atelic-ui .creds .marquee-group {
+			flex: 1 1 auto;
+			flex-wrap: wrap;
+			justify-content: center;
+			padding-right: 0;
 		}
 	}
 
@@ -2468,16 +2559,28 @@
 	.atelic-ui .lc-head a:hover {
 		color: var(--primary-ink, var(--primary));
 	}
+	/* A row, LinkRow: the label and its figure on one line. It sets no space
+	   of its own; a column sets 7px above and below, and a ruled grid its own. */
 	.atelic-ui .lc-link {
 		display: flex;
 		justify-content: space-between;
 		align-items: baseline;
 		gap: 12px;
-		padding: 7px 0;
 		color: var(--ink-soft);
+	}
+	.atelic-ui .link-columns .lc-link {
+		padding: 7px 0;
 	}
 	.atelic-ui a.lc-link:hover {
 		color: var(--primary-ink, var(--primary));
+	}
+	/* A strong row leads somewhere among plain ones: bold, in the primary's words. */
+	.atelic-ui a.lc-link.is-strong {
+		color: var(--primary-ink, var(--primary));
+		font-weight: var(--weight-bold);
+	}
+	.atelic-ui a.lc-link.is-strong:hover {
+		text-decoration: underline;
 	}
 	.atelic-ui .lc-label {
 		min-width: 0;
@@ -2489,6 +2592,7 @@
 		font-size: 0.86rem;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
+		font-weight: var(--weight-regular);
 		color: var(--neutral-600);
 	}
 
@@ -3483,6 +3587,11 @@
 		.atelic-ui .split.ratio-narrow-first {
 			grid-template-columns: 0.9fr 1.1fr;
 			gap: 72px;
+		}
+		/* A heading beside the paragraphs it opens, two parts to three. */
+		.atelic-ui .split.ratio-two-three {
+			grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+			gap: 56px;
 		}
 	}
 	/* Two columns from 761px, where a card row does, so the photo lines up. */

@@ -932,3 +932,164 @@
 		font-weight: var(--weight-bold);
 	}
 }
+
+/* GridLayout and HighlightCard (9.8.0): one aligned grid of anything, and
+   the card that lifts out one thing. Scoped .atelic-ui alone. */
+@layer atelic-ui {
+	/* ---- GridLayout ----
+	   Columns counted outright (by-columns: --_grid-cols from 700px,
+	   --_grid-cols-narrow below) or filling the row at a least width
+	   (by-width: --_grid-min). Every value is set on the element by the
+	   component. A closed grid hides the items past its visible rows at each
+	   width by the attributes the component sets from the counts, so the
+	   server draws it and nothing is measured. */
+	.atelic-ui .grid-layout {
+		display: grid;
+		gap: var(--_grid-gap, 16px);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	/* Rule 5: a long word in one item never widens the whole grid. */
+	.atelic-ui .grid-layout > * {
+		min-width: 0;
+	}
+	.atelic-ui .grid-layout.by-columns {
+		grid-template-columns: repeat(var(--_grid-cols-narrow, 1), minmax(0, 1fr));
+	}
+	.atelic-ui .grid-layout.by-width {
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--_grid-min, 280px)), 1fr));
+	}
+	.atelic-ui .grid-layout.by-width.stretch {
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--_grid-min, 280px)), 1fr));
+	}
+	/* Row rules: a hairline under every item, the rules spacing the rows. */
+	.atelic-ui .grid-layout.has-rules {
+		row-gap: 0;
+	}
+	.atelic-ui .grid-layout.has-rules > * {
+		padding-block: 10px;
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	@media (min-width: 700px) {
+		.atelic-ui .grid-layout.by-columns {
+			grid-template-columns: repeat(var(--_grid-cols, 3), minmax(0, 1fr));
+		}
+		.atelic-ui .grid-layout:not([data-open]) > [data-past-wide] {
+			display: none;
+		}
+		.atelic-ui .grid-layout-more[data-only="narrow"] {
+			display: none;
+		}
+	}
+	@media (max-width: 699.98px) {
+		.atelic-ui .grid-layout:not([data-open]) > [data-past-narrow] {
+			display: none;
+		}
+		.atelic-ui .grid-layout-more[data-only="wide"] {
+			display: none;
+		}
+	}
+	/* The Show All control: an outlined pill in the primary's words. */
+	.atelic-ui .grid-layout-more {
+		display: inline-flex;
+		margin-top: 20px;
+		padding: 10px 18px;
+		font: inherit;
+		font-size: 0.94rem;
+		font-weight: var(--weight-bold);
+		color: var(--primary-ink, var(--primary));
+		background: var(--card);
+		border: 1px solid var(--primary);
+		border-radius: var(--radius-pill);
+		cursor: pointer;
+	}
+	.atelic-ui .grid-layout-more:hover {
+		background: var(--primary-tint);
+	}
+	.atelic-ui .grid-layout-more:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	/* ---- HighlightCard ----
+	   A card of an eyebrow, a title, a line or two of body, and a meta line;
+	   with a picture, a 112px square beside the text. The whole card is the
+	   link when it has one. */
+	.atelic-ui .highlight-card {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		height: 100%;
+		min-width: 0;
+		padding: 22px;
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		color: var(--ink);
+		text-decoration: none;
+	}
+	.atelic-ui .highlight-card.has-picture {
+		display: grid;
+		grid-template-columns: 112px minmax(0, 1fr);
+		align-items: center;
+		gap: 16px;
+		padding: 12px;
+	}
+	.atelic-ui a.highlight-card:hover {
+		border-color: var(--primary);
+		color: var(--ink);
+	}
+	.atelic-ui a.highlight-card:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	/* The square is the card's own: no frame shadow, no centering margin,
+	   and a brief small enough to sit inside it. */
+	.atelic-ui .highlight-card-media :is(.imgframe, .ph) {
+		width: 112px;
+		height: 112px;
+		margin: 0;
+		border-radius: var(--radius-md);
+		box-shadow: none;
+	}
+	.atelic-ui .highlight-card-media .ph {
+		padding: 8px;
+		font-size: 0.62rem;
+	}
+	.atelic-ui .highlight-card-text {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.atelic-ui .highlight-card.has-picture .highlight-card-text {
+		gap: 2px;
+	}
+	.atelic-ui .highlight-card-eyebrow {
+		font-size: 0.8rem;
+		font-weight: var(--weight-bold);
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .highlight-card-title {
+		font-size: 1.15rem;
+		font-weight: var(--weight-bold);
+		line-height: 1.3;
+	}
+	.atelic-ui .highlight-card-body {
+		font-size: 1rem;
+		color: var(--ink);
+	}
+	.atelic-ui .highlight-card-detail {
+		font-size: 0.92rem;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .highlight-card-meta {
+		margin-top: 4px;
+		font-size: 0.82rem;
+		color: var(--neutral-600);
+	}
+}

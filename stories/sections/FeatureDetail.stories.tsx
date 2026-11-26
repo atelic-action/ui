@@ -127,3 +127,58 @@ export const UnbrokenTag: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+const linkBox = (canvas: ReturnType<typeof within>, name = "See every loaf") =>
+	canvas.getByRole("link", { name }).getBoundingClientRect();
+
+/** A link under the copy, in the copy column, with an arrow after its words. */
+export const WithLink: Story = {
+	args: { link: { label: "See every loaf", href: "/menu/bread" } },
+	play: async ({ canvas }) => {
+		const link = canvas.getByRole("link", { name: "See every loaf" });
+		await expect(link).toHaveAttribute("href", "/menu/bread");
+		await expect(link).not.toHaveAttribute("target");
+		await expect(Math.round(linkBox(canvas).left)).toBe(Math.round(titleBox(canvas).left));
+		await expect(linkBox(canvas).top).toBeGreaterThan(titleBox(canvas).bottom);
+		await expect(linkBox(canvas).right).toBeLessThan(photoBox(canvas).left);
+	},
+};
+
+/** Flipped, the link still sits under the copy, beside the photo rather than under it. */
+export const FlippedWithLink: Story = {
+	args: { flip: true, link: { label: "See every loaf", href: "/menu/bread" } },
+	play: async ({ canvas }) => {
+		await expect(Math.round(linkBox(canvas).left)).toBe(Math.round(titleBox(canvas).left));
+		await expect(linkBox(canvas).left).toBeGreaterThan(photoBox(canvas).right);
+	},
+};
+
+/** A link to another site opens a new tab; a phone link never does, whatever it asks. */
+export const ExternalLink: Story = {
+	args: {
+		link: { label: "Order through the cafe", href: "https://example.com/order", external: true },
+	},
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("link", { name: "Order through the cafe" })).toHaveAttribute(
+			"target",
+			"_blank",
+		);
+	},
+};
+
+export const PhoneNumberLink: Story = {
+	args: { link: { label: "Call the shop", href: "tel:+15555550142", external: true } },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("link", { name: "Call the shop" })).not.toHaveAttribute("target");
+	},
+};
+
+/** On a phone the row stacks and the link stays with the copy, above the photo. */
+export const LinkPhone: Story = {
+	args: { flip: true, link: { label: "See every loaf", href: "/menu/bread" } },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		await expect(linkBox(canvas).bottom).toBeLessThanOrEqual(photoBox(canvas).top);
+		await expectNoSidewaysScroll();
+	},
+};

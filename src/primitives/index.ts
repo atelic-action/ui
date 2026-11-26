@@ -22,6 +22,13 @@ export { EmailLink, type EmailLinkProps, emailHref } from "./EmailLink";
 export { ExpandableText, type ExpandableTextProps } from "./ExpandableText";
 export { Eyebrow, type EyebrowProps } from "./Eyebrow";
 export { GoogleMapsAttribution } from "./GoogleMapsAttribution";
+export {
+	GridLayout,
+	type GridLayoutByColumns,
+	type GridLayoutByWidth,
+	type GridLayoutProps,
+} from "./GridLayout";
+export { HighlightCard, type HighlightCardProps } from "./HighlightCard";
 export { ImageFrame, type ImageFrameProps } from "./ImageFrame";
 export { Lead, type LeadProps } from "./Lead";
 export { PhoneLink, type PhoneLinkProps, phoneHref } from "./PhoneLink";

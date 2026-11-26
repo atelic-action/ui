@@ -36,13 +36,14 @@ export const Default: Story = {
 		await step("the band stays inside the page", async () => {
 			await expectNoSidewaysScroll();
 		});
-		// The row is drawn twice for the seamless loop; the copy is hidden
-		// from assistive tech, so of the two chips bearing each credential,
-		// exactly one is in the accessibility tree.
+		// The row is drawn as often as the band needs for a loop with no gap
+		// (three times at this width, where one row is narrower than the
+		// band); every copy is hidden from assistive tech, so of the chips
+		// bearing each credential, exactly one is in the accessibility tree.
 		await step("a screen reader hears each credential once", async () => {
 			for (const item of marqueeItems) {
 				const drawn = within(band(canvas)).getAllByText(item);
-				await expect(drawn).toHaveLength(2);
+				await expect(drawn.length).toBeGreaterThanOrEqual(2);
 				await expect(drawn.filter((chip) => !chip.closest("[aria-hidden='true']"))).toHaveLength(1);
 			}
 		});
