@@ -65,6 +65,17 @@ export const SeveralPhones: Story = {
 	},
 };
 
+/** The single phone row takes the site's own menu label ("Call / Text"), not the default. */
+export const MenuLabel: Story = {
+	args: {
+		site: { ...site, phone: site.phone && { ...site.phone, menuLabel: "Call / Text" } },
+	},
+	play: async ({ canvas }) => {
+		await expect(canvas.getByText("Call / Text")).toBeVisible();
+		await expect(canvas.queryByText("Call")).toBeNull();
+	},
+};
+
 /** A business with a service area and no storefront: no Visit row. */
 export const NoAddress: Story = {
 	args: { showAddress: false },
