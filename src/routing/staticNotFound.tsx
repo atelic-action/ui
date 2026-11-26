@@ -50,24 +50,34 @@ export interface StaticNotFoundOptions {
  * page hydrates blank. A loader's `notFound()` is still honored once the
  * router reports it (a client navigation to the slug).
  *
- * The options also set `defaultPendingMs: Infinity` (9.7.0), so a client
- * navigation never shows the pending view at all: the page being read stays
- * on screen, header and all, until the next one is ready, and a miss is
- * drawn by the catch all route's own component, or by the not found page
- * once a loader's `notFound()` arrives. Before, a navigation that took
- * longer than the router's pending time (a second by default) drew the
- * pending view in place of the page, and the router hides a match's content
- * (display: none) beside its pending view, so the null drawn for a route
- * that is not a miss left the page blank. Of what TanStack Router offers
- * (1.81 on, the range this package's peer allows), an infinite pending time
- * is the one that turns the timed pending view off for every route and
- * keeps the old page standing: the router skips presenting pending UI for a
- * pending time of Infinity, while hydration, which marks its boundary
- * pending itself, still draws the pending view, so a miss hydrates as the
- * page it was prerendered as. A suspending pending view would only hand the
- * fallback up to the next boundary, and a route by route `pendingComponent`
- * would need the site to name every slow route. A site's own
- * `defaultPendingMs` goes before the spread, or it is overridden.
+ * The options also set `defaultPendingMs: Infinity` (9.7.0), so an
+ * ordinary client navigation never times out into the pending view: the
+ * page being read stays on screen, header and all, until the next one is
+ * ready, and a miss is drawn by the catch all route's own component, or by
+ * the not found page once a loader's `notFound()` arrives. Before, a
+ * navigation that took longer than the router's pending time (a second by
+ * default) drew the pending view in place of the page, and the router hides
+ * a match's content (display: none) beside its pending view, so the null
+ * drawn for a route that is not a miss left the page blank. An infinite
+ * pending time is how TanStack Router (1.81 on, the range this package's
+ * peer allows) turns that timed pending view off: router-core 1.170's
+ * `offerPending` presents no pending view for a match still loading when
+ * its pending time is Infinity. Hydration marks its boundary pending
+ * itself, so a miss still hydrates through the pending view as the page it
+ * was prerendered as. A suspending pending view would only hand the fallback
+ * up to the next boundary, and a route by route `pendingComponent` would
+ * need the site to name every slow route.
+ *
+ * What it does not cover: `offerPending` shows the pending view at once,
+ * whatever the pending time, for a match marked invalid (what
+ * `router.invalidate()` marks, which no site and no code in this package
+ * calls) and for a match that finished loading while it is still presented
+ * pending. On an ordinary navigation nothing is presented pending but a
+ * boundary hydration left pending (a miss, whose pending view is the page)
+ * or one an earlier offer presented, which under Infinity only an
+ * invalidated match gets, so neither blanks a page a visitor navigates
+ * from. A route that sets its own `pendingMs` keeps its own, and a site's
+ * own `defaultPendingMs` goes before the spread, or it is overridden.
  *
  * Static sites only. On a live app the pending state is a real loading
  * moment; an app sets defaultNotFoundComponent alone.
