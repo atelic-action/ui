@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useRef } from "react";
 import { Watermark } from "../components/Watermark";
+import { useSamePageLinks } from "../hooks/useSamePageLinks";
 import type { PageStop } from "../hooks/useScrollSpy";
 import { formatHoursRange } from "../lib/hours";
 import { BasePathProvider } from "../routing/BasePathProvider";
@@ -77,7 +78,9 @@ export interface SiteShellProps {
 /**
  * The marketing page wrapper: the `.atelic-ui` scope around the skip link,
  * the header, `<main>`, the sticky CTA bar, the footer with its closing bar,
- * and the watermark, all mapped from the site's config. Moved here from
+ * and the watermark, all mapped from the site's config. A link inside it to
+ * the page being read goes back to the top instead of loading the page again
+ * (9.4.1, `useSamePageLinks`). Moved here from
  * template-marketing in 0.19.0 (ATE-643); a site keeps a wrapper a few lines
  * long that reads the path from its router and passes it in.
  */
@@ -140,6 +143,9 @@ export function SiteShell({
 		if (pixels > 0) root.style.setProperty("--sticky-cta-space", `${pixels}px`);
 		else root.style.removeProperty("--sticky-cta-space");
 	}, []);
+	// A link to the page being read scrolls to the top rather than loading the
+	// page again, so a visitor's work in progress on it survives (the hook says why).
+	useSamePageLinks(rootRef);
 	const cta = { ...site.cta, href: withBase(site.cta.href) };
 	// The phone's sticky bar may carry its own words (`cta.stickyLabel`).
 	const stickyLink = { ...cta, label: site.cta.stickyLabel ?? cta.label };
