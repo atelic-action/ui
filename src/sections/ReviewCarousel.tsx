@@ -217,44 +217,43 @@ export function ReviewCarousel({
 						))}
 					</div>
 
-					<div className="rvc-controls">
-						<div className="rvc-dots">
-							{items.map((_, i) => (
+					{/* With one review, or none, there is nowhere to step, so no
+					    dots and no arrows are drawn. */}
+					{count > 1 && (
+						<div className="rvc-controls">
+							<div className="rvc-dots">
+								{items.map((_, i) => (
+									<button
+										type="button"
+										className={["rvc-dot", i === index && "is-active"].filter(Boolean).join(" ")}
+										// biome-ignore lint/suspicious/noArrayIndexKey: a dot is a position, not an identity; review text can repeat
+										key={`dot-${i}`}
+										aria-label={`Go to review ${i + 1}`}
+										aria-current={i === index}
+										onClick={() => setIndex(i)}
+									/>
+								))}
+							</div>
+							<div className="rvc-arrows">
 								<button
 									type="button"
-									className={["rvc-dot", i === index && "is-active"].filter(Boolean).join(" ")}
-									// biome-ignore lint/suspicious/noArrayIndexKey: a dot is a position, not an identity; review text can repeat
-									key={`dot-${i}`}
-									aria-label={`Go to review ${i + 1}`}
-									aria-current={i === index}
-									onClick={() => setIndex(i)}
-								/>
-							))}
+									className="rvc-arrow"
+									aria-label="Previous review"
+									onClick={() => go(index - 1)}
+								>
+									<ChevronLeft size={18} strokeWidth={2} aria-hidden="true" />
+								</button>
+								<button
+									type="button"
+									className="rvc-arrow"
+									aria-label="Next review"
+									onClick={() => go(index + 1)}
+								>
+									<ChevronRight size={18} strokeWidth={2} aria-hidden="true" />
+								</button>
+							</div>
 						</div>
-						<div className="rvc-arrows">
-							{/* With one review there is nowhere to step, so the arrows stay
-							    in place, greyed and inert, rather than vanishing and shifting
-							    the dots. */}
-							<button
-								type="button"
-								className="rvc-arrow"
-								aria-label="Previous review"
-								disabled={count <= 1}
-								onClick={() => go(index - 1)}
-							>
-								<ChevronLeft size={18} strokeWidth={2} aria-hidden="true" />
-							</button>
-							<button
-								type="button"
-								className="rvc-arrow"
-								aria-label="Next review"
-								disabled={count <= 1}
-								onClick={() => go(index + 1)}
-							>
-								<ChevronRight size={18} strokeWidth={2} aria-hidden="true" />
-							</button>
-						</div>
-					</div>
+					)}
 				</section>
 			</div>
 		</section>

@@ -196,14 +196,11 @@ export const ReducedMotion: Story = {
 	},
 };
 
-/** One review: the arrows stay in place, greyed and inert, and nothing steps. */
+/** One review: nowhere to step, so no dots and no arrows are drawn. */
 export const OneReview: Story = {
 	args: { items: reviews.slice(0, 1) },
-	play: async ({ canvas, userEvent }) => {
-		await expect(next(canvas)).toBeDisabled();
-		await expect(previous(canvas)).toBeDisabled();
-		await userEvent.click(dot(canvas, 1));
-		await userEvent.keyboard("{ArrowRight}");
+	play: async ({ canvas }) => {
+		await expect(within(carousel(canvas)).queryByRole("button")).toBeNull();
 		await expect(shown(canvas)).toHaveAccessibleName("Review 1 of 1");
 	},
 };
@@ -213,7 +210,7 @@ export const NoReviews: Story = {
 	args: { items: [] },
 	play: async ({ canvas }) => {
 		await expect(within(carousel(canvas)).queryByRole("figure")).toBeNull();
-		await expect(next(canvas)).toBeDisabled();
+		await expect(within(carousel(canvas)).queryByRole("button")).toBeNull();
 	},
 };
 

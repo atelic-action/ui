@@ -248,3 +248,90 @@ export const SplitTallerPhotoPhone: Story = {
 		await expect(Math.round(photo.getBoundingClientRect().height)).toBe(300);
 	},
 };
+
+/**
+ * The split's two actions sit side by side on one line when the copy column
+ * holds them (`flex-wrap`, the hero's actions gap), as on the overlay.
+ */
+export const SplitActionsSideBySide: Story = {
+	args: {
+		layout: "split",
+		primaryCTA: { label: "Order", href: "/order" },
+		secondaryCTA: { label: "Menu", href: "/menu" },
+	},
+	play: async ({ canvas }) => {
+		const first = canvas.getByRole("link", { name: "Order" }).getBoundingClientRect();
+		const second = canvas.getByRole("link", { name: "Menu" }).getBoundingClientRect();
+		await expect(Math.round(second.top)).toBe(Math.round(first.top));
+		await expect(second.left).toBeGreaterThan(first.right);
+	},
+};
+
+/** Two actions wider together than the copy column wrap, the second under the first. */
+export const SplitActionsWrap: Story = {
+	args: {
+		layout: "split",
+		primaryCTA: { label: "Order a cake for Saturday", href: "/order" },
+		secondaryCTA: { label: "Call (555) 555-0142", href: "tel:+15555550142" },
+	},
+	play: async ({ canvas }) => {
+		const first = canvas.getByRole("link", { name: "Order a cake for Saturday" });
+		const second = canvas.getByRole("link", { name: "Call (555) 555-0142" });
+		await expect(second.getBoundingClientRect().top).toBeGreaterThan(
+			first.getBoundingClientRect().bottom - 1,
+		);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** The overlay sets the same two short actions on one line. */
+export const OverlayActionsSideBySide: Story = {
+	args: {
+		primaryCTA: { label: "Order", href: "/order" },
+		secondaryCTA: { label: "Menu", href: "/menu" },
+	},
+	play: async ({ canvas }) => {
+		const first = canvas.getByRole("link", { name: "Order" }).getBoundingClientRect();
+		const second = canvas.getByRole("link", { name: "Menu" }).getBoundingClientRect();
+		await expect(Math.round(second.top)).toBe(Math.round(first.top));
+	},
+};
+
+/** Before the photography exists, the split's photo side shows the shot brief edge to edge. */
+export const SplitPlaceholder: Story = {
+	args: {
+		layout: "split",
+		image: undefined,
+		placeholder: "Photo: the counter at opening, from the door",
+	},
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByRole("img")).toBeNull();
+		const brief = canvas.getByText("Photo: the counter at opening, from the door");
+		await expect(brief).toBeVisible();
+		const side = brief.getBoundingClientRect();
+		const copy = canvas.getByRole("heading", { level: 1 }).getBoundingClientRect();
+		await expect(side.left).toBeGreaterThanOrEqual(copy.right);
+		await expect(Math.round(side.right)).toBe(window.innerWidth);
+	},
+};
+
+/** On a phone the brief stands where the photo would, above the copy. */
+export const SplitPlaceholderPhone: Story = {
+	...SplitPlaceholder,
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const brief = canvas.getByText("Photo: the counter at opening, from the door");
+		const copy = canvas.getByRole("heading", { level: 1 }).getBoundingClientRect();
+		await expect(brief.getBoundingClientRect().bottom).toBeLessThanOrEqual(copy.top);
+		await expect(Math.round(brief.getBoundingClientRect().height)).toBe(230);
+	},
+};
+
+/** The overlay keeps its token gradient: a brief is not drawn over the full bleed. */
+export const OverlayPlaceholder: Story = {
+	args: { image: undefined, placeholder: "Photo: the counter at opening, from the door" },
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByText("Photo: the counter at opening, from the door")).toBeNull();
+		await expect(canvas.getByRole("heading", { level: 1 })).toBeVisible();
+	},
+};

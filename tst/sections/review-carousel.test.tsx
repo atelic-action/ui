@@ -168,10 +168,11 @@ describe("ReviewCarousel", () => {
 		expect(screen.getByRole("link", { name: /^View review$/ })).toHaveTextContent("View review");
 	});
 
-	it("greys out the arrows when there is only one review", () => {
+	it("draws no dots and no arrows when there is only one review", () => {
 		render(<ReviewCarousel score="5.0" items={[items[0]]} />);
-		expect(screen.getByRole("button", { name: "Previous review" })).toBeDisabled();
-		expect(screen.getByRole("button", { name: "Next review" })).toBeDisabled();
+		expect(screen.queryByRole("button", { name: "Previous review" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Next review" })).toBeNull();
+		expect(screen.queryByRole("button", { name: "Go to review 1" })).toBeNull();
 	});
 
 	it("keeps the arrows live with two or more reviews", () => {
