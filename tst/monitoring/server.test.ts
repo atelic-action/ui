@@ -652,7 +652,12 @@ describe("refusalError and reportRefusedResponse", () => {
 		["a count of bytes", "read 4194304 bytes", true],
 		["a round count", "count 9000000", true],
 		["a count beside a year, three digits", "350 2026 sends", true],
-		["two ports", "port 443 8080", true],
+		[
+			"a number whose four digits read as a year, a trade the scrub takes",
+			"Call 555 1999 today",
+			true,
+		],
+		["two ports side by side, scrubbed the safe way", "port 443 8080", false],
 		["a seven digit number with a dash", "Call 555\u20130142 today", false],
 		["a seven digit number with a dot", "Call 555.0142 today", false],
 		["a seven digit number with an extension", "Call 555-0142 x12 today", false],

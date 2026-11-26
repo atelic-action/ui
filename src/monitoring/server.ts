@@ -434,10 +434,12 @@ const DATE =
  * four digits (555-0142, 555.0142, 555 0142). The separator is required, so
  * a bare run of digits (5550142, 4194304, 9000000) is an id or a count and
  * stays. Written with a space it is two numbers side by side as often as it
- * is one, so it is left alone when its four digits are a year (350 2026)
- * and when it follows the word port (port 443 8080).
+ * is one, so it is left alone when its four digits are a year (350 2026),
+ * at the cost of a real number whose last four read as one (555 1999). Any
+ * other pair is scrubbed, two ports side by side (443 8080) included, since
+ * a scrubbed pair of numbers is the safe way to be wrong.
  */
-const SEVEN = `(?<!\\bports?\\s+)[2-9]\\d{2}(?:[.\\u2010-\\u2015\\u2212-]|\\s(?!(?:19|20)\\d{2}(?![\\w-])))\\d{4}`;
+const SEVEN = `[2-9]\\d{2}(?:[.\\u2010-\\u2015\\u2212-]|\\s(?!(?:19|20)\\d{2}(?![\\w-])))\\d{4}`;
 
 /**
  * A run shaped like a phone number: an optional country code (a plus sign
