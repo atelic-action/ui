@@ -1991,6 +1991,11 @@
 	/* The shot brief fills the photo side edge to edge, as a photo would. */
 	.atelic-ui .hero-split-media .hero-split-ph {
 		border-radius: 0;
+		/* The hero is a dark ground under a transparent header, so the brief
+		   sits on the dark field, not the light inset well. */
+		background: var(--primary-deep);
+		color: var(--on-dark);
+		box-shadow: none;
 	}
 	@media (min-width: 900px) {
 		.atelic-ui .hero.is-split {
@@ -3541,14 +3546,6 @@
 	.atelic-ui .rvc-arrow:hover {
 		background: var(--surface-alt);
 		border-color: var(--neutral-300);
-	}
-	/* One review: the arrows stay, greyed, with nothing to do. */
-	.atelic-ui .rvc-arrow:disabled,
-	.atelic-ui .rvc-arrow:disabled:hover {
-		opacity: 0.4;
-		cursor: default;
-		background: var(--card);
-		border-color: var(--neutral-200);
 	}
 	/* The link under a review to where it was written: the caption link's
 	   quiet idiom, set small on its own line of the attribution. */
