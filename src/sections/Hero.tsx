@@ -32,6 +32,11 @@ export interface HeroProps {
 		 */
 		position?: string;
 	};
+	/**
+	 * The shot brief the split layout's photo side shows as a labeled block
+	 * while there is no `image`. The overlay layout keeps its token gradient.
+	 */
+	placeholder?: string;
 	primaryCTA?: HeroCTA;
 	secondaryCTA?: HeroCTA;
 	/** Trust indicators rendered under the CTAs. */
@@ -54,6 +59,7 @@ export function Hero({
 	title,
 	subtitle,
 	image,
+	placeholder,
 	primaryCTA,
 	secondaryCTA,
 	trust,
@@ -114,12 +120,14 @@ export function Hero({
 	);
 
 	if (layout === "split") {
+		const splitMedia =
+			!image && placeholder ? <div className="ph hero-split-ph">{placeholder}</div> : media;
 		return (
 			<section className="hero is-split" data-ground="dark">
 				<div className="hero-split-copy on-primary">
 					<div className="hero-split-inner">{copy}</div>
 				</div>
-				<div className="hero-split-media">{media}</div>
+				<div className="hero-split-media">{splitMedia}</div>
 			</section>
 		);
 	}
