@@ -368,3 +368,81 @@ export const shotPortrait: WriteupShot = {
 
 /** The bakery's own address, for a story that needs a reply line. */
 export const bakeryEmail = email;
+
+/**
+ * The towns the bakehouse delivers to, for a grid of short rows: each with
+ * its count of standing orders, and a page for the larger ones. Every town
+ * is invented.
+ */
+export const deliveryTowns: { name: string; orders: number; href?: string }[] = [
+	{ name: "Fairhaven", orders: 412, href: "/delivery/fairhaven" },
+	{ name: "Alder Point", orders: 268, href: "/delivery/alder-point" },
+	{ name: "Birchmoor", orders: 231, href: "/delivery/birchmoor" },
+	{ name: "Cedar Gap", orders: 187 },
+	{ name: "Dunmere", orders: 164 },
+	{ name: "Elkhollow", orders: 150 },
+	{ name: "Ferncross", orders: 133 },
+	{ name: "Glenwick", orders: 121 },
+	{ name: "Harrow Bend", orders: 109 },
+	{ name: "Ivybridge Flats", orders: 96 },
+	{ name: "Juniper Ford", orders: 88 },
+	{ name: "Kettle Rock", orders: 74 },
+	{ name: "Larkspur", orders: 63 },
+	{ name: "Millbrook", orders: 57 },
+	{ name: "Northfield", orders: 49 },
+	{ name: "Oakhaven", orders: 41 },
+	{ name: "Pinecrest", orders: 33 },
+	{ name: "Quarry Hill", orders: 26 },
+	{ name: "Rookwood", orders: 18 },
+	{ name: "Stillwater", orders: 12 },
+];
+
+/** Recent orders from the bakehouse's book, for highlight cards with a small square picture. */
+export const recentOrders = [
+	{
+		title: "Fairhaven",
+		body: "A three tier lemon cake",
+		detail: "Wedding, 120 guests",
+		meta: "June 2026",
+		image: { src: "/images/sections/cake.svg", alt: "The lemon cake on its stand" },
+		href: "/orders/lemon-cake",
+	},
+	{
+		title: "Alder Point",
+		body: "Morning buns for a cafe opening",
+		detail: "Wholesale, 300 buns",
+		meta: "May 2026",
+		image: { src: "/images/sections/buns.svg", alt: "Trays of morning buns" },
+		href: "/orders/cafe-opening",
+	},
+	{
+		title: "Birchmoor",
+		body: "Rye for the harvest supper",
+		detail: "Catering, 40 loaves",
+		meta: "April 2026",
+		image: { src: "/images/sections/rye.svg", alt: "Rye loaves on the bench" },
+		href: "/orders/harvest-supper",
+	},
+];
+
+/** Journal posts, for highlight cards with no picture. */
+export const journalCards = [
+	{
+		eyebrow: "From the oven",
+		title: "Why the rye takes three days",
+		meta: "4 min read",
+		href: "/blog/rye",
+	},
+	{
+		eyebrow: "Cakes",
+		title: "What two days of notice buys a wedding cake",
+		meta: "6 min read",
+		href: "/blog/cake-notice",
+	},
+	{
+		eyebrow: "The shop",
+		title: "Ten years on Alder Street",
+		meta: "3 min read",
+		href: "/blog/ten-years",
+	},
+];

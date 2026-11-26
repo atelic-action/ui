@@ -204,3 +204,47 @@ export const SplitDefaultPad: Story = {
 		await expect(Math.round(heading.getBoundingClientRect().left)).toBe(176);
 	},
 };
+
+const focal = {
+	src: "/images/bakery-band.svg",
+	alt: "Loaves cooling on a rack",
+	position: "27% 35%",
+};
+
+/** The split's photo keeps its focal point beside the copy. */
+export const SplitFocalPoint: Story = {
+	args: { layout: "split", image: focal },
+	play: async ({ canvas }) => {
+		await expect(canvas.getByRole("img", { name: "Loaves cooling on a rack" })).toHaveStyle({
+			objectPosition: "27% 35%",
+		});
+	},
+};
+
+/** Stacked on a phone, the photo keeps its focal point and stands 230px tall. */
+export const SplitFocalPointPhone: Story = {
+	args: { layout: "split", image: focal },
+	globals: pin("phone"),
+	play: async ({ canvas }) => {
+		const photo = canvas.getByRole("img", { name: "Loaves cooling on a rack" });
+		await expect(photo).toHaveStyle({ objectPosition: "27% 35%" });
+		await expect(Math.round(photo.getBoundingClientRect().height)).toBe(230);
+	},
+};
+
+/** `--hero-split-photo-min` stands the phone's photo taller, here 300px. */
+export const SplitTallerPhotoPhone: Story = {
+	args: { layout: "split", image: focal },
+	globals: pin("phone"),
+	decorators: [
+		(Story) => (
+			<div style={{ "--hero-split-photo-min": "300px" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const photo = canvas.getByRole("img", { name: "Loaves cooling on a rack" });
+		await expect(Math.round(photo.getBoundingClientRect().height)).toBe(300);
+	},
+};

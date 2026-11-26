@@ -1,6 +1,5 @@
-import { Pause, Play } from "lucide-react";
-import { useState } from "react";
 import { Chip } from "../primitives/Chip";
+import { Marquee } from "./Marquee";
 
 export interface LogoMarqueeProps {
 	/** Items scrolled across the band (credentials, client names, press). */
@@ -14,46 +13,36 @@ export interface LogoMarqueeProps {
 	pauseLabel?: string;
 }
 
+/** The band's pace in pixels a second: the speed its row always moved at. */
+const LOGO_MARQUEE_SPEED = 32;
+
 /**
- * Dark band with an infinitely scrolling row of chips. The row is drawn
- * twice so the loop is seamless; the copy is hidden from assistive tech, so
- * each item is read once, and is not drawn at all under reduced motion,
- * where the row stands still and wraps. A quiet control pauses the row
- * (WCAG 2.2.2, moving content that runs past five seconds).
+ * Dark band with an infinitely scrolling row of chips, a use of `Marquee`:
+ * the chips at the band's own pace, no dividers, and no pause on hover, as
+ * the band always was. Under reduced motion the row stands still and wraps
+ * to a centered block (its sheet's own rule), so nothing needs scrolling.
  */
 export function LogoMarquee({
 	items,
 	ariaLabel = "Credentials",
 	pauseLabel = "Pause",
 }: LogoMarqueeProps) {
-	const [paused, setPaused] = useState(false);
-	const row = (copy: boolean) => (
-		<div className="marquee-group" aria-hidden={copy || undefined}>
+	return (
+		<Marquee
+			className="creds"
+			ground="dark"
+			ariaLabel={ariaLabel}
+			pauseLabel={pauseLabel}
+			speed={LOGO_MARQUEE_SPEED}
+			dividers={false}
+			pauseOnHover={false}
+		>
 			{items.map((item, i) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: two items may share a label
 				<Chip key={`${item}-${i}`} dot onDark>
 					{item}
 				</Chip>
 			))}
-		</div>
-	);
-	return (
-		<section className="creds" data-ground="dark" aria-label={ariaLabel}>
-			<div className="marquee" data-paused={paused || undefined}>
-				<div className="marquee-track">
-					{row(false)}
-					{row(true)}
-				</div>
-			</div>
-			<button
-				type="button"
-				className="marquee-pause"
-				aria-label={pauseLabel}
-				aria-pressed={paused}
-				onClick={() => setPaused((current) => !current)}
-			>
-				{paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-			</button>
-		</section>
+		</Marquee>
 	);
 }

@@ -407,3 +407,24 @@ export const schedule: ScheduleConfig = {
 
 /** The day the schedule stories are pinned to. */
 export const scheduleToday = "2026-11-25";
+
+/**
+ * The bakehouse's proof facts, figure over label, for a ProofStrip or a
+ * Marquee of ProofFacts (the rating's stars are added in the story, since
+ * this file holds no JSX).
+ */
+export const proofFacts = [
+	{ value: "Since 2014", label: "On Alder Street" },
+	{ value: "1,200 loaves", label: "Baked every week" },
+	{ value: "11 cafes", label: "Carry the morning bake" },
+	{ value: "Two days", label: "Notice for a cake" },
+];
+
+/** The longest proof facts a row is likely to carry. */
+export const longProofFacts = [
+	{ value: "Since 2014", label: "On Alder Street, by the old mill and the ferry landing" },
+	{ value: "1,200 loaves", label: "Baked every week in the back of the shop, before dawn" },
+	{ value: "Eleven cafes", label: "Carry the morning bake across the whole of Fairhaven" },
+	{ value: "Two days", label: "Notice for a cake, three for a tiered wedding cake" },
+	{ value: "Stone milled", label: "Flour from the Birchmoor mill, ground the week it is baked" },
+];
