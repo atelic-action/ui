@@ -76,8 +76,11 @@ export interface StaticNotFoundOptions {
  * boundary hydration left pending (a miss, whose pending view is the page)
  * or one an earlier offer presented, which under Infinity only an
  * invalidated match gets, so neither blanks a page a visitor navigates
- * from. A route that sets its own `pendingMs` keeps its own, and a site's
- * own `defaultPendingMs` goes before the spread, or it is overridden.
+ * from. The infinite pending time silences a route's own
+ * `pendingComponent` too: a route that wants its own pending view on a slow
+ * navigation sets `pendingMs` on itself, which wins for that route (no site
+ * has one as of 9.7.0). A site's own `defaultPendingMs` goes before the
+ * spread, or it is overridden.
  *
  * Static sites only. On a live app the pending state is a real loading
  * moment; an app sets defaultNotFoundComponent alone.
