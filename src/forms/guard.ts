@@ -50,9 +50,11 @@ export interface GuardContext {
 	/**
 	 * An id of this request alone, fresh on every POST (9.7.0): the key a
 	 * guard checks its token under, so a resubmit's fresh token is never
-	 * checked under the key an earlier token was checked under.
+	 * checked under the key an earlier token was checked under. The
+	 * endpoints always hand it over; a caller written before 9.7.0 leaves it
+	 * out, and `turnstileGuard` then keys its check on `id`, as it did.
 	 */
-	requestID: string;
+	requestID?: string;
 	/** The request being handled; a guard may read the visitor's address from its headers. */
 	request: Request;
 	/**
@@ -181,7 +183,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 		name: "turnstile",
 		tokenKey: TURNSTILE_TOKEN_KEY,
 		timeoutMs,
-		async check(token, { requestID, request, signal: endpoint }) {
+		async check(token, { id, requestID, request, signal: endpoint }) {
 			// The secret is looked for first, so a site whose guard is not set
 			// up yet reads as one missing setting, whatever its form sent.
 			const secret = options.secret ?? process.env.TURNSTILE_SECRET_KEY;
@@ -210,7 +212,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 								secret,
 								response: token,
 								...(remoteip && { remoteip }),
-								idempotency_key: requestID,
+								idempotency_key: requestID ?? id,
 							}),
 							signal,
 						});

@@ -91,6 +91,11 @@ describe("turnstileGuard", () => {
 		expect(vi.mocked(fetch).mock.calls[0]?.[1]?.method).toBe("POST");
 	});
 
+	it("keys its check on the submission's id for a caller that hands no request id, as before 9.7.0", async () => {
+		await turnstileGuard().check(TOKEN, { id: ID, request: request(), signal: open() });
+		expect(sentBody().idempotency_key).toBe(ID);
+	});
+
 	it("leaves the address out when the platform gave none", async () => {
 		await turnstileGuard().check(TOKEN, {
 			id: ID,
