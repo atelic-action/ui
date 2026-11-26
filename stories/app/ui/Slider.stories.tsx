@@ -3,9 +3,10 @@ import { expect, fn, userEvent } from "storybook/test";
 import { Label, Slider } from "../../../src/app/ui";
 
 /**
- * A range on a track, a thumb per value, stepped by the keyboard. The thumb
- * is the `slider` a reader reaches, and the slider's name (`aria-labelledby`
- * or `aria-label`) lands on it; a range names each thumb with `thumbLabels`.
+ * Picks a number, or a range, in an app by moving a thumb along a track. A
+ * range on a track, a thumb per value, stepped by the keyboard. The thumb is
+ * the `slider` a reader reaches, and the slider's name (`aria-labelledby` or
+ * `aria-label`) lands on it; a range names each thumb with `thumbLabels`.
  */
 const meta = {
 	title: "App/UI/Slider",

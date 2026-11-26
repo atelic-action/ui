@@ -4,9 +4,10 @@ import { Badge, Card, Row } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A single letter in a hairline box after the word it tags (S for social),
- * letter and box in the accent's ink. Given a `label`, a reader hears what
- * the letter stands for in its place; without one, the letter alone.
+ * Tags a word in an email with a one letter mark that says what kind of thing
+ * it is. A single letter in a hairline box after the word it tags (S for
+ * social), letter and box in the accent's ink. Given a `label`, a reader hears
+ * what the letter stands for in its place; without one, the letter alone.
  */
 const meta = {
 	title: "Email/Badge",

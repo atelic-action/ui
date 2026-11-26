@@ -4,7 +4,10 @@ import { Card, EmptyRow } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** The empty state: one line of dim text filling a card row. */
+/**
+ * Says in an email that a section has nothing to show, rather than leaving its
+ * card blank. The empty state: one line of dim text filling a card row.
+ */
 const meta = {
 	title: "Email/EmptyRow",
 	component: EmptyRow,

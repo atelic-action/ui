@@ -5,7 +5,11 @@ import { ProofStrip } from "../../src/sections";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** One row of short proof facts under a hero, a figure over its label each. */
+/**
+ * Backs a page's opening claim with a row of short facts, right under the
+ * hero. One row of short proof facts under a hero, a figure over its label
+ * each.
+ */
 const meta = {
 	title: "Sections/ProofStrip",
 	component: ProofStrip,

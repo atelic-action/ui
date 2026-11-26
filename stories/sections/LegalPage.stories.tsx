@@ -6,8 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A legal document carried as data: its revision date, then its blocks
- * verbatim.
+ * Renders a legal document, such as a policy or terms, from data, with its
+ * revision date first. A legal document carried as data: its revision date,
+ * then its blocks verbatim.
  */
 const meta = {
 	title: "Sections/LegalPage",

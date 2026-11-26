@@ -37,9 +37,10 @@ const side = (
 );
 
 /**
- * A contact page's body: the form in a card, with a heading and a lead,
- * beside a column of the other ways to reach the bakery. One column below
- * the width both need, the card first.
+ * Is a contact page's body: the form beside the other ways to reach the
+ * business. A contact page's body: the form in a card, with a heading and a
+ * lead, beside a column of the other ways to reach the bakery. One column
+ * below the width both need, the card first.
  */
 const meta = {
 	title: "Sections/ContactSection",

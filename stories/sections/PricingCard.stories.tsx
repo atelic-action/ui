@@ -5,8 +5,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The pricing page's centerpiece: a ribbon, the price, what it buys, the
- * action, and a quiet second link.
+ * Presents a price with what it buys and the action to book it, as a pricing
+ * page's centerpiece. The pricing page's centerpiece: a ribbon, the price,
+ * what it buys, the action, and a quiet second link.
  */
 const meta = {
 	title: "Sections/PricingCard",

@@ -9,10 +9,11 @@ import { pin } from "../support/viewports";
 const onPick = fn();
 
 /**
- * A text field that offers addresses as they are typed and, on a pick,
- * hands back the street, city, state, and ZIP. The suggestions come from
- * the provider a site passes; these stories use a made up one over a few
- * Fairhaven addresses.
+ * Lets a visitor type an address and pick it from suggestions, filling the
+ * street, city, state, and ZIP of a form. A text field that offers addresses
+ * as they are typed and, on a pick, hands back the street, city, state, and
+ * ZIP. The suggestions come from the provider a site passes; these stories use
+ * a made up one over a few Fairhaven addresses.
  */
 const meta = {
 	title: "Primitives/AddressSearch",

@@ -4,7 +4,10 @@ import { Label, Textarea } from "../../../src/app/ui";
 import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
-/** The kit's multi line field, with its label. */
+/**
+ * Takes longer text, over several lines, in an app form. The kit's multi line
+ * field, with its label.
+ */
 const meta = {
 	title: "App/UI/Textarea",
 	component: Textarea,

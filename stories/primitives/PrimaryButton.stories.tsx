@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { PrimaryButton } from "../../src/primitives";
 
-/** A page's call to action: the large primary with the arrow, one fixed shape. */
+/**
+ * Is a page's call to action, used once for the main action. A page's call to
+ * action: the large primary with the arrow, one fixed shape.
+ */
 const meta = {
 	title: "Primitives/PrimaryButton",
 	component: PrimaryButton,

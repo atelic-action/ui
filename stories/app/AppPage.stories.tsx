@@ -28,11 +28,13 @@ function Rail() {
 }
 
 /**
- * The scaffold every signed in page renders through: the header (crumb,
- * aside, icon, title, live dot, subtitle), an optional summary, the toolbar
- * slot, the content, a footer, and an optional right rail. On a desktop the
- * rail is a full height column beside the page with a toggle to collapse it;
- * on a phone it stacks under the header and the toggle is gone.
+ * Gives a signed in page its header, content, and optional side rail, so every
+ * page of an app is laid out alike. The scaffold every signed in page renders
+ * through: the header (crumb, aside, icon, title, live dot, subtitle), an
+ * optional summary, the toolbar slot, the content, a footer, and an optional
+ * right rail. On a desktop the rail is a full height column beside the page
+ * with a toggle to collapse it; on a phone it stacks under the header and the
+ * toggle is gone.
  */
 const meta = {
 	title: "App/AppPage",

@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent } from "storybook/test";
 import { Checkbox, Input, Label } from "../../../src/app/ui";
 
-/** The kit's label: it names its control, and a press on it focuses or toggles the control. */
+/**
+ * Names a form control in an app, so a press on the name reaches the control.
+ * The kit's label: it names its control, and a press on it focuses or toggles
+ * the control.
+ */
 const meta = {
 	title: "App/UI/Label",
 	component: Label,

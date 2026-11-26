@@ -40,9 +40,11 @@ function Held(props: Omit<DisclosureControlledProps, "open" | "onToggle"> & { in
 }
 
 /**
- * A section the reader opens and closes. Left to the browser it is a native
- * details element, a document's fold; held by the caller (`open` and
- * `onToggle`) it is an app's card, whose closed body is not rendered.
+ * Folds away detail a reader may not need, as a document's native fold or as
+ * an app's controlled card. A section the reader opens and closes. Left to the
+ * browser it is a native details element, a document's fold; held by the
+ * caller (`open` and `onToggle`) it is an app's card, whose closed body is not
+ * rendered.
  */
 const meta = {
 	title: "Components/Disclosure",

@@ -5,8 +5,10 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * The title card that opens a report: a faint eyebrow, a headline of one to
- * three lines, a lede, and whatever rows the runner hands in.
+ * Opens a report email's body, after the masthead, with its headline, lede,
+ * and headline figures. The title card that opens a report: a faint eyebrow, a
+ * headline of one to three lines, a lede, and whatever rows the runner hands
+ * in.
  */
 const meta = {
 	title: "Email/TitleCard",

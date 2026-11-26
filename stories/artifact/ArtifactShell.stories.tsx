@@ -28,10 +28,11 @@ const stops = [
 ];
 
 /**
- * The wrapper every artifact page wears: its own `.atelic-ui` root pinned to
- * the comfortable density, the skip link, the dark header with both
- * parties' lockup and no site nav, the page, the closing bar, and the gate's
- * watermark.
+ * Wraps every page of a document site in the header, skip link, closing bar,
+ * and watermark, so a page supplies only its content. The wrapper every
+ * artifact page wears: its own `.atelic-ui` root pinned to the comfortable
+ * density, the skip link, the dark header with both parties' lockup and no
+ * site nav, the page, the closing bar, and the gate's watermark.
  */
 const meta = {
 	title: "Artifact/ArtifactShell",

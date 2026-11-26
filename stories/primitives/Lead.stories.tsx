@@ -5,7 +5,10 @@ import { longURL } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** The larger intro paragraph under a heading. */
+/**
+ * Sets the larger intro paragraph under a heading. The larger intro paragraph
+ * under a heading.
+ */
 const meta = {
 	title: "Primitives/Lead",
 	component: Lead,

@@ -29,8 +29,9 @@ function Page({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * The sticky in page navigation: a tab per section, the one in the reading
- * band marked by scroll.
+ * Gives a long page a sticky row of tabs that scroll to its sections. The
+ * sticky in page navigation: a tab per section, the one in the reading band
+ * marked by scroll.
  */
 const meta = {
 	title: "Sections/JumpRail",

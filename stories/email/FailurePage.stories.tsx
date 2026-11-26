@@ -6,11 +6,12 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * The email a runner sends when it did not run: the masthead, then a card
- * with the reason on top and the log's tail beneath. With a `step` or a
- * `fix` the reason becomes a labelled block of what failed, why, and what
- * to do. The fix's label wears the accent's ink. Both pages' logs break a
- * long path inside the card.
+ * Is the email sent when a scheduled run did not run, saying what failed, why,
+ * and what to do. The email a runner sends when it did not run: the masthead,
+ * then a card with the reason on top and the log's tail beneath. With a `step`
+ * or a `fix` the reason becomes a labelled block of what failed, why, and what
+ * to do. The fix's label wears the accent's ink. Both pages' logs break a long
+ * path inside the card.
  */
 const meta = {
 	title: "Email/FailurePage",

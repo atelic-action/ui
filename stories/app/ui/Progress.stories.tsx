@@ -3,9 +3,9 @@ import { expect } from "storybook/test";
 import { Progress } from "../../../src/app/ui";
 
 /**
- * A bar filled to a value out of its `max` (100 by default). The value
- * reaches the `progressbar`, so a reader hears it; with no value the bar is
- * indeterminate and draws empty.
+ * Shows how far a task has come, as a bar, in an app. A bar filled to a value
+ * out of its `max` (100 by default). The value reaches the `progressbar`, so a
+ * reader hears it; with no value the bar is indeterminate and draws empty.
  */
 const meta = {
 	title: "App/UI/Progress",

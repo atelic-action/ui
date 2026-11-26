@@ -27,7 +27,11 @@ function Held({ value: initial, onValueChange, ...props }: Parameters<typeof Opt
 	);
 }
 
-/** A single select over a flat list of options, named by its `ariaLabel`: the toolbar's filter. */
+/**
+ * Lets a reader pick one value from a short flat list in an app, as a toolbar
+ * filter does; use `Select` when the options need grouping. A single select
+ * over a flat list of options, named by its `ariaLabel`: the toolbar's filter.
+ */
 const meta = {
 	title: "App/UI/OptionSelect",
 	component: OptionSelect,

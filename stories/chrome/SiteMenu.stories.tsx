@@ -17,9 +17,10 @@ import { expectNoSidewaysScroll, textLeft } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The phone's full screen menu on a native modal `<dialog>`. The owner holds
- * the open state, so each story mounts it behind a button the way the
- * header's burger does.
+ * Is the phone's full screen menu, opened from the header's burger, for the
+ * navigation that does not fit in the bar. The phone's full screen menu on a
+ * native modal `<dialog>`. The owner holds the open state, so each story
+ * mounts it behind a button the way the header's burger does.
  *
  * A test's key presses are synthetic and the platform acts only on real
  * ones, so a synthetic Escape never closes a native dialog. The Escape story

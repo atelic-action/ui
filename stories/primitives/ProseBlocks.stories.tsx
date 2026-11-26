@@ -8,10 +8,11 @@ import { pin } from "../support/viewports";
 import { inWrap } from "./support";
 
 /**
- * A document body carried as data: headings, paragraphs, lists, and figures,
- * for a legal page or a ported post whose words must arrive unedited. A run
- * of figures is one row of tiles, and each tile opens its file large in a
- * modal dialog.
+ * Renders a document body from data, for a legal page or a ported post whose
+ * words must not be edited. A document body carried as data: headings,
+ * paragraphs, lists, and figures, for a legal page or a ported post whose
+ * words must arrive unedited. A run of figures is one row of tiles, and each
+ * tile opens its file large in a modal dialog.
  */
 const meta = {
 	title: "Primitives/ProseBlocks",

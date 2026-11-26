@@ -7,9 +7,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A row of large figures, each over what it counts and its period, with its
- * comparisons beneath. Arrows and triangles are read aloud as up, down, or
- * unchanged, so a direction is never color alone.
+ * Shows a row of headline figures with their period and change, at the top of
+ * a report or a dashboard. A row of large figures, each over what it counts
+ * and its period, with its comparisons beneath. Arrows and triangles are read
+ * aloud as up, down, or unchanged, so a direction is never color alone.
  */
 const meta = {
 	title: "Components/StatRow",

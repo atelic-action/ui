@@ -3,7 +3,11 @@ import { expect } from "storybook/test";
 import { Avatar, AvatarFallback, AvatarImage } from "../../../src/app/ui";
 import { layerOpened, until } from "../../support/settle";
 
-/** A round picture of a person, with their initials while it loads or when it fails. */
+/**
+ * Shows who a person is by their picture in an app, falling back to their
+ * initials. A round picture of a person, with their initials while it loads or
+ * when it fails.
+ */
 const meta = {
 	title: "App/UI/Avatar",
 	component: Avatar,

@@ -5,8 +5,9 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A card level disclosure: a bold summary with an optional faint count
- * beside it, opening on the rows it holds.
+ * Folds a whole card's rows behind a summary in an email, when a card would
+ * otherwise run long. A card level disclosure: a bold summary with an optional
+ * faint count beside it, opening on the rows it holds.
  */
 const meta = {
 	title: "Email/BigFold",

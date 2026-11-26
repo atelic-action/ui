@@ -4,7 +4,10 @@ import { Card, Stat, StatsRow } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** The row of `Stat` cells inside a title card: big numbers over small faint captions. */
+/**
+ * Puts the headline numbers of an email in one row of its title card. The row
+ * of `Stat` cells inside a title card: big numbers over small faint captions.
+ */
 const meta = {
 	title: "Email/StatsRow",
 	component: StatsRow,

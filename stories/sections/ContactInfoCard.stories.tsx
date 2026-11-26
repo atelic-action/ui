@@ -6,7 +6,11 @@ import { longEmail } from "../fixtures/sections";
 import { brokenWords, expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** A dark card of direct contact rows: call, email, visit, and the wholesale portal. */
+/**
+ * Lists the direct ways to reach the business in a dark card, beside a contact
+ * page's form or at the edge of a section. A dark card of direct contact rows:
+ * call, email, visit, and the wholesale portal.
+ */
 const meta = {
 	title: "Sections/ContactInfoCard",
 	component: ContactInfoCard,

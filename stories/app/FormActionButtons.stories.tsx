@@ -5,8 +5,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A form's Save and Cancel: side by side and right aligned from `sm` up,
- * stacked full width on a phone with Save on top. Without an `onSave` the
+ * Ends a form with its Save and Cancel, laid out for a desktop and a phone
+ * alike. A form's Save and Cancel: side by side and right aligned from `sm`
+ * up, stacked full width on a phone with Save on top. Without an `onSave` the
  * save button submits its form.
  */
 const meta = {

@@ -6,8 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A graded before and after, one row per thing graded, each side a grade
- * beside its points. A changed grade takes the primary color.
+ * Shows before and after, graded row by row, when the change is the point. A
+ * graded before and after, one row per thing graded, each side a grade beside
+ * its points. A changed grade takes the primary color.
  */
 const meta = {
 	title: "Sections/ComparisonTable",

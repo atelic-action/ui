@@ -12,7 +12,11 @@ import {
 import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
-/** The kit's card: a header (title, description), content, and a footer, each optional. */
+/**
+ * Groups a title, content, and actions into one boxed unit in an app. The
+ * kit's card: a header (title, description), content, and a footer, each
+ * optional.
+ */
 const meta = {
 	title: "App/UI/Card",
 	component: Card,

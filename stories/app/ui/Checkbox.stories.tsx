@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { Checkbox, Label } from "../../../src/app/ui";
 
-/** A checkbox with its label, the way a form's option is set. */
+/**
+ * Takes a yes or no, or any number from a list, in an app form. A checkbox
+ * with its label, the way a form's option is set.
+ */
 const meta = {
 	title: "App/UI/Checkbox",
 	component: Checkbox,

@@ -5,9 +5,10 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A section label between cards: small mono capitals in the faint ink, or,
- * strong, larger and bold in the ink, so it reads as a heading on a phone.
- * An aside (a count, a legend) can sit at the right of the same line.
+ * Labels a section of an email between its cards. A section label between
+ * cards: small mono capitals in the faint ink, or, strong, larger and bold in
+ * the ink, so it reads as a heading on a phone. An aside (a count, a legend)
+ * can sit at the right of the same line.
  */
 const meta = {
 	title: "Email/Eyebrow",

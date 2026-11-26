@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent } from "storybook/test";
 import { Label, Switch } from "../../../src/app/ui";
 
-/** An on and off switch with its label beside it. */
+/** Turns one setting on or off in an app. An on and off switch with its label beside it. */
 const meta = {
 	title: "App/UI/Switch",
 	component: Switch,

@@ -7,8 +7,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The journal's archive: every post as a plain stack, newest first, each a
- * link to its page.
+ * Lists a site's journal posts as a plain stack, newest first, for its archive
+ * page. The journal's archive: every post as a plain stack, newest first, each
+ * a link to its page.
  */
 const meta = {
 	title: "Sections/BlogIndex",

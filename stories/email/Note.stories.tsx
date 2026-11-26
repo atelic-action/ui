@@ -5,9 +5,10 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A short note inside a card under a small eyebrow. Plain, the eyebrow is
- * faint and the words dim; accented, the eyebrow wears the accent's ink and
- * the words the ink.
+ * Adds a short aside to an email's card under a small label. A short note
+ * inside a card under a small eyebrow. Plain, the eyebrow is faint and the
+ * words dim; accented, the eyebrow wears the accent's ink and the words the
+ * ink.
  */
 const meta = {
 	title: "Email/Note",

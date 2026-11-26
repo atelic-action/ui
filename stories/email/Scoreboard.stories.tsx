@@ -5,9 +5,9 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * The card row a scoreboard's groups and targets sit in: a four column
- * table of label, count, bar, and note. Its group names and a short count
- * wear the accent's ink.
+ * Sets targets against what was logged, in groups, in an email. The card row a
+ * scoreboard's groups and targets sit in: a four column table of label, count,
+ * bar, and note. Its group names and a short count wear the accent's ink.
  */
 const meta = {
 	title: "Email/Scoreboard",

@@ -7,8 +7,10 @@ import { layerOpened } from "../support/settle";
 import { pin } from "../support/viewports";
 
 /**
- * What an error boundary shows when a page crashes: an apology, an optional
- * message for a developer, and a button that resets the boundary.
+ * Is what an app's error boundary shows when a page crashes, giving the reader
+ * an apology and a way to try again. What an error boundary shows when a page
+ * crashes: an apology, an optional message for a developer, and a button that
+ * resets the boundary.
  */
 const meta = {
 	title: "App/ErrorFallback",

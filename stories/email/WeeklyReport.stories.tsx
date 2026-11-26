@@ -148,12 +148,13 @@ const kestrelPalette: Palette = {
 };
 
 /**
- * A whole report email assembled from the pieces, as a runner sends it: the
- * masthead, the title card and its stats, a scoreboard under its read, the
- * wholesale records, a drops table, the week's strip, an item with a fold, a
- * card level fold, a note, and the footer. Every small accent word is in
- * the palette's accent ink, so the atelic stories and the client palette's
- * pass alike.
+ * Shows how the email pieces compose into a whole recurring report, as a
+ * runner sends one. A whole report email assembled from the pieces, as a
+ * runner sends it: the masthead, the title card and its stats, a scoreboard
+ * under its read, the wholesale records, a drops table, the week's strip, an
+ * item with a fold, a card level fold, a note, and the footer. Every small
+ * accent word is in the palette's accent ink, so the atelic stories and the
+ * client palette's pass alike.
  */
 const meta = {
 	title: "Email/WeeklyReport",

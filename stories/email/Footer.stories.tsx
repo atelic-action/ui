@@ -4,7 +4,10 @@ import { Card, Footer, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** One quiet line at the foot of the email, in the faint ink: the run's facts. */
+/**
+ * Closes an email with one quiet line of the run's facts. One quiet line at
+ * the foot of the email, in the faint ink: the run's facts.
+ */
 const meta = {
 	title: "Email/Footer",
 	component: Footer,

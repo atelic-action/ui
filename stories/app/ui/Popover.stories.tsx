@@ -5,9 +5,10 @@ import { layerOpened, noneLeft, settledLayer, until } from "../../support/settle
 import { pin } from "../../support/viewports";
 
 /**
- * A floating panel from a trigger, for a small form or detail. Its content
- * is a `dialog`, so it needs a name: here a heading inside it, by
- * `aria-labelledby`.
+ * Floats a small form or detail beside the control that opens it, in an app
+ * where a dialog would be too heavy. A floating panel from a trigger, for a
+ * small form or detail. Its content is a `dialog`, so it needs a name: here a
+ * heading inside it, by `aria-labelledby`.
  */
 const meta = {
 	title: "App/UI/Popover",

@@ -7,9 +7,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A scale with zones and one line a reading: where a number sits against
- * the lines that decide good, slow, and poor. Each track is a picture named
- * by its reading.
+ * Shows where a reading falls against the lines that call it good, slow, or
+ * poor. A scale with zones and one line a reading: where a number sits against
+ * the lines that decide good, slow, and poor. Each track is a picture named by
+ * its reading.
  */
 const meta = {
 	title: "Components/ThresholdScale",

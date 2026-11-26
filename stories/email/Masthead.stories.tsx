@@ -4,9 +4,10 @@ import { Card, Masthead, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 
 /**
- * The email kit is inline styled tables with no sheet at all, so an `Email/`
- * story renders rows: the decorator supplies the email theme, a 680 column
- * table to hold them, and the email's ground (`.storybook/decorators.tsx`).
+ * Opens an email with the sender's wordmark row. The email kit is inline
+ * styled tables with no sheet at all, so an `Email/` story renders rows: the
+ * decorator supplies the email theme, a 680 column table to hold them, and the
+ * email's ground (`.storybook/decorators.tsx`).
  */
 const meta = {
 	title: "Email/Masthead",

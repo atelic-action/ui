@@ -3,8 +3,9 @@ import { expect } from "storybook/test";
 import { ArtifactAnchor } from "../../src/artifact";
 
 /**
- * A link inside a document's running text: one leaving the page opens in a
- * new tab, an anchor or a mail link opens in place.
+ * Sets one link inside a document's running text, opening a new tab only when
+ * it leaves the page. A link inside a document's running text: one leaving the
+ * page opens in a new tab, an anchor or a mail link opens in place.
  */
 const meta = {
 	title: "Artifact/ArtifactAnchor",

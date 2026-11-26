@@ -5,7 +5,9 @@ import { expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * Short callouts on the primary field, set inside a section after its copy.
+ * Pulls a few short claims about the business onto a primary field after a
+ * section's copy. Short callouts on the primary field, set inside a section
+ * after its copy.
  */
 const meta = {
 	title: "Sections/CalloutPanel",

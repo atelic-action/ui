@@ -6,7 +6,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 import { onDarkBand } from "./support";
 
-/** A small mono tag, for a credential, a feature, or a service area. */
+/**
+ * Tags something with a short mono label, such as a credential, a feature, or
+ * a service area. A small mono tag, for a credential, a feature, or a service
+ * area.
+ */
 const meta = {
 	title: "Primitives/Chip",
 	component: Chip,

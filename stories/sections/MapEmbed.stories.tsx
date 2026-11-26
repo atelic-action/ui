@@ -7,7 +7,8 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The location map: a static screenshot linking to directions, or, with no
+ * Shows where the business is, as a map that loads only when asked. The
+ * location map: a static screenshot linking to directions, or, with no
  * screenshot, a click to load facade over the live embed, which fetches
  * nothing until it is asked for.
  */

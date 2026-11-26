@@ -11,7 +11,11 @@ import { brand, marks, wordmarkBrand } from "../fixtures/bakery";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
-/** The header's identity as one link: the mark, the wordmark, and the trailing run. */
+/**
+ * Shows whose site or document this is, as the mark and name that link home.
+ * The header's identity as one link: the mark, the wordmark, and the trailing
+ * run.
+ */
 const meta = {
 	title: "Chrome/BrandLockup",
 	component: BrandLockup,

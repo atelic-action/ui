@@ -4,7 +4,10 @@ import { Card, LeadRow, List, ListRow, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** A hairline list inside a row or a fold, one `ListRow` per line, set at the size it is given. */
+/**
+ * Sets a short list of lines inside an email's row or fold. A hairline list
+ * inside a row or a fold, one `ListRow` per line, set at the size it is given.
+ */
 const meta = {
 	title: "Email/List",
 	component: List,

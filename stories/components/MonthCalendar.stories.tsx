@@ -24,9 +24,11 @@ function Controlled(props: ComponentProps<typeof MonthCalendar>) {
 }
 
 /**
- * A month of days to pick one from. Only the days between the first and the
- * last that the business works can be picked; the rest are greyed and named
- * so. One tab stop, the arrows between the days that can be picked.
+ * Lets a visitor pick one day from the days a business works, as the When step
+ * of a request does. A month of days to pick one from. Only the days between
+ * the first and the last that the business works can be picked; the rest are
+ * greyed and named so. One tab stop, the arrows between the days that can be
+ * picked.
  */
 const meta = {
 	title: "Components/MonthCalendar",

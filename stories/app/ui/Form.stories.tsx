@@ -92,9 +92,11 @@ function StandingOrderForm() {
 }
 
 /**
- * The kit's form parts on react-hook-form: a label, a control, a description,
- * and a message per field, tied together by ids, so a field names its label,
- * is described by its help and its error, and says when it is invalid.
+ * Builds an app's form from labeled fields that carry their own help and error
+ * text, so every field reads the same to a screen reader. The kit's form parts
+ * on react-hook-form: a label, a control, a description, and a message per
+ * field, tied together by ids, so a field names its label, is described by its
+ * help and its error, and says when it is invalid.
  */
 const meta = {
 	title: "App/UI/Form",

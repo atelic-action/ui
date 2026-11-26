@@ -3,8 +3,9 @@ import { expect } from "storybook/test";
 import { StarRow } from "../../src/primitives";
 
 /**
- * A row of filled stars, read as one picture named by the rating as given:
- * "4.5 out of 5 stars". It draws to the nearest half star.
+ * Shows a rating as a row of filled stars; use `StarRating` when the reader
+ * can set it. A row of filled stars, read as one picture named by the rating
+ * as given: "4.5 out of 5 stars". It draws to the nearest half star.
  */
 const meta = {
 	title: "Primitives/StarRow",

@@ -6,8 +6,8 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * One journal post: the way back, the headline, the byline and dates, and
- * the body.
+ * Shows one journal post with its headline, byline, and body. One journal
+ * post: the way back, the headline, the byline and dates, and the body.
  */
 const meta = {
 	title: "Sections/BlogPost",

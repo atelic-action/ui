@@ -8,8 +8,10 @@ import { until } from "../support/settle";
 import { pin } from "../support/viewports";
 
 /**
- * The app's responsive action button: an icon alone on a phone, the icon and
- * its label from `sm` up, with the label always its accessible name.
+ * Puts an action in a page's toolbar or header that must still fit a phone,
+ * where a labeled button would not. The app's responsive action button: an
+ * icon alone on a phone, the icon and its label from `sm` up, with the label
+ * always its accessible name.
  */
 const meta = {
 	title: "App/ActionButton",

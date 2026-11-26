@@ -3,8 +3,10 @@ import { expect } from "storybook/test";
 import { Rank } from "../../src/components";
 
 /**
- * A figure with its badge, for a table cell: the badge in its tone, named
- * for a screen reader by what it means, and the figure beside it.
+ * Shows a ranking, a place in an answer, or a dash in a table cell, with its
+ * badge toned by what it means. A figure with its badge, for a table cell: the
+ * badge in its tone, named for a screen reader by what it means, and the
+ * figure beside it.
  */
 const meta = {
 	title: "Components/Rank",

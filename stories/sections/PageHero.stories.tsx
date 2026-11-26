@@ -8,6 +8,7 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
+ * Opens an interior page with its title and lead; use `Hero` on the home page.
  * An interior page's opener on the alternate band: eyebrow, headline, lead.
  */
 const meta = {

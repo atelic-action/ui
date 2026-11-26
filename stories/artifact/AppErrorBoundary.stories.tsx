@@ -19,9 +19,10 @@ function quietCrash() {
 }
 
 /**
- * The plain error boundary around an artifact's routes: a crash below it
- * renders the dependency free fallback, and Try Again renders the children
- * again.
+ * Guards a document site's routes so a crash shows a plain fallback instead of
+ * a blank page. The plain error boundary around an artifact's routes: a crash
+ * below it renders the dependency free fallback, and Try Again renders the
+ * children again.
  */
 const meta = {
 	title: "Artifact/AppErrorBoundary",

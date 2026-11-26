@@ -55,10 +55,13 @@ function HomeBody() {
 }
 
 /**
- * The page wrapper with everything it mounts: the skip link, the header, the
- * body, the phone's sticky bar, the footer and its closing bar, and the
- * contact dock. The shell renders its own `.atelic-ui` root, so these stories
- * opt out of the preview's and pass the density toolbar's setting through.
+ * Wraps a whole marketing page in its header, footer, and the rest of the
+ * chrome; reach for it first, and for the pieces alone only when a page
+ * differs. The page wrapper with everything it mounts: the skip link, the
+ * header, the body, the phone's sticky bar, the footer and its closing bar,
+ * and the contact dock. The shell renders its own `.atelic-ui` root, so these
+ * stories opt out of the preview's and pass the density toolbar's setting
+ * through.
  */
 const meta = {
 	title: "Chrome/SiteShell",

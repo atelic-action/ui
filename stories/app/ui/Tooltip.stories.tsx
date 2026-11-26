@@ -11,8 +11,10 @@ import {
 import { layerOpened, noneLeft, until } from "../../support/settle";
 
 /**
- * A short line about a control, on hover or focus. It describes the control
- * and never names it, so an icon button keeps its own `aria-label`.
+ * Adds a short hint to a control in an app on hover or focus, without naming
+ * the control. A short line about a control, on hover or focus. It describes
+ * the control and never names it, so an icon button keeps its own
+ * `aria-label`.
  */
 const meta = {
 	title: "App/UI/Tooltip",

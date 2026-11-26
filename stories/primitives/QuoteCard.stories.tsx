@@ -5,7 +5,10 @@ import { longWord } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** A pull quote or a testimonial in serif italic, over its attribution. */
+/**
+ * Sets a pull quote or a testimonial over its attribution. A pull quote or a
+ * testimonial in serif italic, over its attribution.
+ */
 const meta = {
 	title: "Primitives/QuoteCard",
 	component: QuoteCard,

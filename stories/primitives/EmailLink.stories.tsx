@@ -6,7 +6,8 @@ import { brokenWords, expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * An email address as a link that writes to it: the one way the package
+ * Draws an email address as a link that writes to it, the one way the package
+ * does. An email address as a link that writes to it: the one way the package
  * draws one (Component Rules 17). An address that is not one shows as words.
  */
 const meta = {

@@ -6,8 +6,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * Drag to compare: the old page on the left, revealed over the rebuilt one
- * by a handle that drags, steps by the arrow keys, and says where it stands.
+ * Compares two frames, such as before and after, by dragging a handle across
+ * them. Drag to compare: the old page on the left, revealed over the rebuilt
+ * one by a handle that drags, steps by the arrow keys, and says where it
+ * stands.
  */
 const meta = {
 	title: "Sections/RevealSlider",

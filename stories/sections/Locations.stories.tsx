@@ -7,6 +7,7 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
+ * Shows a business with more than one address, a map beside a card for each.
  * More than one address: the flagship's map beside a card per location, each
  * with its hours, a call, and directions.
  */

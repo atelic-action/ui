@@ -7,9 +7,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The local section: where it is, who it serves, its hours, directions and a
- * call, beside the map. The hours heading sits one level under the
- * section's title, whatever level the title takes (`headingLevel`).
+ * Tells where a business with one address is, whom it serves, and when it is
+ * open, beside the map; use `Locations` for more than one address. The local
+ * section: where it is, who it serves, its hours, directions and a call,
+ * beside the map. The hours heading sits one level under the section's title,
+ * whatever level the title takes (`headingLevel`).
  */
 const meta = {
 	title: "Sections/LocationSection",

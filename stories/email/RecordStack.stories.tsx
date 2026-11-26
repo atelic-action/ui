@@ -6,11 +6,12 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * One record per row, stacked: the title with its pills, an optional
- * timeline, a mono meta line with an aside at its right, a note, and a
- * callout. No fixed columns, so a name of any length wraps on a phone. The
- * New pill, the callout's eyebrow, and a cold aside wear the accent's ink;
- * the callout's edge keeps the accent, a mark with no words.
+ * Lists records in an email one per row so they read on a phone, where a fixed
+ * column table would not fit. One record per row, stacked: the title with its
+ * pills, an optional timeline, a mono meta line with an aside at its right, a
+ * note, and a callout. No fixed columns, so a name of any length wraps on a
+ * phone. The New pill, the callout's eyebrow, and a cold aside wear the
+ * accent's ink; the callout's edge keeps the accent, a mark with no words.
  */
 const meta = {
 	title: "Email/RecordStack",

@@ -48,9 +48,11 @@ function share(canvas: Canvas, label: string) {
 const fixedWidths = [200, 60, 60, 120];
 
 /**
- * A table of numbers with a header row; a column every row leaves empty is
- * dropped unless it says keep. A data table: its header cells name the
- * column a reader is in, and a hot cell wears the accent's ink.
+ * Lays records out in an email as a table of numbers under a header row; see
+ * `RecordStack` for a phone. A table of numbers with a header row; a column
+ * every row leaves empty is dropped unless it says keep. A data table: its
+ * header cells name the column a reader is in, and a hot cell wears the
+ * accent's ink.
  */
 const meta = {
 	title: "Email/Records",

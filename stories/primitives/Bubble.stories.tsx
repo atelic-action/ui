@@ -5,9 +5,10 @@ import { Bubble } from "../../src/primitives";
 import { onDarkBand } from "./support";
 
 /**
- * A round tile holding an icon or a step number, set beside a heading. It is
- * decoration, hidden from a screen reader, so the heading beside it carries
- * the meaning.
+ * Holds an icon or a step number in a round tile beside a heading, as
+ * decoration. A round tile holding an icon or a step number, set beside a
+ * heading. It is decoration, hidden from a screen reader, so the heading
+ * beside it carries the meaning.
  */
 const meta = {
 	title: "Primitives/Bubble",

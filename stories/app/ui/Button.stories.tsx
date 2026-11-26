@@ -4,7 +4,11 @@ import { Plus } from "lucide-react";
 import { expect, fn } from "storybook/test";
 import { Button } from "../../../src/app/ui";
 
-/** The kit's button: six variants and four sizes, or any element through `asChild`. */
+/**
+ * Is the one button for every action in an app; reach for it in place of a raw
+ * button element so the look and the focus ring stay shared. The kit's button:
+ * six variants and four sizes, or any element through `asChild`.
+ */
 const meta = {
 	title: "App/UI/Button",
 	component: Button,

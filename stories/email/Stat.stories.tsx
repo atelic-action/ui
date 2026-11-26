@@ -3,7 +3,10 @@ import { expect } from "storybook/test";
 import { Card, Stat, StatsRow } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** A big number over a small faint caption: one cell of a `StatsRow`. */
+/**
+ * Is one big number over a small caption, a cell of an email's `StatsRow`. A
+ * big number over a small faint caption: one cell of a `StatsRow`.
+ */
 const meta = {
 	title: "Email/Stat",
 	component: Stat,

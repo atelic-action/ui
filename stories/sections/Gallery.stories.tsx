@@ -6,8 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A captioned grid of the business's own photos, every tile cropped to one
- * shape. It opens no lightbox: a tile is a picture and its caption.
+ * Shows a business's own work as a captioned grid of photos. A captioned grid
+ * of the business's own photos, every tile cropped to one shape. It opens no
+ * lightbox: a tile is a picture and its caption.
  */
 const meta = {
 	title: "Sections/Gallery",

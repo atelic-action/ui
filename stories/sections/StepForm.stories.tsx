@@ -67,10 +67,11 @@ function Sample(props: Partial<ComponentProps<typeof StepForm>> & { start?: numb
 }
 
 /**
- * The shell a form taken in steps is built on: the step names across the
- * top, one step with Back and its button, and a summary that stays in view,
- * beside the step from 900px and in a bar at the foot of a phone. It owns no
- * fields.
+ * Is the shell a long form is built on when it is taken in steps, with a
+ * summary that stays in view; it owns no fields. The shell a form taken in
+ * steps is built on: the step names across the top, one step with Back and its
+ * button, and a summary that stays in view, beside the step from 900px and in
+ * a bar at the foot of a phone. It owns no fields.
  */
 const meta = {
 	title: "Sections/StepForm",

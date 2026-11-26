@@ -5,8 +5,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A band on the primary color: the pitch on the left, the price in a card on
- * the right.
+ * Presents a price beside its pitch on a brand colored band, for information
+ * only; use `PricingCard` for a price a visitor books from. A band on the
+ * primary color: the pitch on the left, the price in a card on the right.
  */
 const meta = {
 	title: "Sections/PricingBand",

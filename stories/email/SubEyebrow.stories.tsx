@@ -3,7 +3,7 @@ import { expect } from "storybook/test";
 import { Card, Row, SubEyebrow } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** A faint eyebrow inside a card, over a block. */
+/** Labels a block inside an email's card. A faint eyebrow inside a card, over a block. */
 const meta = {
 	title: "Email/SubEyebrow",
 	component: SubEyebrow,

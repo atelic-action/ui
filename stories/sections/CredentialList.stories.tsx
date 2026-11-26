@@ -5,7 +5,11 @@ import { credentials, unbroken } from "../fixtures/sections";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** Card rows of credentials, each led by a short mono code. */
+/**
+ * Lists licenses, certifications, or registrations, each with its code, when a
+ * business must show it is qualified. Card rows of credentials, each led by a
+ * short mono code.
+ */
 const meta = {
 	title: "Sections/CredentialList",
 	component: CredentialList,

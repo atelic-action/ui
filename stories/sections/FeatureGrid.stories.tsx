@@ -6,7 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A heading over a grid of numbered cards.
+ * Presents several offerings at a glance as numbered cards under a heading;
+ * use `FeatureDetail` to explain one at length. A heading over a grid of
+ * numbered cards.
  */
 const meta = {
 	title: "Sections/FeatureGrid",

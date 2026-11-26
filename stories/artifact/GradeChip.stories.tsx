@@ -3,8 +3,10 @@ import { expect } from "storybook/test";
 import { GradeChip, gradeLabel, type WriteupGrade } from "../../src/artifact";
 
 /**
- * A section's grade, A to D, as a chip in its grade's color. The letter is
- * the chip's text, so the grade is never told by color alone.
+ * Shows a section's grade, A to D, as a colored chip wherever a document lists
+ * or heads a graded section. A section's grade, A to D, as a chip in its
+ * grade's color. The letter is the chip's text, so the grade is never told by
+ * color alone.
  */
 const meta = {
 	title: "Artifact/GradeChip",

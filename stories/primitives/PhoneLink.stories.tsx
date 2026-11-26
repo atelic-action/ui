@@ -6,6 +6,7 @@ import { phone } from "../fixtures/bakery";
 import { pin } from "../support/viewports";
 
 /**
+ * Draws a phone number as a link that dials it, the one way the package does.
  * A phone number as a link that dials it: the one way the package draws one
  * (Component Rules 17). A number that is not one to dial shows as words.
  */

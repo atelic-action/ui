@@ -4,8 +4,8 @@ import { Card, GroupRow, Scoreboard, TargetRow } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A group's name spanning the scoreboard, in the accent's ink over a
- * hairline.
+ * Names a group of targets on a scoreboard in an email. A group's name
+ * spanning the scoreboard, in the accent's ink over a hairline.
  */
 const meta = {
 	title: "Email/GroupRow",

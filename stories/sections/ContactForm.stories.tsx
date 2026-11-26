@@ -32,8 +32,10 @@ const sent = (call = 0) => {
 const onLead = fn();
 
 /**
- * The contact form: a name, an email, a topic, and a message, checked in
- * the browser and sent to the site's relay, with a honeypot no person sees.
+ * Lets a visitor send the business a message; use it for a plain request, and
+ * `ScheduleRequestForm` when they ask for a time. The contact form: a name, an
+ * email, a topic, and a message, checked in the browser and sent to the site's
+ * relay, with a honeypot no person sees.
  */
 const meta = {
 	title: "Sections/ContactForm",

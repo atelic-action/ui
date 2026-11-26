@@ -5,9 +5,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A section's sub pages as cards on its landing page, read from the app's
- * nav, so the rail, the menu sheet, and the landing page agree. The fixture
- * app's Orders section has two pages and Bakes one; Home has none.
+ * Lists a section's sub pages as cards on the section's landing page, so a
+ * reader can choose where to go next. A section's sub pages as cards on its
+ * landing page, read from the app's nav, so the rail, the menu sheet, and the
+ * landing page agree. The fixture app's Orders section has two pages and Bakes
+ * one; Home has none.
  */
 const meta = {
 	title: "App/SectionCards",

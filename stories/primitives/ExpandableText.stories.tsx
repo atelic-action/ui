@@ -10,8 +10,9 @@ const longText =
 	"Every loaf on the shelf was mixed the night before and baked from four in the morning, so the first ones out of the oven are still warm when the door opens at seven. We bake rye on Tuesdays and Fridays, the seeded spelt on weekends, and a short run of sweet buns whenever the plums are good. A standing order holds your loaves behind the counter until noon.";
 
 /**
- * Long text cut to a few lines with a Show more control under it. The cut
- * is drawn, never made: every word stays in the page.
+ * Keeps long text short by clamping it to a few lines behind Show more. Long
+ * text cut to a few lines with a Show more control under it. The cut is drawn,
+ * never made: every word stays in the page.
  */
 const meta = {
 	title: "Primitives/ExpandableText",

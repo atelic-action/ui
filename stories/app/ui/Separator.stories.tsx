@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Separator } from "../../../src/app/ui";
 
-/** A hairline between blocks, across or down. Decorative by default, so a reader skips it. */
+/**
+ * Divides two blocks of an app with a hairline, across or down. A hairline
+ * between blocks, across or down. Decorative by default, so a reader skips it.
+ */
 const meta = {
 	title: "App/UI/Separator",
 	component: Separator,

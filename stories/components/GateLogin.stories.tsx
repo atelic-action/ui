@@ -35,6 +35,7 @@ function withQuery(query: string) {
 }
 
 /**
+ * Is the access gate's sign in screen, asking for an email and sending a link.
  * The access gate's sign in screen: an email in, and the same "check your
  * inbox" answer whoever asks.
  */

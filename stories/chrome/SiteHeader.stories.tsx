@@ -18,9 +18,11 @@ import { PageBehind, type PageBehindProps } from "../support/page";
 import { pin } from "../support/viewports";
 
 /**
- * The fixed bar every page wears. A nav group's panel holds sections left to
- * right (link columns with badges and children, a picture, icon rows, small
- * cards) and the feature card at the right.
+ * Is the fixed bar at the top of every marketing page, carrying the brand, the
+ * navigation, and the call to action. The fixed bar every page wears. A nav
+ * group's panel holds sections left to right (link columns with badges and
+ * children, a picture, icon rows, small cards) and the feature card at the
+ * right.
  */
 const meta = {
 	title: "Chrome/SiteHeader",

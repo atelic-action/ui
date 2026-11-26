@@ -39,10 +39,11 @@ function painted(element: Element) {
 const accentOnly: Palette = { ...atelicPalette, accentInk: undefined, accent: "#1FA38A" };
 
 /**
- * A name on the left and the one value that matters on the right, in the
+ * Sets a name against the one value that matters in an email, in the accent's
+ * ink. A name on the left and the one value that matters on the right, in the
  * accent's ink: the palette's `accentInk`, since the bright accent fails as
- * small words. On a card by default; `parameters.onGround` sets it straight
- * on the email's ground.
+ * small words. On a card by default; `parameters.onGround` sets it straight on
+ * the email's ground.
  */
 const meta = {
 	title: "Email/TitleLine",

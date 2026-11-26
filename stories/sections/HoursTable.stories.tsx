@@ -6,7 +6,10 @@ import { site } from "../fixtures/bakery";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** The week's hours as rows: the days on the left, the times on the right in mono. */
+/**
+ * Lists the week's opening hours, day by day. The week's hours as rows: the
+ * days on the left, the times on the right in mono.
+ */
 const meta = {
 	title: "Sections/HoursTable",
 	component: HoursTable,

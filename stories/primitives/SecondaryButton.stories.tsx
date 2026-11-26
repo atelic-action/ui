@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { SecondaryButton } from "../../src/primitives";
 
-/** The large ghost beside a page's call to action, always second. */
+/**
+ * Sits beside the `PrimaryButton` as a page's second, quieter action. The
+ * large ghost beside a page's call to action, always second.
+ */
 const meta = {
 	title: "Primitives/SecondaryButton",
 	component: SecondaryButton,

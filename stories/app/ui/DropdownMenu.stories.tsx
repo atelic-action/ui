@@ -65,8 +65,10 @@ function OrderMenu() {
 }
 
 /**
- * A menu of actions from a button: plain items with shortcuts, a disabled
- * item, a submenu, a checkbox item, and a radio group, all on the keyboard.
+ * Tucks a set of actions behind one button in an app, when showing every
+ * action would crowd the row. A menu of actions from a button: plain items
+ * with shortcuts, a disabled item, a submenu, a checkbox item, and a radio
+ * group, all on the keyboard.
  */
 const meta = {
 	title: "App/UI/DropdownMenu",

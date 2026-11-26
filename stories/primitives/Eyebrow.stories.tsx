@@ -7,8 +7,9 @@ import { pin } from "../support/viewports";
 import { onDarkBand } from "./support";
 
 /**
- * The small mono kicker above a heading, trailed by a bar that fades to the
- * right, in the brand's primary.
+ * Introduces a heading with a small kicker above it. The small mono kicker
+ * above a heading, trailed by a bar that fades to the right, in the brand's
+ * primary.
  */
 const meta = {
 	title: "Primitives/Eyebrow",

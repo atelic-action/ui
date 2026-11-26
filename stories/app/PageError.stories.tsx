@@ -8,7 +8,8 @@ import { layerOpened } from "../support/settle";
 import { pin } from "../support/viewports";
 
 /**
- * A page's error state: a card with an alert icon, a title in the kit's
+ * Takes the place of a page's content, as an alert, when its data could not
+ * load. A page's error state: a card with an alert icon, a title in the kit's
  * destructive red, and the message. It is an alert, so a screen reader
  * announces it once as it appears; a page renders it when the error happens.
  */

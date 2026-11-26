@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Copyright } from "../../src/chrome";
 
-/** The copyright line: the mark, this year, and the business's name. The closing bar's default left side. */
+/**
+ * States who owns the page and the year, as the closing bar's default left
+ * side. The copyright line: the mark, this year, and the business's name. The
+ * closing bar's default left side.
+ */
 const meta = {
 	title: "Chrome/Copyright",
 	component: Copyright,

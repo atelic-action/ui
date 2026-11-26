@@ -8,9 +8,11 @@ import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
 /**
- * The floating launcher and its panel of the ways to reach the business. How
- * it rides above the sticky bar and the footer is proven on a whole page, in
- * SiteShell's stories; these cover the launcher and the panel on their own.
+ * Keeps a way to reach the business floating within reach on every page, for a
+ * site that wants contact one press away. The floating launcher and its panel
+ * of the ways to reach the business. How it rides above the sticky bar and the
+ * footer is proven on a whole page, in SiteShell's stories; these cover the
+ * launcher and the panel on their own.
  */
 const meta = {
 	title: "Chrome/ContactDock",

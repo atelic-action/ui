@@ -7,10 +7,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * One finding: an icon in its tone beside the title, the explainer under it.
- * Plain, it sits in a list of findings; boxed, it is the one a reader must
- * not miss. The icon is named for a screen reader, so the tone is never
- * color alone.
+ * Presents one finding, a title and an explainer in a tone, in a report or an
+ * app; it is not `CalloutPanel`, the business's headline claims. One finding:
+ * an icon in its tone beside the title, the explainer under it. Plain, it sits
+ * in a list of findings; boxed, it is the one a reader must not miss. The icon
+ * is named for a screen reader, so the tone is never color alone.
  */
 const meta = {
 	title: "Components/Callout",

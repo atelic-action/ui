@@ -6,9 +6,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The page a missing path renders: a headline, a row of popular pages, and
- * the closing call to action. It renders the page body only; a site wraps it
- * in its shell.
+ * Is the body of the page an unknown address lands on, steering a visitor
+ * toward the pages they likely wanted. The page a missing path renders: a
+ * headline, a row of popular pages, and the closing call to action. It renders
+ * the page body only; a site wraps it in its shell.
  */
 const meta = {
 	title: "Components/NotFound",

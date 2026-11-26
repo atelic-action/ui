@@ -33,7 +33,11 @@ const profile = "https://maps.example.com/?q=418+Alder+Street";
  */
 const brokenLabels = (element: HTMLElement) => brokenWords(element);
 
-/** The one footer shape every site wears (README, The Default Footer). */
+/**
+ * Ends a marketing page with the brand, hours, contact details, and links; it
+ * is the one footer shape every site wears. The one footer shape every site
+ * wears (README, The Default Footer).
+ */
 const meta = {
 	title: "Chrome/Footer",
 	component: Footer,

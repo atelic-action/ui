@@ -27,10 +27,11 @@ function shown(nav: HTMLElement) {
 }
 
 /**
- * Numbered pages with Previous and Next: always the first and last page and
- * the current one with its neighbors, the rest elided. One page renders
- * nothing. Each end button is named for the word it shows ("Previous page",
- * "Next page"), so a voice user can say what they see.
+ * Moves a reader through a long list in an app one page at a time. Numbered
+ * pages with Previous and Next: always the first and last page and the current
+ * one with its neighbors, the rest elided. One page renders nothing. Each end
+ * button is named for the word it shows ("Previous page", "Next page"), so a
+ * voice user can say what they see.
  */
 const meta = {
 	title: "App/UI/Pagination",

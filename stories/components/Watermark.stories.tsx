@@ -25,9 +25,11 @@ function signedIn(mode?: "pill" | "tiled") {
 }
 
 /**
- * The confidential stamp on every page behind the access gate: the signed in
- * viewer's email in a corner pill, and a faint tiled layer in tiled mode.
- * It is hidden from a screen reader and renders nothing without a session.
+ * Stamps every page behind the access gate with the signed in reader's email,
+ * to mark it confidential. The confidential stamp on every page behind the
+ * access gate: the signed in viewer's email in a corner pill, and a faint
+ * tiled layer in tiled mode. It is hidden from a screen reader and renders
+ * nothing without a session.
  */
 const meta = {
 	title: "Components/Watermark",

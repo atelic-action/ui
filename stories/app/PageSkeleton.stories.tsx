@@ -21,10 +21,11 @@ function rowsOf(canvas: { getByText: (text: string) => HTMLElement }) {
 }
 
 /**
- * The loading state a page shows while its data arrives: a header skeleton
- * (title, subtitle, an optional action) over a number of card skeletons in
- * one column, two columns, or a grid. It is busy, and a reader hears its
- * words ("Loading", or its own `label`) in place of the blocks.
+ * Holds a page's place while its data loads, so the layout does not jump when
+ * the data arrives. The loading state a page shows while its data arrives: a
+ * header skeleton (title, subtitle, an optional action) over a number of card
+ * skeletons in one column, two columns, or a grid. It is busy, and a reader
+ * hears its words ("Loading", or its own `label`) in place of the blocks.
  */
 const meta = {
 	title: "App/PageSkeleton",

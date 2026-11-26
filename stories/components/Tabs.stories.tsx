@@ -41,9 +41,11 @@ function clearHash() {
 }
 
 /**
- * Panels behind a row of tabs: the arrows move between tabs, only the open
- * tab takes a stop in the tab order, and every panel stays in the page,
- * hidden until found. A hash opens the tab it names.
+ * Splits a page into panels behind a row of tabs when a reader needs one panel
+ * at a time, every panel staying in the page. Panels behind a row of tabs: the
+ * arrows move between tabs, only the open tab takes a stop in the tab order,
+ * and every panel stays in the page, hidden until found. A hash opens the tab
+ * it names.
  */
 const meta = {
 	title: "Components/Tabs",
