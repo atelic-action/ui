@@ -641,7 +641,6 @@ describe("refusalError and reportRefusedResponse", () => {
 		["a dotted date", "Due 23.11.2026", true],
 		["a hyphen written date", "Due 11-23-2026", true],
 		["a leading zero street number", "Ship to 0123 Main St", true],
-		["a leading zero street number run", "Ship to 0100 200 300 Main", true],
 		["a count beside a year", "120 2026 sends", true],
 		["a bare id", "id 12345678", true],
 		["a ZIP", "ZIP 90210", true],
@@ -657,6 +656,10 @@ describe("refusalError and reportRefusedResponse", () => {
 		["a country code", "Call 1-555-555-0142 today", false],
 		["an area code in parentheses with a leading zero", "Call (0303) 555 0142 today", false],
 		["E.164", "Call +15555550142 today", false],
+		["a number abroad written with its trunk 0", "Call 020 7946 0958 today", false],
+		// A leaked number is worse than a scrubbed address, so a street number
+		// written as a run of groups is taken for one.
+		["a leading zero street number run", "Ship to 0100 200 300 Main", false],
 	])("scrub on %s", (_, text, kept) => {
 		const scrubbed = scrub(text);
 		if (kept) expect(scrubbed).toBe(text);

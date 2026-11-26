@@ -439,16 +439,15 @@ const DATE =
  * them may close on an extension (x12, ext. 12). A date (2026-11-23,
  * 11/23/2026), a bare id (12345678), a count beside a year (120 2026), a
  * status (429), and a dotted IPv4 address (192.168.10.200) are none of
- * these, and stay. So is a run that opens on a 0 with no plus sign or
- * parenthesis before it (0123 Main St, 0100 200 300 Main): no area code or
- * exchange in the United States starts with 0, so it is a street number or
- * an id, at the cost of a number abroad written with its trunk 0 (020 7946
- * 0958), which a report of these sites does not meet. A run starts at a
+ * these, and stay. A run that opens on a 0 is still read as a number (020
+ * 7946 0958), so a street number written as a run of groups (0100 200 300
+ * Main) may be scrubbed too: a number leaked is worse than an address
+ * scrubbed. A run starts at a
  * word's edge and never just after a digit's dot, so no tail of a longer
  * dotted run is taken for one.
  */
 const PHONE = new RegExp(
-	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?!${DATE})(?!0)(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})|[2-9]\\d{2}${SEP}?\\d{4})(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
+	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?!${DATE})(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})|[2-9]\\d{2}${SEP}?\\d{4})(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
 	"giu",
 );
 
