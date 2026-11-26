@@ -633,8 +633,8 @@ describe("destinations beside the email", () => {
 		it("is the submission's id, so a resubmit of the same fill reaches Resend under the first key", async () => {
 			const lead = crm({ status: "delivered" });
 			const post = createContact({ from: FROM, destinations: [lead] });
-			await post(request({ ...VALID, submissionId: BROWSER_ID }));
-			await post(request({ ...VALID, submissionId: BROWSER_ID.toUpperCase() }));
+			await post(request({ ...VALID, submissionID: BROWSER_ID }));
+			await post(request({ ...VALID, submissionID: BROWSER_ID.toUpperCase() }));
 			expect(keys()).toEqual([`localhost/${BROWSER_ID}`, `localhost/${BROWSER_ID}`]);
 			// Every destination is handed the same id, so a CRM dedupes the resubmit too.
 			expect(lead.send.mock.calls.map(([submission]) => submission.id)).toEqual([
@@ -642,7 +642,7 @@ describe("destinations beside the email", () => {
 				BROWSER_ID,
 			]);
 			// The id is the endpoint's to read, never a field.
-			expect(lead.send.mock.calls[0]?.[0].fields).not.toHaveProperty("submissionId");
+			expect(lead.send.mock.calls[0]?.[0].fields).not.toHaveProperty("submissionID");
 		});
 
 		it.each([
@@ -657,8 +657,8 @@ describe("destinations beside the email", () => {
 		])("falls back to an id of the server's own when it is %s", async (_, given) => {
 			const lead = crm({ status: "delivered" });
 			const post = createContact({ from: FROM, destinations: [lead] });
-			await post(request({ ...VALID, submissionId: given }));
-			await post(request({ ...VALID, submissionId: given }));
+			await post(request({ ...VALID, submissionID: given }));
+			await post(request({ ...VALID, submissionID: given }));
 			const ids = lead.send.mock.calls.map(([submission]) => submission.id);
 			for (const id of ids) {
 				expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
@@ -671,8 +671,8 @@ describe("destinations beside the email", () => {
 
 		it("writes the key under the site's host, so two sites never share one", async () => {
 			const post = createContact({ from: FROM });
-			await post(from("summit.example.com", { ...VALID, submissionId: BROWSER_ID }));
-			await post(from("roofs.example.com", { ...VALID, submissionId: BROWSER_ID }));
+			await post(from("summit.example.com", { ...VALID, submissionID: BROWSER_ID }));
+			await post(from("roofs.example.com", { ...VALID, submissionID: BROWSER_ID }));
 			expect(keys()).toEqual([
 				`summit.example.com/${BROWSER_ID}`,
 				`roofs.example.com/${BROWSER_ID}`,
@@ -990,7 +990,7 @@ describe("a site's settings", () => {
 		expect(await reported({ ...VALID, phone: "(303) 555-0142" }, "preview")).toEqual([]);
 	});
 
-	it.each(["company", "canary", "turnstile", "submissionId"])(
+	it.each(["company", "canary", "turnstile", "submissionID"])(
 		"refuses a field under %s, a key the endpoint reads for itself",
 		(key) => {
 			expect(() =>
@@ -1190,7 +1190,7 @@ describe("the guard and the receipt", () => {
 		});
 
 		it("keys the office's email by the guard's verdict, so a flipped verdict is never a 409", async () => {
-			const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
 			// Resend as it is: a key seen with other words is refused.
 			const seen = new Map<string, string>();
 			answers.office = () => new Response('{"id":"re_office"}', { status: 200 });
@@ -1209,23 +1209,23 @@ describe("the guard and the receipt", () => {
 			});
 			const post = guarded({ receipt: undefined });
 			// Passed, then could not answer, then passed again: the same words each time.
-			expect((await post(request({ ...SIGNED, submissionId }))).status).toBe(200);
+			expect((await post(request({ ...SIGNED, submissionID }))).status).toBe(200);
 			answers.siteverify = () => new Response('{"success":false,"error-codes":["internal-error"]}');
-			expect((await post(request({ ...SIGNED, submissionId }))).status).toBe(200);
+			expect((await post(request({ ...SIGNED, submissionID }))).status).toBe(200);
 			answers.siteverify = () => new Response('{"success":true}', { status: 200 });
-			expect((await post(request({ ...SIGNED, submissionId }))).status).toBe(200);
+			expect((await post(request({ ...SIGNED, submissionID }))).status).toBe(200);
 			const keys = officeCalls().map(([, init]) =>
 				new Headers(init?.headers).get("Idempotency-Key"),
 			);
 			expect(keys).toEqual([
-				`localhost/${submissionId}/checked`,
-				`localhost/${submissionId}/unchecked`,
-				`localhost/${submissionId}/checked`,
+				`localhost/${submissionID}/checked`,
+				`localhost/${submissionID}/unchecked`,
+				`localhost/${submissionID}/checked`,
 			]);
 		});
 
 		it("hands the guard the submission's id and an id of the request beside it", async () => {
-			const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
 			const contexts: { id: string; requestID: string }[] = [];
 			const own = {
 				name: "own",
@@ -1236,25 +1236,25 @@ describe("the guard and the receipt", () => {
 				},
 			};
 			const post = createContact({ from: FROM, guard: own });
-			await post(request({ ...SIGNED, submissionId }));
-			await post(request({ ...SIGNED, submissionId }));
-			expect(contexts.map((context) => context.id)).toEqual([submissionId, submissionId]);
+			await post(request({ ...SIGNED, submissionID }));
+			await post(request({ ...SIGNED, submissionID }));
+			expect(contexts.map((context) => context.id)).toEqual([submissionID, submissionID]);
 			expect(contexts[0]?.requestID).toMatch(/^[0-9a-f-]{36}$/);
 			expect(contexts[1]?.requestID).not.toBe(contexts[0]?.requestID);
-			expect(contexts[0]?.requestID).not.toBe(submissionId);
+			expect(contexts[0]?.requestID).not.toBe(submissionID);
 		});
 
 		it("checks the token once, under a key of this request alone", async () => {
-			const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
-			await guarded()(request({ ...SIGNED, submissionId }));
-			await guarded()(request({ ...SIGNED, submissionId }));
+			const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			await guarded()(request({ ...SIGNED, submissionID }));
+			await guarded()(request({ ...SIGNED, submissionID }));
 			expect(siteverifyCalls()).toHaveLength(2);
 			const [first, second] = siteverifyCalls().map(([, init]) => JSON.parse(String(init?.body)));
 			expect(first.response).toBe(TOKEN);
 			// A resubmit's token is never checked under the key an earlier one was.
 			expect(first.idempotency_key).toMatch(/^[0-9a-f-]{36}$/);
 			expect(second.idempotency_key).not.toBe(first.idempotency_key);
-			expect(first.idempotency_key).not.toBe(submissionId);
+			expect(first.idempotency_key).not.toBe(submissionID);
 		});
 
 		it("sends no receipt when no destination took the submission", async () => {

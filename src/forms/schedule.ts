@@ -203,7 +203,7 @@ export interface ScheduleRefusal {
 
 /**
  * The keys the form sends, beside the endpoint's own (`company`, `canary`,
- * `turnstile`, and `submissionId`, the id the browser made for this fill).
+ * `turnstile`, and `submissionID`, the id the browser made for this fill).
  */
 export const SCHEDULE_KEYS = [
 	"kind",

@@ -47,7 +47,7 @@ describe("ContactForm with the opt in fields", () => {
 			"email",
 			"message",
 			"name",
-			"submissionId",
+			"submissionID",
 			"topic",
 		]);
 	});
@@ -85,7 +85,7 @@ describe("ContactForm with the opt in fields", () => {
 			message: "A round cake",
 			consent: true,
 			company: "",
-			submissionId: expect.any(String),
+			submissionID: expect.any(String),
 		});
 	});
 

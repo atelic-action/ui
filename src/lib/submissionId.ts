@@ -6,7 +6,7 @@
  * server sees two POSTs it cannot tell apart from two people, so an id it
  * minted per POST let the second one through as a second email. The form
  * makes one id per fill instead, keeps it while the words it sends stay the
- * same, and sends it under `submissionId`, so a resubmit reaches Resend under
+ * same, and sends it under `submissionID`, so a resubmit reaches Resend under
  * the key the first try used and sends nothing more. A changed field is a
  * new inquiry and gets a new id (Resend refuses a key it has seen with other
  * words), and so does the next fill after a send went through.
@@ -20,7 +20,7 @@
  */
 
 /** The body key the form sends the id under, which no field may use. */
-export const SUBMISSION_ID_KEY = "submissionId";
+export const SUBMISSION_ID_KEY = "submissionID";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

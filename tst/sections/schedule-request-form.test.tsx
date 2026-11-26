@@ -79,7 +79,7 @@ describe("ScheduleRequestForm", () => {
 		chooseWhen();
 		fillWho();
 		const idOf = (call: number) =>
-			JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionId as string;
+			JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionID as string;
 		const send = async (calls: number) => {
 			fireEvent.click(continueButton(/Send Request/));
 			await waitFor(() => expect(fetch).toHaveBeenCalledTimes(calls));

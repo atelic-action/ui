@@ -283,7 +283,7 @@ describe("createScheduleRequest", () => {
 	});
 
 	it("keys the office's email by the browser's id under the site's host, and makes its own for a bad one", async () => {
-		const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
 		const got: string[] = [];
 		const crm = {
 			name: "crm",
@@ -298,20 +298,20 @@ describe("createScheduleRequest", () => {
 			destinations: [crm],
 			now: NOW,
 		});
-		await handler(request({ ...VALID, submissionId }));
-		await handler(request({ ...VALID, submissionId }));
-		await handler(request({ ...VALID, submissionId: "forged" }));
+		await handler(request({ ...VALID, submissionID }));
+		await handler(request({ ...VALID, submissionID }));
+		await handler(request({ ...VALID, submissionID: "forged" }));
 		const keys = vi
 			.mocked(fetch)
 			.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
-		expect(keys.slice(0, 2)).toEqual([`localhost/${submissionId}`, `localhost/${submissionId}`]);
-		expect(got.slice(0, 2)).toEqual([submissionId, submissionId]);
+		expect(keys.slice(0, 2)).toEqual([`localhost/${submissionID}`, `localhost/${submissionID}`]);
+		expect(got.slice(0, 2)).toEqual([submissionID, submissionID]);
 		expect(got[2]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 		expect(keys[2]).toBe(`localhost/${got[2]}`);
 	});
 
 	it("keys the office's email by the guard's verdict when it names a guard", async () => {
-		const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
 		let verdict: "passed" | "unanswered" = "passed";
 		const guard: Guard = {
 			name: "test",
@@ -322,15 +322,15 @@ describe("createScheduleRequest", () => {
 					: { status: "unanswered", cause: new Error("down") },
 		};
 		const handler = createScheduleRequest({ from: FROM, config: CONFIG, guard, now: NOW });
-		await handler(request({ ...VALID, turnstile: "t", submissionId }));
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
 		verdict = "unanswered";
-		await handler(request({ ...VALID, turnstile: "t", submissionId }));
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
 		const keys = vi
 			.mocked(fetch)
 			.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
 		expect(keys).toEqual([
-			`localhost/${submissionId}/checked`,
-			`localhost/${submissionId}/unchecked`,
+			`localhost/${submissionID}/checked`,
+			`localhost/${submissionID}/unchecked`,
 		]);
 	});
 

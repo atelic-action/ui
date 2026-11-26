@@ -240,7 +240,7 @@ describe("ContactForm (endpoint mode)", () => {
 describe("ContactForm submission id", () => {
 	const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 	const idOf = (call: number) =>
-		JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionId as string;
+		JSON.parse(String(vi.mocked(fetch).mock.calls[call]?.[1]?.body)).submissionID as string;
 	const send = async (calls: number) => {
 		fireEvent.click(screen.getByRole("button", { name: /Send Message/ }));
 		await waitFor(() => expect(fetch).toHaveBeenCalledTimes(calls));

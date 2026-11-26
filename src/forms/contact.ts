@@ -452,7 +452,7 @@ const FORM_KEYS = ["firstName", "lastName", "phone", "address", "services", "con
 /**
  * The keys the endpoint reads for itself: `company` is the honeypot, whose
  * any value drops the submission, `canary` carries the canary's token,
- * `turnstile` the guard's token, and `submissionId` the id the browser made
+ * `turnstile` the guard's token, and `submissionID` the id the browser made
  * for this fill (`lib/submissionId`). A site's field under any of them would
  * be lost without a word.
  */

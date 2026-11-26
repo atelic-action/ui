@@ -102,7 +102,7 @@ export const SendsAndThanks: Story = {
 				message: "A round cake for Saturday, please.",
 				company: "",
 				// The fill's own id, kept across a resubmit of the same words (9.7.0).
-				submissionId: expect.stringMatching(
+				submissionID: expect.stringMatching(
 					/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
 				),
 			});
@@ -632,7 +632,7 @@ export const ServiceBusiness: Story = {
 				address: { street: "4180 Cedar Hollow Road", city: "Fairhaven", state: "WY", zip: "82000" },
 				services: ["Celebration cakes", "Catering"],
 				consent: true,
-				submissionId: expect.any(String),
+				submissionID: expect.any(String),
 			});
 			await expect(onLead).toHaveBeenCalledOnce();
 		});
