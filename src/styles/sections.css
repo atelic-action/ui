@@ -2351,7 +2351,11 @@
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		animation: marquee-scroll var(--_marquee-duration, 30s) linear infinite;
+	}
+	/* The loop starts once the row is measured, so its length is never
+	   changed under a running animation. */
+	.atelic-ui .marquee-track[data-measured] .marquee-group {
+		animation: marquee-scroll var(--_marquee-duration) linear infinite;
 	}
 	.atelic-ui .marquee-item {
 		display: flex;
@@ -2413,12 +2417,15 @@
 
 	/* ---- LogoMarquee (logo-marquee.css) ---- */
 	/* Dark credentials band, a Marquee of chips with a fade at each end. */
-	.atelic-ui .creds {
+	.atelic-ui .creds,
+	.atelic-ui .marquee-band[data-ground="dark"] {
 		--_marquee-ground: var(--surface-dark);
 		--_marquee-ring: color-mix(in srgb, var(--on-dark) 24%, transparent);
 		--_marquee-ring-strong: color-mix(in srgb, var(--on-dark) 50%, transparent);
 		--_marquee-control: var(--on-dark-chip);
 		border-bottom: none;
+	}
+	.atelic-ui .creds {
 		padding-block: 22px;
 	}
 	.atelic-ui .creds .chip {
@@ -2443,7 +2450,7 @@
 	   nothing to pause, and the row can be scrolled sideways inside its band.
 	   The credentials band wraps to a centered block instead. */
 	@media (prefers-reduced-motion: reduce) {
-		.atelic-ui .marquee-group {
+		.atelic-ui .marquee-track[data-measured] .marquee-group {
 			animation: none;
 		}
 		.atelic-ui .marquee {

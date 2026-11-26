@@ -5,6 +5,7 @@ import {
 	type ReactNode,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
@@ -40,8 +41,8 @@ export interface MarqueeProps {
 /**
  * One row of anything that scrolls without end, at a pace. The row is
  * repeated until the loop shows no gap, measured in an effect, and every
- * copy after the first is hidden from assistive technology and inert, so
- * each item is read once and focused once. A quiet toggle at the band's edge
+ * copy after the first is hidden from assistive technology and kept out of
+ * the tab order, so each item is read once and focused once. A quiet toggle at the band's edge
  * stops the row (WCAG 2.2.2). Under `prefers-reduced-motion` nothing moves:
  * the copies are not drawn, the toggle goes, and the row can be scrolled
  * sideways, taking focus when it is wider than the band so a keyboard can.
@@ -64,6 +65,7 @@ export function Marquee({
 	const [row, setRow] = useState({ width: 0, copies: 2, overflows: false });
 	const bandRef = useRef<HTMLDivElement>(null);
 	const rowRef = useRef<HTMLUListElement>(null);
+	const trackRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -106,10 +108,32 @@ export function Marquee({
 	}, [measure, still]);
 
 	const seconds = marqueeDuration(row.width, speed);
-	const trackStyle =
-		seconds > 0
-			? ({ "--_marquee-duration": `${seconds.toFixed(2)}s` } as CSSProperties)
-			: undefined;
+	const measured = seconds > 0;
+
+	// The copies are one track: each is held to the first one's place in the
+	// loop, so a copy drawn later (a wider band, a resize) joins in step, and
+	// a copy after the first keeps focus out of its links without blocking
+	// the pointer, which `inert` would (it is used only before the measure,
+	// when the server's copy has nothing else to keep it out).
+	// biome-ignore lint/correctness/useExhaustiveDependencies: the copies and the pace are what change the row
+	useLayoutEffect(() => {
+		const track = trackRef.current;
+		if (!track || !measured) return;
+		const groups = [...track.querySelectorAll<HTMLElement>(":scope > .marquee-group")];
+		const lead = groups[0]?.getAnimations?.()[0];
+		for (const group of groups.slice(1)) {
+			for (const target of group.querySelectorAll<HTMLElement>(
+				"a[href], button, input, select, textarea, summary, [tabindex], [contenteditable]",
+			)) {
+				target.setAttribute("tabindex", "-1");
+			}
+			const animation = group.getAnimations?.()[0];
+			if (lead && animation && lead.currentTime !== null) animation.currentTime = lead.currentTime;
+		}
+	}, [row.copies, measured, seconds, children]);
+	const trackStyle = measured
+		? ({ "--_marquee-duration": `${seconds.toFixed(2)}s` } as CSSProperties)
+		: undefined;
 	const items = Children.toArray(children);
 	const copy = (place: number) => (
 		<ul
@@ -117,7 +141,7 @@ export function Marquee({
 			ref={place === 0 ? rowRef : undefined}
 			className="marquee-group"
 			aria-hidden={place > 0 || undefined}
-			inert={place > 0}
+			inert={place > 0 && !measured}
 		>
 			{items.map((item, at) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: the row is fixed content in a fixed order, drawn again for each copy
@@ -142,7 +166,12 @@ export function Marquee({
 				data-paused={paused || undefined}
 				tabIndex={still && row.overflows ? 0 : undefined}
 			>
-				<div className="marquee-track" style={trackStyle}>
+				<div
+					ref={trackRef}
+					className="marquee-track"
+					data-measured={measured || undefined}
+					style={trackStyle}
+				>
 					{Array.from({ length: row.copies }, (_, place) => copy(place))}
 				</div>
 			</div>
