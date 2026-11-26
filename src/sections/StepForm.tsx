@@ -154,6 +154,18 @@ export function StepForm({
 		if (!sheetOpen && sheet.open) sheet.close();
 	}, [sheetOpen]);
 
+	// Past 900px the sheet is hidden and the summary sits beside the step, so a
+	// sheet left open (a phone turned sideways) closes rather than stay modal unseen.
+	useEffect(() => {
+		if (!sheetOpen || typeof window.matchMedia !== "function") return;
+		const wide = window.matchMedia("(min-width: 900px)");
+		const close = () => {
+			if (wide.matches) setSheetOpen(false);
+		};
+		wide.addEventListener?.("change", close);
+		return () => wide.removeEventListener?.("change", close);
+	}, [sheetOpen]);
+
 	const submit = (event: FormEvent) => {
 		event.preventDefault();
 		if (!busy) onNext();

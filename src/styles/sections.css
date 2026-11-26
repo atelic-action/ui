@@ -750,7 +750,6 @@
 	@media (max-width: 899px) {
 		.atelic-ui .step-form {
 			grid-template-columns: minmax(0, 1fr);
-			padding-bottom: 150px;
 		}
 		/* The bar is fixed over the foot of the screen: the page keeps room under its
 		   last line, so the site footer scrolls clear of it. */
