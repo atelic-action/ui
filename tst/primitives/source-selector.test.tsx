@@ -70,4 +70,55 @@ describe("SourceSelector", () => {
 			renderToString(<SourceSelector source={SOURCE} value="" onChange={() => {}} />),
 		).toContain("How did you hear about us?");
 	});
+
+	describe("an answer that asks for a detail (9.5.0)", () => {
+		const ASKING = {
+			label: "How did you hear about us?",
+			options: [
+				"Google",
+				{ label: "Referral", detail: { label: "Who referred you?", placeholder: "A name" } },
+			],
+		};
+
+		it("draws the detail field only while that answer is chosen, on a form that takes it", () => {
+			const onDetailChange = vi.fn();
+			const { rerender } = render(
+				<SourceSelector
+					source={ASKING}
+					value="Google"
+					onChange={() => {}}
+					onDetailChange={onDetailChange}
+				/>,
+			);
+			expect(screen.queryByLabelText(/Who referred you/)).toBeNull();
+			rerender(
+				<SourceSelector
+					source={ASKING}
+					value="Referral"
+					onChange={() => {}}
+					onDetailChange={onDetailChange}
+					hint="(optional)"
+				/>,
+			);
+			const detail = screen.getByLabelText(/Who referred you/);
+			expect(detail).toHaveAttribute("name", "sourceDetail");
+			expect(detail).toHaveAttribute("placeholder", "A name");
+			fireEvent.change(detail, { target: { value: "A neighbor" } });
+			expect(onDetailChange).toHaveBeenLastCalledWith("A neighbor");
+		});
+
+		it("lists an option written out by its label, and draws no detail without onDetailChange", () => {
+			render(<SourceSelector source={ASKING} value="Referral" onChange={() => {}} />);
+			expect(screen.getByRole("option", { name: "Referral" })).toHaveValue("Referral");
+			expect(screen.queryByLabelText(/Who referred you/)).toBeNull();
+		});
+
+		it("renders the same select as before for a list of words", () => {
+			const before = renderToString(
+				<SourceSelector source={SOURCE} value="" onChange={() => {}} id="s" />,
+			);
+			expect(before).not.toContain("sourceDetail");
+			expect(before.match(/<div/g)).toHaveLength(1);
+		});
+	});
 });

@@ -6,7 +6,14 @@
  * its own.
  */
 
-export type { Source } from "../forms/source";
+export type {
+	ScheduleConfig,
+	ScheduleKind,
+	ScheduleMaterial,
+	ScheduleMode,
+	ScheduleModeWords,
+} from "../forms/scheduleConfig";
+export type { Source, SourceDetail, SourceOption } from "../forms/source";
 export {
 	type ContactFormField,
 	type ContactFormValues,
@@ -106,7 +113,22 @@ export { type ProofItem, ProofStrip, type ProofStripProps } from "./ProofStrip";
 export { type RevealSlide, RevealSlider, type RevealSliderProps } from "./RevealSlider";
 export { ReviewCarousel, type ReviewCarouselProps, type ReviewStat } from "./ReviewCarousel";
 export { type ReviewItem, ReviewWall, type ReviewWallProps } from "./ReviewWall";
+export {
+	type ScheduleRequestAddress,
+	type ScheduleRequestConsent,
+	type ScheduleRequestField,
+	ScheduleRequestForm,
+	type ScheduleRequestFormProps,
+	type ScheduleRequestLabels,
+	type ScheduleRequestValues,
+} from "./ScheduleRequestForm";
 export { SplitSection, type SplitSectionProps } from "./SplitSection";
+export {
+	StepForm,
+	type StepFormLabels,
+	type StepFormProps,
+	type StepFormSummaryRow,
+} from "./StepForm";
 export type {
 	Address,
 	Clock,

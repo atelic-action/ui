@@ -1480,4 +1480,102 @@
 			transition: none;
 		}
 	}
+
+	/* MonthCalendar (9.5.0): seven columns, a day a button, a day that cannot
+	   be picked greyed and out of the tab order. */
+	.atelic-ui .month-calendar {
+		margin: 0 0 20px;
+		min-width: 0;
+	}
+	.atelic-ui .mc-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 10px;
+	}
+	.atelic-ui .mc-month {
+		font: var(--weight-bold) 18px / 1.2 var(--font-sans);
+		color: var(--ink);
+	}
+	.atelic-ui .mc-nav {
+		display: flex;
+		gap: 6px;
+	}
+	.atelic-ui .mc-nav button {
+		width: 44px;
+		height: 44px;
+		display: grid;
+		place-items: center;
+		box-sizing: border-box;
+		padding: 0;
+		border: 1.5px solid var(--hairline-strong);
+		border-radius: 50%;
+		background: var(--card);
+		color: var(--primary-ink, var(--primary));
+		cursor: pointer;
+	}
+	.atelic-ui .mc-nav button:disabled {
+		color: var(--neutral-300);
+		cursor: default;
+	}
+	.atelic-ui .mc-nav button:not(:disabled):hover {
+		border-color: var(--primary);
+		background: var(--primary-tint);
+	}
+	.atelic-ui .mc-grid {
+		display: grid;
+		grid-template-columns: repeat(7, minmax(0, 1fr));
+		gap: 4px;
+	}
+	.atelic-ui .mc-dow {
+		padding: 4px 0 6px;
+		text-align: center;
+		font: var(--weight-bold) 13px / 1 var(--font-sans);
+		color: var(--neutral-600);
+	}
+	.atelic-ui .mc-day {
+		aspect-ratio: 1 / 1;
+		max-height: 56px;
+		width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
+		padding: 0;
+		display: grid;
+		place-items: center;
+		border: 1.5px solid transparent;
+		border-radius: var(--radius-md);
+		background: var(--surface-alt);
+		font: var(--weight-bold) 16px / 1 var(--font-sans);
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.atelic-ui .mc-day:hover:not(:disabled) {
+		border-color: var(--primary);
+	}
+	.atelic-ui .mc-day:disabled {
+		background: none;
+		font-weight: var(--weight-regular);
+		color: var(--neutral-300);
+		cursor: default;
+	}
+	.atelic-ui .mc-day.is-on {
+		background: var(--primary-fill, var(--primary));
+		color: var(--on-primary);
+	}
+	.atelic-ui .mc-blank {
+		visibility: hidden;
+	}
+	.atelic-ui .mc-day:focus-visible,
+	.atelic-ui .mc-nav button:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	.atelic-ui .mc-error {
+		display: block;
+		margin: 6px 0 0;
+		color: var(--field-error, var(--primary-ink, var(--primary)));
+		font-size: var(--field-error-size);
+		font-weight: var(--weight-bold);
+	}
 }

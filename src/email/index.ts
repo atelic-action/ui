@@ -41,6 +41,7 @@ export {
 	TitleCard,
 	type TitleCardProps,
 } from "./frame";
+export { RequestEmail, type RequestEmailProps } from "./RequestEmail";
 export {
 	Badge,
 	type BadgeProps,

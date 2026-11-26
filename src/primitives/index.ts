@@ -1,4 +1,4 @@
-export type { Source } from "../forms/source";
+export type { Source, SourceDetail, SourceOption } from "../forms/source";
 export { EMAIL_PATTERN, isE164, isEmail, toE164 } from "../lib/contactLinks";
 export {
 	type AddressComponent,
@@ -17,6 +17,7 @@ export { Bubble, type BubbleProps } from "./Bubble";
 export { Button, type ButtonProps } from "./Button";
 export { type CallToActionProps, PrimaryButton, SecondaryButton } from "./CallToAction";
 export { Chip, type ChipProps } from "./Chip";
+export { type ChoiceCardOption, ChoiceCards, type ChoiceCardsProps } from "./ChoiceCards";
 export { EmailLink, type EmailLinkProps, emailHref } from "./EmailLink";
 export { ExpandableText, type ExpandableTextProps } from "./ExpandableText";
 export { Eyebrow, type EyebrowProps } from "./Eyebrow";
