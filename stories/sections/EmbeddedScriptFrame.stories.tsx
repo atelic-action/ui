@@ -67,7 +67,12 @@ export const SingleLoader: Story = {
 			ready: "1500",
 		}),
 		mountId: "order-tool-single",
-		readyMessage: { origin: window.location.origin, type: "stand-in-loaded" },
+		// The design build reads the stories' args outside a browser, where
+		// there is no window; the story itself only ever runs in one.
+		readyMessage: {
+			origin: typeof window === "undefined" ? "" : window.location.origin,
+			type: "stand-in-loaded",
+		},
 		hostChrome: "#stand-in-page-loader",
 	},
 	// The stand in's page loader leaves only on the tool's message, so a run

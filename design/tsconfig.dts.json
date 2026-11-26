@@ -1,9 +1,11 @@
 {
   /* The declaration flattener's program: the four barrels through
-     design/entry.ts, with no ambient types (bun's globals break the bundler). */
+     design/entry.ts, with no ambient types but Node's (bun's globals break
+     the bundler). Node's are there for `process.env`, which the form relay's
+     guard and endpoints read and the contact form reaches since 9.2.0. */
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "noEmit": false
   },
   "include": ["entry.ts"]

@@ -30,6 +30,7 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `StatRow` | `@atelic-action/ui/components` | A row of large figures with periods, deltas, and trends; a share's denominator set small after the figure (`outOf`) and a change set small beside it with a triangle (`change`), 3.14.0 | [Components/StatRow](https://ui.atelic.me/?path=/docs/components-statrow--docs) |
 | `Callout` | `@atelic-action/ui/components` | One finding: an icon in its tone, the title, the explainer (not `CalloutPanel`, the business's headline claims) | [Components/Callout](https://ui.atelic.me/?path=/docs/components-callout--docs) |
 | `Disclosure` | `@atelic-action/ui/components` | A section that folds: controlled, an app's card; uncontrolled, a native details fold that prints open | [Components/Disclosure](https://ui.atelic.me/?path=/docs/components-disclosure--docs) |
+| `MonthCalendar`, `MonthCalendarProps`, `MonthCalendarLabels` | `@atelic-action/ui/components` | A month of days to pick one from, between `first` and `last` and where `isAvailable` says, the rest greyed and named so; the first month opens on the first day's week; one tab stop, the arrows between the days that can be picked, Page Up and Page Down a month (9.5.0) | [Components/MonthCalendar](https://ui.atelic.me/?path=/docs/components-monthcalendar--docs) |
 | `MultiSelect`, `MultiSelectOption`, `MultiSelectProps` | `@atelic-action/ui/components` | A button naming what is chosen over a Radix popover of Radix checkboxes, any number ticked, each chosen value submitted under `name`; styled in `components.css`, so an app draws it too (8.5.0) | [Components/MultiSelect](https://ui.atelic.me/?path=/docs/components-multiselect--docs) |
 | `Tabs`, `TabsItem` | `@atelic-action/ui/components` | Panels behind a row of tabs, every panel kept in the page: a hash opens the tab or the panel holding what it names, and it prints every panel under its label | [Components/Tabs](https://ui.atelic.me/?path=/docs/components-tabs--docs) |
 | `StackedBar` | `@atelic-action/ui/components` | One bar split into the parts of a whole, with a key | [Components/StackedBar](https://ui.atelic.me/?path=/docs/components-stackedbar--docs) |
@@ -40,7 +41,8 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `Watermark` | `@atelic-action/ui/components` | The signed in reader's confidential stamp, pill or tiled | [Components/Watermark](https://ui.atelic.me/?path=/docs/components-watermark--docs) |
 | `readCookie`, `Tone` | `@atelic-action/ui/components` | The cookie reader the watermark uses, and the tone type | none |
 | `Button`, `PrimaryButton`, `SecondaryButton`, `Chip`, `Eyebrow`, `Lead`, `SectionHeading` | `@atelic-action/ui/primitives` | The small pieces a page is set in; the two named buttons are the only call to action shapes a page uses | [Primitives/Button](https://ui.atelic.me/?path=/docs/primitives-button--docs) |
-| `SourceSelector`, `SourceSelectorProps`, `Source` | `@atelic-action/ui/primitives`, `@atelic-action/ui/sections` | How a visitor heard about the business: a labeled native select of the site's answers from its one `Source`, an empty first row before them, controlled, so it sits on any form; `ContactForm` draws it from `source` (9.2.0) | [Primitives/SourceSelector](https://ui.atelic.me/?path=/docs/primitives-sourceselector--docs) |
+| `SourceSelector`, `SourceSelectorProps`, `Source`, `SourceOption`, `SourceDetail` | `@atelic-action/ui/primitives`, `@atelic-action/ui/sections` | How a visitor heard about the business: a labeled native select of the site's answers from its one `Source`, an empty first row before them, controlled, so it sits on any form; `ContactForm` draws it from `source` (9.2.0); an answer written `{ label, detail: { label, placeholder? } }` draws a short text field under the select while it is chosen, on a form that passes `onDetailChange`, and the typed words travel as `sourceDetail` (9.5.0) | [Primitives/SourceSelector](https://ui.atelic.me/?path=/docs/primitives-sourceselector--docs) |
+| `ChoiceCards`, `ChoiceCardsProps`, `ChoiceCardOption` | `@atelic-action/ui/primitives` | A choice seen whole: two or three answers, each a card holding its native radio, its name, and one line under it, the whole card the radio's label; a radio group to the keyboard, described by its `error` (9.5.0) | [Primitives/ChoiceCards](https://ui.atelic.me/?path=/docs/primitives-choicecards--docs) |
 | `Spinner`, `SpinnerProps` | `@atelic-action/ui/primitives` | The loading animation for sites built from this package, so a site component that waits reaches for it rather than drawing its own (the app shell keeps its own): a turning ring in the primary color, in three sizes (`sm` 20px beside a line of text or in a button, `md` 32px by default, `lg` 72px for a wait that holds a space), its label heard and not seen; under reduced motion the ring holds still and the label shows beside it, at every size. No live region of its own: a caller that announces the wait sets it in an `<output>` (9.4.0) | [Primitives/Spinner](https://ui.atelic.me/?path=/docs/primitives-spinner--docs) |
 | `AddressSearch`, `AddressProvider`, `AddressSuggestion`, `AddressParts`, `AddressSearchProps` | `@atelic-action/ui/primitives` | A field that offers addresses as they are typed from the provider a site passes, and hands back the street, city, state, and ZIP on a pick; renders nothing without a provider (8.5.0) | [Primitives/AddressSearch](https://ui.atelic.me/?path=/docs/primitives-addresssearch--docs) |
 | `googlePlacesProvider`, `GooglePlacesOptions`, `GoogleMapsAttribution`, `addressFromComponents`, `AddressComponent` | `@atelic-action/ui/primitives` | Google's address suggestions as an `AddressSearch` provider from a key alone (the Maps JavaScript API's Places library, loaded on the field's first focus, one session token per search and pick), the "Google Maps" credit its terms ask for, and the mapping from Google's address components to street, city, state, and ZIP (8.5.0) | [Primitives/AddressSearch](https://ui.atelic.me/?path=/docs/primitives-addresssearch--docs) |
@@ -61,6 +63,7 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `Item`, `TitleLine`, `Note`, `EmptyRow`, `Stat`, `StatsRow`, `List`, `ListRow`, `LeadRow`, `ReadBlock`, `Badge` | `@atelic-action/ui/email` | The rows inside a card | [Email/Item](https://ui.atelic.me/?path=/docs/email-item--docs) |
 | `Scoreboard`, `GroupRow`, `TargetRow`, `Bar`, `DayStrip` | `@atelic-action/ui/email` | Targets against what was logged, and the week by day | [Email/Scoreboard](https://ui.atelic.me/?path=/docs/email-scoreboard--docs) |
 | `RecordStack`, `RecordTimelineStrip`, `Records` | `@atelic-action/ui/email` | Records stacked for a phone, their timeline, and the fixed column table | [Email/RecordStack](https://ui.atelic.me/?path=/docs/email-recordstack--docs) |
+| `RequestEmail`, `RequestEmailProps` | `@atelic-action/ui/email` | The customer's confirmation of a schedule request as an email row: the card the endpoint mails, in the email theme's palette (9.5.0) | [Email/RequestEmail](https://ui.atelic.me/?path=/docs/email-requestemail--docs) |
 | `EmailThemeProvider`, `useEmailTheme`, `eyebrowStyle`, `accentInk`, `contrastRatio`, `wrapLong`, the plain text helpers (`recordStackText`, `recordTimelineSummary`, `wrap`, `textTable`, and the rest) | `@atelic-action/ui/email` | The palette context, the accent's ink and the contrast check behind it, the long token wrap, and the plain text twin (see [Email](#email)) | [Email/WeeklyReport](https://ui.atelic.me/?path=/docs/email-weeklyreport--docs) (the text twin) |
 | `renderEmail`, `renderFailureEmail` | `@atelic-action/ui/email/render` | The whole email document, and the failure page's | [Email/WeeklyReport](https://ui.atelic.me/?path=/docs/email-weeklyreport--docs) |
 | `atelicPalette`, `atelicFonts`, `toThemeCSS`, `themeTokenMap`, `Palette`, `Fonts` | `@atelic-action/ui/tokens` | The palette and font stacks, with no React | none |
@@ -81,6 +84,9 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `ContactForm` | `@atelic-action/ui/sections` | Validated form with a honeypot that posts to `endpoint` (or hands off to mail); `onLead` replaces the default GA4 `generate_lead` event; `onError` hands a failed send up to the site and `inlineError` turns the form's own failure message off (9.1.0); `source` draws the Source Selector, `guard` runs Cloudflare Turnstile at submit, and `blockedMessage` is the site's words for a send stopped as a bot's (9.2.0); opt in props add a split name, a phone, the address with its search, a services picker, a consent line, a count of fields to fix, and a thanks that replaces the form (8.5.0) | [Sections/ContactForm](https://ui.atelic.me/?path=/docs/sections-contactform--docs) |
 | `ContactFormAddress`, `ContactFormConsent`, `ContactFormLabels`, `ContactFormPlaceholders`, `ContactFormThanks`, `ContactFormValues`, `ContactFormField`, `isPhoneNumber`, `isZIP` | `@atelic-action/ui/sections` | The shapes the form's opt in props take, what a visitor wrote, and the form's default phone and ZIP checks (8.5.0) | none |
 | `ContactFormSent`, `ContactThanksWords`, `ContactFormFailure` | `@atelic-action/ui/sections` | What the thanks's words are handed beside what was sent (whether a receipt went to the visitor), the type of those words, and what `onError` is handed beside the endpoint's words (whether the send was blocked) (9.2.0) | none |
+| `StepForm`, `StepFormProps`, `StepFormSummaryRow`, `StepFormLabels` | `@atelic-action/ui/sections` | The shell a form taken in steps is built on: the step names, a finished step a button back to it; one step with Back and its button; a summary pinned beside the step from 900px and, below that, two short lines in a bar at the foot of the screen that open it as a modal sheet, with a back arrow and a call button; it owns no fields (9.5.0; see [Schedule Requests](#schedule-requests)) | [Sections/StepForm](https://ui.atelic.me/?path=/docs/sections-stepform--docs) |
+| `ScheduleRequestForm`, `ScheduleRequestFormProps`, `ScheduleRequestValues`, `ScheduleRequestField`, `ScheduleRequestLabels`, `ScheduleRequestAddress`, `ScheduleRequestConsent` | `@atelic-action/ui/sections` | A request for a visit or a call in three steps on `StepForm` (What, When, Who), then the request received, never booked, all from the business's one `ScheduleConfig` (9.5.0; see [Schedule Requests](#schedule-requests)) | [Sections/ScheduleRequestForm](https://ui.atelic.me/?path=/docs/sections-schedulerequestform--docs) |
+| `ScheduleConfig`, `ScheduleKind`, `ScheduleMaterial`, `ScheduleMode`, `ScheduleModeWords` | `@atelic-action/ui/sections`, `@atelic-action/ui/forms/schedule` | The one config a site states for its schedule request, read by the form and the endpoint (types) (9.5.0) | none |
 | `ContactInfoCard` | `@atelic-action/ui/sections` | A dark card of direct contact rows: call, email, visit, portal; `layout="stacked"` sets each label over its number (8.5.0) | [Sections/ContactInfoCard](https://ui.atelic.me/?path=/docs/sections-contactinfocard--docs) |
 | `ContactSection`, `ContactSectionProps` | `@atelic-action/ui/sections` | A contact page's body: the form in a card with an optional heading and lead, beside a side column of what the site stacks there; one column, the card first, when the two no longer fit; the ratio, bases, gaps, and card padding by token (8.6.0) | [Sections/ContactSection](https://ui.atelic.me/?path=/docs/sections-contactsection--docs) |
 | `InfoRows`, `InfoRow`, `InfoRowAction`, `InfoRowIcon`, `InfoRowsProps` | `@atelic-action/ui/sections` | Rows of a title over a few lines with one icon action on the right, the way a map pack lists a place with its directions (8.5.0) | [Sections/InfoRows](https://ui.atelic.me/?path=/docs/sections-inforows--docs) |
@@ -125,7 +131,9 @@ Every export, grouped by the entry it is imported from. The Storybook column lin
 | `createContact`, `ContactOptions`, `ContactField`, `FieldKind`, `ContactFields`, `PLAIN_FIELDS`, `readFields`, `officeEmail`, `recipients`, `subjectText` | `@atelic-action/ui/forms/contact` | The contact form's endpoint as one call: a site names its sender, its fields, and its destinations (9.1.0; see [The Form Relay](#the-form-relay)); its `guard` and `receipt`, the `choice` kind, and a field's `options` and `blank` (9.2.0) | none |
 | `turnstileGuard`, `Guard`, `GuardVerdict`, `GuardContext`, `TurnstileOptions`, `TURNSTILE_PRIVACY_NOTICE`, `TURNSTILE_PRIVACY_ADDENDUM_URL` | `@atelic-action/ui/forms/guard` | The spam check a submission passes before it is delivered, and Cloudflare Turnstile's: refused only when Cloudflare calls the token bad, let through and reported when it cannot answer (9.2.0); the privacy policy sentence Cloudflare requires beside the widget (9.3.0) | none |
 | `receiptEmail`, `ReceiptOptions`, `noReplySender`, `receiptSender` | `@atelic-action/ui/forms/receipt` | The visitor's receipt, sent only behind a guard that passed, from a no-reply address with no reply address, closing on a line saying replies are not read; by default it holds only the site's own words, and `copy` adds what the visitor sent (9.2.0) | none |
-| `sourceField`, `Source` | `@atelic-action/ui/forms/source` | The Source Selector's settings, stated once, and the endpoint field its answer arrives as (9.2.0) | none |
+| `sourceField`, `Source`, `SourceOption`, `SourceDetail`, `sourceOptions`, `sourceLabels`, `sourceDetailFor` | `@atelic-action/ui/forms/source` | The Source Selector's settings, stated once, and the endpoint field its answer arrives as (9.2.0); an answer that asks for a typed detail (9.5.0) | none |
+| `createScheduleRequest`, `ScheduleRequestOptions`, `ScheduleFields`, `readScheduleRequest`, `officeScheduleEmail`, `scheduleRecipients`, `scheduleConfigProblems`, `requestEmail`, `ScheduleConfirmationOptions`, `RequestEmailLook`, the config types and helpers (`waysFor`, `modeFor`, `lengthWords`, `modeWords`) | `@atelic-action/ui/forms/schedule` | The schedule request's endpoint as one call, the relay's second consumer: it holds every request to the calendar again, tells the office, and sends the customer's confirmation behind a guard that passed (9.5.0; see [Schedule Requests](#schedule-requests)) | none |
+| `checkDay`, `firstDay`, `lastDay`, `isWorkingDay`, `addBusinessDays`, `federalHolidays`, `holidayOn`, `timeSlots`, `isOfferedTime`, `dayIn`, `zonedInstant`, `longDayLabel`, `clockLabel`, `CalendarRules` | `@atelic-action/ui/forms/calendar` | The calendar a request is held to, pure and built: weekends, the United States federal holidays on their observed days, closed days, N business days out, and the times through the office day, every day read in a named IANA zone (9.5.0) | none |
 | `relay`, `Destination`, `DestinationResult`, `Submission`, `RelayOptions`, `RelayResult`, `Leg`, `down`, `refused`, `isTaken`, `legError` | `@atelic-action/ui/forms/relay` | Hands one submission to a list of destinations at once, with one more try for a destination that is down and a report for each that fails (9.1.0); a submission says whether a check vouched for it (`checked`, 9.2.0) | none |
 | `resendDestination`, `ResendOptions`, `Email` | `@atelic-action/ui/forms/resend` | Email through Resend as a destination of the relay (9.1.0) | none |
 | `sections.css` | `@atelic-action/ui/styles/sections.css` | Styles for everything under `sections`, imported after `primitives.css` | none |
@@ -563,7 +571,7 @@ A site with a real reason to launch without Sentry runs `atelic-check-sentry --a
 
 ## The Form Relay
 
-A form's endpoint hands each submission to a list of destinations behind one contract (9.1.0). The office's inbox is a destination exactly as a CRM is, and a site's function names its destinations and holds no delivery logic. A spam check, a copy back to the visitor, and the question of how they heard about the business are three pieces a site turns on or off (9.2.0). Six built entries, each usable alone by another form's endpoint:
+A form's endpoint hands each submission to a list of destinations behind one contract (9.1.0). The office's inbox is a destination exactly as a CRM is, and a site's function names its destinations and holds no delivery logic. A spam check, a copy back to the visitor, and the question of how they heard about the business are three pieces a site turns on or off (9.2.0). The schedule request's endpoint is the relay's second consumer (9.5.0, [Schedule Requests](#schedule-requests)). Eight built entries, each usable alone by another form's endpoint:
 
 | Entry | What it is |
 |---|---|
@@ -573,6 +581,8 @@ A form's endpoint hands each submission to a list of destinations behind one con
 | `@atelic-action/ui/forms/guard` | `turnstileGuard(options)` and the `Guard` contract, the spam check, and `TURNSTILE_PRIVACY_NOTICE` |
 | `@atelic-action/ui/forms/receipt` | `receiptEmail(...)`, the visitor's receipt |
 | `@atelic-action/ui/forms/source` | `sourceField(source)` and the `Source` the form and the function share |
+| `@atelic-action/ui/forms/schedule` | `createScheduleRequest(options)`, the schedule request's whole endpoint, and the `ScheduleConfig` the form and the function share |
+| `@atelic-action/ui/forms/calendar` | The calendar a request for a day and a time is held to, in the browser and on the server alike |
 
 **A site's function.** `api/contact.ts` is the sender and, when the form draws more than the plain four fields, the list of what it sends:
 
@@ -701,6 +711,87 @@ const crm: Destination<ContactFields> = {
 | `CONTACT_TO` | The inbox for inquiries, or several split by commas. Unset, the practice's inbox |
 | `CONTACT_CANARY_TOKEN`, `CONTACT_CANARY_TO` | The canary's shared secret and the inbox its submissions land in |
 | `TURNSTILE_SECRET_KEY` | The Turnstile widget's secret, read by `turnstileGuard`. Unset, every submission is let through unchecked with no receipt, and it is reported on production alone |
+
+## Schedule Requests
+
+A request for a visit or a call at a day and a time, which the business confirms afterward (9.5.0). Four parts: `StepForm`, the shell; `ScheduleRequestForm`, the form on it; `createScheduleRequest`, its endpoint, the relay's second consumer; and the calendar both of them hold a request to. Nothing in any of them is one business's: a site states its own `ScheduleConfig` once, in a file its page and its function both import, as it states its `Source`. Every word the parts draw says a request, never a booked appointment.
+
+**The config.** Everything the business decides:
+
+```ts
+// src/content/schedule.ts
+import type { ScheduleConfig } from "@atelic-action/ui/forms/schedule";
+
+export const schedule: ScheduleConfig = {
+	kinds: [
+		{ id: "repair", label: "A roof repair", materials: true, visit: 30, call: 20 },
+		{ id: "storm", label: "Storm damage", visit: 30, note: "A storm damage assessment starts with a visit." },
+		{ id: "remodel", label: "A remodel", visit: 60, call: 30 },
+	],
+	materials: [
+		{ id: "shingle", label: "Shingle" },
+		{ id: "tile", label: "Tile", only: "call", note: "A tile roof starts with a call." },
+	],
+	materialLabel: "Roof material",
+	hours: { open: "08:00", close: "17:00" },
+	timeZone: "America/Denver",
+	closedDays: ["2026-11-27"],
+	confirmWithin: "2 business days",
+	phone: { display: "(555) 555-0100", e164: "+15555550100" },
+	source: {
+		label: "How did you hear about us?",
+		options: ["Google", "A neighbor", { label: "Other", detail: { label: "Where did you hear?" } }],
+	},
+};
+```
+
+| Key | What it sets |
+|---|---|
+| `kinds` | What a request can be for, in the dropdown's order: an `id` the form sends and a destination reads, the `label`, the minutes a `visit` and a `call` take (a way left out is not offered), whether the `materials` dropdown shows under it, and the `note` shown when it allows one way |
+| `materials`, `materialLabel` | The optional second dropdown under a kind that sets `materials`; a material's `only` (`"visit"` or `"call"`) narrows the request to that way, with its `note` (`materialLabel` defaults to "Material") |
+| `hours`, `slotMinutes` | The office day on the business's clock, written `"08:00"`, and the step between the times offered (30 by default); the last time offered finishes by closing for the way's length |
+| `timeZone` | The business's IANA timezone. Every day and time is on its clock, so a server in UTC and a browser anywhere agree on what today is |
+| `leadBusinessDays`, `holidays`, `closedDays`, `horizonDays` | How many business days out the first day is (2), whether the United States federal holidays are left out on their observed days (true), any other day the business is shut, and how many days past the first day the calendar runs (60) |
+| `confirmWithin` | The promise: "2 business days" by default, in the summary, the request received, and both emails |
+| `phone` | The office's phone, beside every step, in the phone's bar, and in the customer's email |
+| `source` | How did you hear about us, optional; an answer may ask for a typed detail |
+| `modes` | The words each way reads in (`label`, `line`, `short`, `long`, `next`, `only`), each replacing its default ("At your property", "By phone") |
+
+**The form.** `ScheduleRequestForm` takes the config, the `endpoint`, and the page's own pieces: `address` (the contact form's address search, `provider` or `googlePlacesKey`, and `states`), `consent` (the text consent, its own unticked checkbox, `text` and `links`), `guard` (`{ siteKey }`, Cloudflare Turnstile run at the send as `ContactForm` runs it), `labels` and `errorText` for every word it draws, `blockedMessage`, `errorMessage`, and `onLead` (the GA4 `generate_lead` event with `form_name: "schedule"` by default). What: the kind, the material under a kind that shows them, and a visit or a call as `ChoiceCards`, or one line when the kind or the material allows one way. When: a `MonthCalendar` offering no weekend, no federal holiday, no closed day, and no day sooner than the lead, and the times in a dropdown grouped Morning and Afternoon. Who: the name, the phone, the email, the address (required for a visit, optional for a call), the Source Selector with its detail, a note, and the consent. A step refuses to go on until it is answered, with a count of what to fix and focus on the first field to fix; a new step puts focus on its heading. A send the endpoint refuses for its day or its time goes back to When with the endpoint's own words. The request received says it is a request and not a booked appointment, reads it back, says the office confirms within the promise, and gives the phone; it says a copy is on its way only when the endpoint sent one. `initial` and `initialStep` open it holding answers (a link that arrives with a kind), and `today` pins the calendar in a story.
+
+```tsx
+<ScheduleRequestForm
+	config={schedule}
+	endpoint="/api/schedule"
+	address={{ googlePlacesKey: import.meta.env.VITE_GOOGLE_MAPS_KEY, states: ["CO", "WY"] }}
+	consent={{ text: consentWords, links: [{ label: "Privacy Policy", href: "/privacy" }] }}
+	guard={siteKey ? { siteKey } : undefined}
+/>
+```
+
+**The shell.** `StepForm` takes the `steps`' names, the `current` step, `onStep` (a finished step's name is a button back to it), `onBack`, `onNext` (the step's button and Enter in any field both call it, so a form checks its step before it moves on), `nextLabel`, `busy`, the step's `title` and `lead`, its fields as `children`, an `alert` over the step, the `summary` rows (`{ label, value, detail }`, empty ones reading "Not chosen yet"), the `promise` under them, the phone bar's two lines as `sentence`, and the `phone`. From 900px the summary is a card pinned beside the step; below it the summary is a bar fixed to the foot of the screen whose lines open the whole summary as a native modal dialog (focus held inside, Escape and the close button close it, focus goes back), with a back arrow, the step's button, and a call button; before anything is chosen the bar offers the number. A page holding one leaves its contact dock and its sticky call bar off a phone, by the sheet's own rule, since the bar holds the call button.
+
+**The endpoint.** A site's `api/schedule.ts`:
+
+```ts
+import { turnstileGuard } from "@atelic-action/ui/forms/guard";
+import { createScheduleRequest } from "@atelic-action/ui/forms/schedule";
+import { schedule } from "../src/content/schedule";
+
+export const POST = createScheduleRequest({
+	from: "Alder Roofing <forms@atelic.me>",
+	config: schedule,
+	destinations: [crm],
+	guard: turnstileGuard(),
+	confirmation: { address: ["100 Main Street", "Fairhaven, CO 80000"], look: { accent: "#4d5c05" } },
+});
+```
+
+It reads the body, drops a honeypot catch behind a quiet success, and reads the request on the business's own day: a kind not on the list, a way the kind or the material does not offer, a weekend, a holiday, a closed day, a day before the first or after the last, and a time off the grid or too late to finish by closing are each refused 400 by name, with a `code` naming the step (`what`, `when`, `who`), as are a missing name, phone, or email, a number nobody can dial, and a visit with no street. Then whether it can deliver (500 without a way to), the guard (403), and the relay: the office's email through Resend to `SCHEDULE_TO` (else `CONTACT_TO`, else the practice's inbox), leading with the requested day and time and the zone's name, the way and its length, and a line that nothing is set until the office confirms, then who asked and everything they entered, a reply going to them; and the site's other destinations at once. It answers 502 when no destination took the request, so a request nobody at the business was told about is never answered as sent. `confirmation` (`from`, `brandName`, `logo`, `address`, `footNote`, `look`, `copy`, `timeoutMs`) sends the customer the request email, under the same rule as the contact receipt: only behind a guard that passed, never for a canary, only once a destination took the request, from a no-reply address, one try of 3 seconds at most; it throws when the function loads without a guard, as a config with a problem does (`scheduleConfigProblems`). By default the email repeats nothing the customer typed, for the receipt's reason; `copy: true` adds the greeting by first name and the address or the number to call, as the design draws it. The canary is the contact endpoint's: `CONTACT_CANARY_TOKEN` sends it to `CONTACT_CANARY_TO` alone, skipping the calendar. State `"api/schedule.ts": { "maxDuration": 15 }` in `vercel.json`: 14.5 seconds is the worst case, as for the contact form.
+
+**What a destination receives**, `ScheduleFields`: `kind` and `kindLabel`, `material` and `materialLabel` (empty when none), `mode` (`"visit"` or `"call"`) and `modeLabel`, `day` (`2026-12-02`), `time` (`09:00`, 24 hour, on the business's clock), `minutes`, `timeZone`, `appointmentStart` and `appointmentEnd` (ISO 8601 instants with the zone's offset for that date, `2026-12-02T09:00:00-07:00`, so a CRM sets an appointment without knowing the site), `firstName`, `lastName`, `name`, `phone`, `email`, `address` (`{ street, city, state, zip }`, or null), `source` and `sourceDetail`, `note`, and `textConsent`. The length comes from the config, never from the form.
+
+**The calendar** (`@atelic-action/ui/forms/calendar`) is one implementation read by the form in the browser and the endpoint on the server: `checkDay(day, today, rules)` says whether a day may be asked for and why not, `timeSlots(rules, minutes)` the times, `dayIn(timeZone)` today on the business's clock, and `zonedInstant(day, time, timeZone)` the instant. The federal holidays are kept on the days they are observed: one on a Saturday the Friday before, one on a Sunday the Monday after, and a Saturday New Year's Day on the December 31 before.
 
 ## The Artifact Documents
 
@@ -962,6 +1053,10 @@ The space a section leaves above and below itself is one token, `--section-space
 | `compact` | `clamp(24px, 3.2vw, 44px)` | 20px | 0 |
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
+
+### Moving to 9.5.0
+
+Nothing breaks. New: `StepForm` and `ScheduleRequestForm` in `@atelic-action/ui/sections`, `ChoiceCards` in `primitives`, `MonthCalendar` in `components`, `RequestEmail` in `email`, and two built entries, `@atelic-action/ui/forms/schedule` (the endpoint, `createScheduleRequest`) and `@atelic-action/ui/forms/calendar` ([Schedule Requests](#schedule-requests)). A `Source` answer may now be written `{ label, detail }` to ask for a typed detail; a list of words reads exactly as before, and `ContactForm` draws no detail field, so a site that changes nothing sees nothing change. The contact endpoint's guard, canary, and receipt now share their code with the schedule endpoint, with the same answers and reports. Their styles are in `sections.css`, `primitives.css`, and `components.css`, already imported by every site. A page that mounts the schedule form needs no change to hide its contact dock and sticky call bar on a phone: the form's sheet does it.
 
 ### Moving to 9.4.0
 

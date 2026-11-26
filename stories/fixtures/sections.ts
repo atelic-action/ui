@@ -12,6 +12,7 @@ import type {
 	ProcessStep,
 	ProfileItem,
 	ReviewItem,
+	ScheduleConfig,
 	SiteConfig,
 } from "../../src/sections";
 import { site } from "./bakery";
@@ -353,3 +354,56 @@ export const marqueeItems = [
 	"Fairhaven Gazette, best bun",
 	"Since 2014",
 ];
+
+/**
+ * The bakehouse's schedule request: a consultation for a wedding cake or an
+ * event's catering, at the couple's venue or by phone. A tasting for a group
+ * is a visit only, and a fondant cake starts with a call, so the stories show
+ * both ways a request narrows to one. Today is pinned in the stories to
+ * Wednesday, November 25, 2026, the day before Thanksgiving, so the first day
+ * offered is Monday, November 30.
+ */
+export const schedule: ScheduleConfig = {
+	kinds: [
+		{ id: "wedding", label: "A wedding cake", materials: true, visit: 60, call: 30 },
+		{ id: "catering", label: "Catering for an event", visit: 30, call: 20 },
+		{
+			id: "tasting",
+			label: "A tasting for a group",
+			visit: 60,
+			note: "A tasting starts with a visit, so we can bring the samples.",
+		},
+	],
+	materials: [
+		{ id: "buttercream", label: "Buttercream" },
+		{ id: "naked", label: "Naked cake" },
+		{ id: "fondant", label: "Fondant", only: "call", note: "A fondant cake starts with a call." },
+		{ id: "unsure", label: "Not sure" },
+	],
+	materialLabel: "Cake style",
+	hours: { open: "08:00", close: "17:00" },
+	timeZone: "America/Denver",
+	confirmWithin: "2 business days",
+	phone: { e164: "+15555550142", display: "(555) 555-0142" },
+	modes: {
+		visit: {
+			label: "At your venue",
+			line: "We come out and look at the space.",
+			long: "A visit at your venue",
+			next: "We come out at the confirmed time and look at the space.",
+		},
+	},
+	source: {
+		label: "How did you hear about us?",
+		options: [
+			"Google",
+			"A friend or a guest",
+			"Instagram",
+			{ label: "Our venue", detail: { label: "Which venue?", placeholder: "The venue's name" } },
+			{ label: "Other", detail: { label: "Where did you hear?" } },
+		],
+	},
+};
+
+/** The day the schedule stories are pinned to. */
+export const scheduleToday = "2026-11-25";
