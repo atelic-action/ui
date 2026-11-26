@@ -29,6 +29,10 @@ const BelowTheFold: Decorator = (Story) => (
 	</>
 );
 
+/**
+ * Fills the width of a page with a silent looping clip, for atmosphere rather
+ * than information.
+ */
 const meta = {
 	title: "Sections/FullBleedVideo",
 	component: FullBleedVideo,

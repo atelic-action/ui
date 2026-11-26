@@ -5,7 +5,8 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A model written read at the top of a section card, under a "The Read"
+ * Puts the written read of a section at the top of that section's card in an
+ * email. A model written read at the top of a section card, under a "The Read"
  * eyebrow in the accent's ink.
  */
 const meta = {

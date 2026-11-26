@@ -15,8 +15,9 @@ const week: Day[] = [
 ];
 
 /**
- * Monday to Sunday across a card row, each day's entries top aligned under
- * a heavy rule: plain, strong, or with a badge.
+ * Shows a week, day by day, across one row of an email. Monday to Sunday
+ * across a card row, each day's entries top aligned under a heavy rule: plain,
+ * strong, or with a badge.
  */
 const meta = {
 	title: "Email/DayStrip",

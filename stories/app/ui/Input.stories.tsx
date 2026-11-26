@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent } from "storybook/test";
 import { Input, Label } from "../../../src/app/ui";
 
-/** The kit's text field, with its label beside it as a form sets it. */
+/**
+ * Takes a line of text in an app form. The kit's text field, with its label
+ * beside it as a form sets it.
+ */
 const meta = {
 	title: "App/UI/Input",
 	component: Input,

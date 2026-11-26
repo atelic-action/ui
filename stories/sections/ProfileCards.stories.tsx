@@ -6,8 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * Equal weight cards for the people behind the counter: a portrait beside a
- * short bio.
+ * Introduces the people behind a business, each with a portrait and a short
+ * bio. Equal weight cards for the people behind the counter: a portrait beside
+ * a short bio.
  */
 const meta = {
 	title: "Sections/ProfileCards",

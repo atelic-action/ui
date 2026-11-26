@@ -6,7 +6,10 @@ import { cta, phone } from "../fixtures/bakery";
 import { PageBehind } from "../support/page";
 import { pin } from "../support/viewports";
 
-/** The phone's bottom bar: the primary CTA and a call shortcut. */
+/**
+ * Keeps the call to action and a call button in reach at the foot of a phone's
+ * screen. The phone's bottom bar: the primary CTA and a call shortcut.
+ */
 const meta = {
 	title: "Chrome/StickyCTABar",
 	component: StickyCTABar,

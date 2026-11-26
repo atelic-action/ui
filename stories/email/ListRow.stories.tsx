@@ -3,7 +3,7 @@ import { expect } from "storybook/test";
 import { Card, List, ListRow, Row } from "../../src/email";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** One line of a `List`, on a hairline above it. */
+/** Is one line of an email's `List`. One line of a `List`, on a hairline above it. */
 const meta = {
 	title: "Email/ListRow",
 	component: ListRow,

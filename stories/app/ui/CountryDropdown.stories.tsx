@@ -38,10 +38,11 @@ function Field({ value: initial, onChange, ...props }: Parameters<typeof Country
 }
 
 /**
- * A searchable country picker in a popover named "Countries": a trigger that
- * shows the chosen country's name, a search box above the list, and every
- * country as an option by its name alone, with "Not specified" first to
- * clear it.
+ * Lets a reader pick a country in an app form by searching the list instead of
+ * scrolling it. A searchable country picker in a popover named "Countries": a
+ * trigger that shows the chosen country's name, a search box above the list,
+ * and every country as an option by its name alone, with "Not specified" first
+ * to clear it.
  */
 const meta = {
 	title: "App/UI/CountryDropdown",

@@ -51,9 +51,10 @@ function Palette() {
 }
 
 /**
- * The command menu: a search box over grouped items that filters as it is
- * typed into, moves by the arrows, and picks on Enter. Inline, or in a
- * dialog as a palette.
+ * Lets a reader find and pick an action or an item by typing, in an app where
+ * the list is too long to scan. The command menu: a search box over grouped
+ * items that filters as it is typed into, moves by the arrows, and picks on
+ * Enter. Inline, or in a dialog as a palette.
  */
 const meta = {
 	title: "App/UI/Command",

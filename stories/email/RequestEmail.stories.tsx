@@ -18,11 +18,12 @@ const visit = {
 };
 
 /**
- * The customer's confirmation of a schedule request, the card the endpoint
- * mails: it says the request arrived and is not a booked appointment, reads
- * back what was asked for, says what happens next and when the office
- * confirms, and offers the phone. It offers no add to calendar, since no
- * time is set.
+ * Confirms a visitor's schedule request to them by email, saying it arrived
+ * and is not a booked appointment. The customer's confirmation of a schedule
+ * request, the card the endpoint mails: it says the request arrived and is not
+ * a booked appointment, reads back what was asked for, says what happens next
+ * and when the office confirms, and offers the phone. It offers no add to
+ * calendar, since no time is set.
  */
 const meta = {
 	title: "Email/RequestEmail",

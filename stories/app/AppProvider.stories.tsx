@@ -27,11 +27,13 @@ function SaveOrder({ fails = false }: { fails?: boolean }) {
 }
 
 /**
- * The provider every app renders above its router. What it draws is the
- * toaster: a mutation carrying `meta.toast` raises a success or an error
- * toast through the shell's query client. The story's frame already holds
- * one provider with no toaster; this one, inside it, brings the default
- * toaster and the shell's own query client.
+ * Mounts once above an app's router to supply the shell's config, its query
+ * client, and the toaster that mutations report through. The provider every
+ * app renders above its router. What it draws is the toaster: a mutation
+ * carrying `meta.toast` raises a success or an error toast through the shell's
+ * query client. The story's frame already holds one provider with no toaster;
+ * this one, inside it, brings the default toaster and the shell's own query
+ * client.
  */
 const meta = {
 	title: "App/AppProvider",

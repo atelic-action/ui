@@ -19,7 +19,8 @@ function order(canvasElement: HTMLElement) {
 }
 
 /**
- * A table whose first column names each row, sortable by a heading on a
+ * Compares rows across several facts, sortable, when a list is too wide for
+ * cards. A table whose first column names each row, sortable by a heading on a
  * wide screen and by a dropdown on a phone, where each row stacks and every
  * fact wears its column's label.
  */

@@ -44,11 +44,13 @@ const who = {
 };
 
 /**
- * A request for a visit or a call, taken in three steps on the StepForm
- * shell, then the request received. What can be asked for, the ways, the
- * lengths, the office day, and the calendar all come from the business's one
- * config; the calendar offers no weekend, holiday, or too soon day, and the
- * times finish by closing. It never says booked.
+ * Lets a visitor ask for a visit or a call at a time they choose, without
+ * booking one; use `ContactForm` for a plain message. A request for a visit or
+ * a call, taken in three steps on the StepForm shell, then the request
+ * received. What can be asked for, the ways, the lengths, the office day, and
+ * the calendar all come from the business's one config; the calendar offers no
+ * weekend, holiday, or too soon day, and the times finish by closing. It never
+ * says booked.
  */
 const meta = {
 	title: "Sections/ScheduleRequestForm",

@@ -19,8 +19,10 @@ import { pin } from "../../support/viewports";
 const confirm = { spy: fn() };
 
 /**
- * The confirm step before a destructive act. It holds focus, opens on the
- * safe choice, and closes only by its own buttons or Escape.
+ * Asks the reader to confirm a destructive act in an app, where a plain dialog
+ * would let them slip past it. The confirm step before a destructive act. It
+ * holds focus, opens on the safe choice, and closes only by its own buttons or
+ * Escape.
  */
 const meta = {
 	title: "App/UI/AlertDialog",

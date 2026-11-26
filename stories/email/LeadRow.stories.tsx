@@ -4,7 +4,11 @@ import { Card, LeadRow, List, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** A list line that opens on a bolded lead in the ink, the rest dim. */
+/**
+ * Sets one line of an email's list that opens on a bold lead, when the first
+ * words are the point. A list line that opens on a bolded lead in the ink, the
+ * rest dim.
+ */
 const meta = {
 	title: "Email/LeadRow",
 	component: LeadRow,

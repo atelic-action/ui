@@ -22,9 +22,10 @@ function Controlled(props: ComponentProps<typeof ChoiceCards>) {
 }
 
 /**
- * A choice seen whole: two or three answers, each a card holding its radio,
- * its name, and a line under it. A radio group to the keyboard; the whole
- * card chooses.
+ * Lets a visitor choose one of two or three answers by seeing each whole,
+ * where a select would hide them. A choice seen whole: two or three answers,
+ * each a card holding its radio, its name, and a line under it. A radio group
+ * to the keyboard; the whole card chooses.
  */
 const meta = {
 	title: "Primitives/ChoiceCards",

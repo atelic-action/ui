@@ -5,10 +5,11 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * The workhorse row: a title line (the name, and the one value that matters
- * in the accent's ink), a subline of facts joined by middots, a sentence or
- * two, an optional fold, and an optional link. A long token breaks inside
- * the card.
+ * Is an email's general purpose row for one thing: a title and its key value,
+ * a line of facts, a sentence, and an optional fold and link. The workhorse
+ * row: a title line (the name, and the one value that matters in the accent's
+ * ink), a subline of facts joined by middots, a sentence or two, an optional
+ * fold, and an optional link. A long token breaks inside the card.
  */
 const meta = {
 	title: "Email/Item",

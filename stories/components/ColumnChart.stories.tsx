@@ -7,8 +7,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A column chart: a bar a period, the periods in groups that each carry a
- * label and a total. The plot is one picture whose name carries every figure.
+ * Compares one figure across periods in labeled groups, when a trend over time
+ * matters more than the parts of a whole; see `StackedBar`. A column chart: a
+ * bar a period, the periods in groups that each carry a label and a total. The
+ * plot is one picture whose name carries every figure.
  */
 const meta = {
 	title: "Components/ColumnChart",

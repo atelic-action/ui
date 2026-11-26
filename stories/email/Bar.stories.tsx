@@ -14,11 +14,12 @@ function segments(canvas: { getByRole: (role: "img") => HTMLElement }) {
 }
 
 /**
- * A segmented bar: one segment per unit of the target, the logged ones in
- * the ink and the rest in the line color. Small targets get wider segments
- * so three reads as three. It is an image named by its count ("3 of 5", or
- * its own `label`), or decoration with `label={false}` beside a count that
- * already says it, as in a `TargetRow`.
+ * Shows progress toward a target in an email as a row of segments, one per
+ * unit. A segmented bar: one segment per unit of the target, the logged ones
+ * in the ink and the rest in the line color. Small targets get wider segments
+ * so three reads as three. It is an image named by its count ("3 of 5", or its
+ * own `label`), or decoration with `label={false}` beside a count that already
+ * says it, as in a `TargetRow`.
  */
 const meta = {
 	title: "Email/Bar",

@@ -19,7 +19,11 @@ const questions = [
 	},
 ];
 
-/** A stack of disclosures: each trigger opens its answer, one at a time or several. */
+/**
+ * Folds a stack of questions or details in an app so a reader opens only the
+ * ones they want. A stack of disclosures: each trigger opens its answer, one
+ * at a time or several.
+ */
 const meta = {
 	title: "App/UI/Accordion",
 	component: Accordion,

@@ -4,7 +4,11 @@ import { BigFold, Card, FoldRow } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** The card row a card level fold sits in, with the card's padding and a hairline under all but the last. */
+/**
+ * Is the card row that a card level fold sits in, with the card's padding and
+ * rule. The card row a card level fold sits in, with the card's padding and a
+ * hairline under all but the last.
+ */
 const meta = {
 	title: "Email/FoldRow",
 	component: FoldRow,

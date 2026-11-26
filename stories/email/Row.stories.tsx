@@ -4,7 +4,10 @@ import { Card, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** A card row holding any block, with the card's padding and a hairline under all but the last. */
+/**
+ * Holds any block as one row of an email's card. A card row holding any block,
+ * with the card's padding and a hairline under all but the last.
+ */
 const meta = {
 	title: "Email/Row",
 	component: Row,

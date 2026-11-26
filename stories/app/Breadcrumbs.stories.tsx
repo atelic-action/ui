@@ -4,10 +4,11 @@ import { AppPage, Breadcrumbs } from "../../src/app";
 import { pin } from "../support/viewports";
 
 /**
- * The app shell's breadcrumb trail. An `App/` story runs inside the fixture
- * app's `AppProvider` under a memory router, with the shell's Tailwind sheet
- * mounted (`.storybook/decorators.tsx`); that the two renderings swap at the
- * `lg` step proves the sheet is there.
+ * Shows where an app page sits among its sections and lets the reader step
+ * back up. The app shell's breadcrumb trail. An `App/` story runs inside the
+ * fixture app's `AppProvider` under a memory router, with the shell's Tailwind
+ * sheet mounted (`.storybook/decorators.tsx`); that the two renderings swap at
+ * the `lg` step proves the sheet is there.
  */
 const meta = {
 	title: "App/Breadcrumbs",

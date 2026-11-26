@@ -7,9 +7,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The help center: a hero with live search, a sticky rail of categories
- * that follows the scroll, and each category's questions folding open, with
- * expand all, back to top, and a copyable link per question.
+ * Is the help page of a business with many questions, searchable and grouped
+ * by category; for a short set of answers use `ExpandList`. The help center: a
+ * hero with live search, a sticky rail of categories that follows the scroll,
+ * and each category's questions folding open, with expand all, back to top,
+ * and a copyable link per question.
  */
 const meta = {
 	title: "Sections/FAQBrowser",

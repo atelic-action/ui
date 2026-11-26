@@ -34,9 +34,10 @@ const rows: InfoRow[] = [
 ];
 
 /**
- * Rows of a title over a few lines with one action on the right, the way a
- * map pack lists a place: an estimate and its link, each office and its
- * directions.
+ * Lists places or offers as rows, a title over a few lines with one action,
+ * the way a map pack lists a place. Rows of a title over a few lines with one
+ * action on the right, the way a map pack lists a place: an estimate and its
+ * link, each office and its directions.
  */
 const meta = {
 	title: "Sections/InfoRows",

@@ -13,10 +13,11 @@ function Where() {
 }
 
 /**
- * The guard around every route that needs a session. Signed out, anything
- * but the app's public routes and pages redirects to "/", which renders the
- * sign in page; signed in, it renders its children. The stories run under a
- * memory router and read where it ends up.
+ * Keeps a signed out visitor off every route that needs a session by sending
+ * them to the sign in page. The guard around every route that needs a session.
+ * Signed out, anything but the app's public routes and pages redirects to "/",
+ * which renders the sign in page; signed in, it renders its children. The
+ * stories run under a memory router and read where it ends up.
  */
 const meta = {
 	title: "App/AuthGuard",

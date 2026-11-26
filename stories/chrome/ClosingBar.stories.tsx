@@ -5,7 +5,11 @@ import { ClosingBar, Copyright } from "../../src/chrome";
 import { expectNoSidewaysScroll, lines, textLeft } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** The line that closes every page: two sides, each taking anything. */
+/**
+ * Closes every page with a thin line whose two sides each take anything, by
+ * default the copyright and the credit. The line that closes every page: two
+ * sides, each taking anything.
+ */
 const meta = {
 	title: "Chrome/ClosingBar",
 	component: ClosingBar,

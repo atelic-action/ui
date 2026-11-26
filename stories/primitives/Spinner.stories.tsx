@@ -4,8 +4,10 @@ import { Spinner } from "../../src/primitives";
 import { withReducedMotion } from "../support/motion";
 
 /**
- * A turning ring that says something is on its way. Its label is heard, not
- * seen, until reduced motion stops the ring and shows the words beside it.
+ * Shows that something a site component waits on is on its way, as a turning
+ * ring with a hidden label. A turning ring that says something is on its way.
+ * Its label is heard, not seen, until reduced motion stops the ring and shows
+ * the words beside it.
  */
 const meta = {
 	title: "Primitives/Spinner",

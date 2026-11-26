@@ -11,10 +11,11 @@ function cells(canvas: { getByRole: (role: "img") => HTMLElement }) {
 }
 
 /**
- * A record's recent days on one line, today at the right edge: an ink
- * square for each send, an accent dot for each known open, stacked when they
- * share a day, on a hairline with a tick for today. Runs of empty days merge
- * into one cell. The marks are drawn, so the strip is an image named in
+ * Shows a record's recent days on one line in an email, marking each send and
+ * each open. A record's recent days on one line, today at the right edge: an
+ * ink square for each send, an accent dot for each known open, stacked when
+ * they share a day, on a hairline with a tick for today. Runs of empty days
+ * merge into one cell. The marks are drawn, so the strip is an image named in
  * words: `recordTimelineSummary` of the timeline, or its own `label`.
  */
 const meta = {

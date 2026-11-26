@@ -6,8 +6,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The reviews page: a heading, a tag filter and a date sort when the data
- * can drive them, and a grid of cards, a long quote clamped behind Read more.
+ * Shows every review on a page of its own, filterable and sortable; use
+ * `ReviewCarousel` for a highlight on another page. The reviews page: a
+ * heading, a tag filter and a date sort when the data can drive them, and a
+ * grid of cards, a long quote clamped behind Read more.
  */
 const meta = {
 	title: "Sections/ReviewWall",

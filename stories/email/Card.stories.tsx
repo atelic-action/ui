@@ -4,7 +4,11 @@ import { Card, EmptyRow, Row } from "../../src/email";
 import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
-/** A card: paper on a hairline with rounded corners, holding rows. */
+/**
+ * Holds an email's rows in one bordered card, the container most of an email's
+ * sections sit in. A card: paper on a hairline with rounded corners, holding
+ * rows.
+ */
 const meta = {
 	title: "Email/Card",
 	component: Card,

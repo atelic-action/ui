@@ -7,8 +7,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The close a document ends on: the script line, then the photo beside the
- * name, the role, and the address as a mail link.
+ * Closes a document with the sender's script line, photo, name, role, and
+ * address. The close a document ends on: the script line, then the photo
+ * beside the name, the role, and the address as a mail link.
  */
 const meta = {
 	title: "Artifact/SignOff",

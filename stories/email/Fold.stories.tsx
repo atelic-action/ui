@@ -5,8 +5,9 @@ import { pin } from "../support/viewports";
 import { fitsTheColumn, inColumn } from "./column";
 
 /**
- * A small disclosure inside a row ("+ what they do"), a native `details`, so
- * it opens wherever the mail client allows.
+ * Tucks a row's extra detail behind a small control in an email, so the row
+ * stays short. A small disclosure inside a row ("+ what they do"), a native
+ * `details`, so it opens wherever the mail client allows.
  */
 const meta = {
 	title: "Email/Fold",

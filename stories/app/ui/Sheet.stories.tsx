@@ -49,9 +49,11 @@ async function open() {
 }
 
 /**
- * A dialog that slides in from an edge: the menu sheet's base. It holds
- * focus, closes by its X, its own buttons, Escape, or a press outside, and
- * hands focus back to its trigger.
+ * Slides a panel in from an edge of an app when a menu or a task needs more
+ * room than a popover but should not leave the page. A dialog that slides in
+ * from an edge: the menu sheet's base. It holds focus, closes by its X, its
+ * own buttons, Escape, or a press outside, and hands focus back to its
+ * trigger.
  */
 const meta = {
 	title: "App/UI/Sheet",

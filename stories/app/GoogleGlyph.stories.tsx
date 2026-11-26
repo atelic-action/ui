@@ -3,7 +3,10 @@ import { expect } from "storybook/test";
 import { GoogleGlyph } from "../../src/app";
 import { Button } from "../../src/app/ui";
 
-/** Google's four color G for a sign in button. It is decorative: the button carries the name. */
+/**
+ * Marks a Google sign in button with Google's own G. Google's four color G for
+ * a sign in button. It is decorative: the button carries the name.
+ */
 const meta = {
 	title: "App/GoogleGlyph",
 	component: GoogleGlyph,

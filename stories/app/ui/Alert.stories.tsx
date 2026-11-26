@@ -7,10 +7,11 @@ import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
 /**
- * A boxed message with an optional icon, a title, and a description. A plain
- * block read in its place unless told to `announce`: `"assertive"` is an
- * alert, `"polite"` a status. Its title is a paragraph unless given a
- * heading `level`.
+ * Puts a message the reader should notice in a box in an app, such as a
+ * warning, a result, or a note about the page. A boxed message with an
+ * optional icon, a title, and a description. A plain block read in its place
+ * unless told to `announce`: `"assertive"` is an alert, `"polite"` a status.
+ * Its title is a paragraph unless given a heading `level`.
  */
 const meta = {
 	title: "App/UI/Alert",

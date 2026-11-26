@@ -21,9 +21,11 @@ function Held(props: StarRatingProps) {
 }
 
 /**
- * A row of stars in half star steps. Read only, it is one picture named by
- * the rating; given `onChange`, it is one slider, to a keyboard, a pointer,
- * and a screen reader alike, holding no control of its own.
+ * Shows a rating in half stars, or takes one from the reader; see `StarRow`
+ * for a rating that is only shown. A row of stars in half star steps. Read
+ * only, it is one picture named by the rating; given `onChange`, it is one
+ * slider, to a keyboard, a pointer, and a screen reader alike, holding no
+ * control of its own.
  */
 const meta = {
 	title: "Components/StarRating",

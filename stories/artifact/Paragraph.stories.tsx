@@ -25,10 +25,11 @@ const withQueries: ArtifactParagraph = [
 ];
 
 /**
- * A document's paragraph carried as data: a plain string, or runs of text,
- * links, and search queries. A link leaving the page opens in a new tab; an
- * anchor or a mail link opens in place. A query is set in curly quotes and
- * italics.
+ * Writes a document's paragraph from data, so a routine can supply its text,
+ * links, and search queries as JSON. A document's paragraph carried as data: a
+ * plain string, or runs of text, links, and search queries. A link leaving the
+ * page opens in a new tab; an anchor or a mail link opens in place. A query is
+ * set in curly quotes and italics.
  */
 const meta = {
 	title: "Artifact/Paragraph",

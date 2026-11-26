@@ -7,8 +7,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * One bar split into the parts of a whole, and a key naming each part and
- * its figure. The bar is one picture whose name carries every part.
+ * Shows the parts of one whole as a single bar with a key, when each part's
+ * share matters; see `ColumnChart` for change over time. One bar split into
+ * the parts of a whole, and a key naming each part and its figure. The bar is
+ * one picture whose name carries every part.
  */
 const meta = {
 	title: "Components/StackedBar",

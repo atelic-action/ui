@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Badge } from "../../../src/app/ui";
 
-/** A small rounded label: a status, a count, a tag. */
+/**
+ * Labels an item in an app with a short status, count, or tag. A small rounded
+ * label: a status, a count, a tag.
+ */
 const meta = {
 	title: "App/UI/Badge",
 	component: Badge,

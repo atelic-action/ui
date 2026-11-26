@@ -17,9 +17,10 @@ import { layerOpened, noneLeft, settledLayer } from "../../support/settle";
 import { pin } from "../../support/viewports";
 
 /**
- * A modal dialog: it opens from its trigger, holds focus, and closes by its
- * close button, its own buttons, Escape, or a press outside, handing focus
- * back to the trigger.
+ * Puts a task or a detail in front of an app page when the reader must deal
+ * with it before going on. A modal dialog: it opens from its trigger, holds
+ * focus, and closes by its close button, its own buttons, Escape, or a press
+ * outside, handing focus back to the trigger.
  */
 const meta = {
 	title: "App/UI/Dialog",

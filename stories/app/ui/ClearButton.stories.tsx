@@ -2,7 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { ClearButton } from "../../../src/app/ui";
 
-/** The small X that clears a field. It never takes focus on a press, so the field keeps it. */
+/**
+ * Empties a field in one press, beside a search or text input. The small X
+ * that clears a field. It never takes focus on a press, so the field keeps it.
+ */
 const meta = {
 	title: "App/UI/ClearButton",
 	component: ClearButton,

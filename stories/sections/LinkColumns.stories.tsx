@@ -6,8 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * Columns of links under a section's heading: service areas by region, here
- * with counts.
+ * Lists links in columns under a heading, such as the areas a business serves
+ * by region. Columns of links under a section's heading: service areas by
+ * region, here with counts.
  */
 const meta = {
 	title: "Sections/LinkColumns",

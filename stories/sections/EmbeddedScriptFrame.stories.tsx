@@ -11,11 +11,12 @@ import { pin } from "../support/viewports";
 const bakeryPhone = { e164: "+15555550142", display: "555-0142" };
 
 /**
- * A vendor's tool that arrives as a script mounting its own iframe into a
- * known element. The frame holds the space and covers it, with one spinner,
- * until the tool is ready, then gives way to it; it shows the site's own
- * line instead if the tool never comes. The stories load a local stand in,
- * never a vendor.
+ * Hosts a vendor's embedded tool, such as a booking or quote widget, holding
+ * its space until the tool loads. A vendor's tool that arrives as a script
+ * mounting its own iframe into a known element. The frame holds the space and
+ * covers it, with one spinner, until the tool is ready, then gives way to it;
+ * it shows the site's own line instead if the tool never comes. The stories
+ * load a local stand in, never a vendor.
  */
 const meta = {
 	title: "Sections/EmbeddedScriptFrame",

@@ -7,9 +7,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A report card: a name, a grade, and one line per row, in labeled groups.
- * Each grade is spoken as words around its letter, so a grade is never told
- * by its color alone; a linked row is a link from edge to edge.
+ * Summarizes a set of grades by group in one card, each row linking to the
+ * section that explains it. A report card: a name, a grade, and one line per
+ * row, in labeled groups. Each grade is spoken as words around its letter, so
+ * a grade is never told by its color alone; a linked row is a link from edge
+ * to edge.
  */
 const meta = {
 	title: "Components/ReportCard",

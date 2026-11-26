@@ -5,7 +5,11 @@ import { Hero } from "../../src/sections";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** The home page opener, in its two layouts: over a full bleed photo, and split beside one. */
+/**
+ * Opens the home page with the headline, the main actions, and trust figures;
+ * use `PageHero` on every other page. The home page opener, in its two
+ * layouts: over a full bleed photo, and split beside one.
+ */
 const meta = {
 	title: "Sections/Hero",
 	component: Hero,

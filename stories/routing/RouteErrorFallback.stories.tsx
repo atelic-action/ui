@@ -5,11 +5,12 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The router's error page (`routerErrorOptions`' `defaultErrorComponent`):
- * the package's dependency free `ErrorFallback`, drawn where a route's
- * boundary caught a crash. Try Again reloads the page, since a loader's error
- * stays on the router's match and resetting the boundary would throw it
- * again. A router never passes `reload`; the stories do, to see it called.
+ * Is the page a router shows when a route crashes, in place of a blank screen.
+ * The router's error page (`routerErrorOptions`' `defaultErrorComponent`): the
+ * package's dependency free `ErrorFallback`, drawn where a route's boundary
+ * caught a crash. Try Again reloads the page, since a loader's error stays on
+ * the router's match and resetting the boundary would throw it again. A router
+ * never passes `reload`; the stories do, to see it called.
  */
 const meta = {
 	title: "Routing/RouteErrorFallback",

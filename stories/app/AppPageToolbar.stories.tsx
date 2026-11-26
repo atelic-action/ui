@@ -62,12 +62,13 @@ function OnAPage({
 }
 
 /**
- * The page's calm tool row: a search box with a clear button, filter
- * dropdowns carrying live counts, and action buttons (ghost or solid, a
- * button or a router link). An optional notice sits in the row on a desktop,
- * after the search and the actions, and under the search on a phone; it is
- * a plain block, never a live region, since a ticking progress line would
- * be announced on every tick.
+ * Gives a list page its search, filters, and actions in one calm row under the
+ * header. The page's calm tool row: a search box with a clear button, filter
+ * dropdowns carrying live counts, and action buttons (ghost or solid, a button
+ * or a router link). An optional notice sits in the row on a desktop, after
+ * the search and the actions, and under the search on a phone; it is a plain
+ * block, never a live region, since a ticking progress line would be announced
+ * on every tick.
  */
 const meta = {
 	title: "App/AppPageToolbar",

@@ -26,7 +26,11 @@ const photo = (
 	</section>
 );
 
-/** The two column section: copy beside copy, or a photo beside copy. */
+/**
+ * Sets two columns side by side, copy beside copy or a photo beside copy, for
+ * any section that is neither a grid nor a list. The two column section: copy
+ * beside copy, or a photo beside copy.
+ */
 const meta = {
 	title: "Sections/SplitSection",
 	component: SplitSection,

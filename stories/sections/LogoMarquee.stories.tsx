@@ -6,7 +6,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
 
-/** A dark band with a row of credential chips scrolling across it, on a loop. */
+/**
+ * Shows a set of short proofs (credentials, clients, press) a visitor should
+ * register without stopping to read each one. A dark band with a row of
+ * credential chips scrolling across it, on a loop.
+ */
 const meta = {
 	title: "Sections/LogoMarquee",
 	component: LogoMarquee,

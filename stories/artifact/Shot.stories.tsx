@@ -13,9 +13,10 @@ const column: Decorator = (Story) => (
 );
 
 /**
- * The owner's own screen: the crop, opening the full picture in a new tab
- * when it has one, over its caption. A crop taller than it is wide is held
- * far narrower than its column once its size is known.
+ * Shows a screenshot of the owner's own screen in a document, opening the full
+ * picture, over a caption. The owner's own screen: the crop, opening the full
+ * picture in a new tab when it has one, over its caption. A crop taller than
+ * it is wide is held far narrower than its column once its size is known.
  */
 const meta = {
 	title: "Artifact/Shot",

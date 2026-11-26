@@ -20,6 +20,7 @@ function Held({ value: initial, onValueChange, ...props }: Parameters<typeof Sea
 }
 
 /**
+ * Filters a list in an app by what the reader types, with a way to clear it.
  * The kit's search field: a search icon, the box, and a clear button once
  * there is something to clear. Escape clears it too.
  */

@@ -2,6 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { Button } from "../../src/primitives";
 
+/**
+ * Draws any link or button a section needs in three looks and two sizes, when
+ * the page's call to action is not what is meant; for that use `PrimaryButton`
+ * and `SecondaryButton`.
+ */
 const meta = {
 	title: "Primitives/Button",
 	component: Button,

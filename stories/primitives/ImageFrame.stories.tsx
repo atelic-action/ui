@@ -4,7 +4,11 @@ import { ImageFrame } from "../../src/primitives";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** A rounded media frame, and a labeled placeholder block until the photograph exists. */
+/**
+ * Frames an image in the package's rounded shape, or a labeled placeholder
+ * until the photograph exists. A rounded media frame, and a labeled
+ * placeholder block until the photograph exists.
+ */
 const meta = {
 	title: "Primitives/ImageFrame",
 	component: ImageFrame,

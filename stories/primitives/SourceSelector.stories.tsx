@@ -41,9 +41,10 @@ function WithDetail(props: ComponentProps<typeof SourceSelector>) {
 }
 
 /**
- * How a visitor heard about the business: a labeled native select of the
- * site's answers, an empty first row before them. The same `Source` a site
- * hands `ContactForm` and its function's `sourceField`.
+ * Asks a visitor how they heard about the business, in a form. How a visitor
+ * heard about the business: a labeled native select of the site's answers, an
+ * empty first row before them. The same `Source` a site hands `ContactForm`
+ * and its function's `sourceField`.
  */
 const meta = {
 	title: "Primitives/SourceSelector",

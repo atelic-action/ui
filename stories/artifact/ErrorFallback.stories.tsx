@@ -6,9 +6,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The screen a crash leaves: deliberately dependency free, inline styled, so
- * it renders even when the styles are what broke. The error's message shows
- * in a development build only.
+ * Tells a document's reader that something broke, using no stylesheet, so it
+ * still appears when the styles are what failed. The screen a crash leaves:
+ * deliberately dependency free, inline styled, so it renders even when the
+ * styles are what broke. The error's message shows in a development build
+ * only.
  */
 const meta = {
 	title: "Artifact/ErrorFallback",

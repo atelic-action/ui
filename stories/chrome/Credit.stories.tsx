@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { Credit } from "../../src/chrome";
 
-/** The practice's credit, the closing bar's default right side: the practice in one link. */
+/**
+ * Credits the practice that built the site, as the closing bar's default right
+ * side. The practice's credit, the closing bar's default right side: the
+ * practice in one link.
+ */
 const meta = {
 	title: "Chrome/Credit",
 	component: Credit,

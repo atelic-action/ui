@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { SkipLink } from "../../src/chrome";
 
-/** The keyboard user's first stop: hidden until focused, then a jump past the chrome. */
+/**
+ * Lets a keyboard user jump past the header straight to the page's content.
+ * The keyboard user's first stop: hidden until focused, then a jump past the
+ * chrome.
+ */
 const meta = {
 	title: "Chrome/SkipLink",
 	component: SkipLink,

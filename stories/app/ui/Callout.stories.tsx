@@ -5,7 +5,11 @@ import { Callout } from "../../../src/app/ui";
 import { expectNoSidewaysScroll } from "../../support/geometry";
 import { pin } from "../../support/viewports";
 
-/** A quiet boxed aside with an optional icon: a tip, a hint, a reminder. */
+/**
+ * Sets a tip, hint, or reminder aside from an app page's own text, calmer than
+ * an `Alert`. A quiet boxed aside with an optional icon: a tip, a hint, a
+ * reminder.
+ */
 const meta = {
 	title: "App/UI/Callout",
 	component: Callout,

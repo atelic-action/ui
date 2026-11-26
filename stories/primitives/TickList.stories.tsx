@@ -5,7 +5,10 @@ import { longWord } from "../fixtures/primitives";
 import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
-/** A list with a check mark before each item, for a feature or a price card. */
+/**
+ * Lists the items of a feature or a price card, each with a check mark. A list
+ * with a check mark before each item, for a feature or a price card.
+ */
 const meta = {
 	title: "Primitives/TickList",
 	component: TickList,

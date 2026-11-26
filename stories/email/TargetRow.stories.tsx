@@ -14,6 +14,7 @@ const INK = "rgb(21, 21, 21)";
 const ACCENT_INK = "rgb(184, 48, 11)";
 
 /**
+ * Shows one target in an email's scoreboard: its label, count, bar, and note.
  * One target: its label, the count over the target (in the accent's ink when
  * short), the bar, and a faint note. The bar is decoration beside the count
  * that says it.

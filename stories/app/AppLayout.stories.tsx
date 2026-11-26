@@ -32,11 +32,12 @@ async function tabStaysInside(dialog: HTMLElement, presses: number) {
 }
 
 /**
- * The app shell around every signed in page. At `lg` and up it is the
- * navigation rail on the left with the user menu at its foot; below that a
- * slim top bar with the hamburger menu sheet over the page, and the section
- * tab bar pinned to the bottom. Signed out, a public page gets the brand bar
- * with a sign in link and any other page renders bare.
+ * Wraps every page of a signed in app in its navigation, so a page supplies
+ * only its content. The app shell around every signed in page. At `lg` and up
+ * it is the navigation rail on the left with the user menu at its foot; below
+ * that a slim top bar with the hamburger menu sheet over the page, and the
+ * section tab bar pinned to the bottom. Signed out, a public page gets the
+ * brand bar with a sign in link and any other page renders bare.
  */
 const meta = {
 	title: "App/AppLayout",

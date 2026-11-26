@@ -18,9 +18,10 @@ const options = [
 ];
 
 /**
- * A button naming what is chosen, over a Radix popover of Radix
- * checkboxes; any number may be ticked. In a form it submits each chosen
- * value under its name.
+ * Lets a reader tick any number of options from a list in a form or a filter,
+ * where a `Select` takes only one. A button naming what is chosen, over a
+ * Radix popover of Radix checkboxes; any number may be ticked. In a form it
+ * submits each chosen value under its name.
  */
 const meta = {
 	title: "Components/MultiSelect",

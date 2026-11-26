@@ -5,9 +5,11 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * An info icon beside a word that opens a short explainer. It opens on
- * hover or keyboard focus and stays open on a click or a tap; Escape or a
- * press elsewhere closes it. The bubble is the button's description.
+ * Explains a term or a table heading in a short bubble, without sending the
+ * reader elsewhere. An info icon beside a word that opens a short explainer.
+ * It opens on hover or keyboard focus and stays open on a click or a tap;
+ * Escape or a press elsewhere closes it. The bubble is the button's
+ * description.
  */
 const meta = {
 	title: "Components/Hint",

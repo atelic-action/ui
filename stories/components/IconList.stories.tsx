@@ -14,8 +14,10 @@ const items = [
 ];
 
 /**
- * A list whose bullets are icons, one for the list or one per item, each in
- * a tone. The bullets are decoration: a screen reader hears the items alone.
+ * Lists short items marked by icons instead of bullets, when the icon says
+ * something a bullet would not; see `TickList` for plain checks. A list whose
+ * bullets are icons, one for the list or one per item, each in a tone. The
+ * bullets are decoration: a screen reader hears the items alone.
  */
 const meta = {
 	title: "Components/IconList",

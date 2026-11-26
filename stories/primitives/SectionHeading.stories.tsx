@@ -6,7 +6,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 import { inWrap, onDarkBand } from "./support";
 
-/** The standard section opener: an eyebrow, the title, and a lead. */
+/**
+ * Opens a section with an eyebrow, a title, and a lead, so every section opens
+ * alike. The standard section opener: an eyebrow, the title, and a lead.
+ */
 const meta = {
 	title: "Primitives/SectionHeading",
 	component: SectionHeading,

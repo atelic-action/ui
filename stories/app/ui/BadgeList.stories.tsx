@@ -13,7 +13,11 @@ const tags = [
 	{ label: "Overnight" },
 ];
 
-/** A wrapping row of small badges, optionally capped with a "+N" for the rest. */
+/**
+ * Shows a row of tags on one item without letting them run past its width,
+ * capping the rest as a count. A wrapping row of small badges, optionally
+ * capped with a "+N" for the rest.
+ */
 const meta = {
 	title: "App/UI/BadgeList",
 	component: BadgeList,

@@ -6,8 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * The closing call to action every page ends on: the site's primary action,
- * and a page's own secondary beside it.
+ * Closes a page with the site's primary action, the last section on every
+ * page. The closing call to action every page ends on: the site's primary
+ * action, and a page's own secondary beside it.
  */
 const meta = {
 	title: "Sections/CTASection",

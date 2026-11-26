@@ -6,8 +6,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A dark band: numbered steps beside a supporting photo. Each step's title
- * sits one heading level under the band's, whatever level the band takes.
+ * Explains how the work goes in numbered steps beside a photo, so a visitor
+ * knows what happens after they ask. A dark band: numbered steps beside a
+ * supporting photo. Each step's title sits one heading level under the band's,
+ * whatever level the band takes.
  */
 const meta = {
 	title: "Sections/ProcessSteps",

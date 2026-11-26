@@ -6,7 +6,9 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * A light accordion of numbered rows, each folding out its body.
+ * Lists numbered steps or answers that fold out, when each has a body too long
+ * to show at once. A light accordion of numbered rows, each folding out its
+ * body.
  */
 const meta = {
 	title: "Sections/ExpandList",

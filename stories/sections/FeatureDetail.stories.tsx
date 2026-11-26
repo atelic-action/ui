@@ -6,8 +6,10 @@ import { expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
- * One feature row: the copy (index, eyebrow, title, tags, lead, ticks) beside
- * its photo, flipping sides row to row.
+ * Describes one feature or service at length, copy beside a photo; use
+ * `FeatureGrid` for several short ones side by side. One feature row: the copy
+ * (index, eyebrow, title, tags, lead, ticks) beside its photo, flipping sides
+ * row to row.
  */
 const meta = {
 	title: "Sections/FeatureDetail",

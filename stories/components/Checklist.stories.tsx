@@ -13,7 +13,11 @@ const items = [
 	{ label: "Order form delivers", detail: "Posts to an address that bounces", pass: false },
 ];
 
-/** A short list of checks, each passed or failed, in two columns when there is room. */
+/**
+ * Lists checks that each passed or failed, when a reader needs to see what is
+ * in order and what is not. A short list of checks, each passed or failed, in
+ * two columns when there is room.
+ */
 const meta = {
 	title: "Components/Checklist",
 	component: Checklist,

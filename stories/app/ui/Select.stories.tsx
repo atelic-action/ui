@@ -16,9 +16,10 @@ import { layerOpened, noneLeft, until } from "../../support/settle";
 import { pin } from "../../support/viewports";
 
 /**
- * The raw select parts, for what `OptionSelect` does not express: grouped
- * options under labels, a separator, a disabled option. The trigger is named
- * by its label.
+ * Offers a pick from options that need groups, a separator, or a disabled row
+ * in an app; use `OptionSelect` for a flat list. The raw select parts, for
+ * what `OptionSelect` does not express: grouped options under labels, a
+ * separator, a disabled option. The trigger is named by its label.
  */
 const meta = {
 	title: "App/UI/Select",

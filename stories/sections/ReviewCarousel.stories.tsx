@@ -7,8 +7,9 @@ import { withReducedMotion } from "../support/motion";
 import { pin } from "../support/viewports";
 
 /**
- * The aggregate rating beside one large review at a time, stepped by dots
- * and round arrows.
+ * Shows a business's rating with one review at a time, for a page with room
+ * for a single quote; use `ReviewWall` for the full set. The aggregate rating
+ * beside one large review at a time, stepped by dots and round arrows.
  */
 const meta = {
 	title: "Sections/ReviewCarousel",

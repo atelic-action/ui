@@ -4,8 +4,10 @@ import { Runs } from "../../src/artifact";
 import { inWrap } from "../primitives/support";
 
 /**
- * A paragraph's runs alone, for a container that is not a paragraph: a list
- * item, a table cell. The same text, links, and queries as `Paragraph`.
+ * Writes the text, links, and queries of a paragraph inside a container that
+ * is not a paragraph, such as a list item or a table cell. A paragraph's runs
+ * alone, for a container that is not a paragraph: a list item, a table cell.
+ * The same text, links, and queries as `Paragraph`.
  */
 const meta = {
 	title: "Artifact/Runs",
