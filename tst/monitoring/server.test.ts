@@ -252,9 +252,34 @@ describe("buildEnvelope's chain of causes", () => {
 		expect(sent).not.toContain("owner@example.com");
 		expect(sent).not.toContain("555-555-0142");
 		expect(sent).not.toContain("ops@example.com");
-		// The thrown value is last, as Sentry orders a chain, and still reads as itself.
+		// The thrown value is last, as Sentry orders a chain, and still reads as
+		// itself; its cause is a link of its own, scrubbed too.
 		expect(values.at(-1).value).toContain("Rejected [address]");
-		expect(values.at(-1).value).toContain("call [number]");
+		expect(values[0].value).toContain("call [number]");
+	});
+
+	it("leaves a plain object's own cause out of its JSON, since the chain reports it", () => {
+		const values = valuesOf({ reason: "first", cause: { detail: "second" } });
+		expect(values).toHaveLength(2);
+		expect(values.at(-1).value).toBe('{"reason":"first"}');
+		expect(values[0].value).toBe('{"detail":"second"}');
+	});
+
+	it("cuts a huge plain object before the scrub, and leaves no part of a number the cut split", () => {
+		// Addresses the scrub shortens, then a number the cut at 500 splits after
+		// "555-5", so what is left of it would slide inside the 300 kept.
+		const addresses = Array.from({ length: 5 }, (_, at) => `${"u".repeat(60)}${at}@example.com`);
+		const head = `{"a":"${addresses.join(" ")} `;
+		const fill = "x".repeat(500 - head.length - '","b":"call 555-5'.length);
+		const thrown = { a: `${addresses.join(" ")} ${fill}`, b: "call 555-555-0142 now" };
+		expect(JSON.stringify(thrown).slice(0, 500).endsWith("call 555-5")).toBe(true);
+		const [only] = valuesOf(thrown);
+		expect(only.value.length).toBeLessThanOrEqual(300);
+		expect(only.value).toContain("[address]");
+		expect(only.value).not.toMatch(/555/);
+		// A huge object is cut to the cap, whatever its size.
+		const huge = { list: Array.from({ length: 50_000 }, (_, at) => `item ${at}`) };
+		expect(valuesOf(huge)[0].value).toHaveLength(300);
 	});
 
 	it("drops only the field whose getter throws, on the thrown value and on any cause", () => {
@@ -659,7 +684,9 @@ describe("refusalError and reportRefusedResponse", () => {
 		],
 		["two ports side by side, scrubbed the safe way", "port 443 8080", false],
 		["a seven digit number with a dash", "Call 555\u20130142 today", false],
-		["a seven digit number with a dot", "Call 555.0142 today", false],
+		["seven digits with a dot, read as a decimal", "Call 555.0142 today", true],
+		["a time in seconds", "took 250.1234 s", true],
+		["a price", "total 299.9900 USD", true],
 		["a seven digit number with an extension", "Call 555-0142 x12 today", false],
 		["a full number", "Call (555) 555-0142 today", false],
 		["a slashed number", "Call 555/555-0144 today", false],

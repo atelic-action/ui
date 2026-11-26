@@ -151,15 +151,33 @@ function has(error: object, key: string): boolean {
 }
 
 /**
+ * How much of a value written out as JSON is kept for the scrub: the cap on
+ * a message and room beside it for what the scrub shortens, so a huge object
+ * costs the scrub no more than this.
+ */
+const WRITTEN_MAX = EXCEPTION_VALUE_MAX + 200;
+
+/**
  * A value as words when it is no error: JSON when it can be written so, else
  * `String`, else the bare fact that something was thrown, since a value with
- * no prototype has no `toString` and `String` throws for it.
+ * no prototype has no `toString` and `String` throws for it. The JSON leaves
+ * out the value's own `cause`, which the chain reports as a link of its own,
+ * and is cut to WRITTEN_MAX before the scrub. A cut that falls inside a
+ * string drops that string's tail back to the JSON's last mark (a quote, a
+ * comma, a colon, a brace, a bracket), so no part of a number or an address
+ * the cut split is left for the scrub to miss.
  */
 function wordsOf(error: unknown): string {
 	if (typeof error === "string") return error;
 	try {
-		const written = JSON.stringify(error);
-		if (written !== undefined) return written;
+		const written = JSON.stringify(error, function (this: unknown, key, value) {
+			return this === error && key === "cause" ? undefined : value;
+		});
+		if (written !== undefined) {
+			return written.length > WRITTEN_MAX
+				? written.slice(0, WRITTEN_MAX).replace(/[^"{}[\],:]*$/u, "")
+				: written;
+		}
 	} catch {
 		// Not writable as JSON (a cycle, a BigInt, a throwing getter).
 	}
@@ -430,16 +448,17 @@ const DATE =
 
 /**
  * A seven digit local number: an exchange of three digits, the first 2 to
- * 9 as an exchange's always is, a hyphen, a dash, a dot, or a space, and
- * four digits (555-0142, 555.0142, 555 0142). The separator is required, so
- * a bare run of digits (5550142, 4194304, 9000000) is an id or a count and
- * stays. Written with a space it is two numbers side by side as often as it
+ * 9 as an exchange's always is, a hyphen (or a dash) or a space, and four
+ * digits (555-0142, 555 0142). The separator is required, so a bare run of
+ * digits (5550142, 4194304, 9000000) is an id or a count and stays, and it
+ * is never a dot, which in a report is a decimal far more often than a
+ * number (250.1234 s, 299.9900 USD), so 555.0142 stays too. Written with a space it is two numbers side by side as often as it
  * is one, so it is left alone when its four digits are a year (350 2026),
  * at the cost of a real number whose last four read as one (555 1999). Any
  * other pair is scrubbed, two ports side by side (443 8080) included, since
  * a scrubbed pair of numbers is the safe way to be wrong.
  */
-const SEVEN = `[2-9]\\d{2}(?:[.\\u2010-\\u2015\\u2212-]|\\s(?!(?:19|20)\\d{2}(?![\\w-])))\\d{4}`;
+const SEVEN = `[2-9]\\d{2}(?:[\\u2010-\\u2015\\u2212-]|\\s(?!(?:19|20)\\d{2}(?![\\w-])))\\d{4}`;
 
 /**
  * A run shaped like a phone number: an optional country code (a plus sign
