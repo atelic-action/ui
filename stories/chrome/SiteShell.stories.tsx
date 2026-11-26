@@ -647,14 +647,15 @@ const thisPage = () => `${window.location.pathname}${window.location.search}`;
 
 /**
  * Records, for each click on the page, whether the shell had cancelled it, read
- * on the body: after the shell and the chrome's own handlers, and before the
- * preview cancels every link click for itself.
+ * on the document after the shell's own listener there, which the shell added
+ * when it mounted, and before the preview cancels every link click for itself
+ * at the window.
  */
 function watchClicks() {
 	const cancelled: boolean[] = [];
 	const record = (event: MouseEvent) => cancelled.push(event.defaultPrevented);
-	document.body.addEventListener("click", record);
-	return { cancelled, stop: () => document.body.removeEventListener("click", record) };
+	document.addEventListener("click", record);
+	return { cancelled, stop: () => document.removeEventListener("click", record) };
 }
 
 const orderToday = { label: "Order for today", href: "/order" };
@@ -685,10 +686,26 @@ export const LinkToThisPage: Story = {
 				await expect(clicks.cancelled).toEqual([true]);
 				await waitFor(() => expect(window.scrollY).toBe(0));
 			});
+			await step("a pointer click leaves focus where it was", async () => {
+				await expect(canvas.getByRole("main")).not.toHaveFocus();
+			});
+			await step("from the keyboard, focus moves to the top, with no ring", async () => {
+				toBottom();
+				await waitFor(() => expect(window.scrollY).toBeGreaterThan(0));
+				const banner = within(canvas.getByRole("banner"));
+				const link = await banner.findByRole("link", { name: /Order for today/ });
+				link.focus();
+				await userEvent.keyboard("{Enter}");
+				await expect(clicks.cancelled).toEqual([true, true]);
+				const page = canvas.getByRole("main");
+				await expect(page).toHaveFocus();
+				await expect(getComputedStyle(page).outlineStyle).toBe("none");
+				await waitFor(() => expect(window.scrollY).toBe(0));
+			});
 			await step("a link to another page is left to the browser", async () => {
 				const footer = within(canvas.getByRole("contentinfo"));
 				await userEvent.click(footer.getByRole("link", { name: "Privacy" }));
-				await expect(clicks.cancelled).toEqual([true, false]);
+				await expect(clicks.cancelled).toEqual([true, true, false]);
 			});
 		} finally {
 			clicks.stop();
@@ -698,8 +715,9 @@ export const LinkToThisPage: Story = {
 
 /**
  * The same on a phone, under reduced motion, where the window jumps to the top
- * at once: the menu's call to action and the contact dock's item to this page
- * each close their panel and load nothing.
+ * at once: scrolled down, the menu's call to action and the contact dock's
+ * item to this page each close their panel, load nothing, and go back to the
+ * top.
  */
 export const LinkToThisPagePhone: Story = {
 	render: (args, { globals }) => {
@@ -731,13 +749,30 @@ export const LinkToThisPagePhone: Story = {
 			/>
 		);
 	},
-	args: visitPage,
+	args: {
+		...visitPage,
+		children: (
+			<section className="section">
+				<div className="wrap">
+					<h1>Visit the shop</h1>
+					<p>418 Alder Street, by the old mill. Street parking out front.</p>
+					{/* Room enough to scroll the page down before each tap. */}
+					<div style={{ height: "200vh" }} />
+				</div>
+			</section>
+		),
+	},
 	globals: pin("phone"),
 	beforeEach: withReducedMotion,
 	play: async ({ canvas, userEvent, step }) => {
 		const clicks = watchClicks();
 		try {
+			const scrolledDown = async () => {
+				toBottom();
+				await waitFor(() => expect(window.scrollY).toBeGreaterThan(0));
+			};
 			await step("the menu's call to action closes the menu and stays on the page", async () => {
+				await scrolledDown();
 				await userEvent.click(canvas.getByRole("button", { name: "Open menu" }));
 				const dialog = canvas.getByRole("dialog", { name: "Menu" });
 				await userEvent.click(within(dialog).getByRole("link", { name: /Order for today/ }));
@@ -746,12 +781,14 @@ export const LinkToThisPagePhone: Story = {
 				await expect(window.scrollY).toBe(0);
 			});
 			await step("the dock's item to this page closes the dock and stays on the page", async () => {
+				await scrolledDown();
 				const launcher = canvas.getByRole("button", { name: "Talk to us" });
 				await userEvent.click(launcher);
 				await expect(launcher).toHaveAttribute("aria-expanded", "true");
 				await userEvent.click(canvas.getByRole("link", { name: /Order ahead/ }));
 				await expect(clicks.cancelled.at(-1)).toBe(true);
 				await waitFor(() => expect(launcher).toHaveAttribute("aria-expanded", "false"));
+				await expect(window.scrollY).toBe(0);
 			});
 		} finally {
 			clicks.stop();

@@ -18,8 +18,8 @@ import { withApp, withEmail, withSiteRoot } from "./decorators";
 
 /**
  * A followed link never leaves the story: a click on any link that is not an
- * in page jump is cancelled at the document, after the component's own
- * handler has run, so a test can follow a link and assert what the
+ * in page jump is cancelled at the window, after the component's own
+ * handler and any listener on the document have run, so a test can follow a link and assert what the
  * component did about it (a panel closing, a menu reporting closed).
  */
 function holdLinks(event: MouseEvent) {
@@ -39,10 +39,10 @@ const preview: Preview = {
 		await judgeStoryMarkers({ id, name, parameters, viewMode, issues });
 	},
 	beforeEach: () => {
-		document.addEventListener("click", holdLinks);
+		window.addEventListener("click", holdLinks);
 		// The page scrolls between stories in the browser; every story starts at the top.
 		window.scrollTo({ top: 0, behavior: "instant" });
-		return () => document.removeEventListener("click", holdLinks);
+		return () => window.removeEventListener("click", holdLinks);
 	},
 	parameters: {
 		// Sections and chrome are full bleed; a primitive's story asks for padding.

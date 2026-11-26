@@ -21,6 +21,12 @@
 	.atelic-ui .skip-link:focus {
 		left: 0;
 	}
+	/* The page's main takes focus only as the place the next Tab starts from
+	   (a link to the page being read, followed from the keyboard), so it draws
+	   no ring around the whole page. */
+	.atelic-ui main[tabindex="-1"]:focus {
+		outline: none;
+	}
 
 	/* ---- Brand lockup ---- */
 	/* The brand's trailing fade bar after the wordmark (logo.run), worn in the
