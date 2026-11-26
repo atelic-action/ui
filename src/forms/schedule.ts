@@ -381,6 +381,9 @@ export function readScheduleRequest(
 	const onList = labels.includes(answered);
 	const source = onList ? answered : "";
 	const detailAsked = config.source && source ? sourceDetailFor(config.source, source) : undefined;
+	if (strict && config.source?.required && !source) {
+		return refuse("who", "Please tell us how you heard about us.");
+	}
 	const sourceDetail = detailAsked
 		? Array.from(text(body.sourceDetail)).slice(0, SOURCE_DETAIL_LIMIT).join("")
 		: "";

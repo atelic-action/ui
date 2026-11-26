@@ -79,7 +79,8 @@ export type ScheduleRequestField =
 	| "lastName"
 	| "phone"
 	| "email"
-	| "street";
+	| "street"
+	| "source";
 
 /** Every word the form draws that is not the business's config, each with a neutral default. */
 export interface ScheduleRequestLabels {
@@ -191,7 +192,7 @@ const LABELS: ScheduleRequestLabels = {
 		`${count === 1 ? "One thing needs" : `${count} things need`} fixing before ${last ? "we can send this." : "you can go on."}`,
 	doneTitle: (first) => `We have your request${first ? `, ${first}` : ""}.`,
 	doneLead: (email, receipt) =>
-		`This is a request, not a booked appointment yet.${receipt && email ? ` A copy is on its way to ${email}.` : ""}`,
+		`This is a request, not a booked appointment yet.${receipt && email ? ` A copy is on its way to your email address.` : ""}`,
 	doneNextHead: "What Happens Next",
 	doneNext: (_mode, within, receipt, next) => [
 		...(receipt ? ["You get an email with a copy of this request."] : []),
@@ -221,6 +222,7 @@ const ERRORS: Record<ScheduleRequestField, string> = {
 	phone: "Enter a phone number with its area code.",
 	email: "Enter an email address we can reply to.",
 	street: "Enter the address we are visiting.",
+	source: "Please choose an answer.",
 };
 
 const BLOCKED_MESSAGE = "We could not send this from your browser. Please call us instead.";
@@ -295,6 +297,7 @@ const ORDER: ScheduleRequestField[] = [
 	"phone",
 	"email",
 	"street",
+	"source",
 ];
 
 type Errors = Partial<Record<ScheduleRequestField, true>>;
@@ -447,6 +450,7 @@ export function ScheduleRequestForm({
 			if (toE164(values.phone) === null) found.phone = true;
 			if (!EMAIL_PATTERN.test(values.email.trim())) found.email = true;
 			if (mode === "visit" && !values.address.street.trim()) found.street = true;
+			if (config.source?.required && !values.source) found.source = true;
 		}
 		return found;
 	};
@@ -525,7 +529,12 @@ export function ScheduleRequestForm({
 				} | null;
 				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
 					setNotice(blockedMessage);
-				} else if (response.status === 400 && typeof answer?.error === "string" && answer.error) {
+				} else if (
+					response.status === 400 &&
+					typeof answer?.error === "string" &&
+					answer.error &&
+					{ what: 0, when: 1, who: 2 }[String(answer.code)] !== undefined
+				) {
 					// The endpoint held the request to the calendar and said why: the
 					// visitor goes back to the step it belongs to.
 					const back = { what: 0, when: 1, who: 2 }[String(answer.code)];
@@ -918,6 +927,7 @@ export function ScheduleRequestForm({
 								onDetailChange={(sourceDetail) => set({ sourceDetail })}
 								hint={config.source.required ? undefined : labels.optional}
 								detailHint={labels.optional}
+								error={errors.source ? errorWords.source : undefined}
 							/>
 						)}
 						<div className="field">

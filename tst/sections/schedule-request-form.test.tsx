@@ -191,7 +191,7 @@ describe("ScheduleRequestForm", () => {
 		});
 		expect(
 			screen.getByText(
-				/This is a request, not a booked appointment yet\. A copy is on its way to dana@example.com\./,
+				/This is a request, not a booked appointment yet\. A copy is on its way to your email address\./,
 			),
 		).toBeInTheDocument();
 		expect(

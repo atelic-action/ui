@@ -199,6 +199,20 @@ describe("readScheduleRequest", () => {
 	});
 });
 
+describe("a required source answer", () => {
+	it("is refused when it is left out, and let through for a canary", () => {
+		const config = { ...CONFIG, source: { ...CONFIG.source, required: true } } as typeof CONFIG;
+		const blank = readScheduleRequest({ ...VALID, source: "" }, config, TODAY);
+		expect("refusal" in blank && blank.refusal.code).toBe("who");
+		expect("fields" in readScheduleRequest({ ...VALID, source: "Google" }, config, TODAY)).toBe(
+			true,
+		);
+		expect("fields" in readScheduleRequest({ ...VALID, source: "" }, config, TODAY, false)).toBe(
+			true,
+		);
+	});
+});
+
 describe("officeScheduleEmail", () => {
 	it("leads with the requested day and time, and says nothing is booked", () => {
 		const result = readScheduleRequest(VALID, CONFIG, TODAY);
