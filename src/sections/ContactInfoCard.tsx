@@ -1,5 +1,5 @@
-import { menuPhoneLabel } from "../chrome/SiteMenu";
 import { newTabProps } from "../lib/newTabProps";
+import { menuPhoneLabel } from "../lib/phoneLabel";
 import { EmailLink } from "../primitives/EmailLink";
 import { PhoneLink } from "../primitives/PhoneLink";
 import { useWithBase } from "../routing/BasePathProvider";
