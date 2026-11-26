@@ -297,19 +297,30 @@ describe("Footer link columns with the hours in the brand column", () => {
 	});
 
 	it("hands the widest column's real width to the stylesheet's floor once measured", () => {
-		// Each column reads as wide as its longest label at about 8px a character,
-		// but only while the measure sets it to max-content.
-		vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+		// Each column's layout width is its longest label at 8px a character,
+		// but only while the measure sets it to max-content. Every column is
+		// set before any is read, so the read costs one layout.
+		const allSet: boolean[] = [];
+		vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (
 			this: HTMLElement,
 		) {
+			const box = this.closest(".footer-links");
+			if (box) {
+				allSet.push(
+					Array.from(box.querySelectorAll<HTMLElement>(".footer-column")).every(
+						(column) => column.style.width === "max-content",
+					),
+				);
+			}
 			const longest = Math.max(
 				...Array.from(this.querySelectorAll("a, [role=heading]")).map(
 					(element) => element.textContent?.length ?? 0,
 				),
 			);
-			const width = this.style.width === "max-content" ? longest * 8 + 0.4 : 50;
-			return { width, height: 20, top: 0, left: 0, right: width, bottom: 20 } as DOMRect;
+			return this.style.width === "max-content" ? longest * 8 : 50;
 		});
+		// A transform on an ancestor scales what getBoundingClientRect says; the measure never asks it.
+		const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect");
 		const long = [
 			...(columns ?? []).slice(0, 1),
 			{
@@ -319,16 +330,29 @@ describe("Footer link columns with the hours in the brand column", () => {
 			...(columns ?? []).slice(2),
 		];
 		const { container } = render(<Footer {...props} hours={hours} columns={long} />);
-		// 30 characters at 8px, rounded up: the widest column, Resources.
-		expect(grid(container).style.getPropertyValue("--_link-measured")).toBe("241px");
+		// 30 characters at 8px: the widest column, Resources.
+		expect(grid(container).style.getPropertyValue("--_link-measured")).toBe("240px");
+		expect(allSet.length).toBeGreaterThan(0);
+		expect(allSet.every(Boolean)).toBe(true);
+		expect(rect).not.toHaveBeenCalled();
 		// The measure hands each column its own style back.
 		for (const column of Array.from(container.querySelectorAll<HTMLElement>(".footer-column"))) {
 			expect(column.getAttribute("style")).toBeFalsy();
 		}
 	});
 
+	it("attaches a swapped ref and clears the one it replaced", () => {
+		const first = createRef<HTMLElement>();
+		const second = createRef<HTMLElement>();
+		const { rerender } = render(<Footer {...props} hours={hours} ref={first} />);
+		expect(first.current).toBe(screen.getByRole("contentinfo"));
+		rerender(<Footer {...props} hours={hours} ref={second} />);
+		expect(second.current).toBe(screen.getByRole("contentinfo"));
+		expect(first.current).toBeNull();
+	});
+
 	it("measures nothing with the hours as a column of their own, where the columns stand in the grid", () => {
-		const read = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect");
+		const read = vi.spyOn(HTMLElement.prototype, "offsetWidth", "get");
 		const { container } = render(<Footer {...props} hours={hours} hoursPlacement="column" />);
 		expect(container.querySelector(".footer-links")).toBeNull();
 		expect(grid(container).style.getPropertyValue("--_link-measured")).toBe("");

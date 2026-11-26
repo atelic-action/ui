@@ -222,24 +222,32 @@ export interface FooterProps {
  * The widest link column's own width with nothing to wrap it (max-content),
  * in whole pixels: what the brand placement's floor has to hold so four
  * columns across never leave a label wider than its column, which is what
- * once pushed the fourth to a row of its own. Each column is set to
- * max-content for the read and handed back its own style in the same pass,
- * before anything paints.
+ * once pushed the fourth to a row of its own. Every column is set to
+ * max-content first, then every width is read, then every column is handed
+ * back its own style, so the read costs one layout, before anything paints.
+ * The widths are layout widths (`offsetWidth`), which a transform on an
+ * ancestor (a scaled preview, an animation) leaves as they are.
  */
 export function widestLinkColumn(box: Element): number {
-	let widest = 0;
-	for (const column of Array.from(
-		box.querySelectorAll<HTMLElement>(".footer-links > .footer-column"),
-	)) {
-		const { width, flex, minWidth } = column.style;
-		column.style.flex = "none";
-		column.style.minWidth = "0";
-		column.style.width = "max-content";
-		widest = Math.max(widest, Math.ceil(column.getBoundingClientRect().width));
-		column.style.width = width;
-		column.style.flex = flex;
-		column.style.minWidth = minWidth;
+	const columns = Array.from(box.querySelectorAll<HTMLElement>(".footer-links > .footer-column"));
+	const kept = columns.map(({ style }) => ({
+		width: style.width,
+		flex: style.flex,
+		minWidth: style.minWidth,
+	}));
+	for (const { style } of columns) {
+		style.flex = "none";
+		style.minWidth = "0";
+		style.width = "max-content";
 	}
+	const widest = Math.max(0, ...columns.map((column) => column.offsetWidth));
+	columns.forEach(({ style }, at) => {
+		const own = kept[at];
+		if (!own) return;
+		style.width = own.width;
+		style.flex = own.flex;
+		style.minWidth = own.minWidth;
+	});
 	return widest;
 }
 
@@ -276,16 +284,15 @@ function useWidestLinkColumn(active: boolean) {
 
 /** Hands the footer element to the caller's ref and to the footer's own measure. */
 function useBothRefs(outer: ForwardedRef<HTMLElement>, own: (element: HTMLElement | null) => void) {
-	const outerRef = useRef(outer);
-	outerRef.current = outer;
+	// Made again when either ref changes, so React clears the one it replaces
+	// (a call with null) and attaches the new one.
 	return useCallback(
 		(element: HTMLElement | null) => {
 			own(element);
-			const target = outerRef.current;
-			if (typeof target === "function") target(element);
-			else if (target) target.current = element;
+			if (typeof outer === "function") outer(element);
+			else if (outer) outer.current = element;
 		},
-		[own],
+		[own, outer],
 	);
 }
 
