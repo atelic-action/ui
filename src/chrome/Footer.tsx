@@ -7,6 +7,7 @@ import {
 	type ReactNode,
 	useCallback,
 	useEffect,
+	useLayoutEffect,
 	useRef,
 	useState,
 } from "react";
@@ -296,6 +297,10 @@ export function measureLinkColumns(footer: Element): LinkColumnsMeasure | null {
 	};
 }
 
+// Before paint on the client, so the first frame already has the measured
+// columns; the prerender has no layout to read and runs a plain effect.
+const useBeforePaint = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 /**
  * The link box's measure, taken on the client while the hours sit in the
  * brand column, and again whenever the footer or the box changes size, the
@@ -311,8 +316,8 @@ function useLinkColumns(active: boolean, labels: string) {
 	const setFooter = useCallback((element: HTMLElement | null) => {
 		footerRef.current = element;
 	}, []);
-	// biome-ignore lint/correctness/useExhaustiveDependencies: the labels are the trigger; the measure reads the DOM they drew
-	useEffect(() => {
+	// The labels are the trigger; the measure reads the DOM they drew.
+	useBeforePaint(() => {
 		const footer = footerRef.current;
 		if (!active || !footer) return;
 		const run = () => {
