@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { createRef } from "react";
 import { Footer, type FooterProps } from "../../src/chrome";
@@ -267,5 +269,93 @@ describe("Footer", () => {
 			Symbol.for("react.forward_ref"),
 		);
 		expect(Footer.displayName).toBe("Footer");
+	});
+});
+
+describe("Footer link columns with the hours in the brand column", () => {
+	const hours = [{ label: "Mon", range: "7:00 am to 3:00 pm" }];
+	const grid = (container: HTMLElement) => container.querySelector(".footer-grid") as HTMLElement;
+
+	afterEach(() => vi.restoreAllMocks());
+
+	it("draws no link box at all when there is no link column, so it takes no gap", () => {
+		const { container } = render(<Footer {...props} hours={hours} columns={[]} />);
+		expect(container.querySelector(".footer-links")).toBeNull();
+		expect(grid(container).style.getPropertyValue("--_link-count")).toBe("");
+		const { container: emptied } = render(
+			<Footer {...props} hours={hours} columns={[{ heading: "Legal", links: [] }]} />,
+		);
+		expect(emptied.querySelector(".footer-links")).toBeNull();
+	});
+
+	it("keeps the stylesheet's floor alone until the client measures, so a prerender sets nothing", async () => {
+		const { renderToString } = await import("react-dom/server");
+		const html = renderToString(<Footer {...props} hours={hours} />);
+		expect(html).toContain("footer-links");
+		expect(html).toContain("--_link-count:4");
+		expect(html).not.toContain("--_link-measured");
+	});
+
+	it("hands the widest column's real width to the stylesheet's floor once measured", () => {
+		// Each column reads as wide as its longest label at about 8px a character,
+		// but only while the measure sets it to max-content.
+		vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+			this: HTMLElement,
+		) {
+			const longest = Math.max(
+				...Array.from(this.querySelectorAll("a, [role=heading]")).map(
+					(element) => element.textContent?.length ?? 0,
+				),
+			);
+			const width = this.style.width === "max-content" ? longest * 8 + 0.4 : 50;
+			return { width, height: 20, top: 0, left: 0, right: width, bottom: 20 } as DOMRect;
+		});
+		const long = [
+			...(columns ?? []).slice(0, 1),
+			{
+				heading: "Resources",
+				links: [{ label: "Financing and insurance claims", href: "/financing" }],
+			},
+			...(columns ?? []).slice(2),
+		];
+		const { container } = render(<Footer {...props} hours={hours} columns={long} />);
+		// 30 characters at 8px, rounded up: the widest column, Resources.
+		expect(grid(container).style.getPropertyValue("--_link-measured")).toBe("241px");
+		// The measure hands each column its own style back.
+		for (const column of Array.from(container.querySelectorAll<HTMLElement>(".footer-column"))) {
+			expect(column.getAttribute("style")).toBeFalsy();
+		}
+	});
+
+	it("measures nothing with the hours as a column of their own, where the columns stand in the grid", () => {
+		const read = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect");
+		const { container } = render(<Footer {...props} hours={hours} hoursPlacement="column" />);
+		expect(container.querySelector(".footer-links")).toBeNull();
+		expect(grid(container).style.getPropertyValue("--_link-measured")).toBe("");
+		expect(read).not.toHaveBeenCalled();
+	});
+});
+
+describe("the brand placement's sheet", () => {
+	const sheet = () =>
+		readFileSync(
+			join(import.meta.dirname, "..", "..", "src", "styles", "chrome.css"),
+			"utf8",
+		).replace(/\s+/g, " ");
+
+	it("floors the box at the measured width or ten link sizes, whichever is wider", () => {
+		expect(sheet()).toContain(
+			"--_link-floor: max(calc(10 * var(--footer-link-size)), var(--_link-measured, 0px));",
+		);
+	});
+
+	it("gives every link column one basis, a quarter or a half, and never lets a label widen one", () => {
+		const rule = sheet().match(
+			/\.footer-grid\.has-brand-hours \.footer-links > \.footer-column \{([^}]*)\}/,
+		)?.[1];
+		expect(rule).toContain("min-width: 0;");
+		expect(rule).not.toContain("max-content");
+		expect(rule).toContain("var(--_link-count, 4) - 0.5px");
+		expect(rule).toContain("min(calc(50% - 12.5px), calc((var(--_links-need) - 100%) * 999))");
 	});
 });

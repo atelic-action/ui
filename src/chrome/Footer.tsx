@@ -1,5 +1,15 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import { type ComponentProps, type CSSProperties, forwardRef, type ReactNode } from "react";
+import {
+	type ComponentProps,
+	type CSSProperties,
+	type ForwardedRef,
+	forwardRef,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { EmailLink } from "../primitives/EmailLink";
 import { PhoneLink } from "../primitives/PhoneLink";
@@ -209,6 +219,77 @@ export interface FooterProps {
 }
 
 /**
+ * The widest link column's own width with nothing to wrap it (max-content),
+ * in whole pixels: what the brand placement's floor has to hold so four
+ * columns across never leave a label wider than its column, which is what
+ * once pushed the fourth to a row of its own. Each column is set to
+ * max-content for the read and handed back its own style in the same pass,
+ * before anything paints.
+ */
+export function widestLinkColumn(box: Element): number {
+	let widest = 0;
+	for (const column of Array.from(
+		box.querySelectorAll<HTMLElement>(".footer-links > .footer-column"),
+	)) {
+		const { width, flex, minWidth } = column.style;
+		column.style.flex = "none";
+		column.style.minWidth = "0";
+		column.style.width = "max-content";
+		widest = Math.max(widest, Math.ceil(column.getBoundingClientRect().width));
+		column.style.width = width;
+		column.style.flex = flex;
+		column.style.minWidth = minWidth;
+	}
+	return widest;
+}
+
+/**
+ * The real width of the widest link column, measured on the client while
+ * the hours sit in the brand column, and again whenever the footer changes
+ * size or the fonts finish loading. Zero before the first measure, so the
+ * prerender and the first paint keep the floor the stylesheet sets alone.
+ */
+function useWidestLinkColumn(active: boolean) {
+	const [widest, setWidest] = useState(0);
+	// The footer element, held in a ref rather than state, so handing it over
+	// renders nothing again.
+	const footerRef = useRef<HTMLElement | null>(null);
+	const setFooter = useCallback((element: HTMLElement | null) => {
+		footerRef.current = element;
+	}, []);
+	useEffect(() => {
+		const footer = footerRef.current;
+		if (!active || !footer) return;
+		const measure = () => setWidest(widestLinkColumn(footer));
+		measure();
+		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
+		sizes?.observe(footer);
+		let live = true;
+		document.fonts?.ready.then(() => live && measure()).catch(() => {});
+		return () => {
+			live = false;
+			sizes?.disconnect();
+		};
+	}, [active]);
+	return { widest: active ? widest : 0, setFooter };
+}
+
+/** Hands the footer element to the caller's ref and to the footer's own measure. */
+function useBothRefs(outer: ForwardedRef<HTMLElement>, own: (element: HTMLElement | null) => void) {
+	const outerRef = useRef(outer);
+	outerRef.current = outer;
+	return useCallback(
+		(element: HTMLElement | null) => {
+			own(element);
+			const target = outerRef.current;
+			if (typeof target === "function") target(element);
+			else if (target) target.current = element;
+		},
+		[own],
+	);
+}
+
+/**
  * The site footer: a brand column (the logo, the Google rating, the address
  * linked to the Google profile, the phone, and the email), the hours when the
  * site gives them, the link columns beside it, and the closing bar under it
@@ -269,9 +350,23 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 	// the row is the brand column and that box: the two sit side by side or
 	// each takes a row, and the box alone decides four across or two by two
 	// (chrome.css). Anywhere else, and on a phone, the columns stand in the
-	// grid as they always have.
+	// grid as they always have. With no link column there is no box, so it
+	// takes no gap in the row (9.7.0).
+	const linkBox = Boolean(hoursInBrand) && shown.length > 0;
 	const wrapLinks = (links: ReactNode) =>
-		hoursInBrand ? <div className="footer-links">{links}</div> : links;
+		linkBox ? <div className="footer-links">{links}</div> : links;
+	// The box's floor is each column's ten link sizes, or the widest column's
+	// real width once the client has measured it, whichever is wider, so a
+	// label longer than the floor moves the box to two by two (or to a row of
+	// its own, four across) and never leaves a fourth column alone.
+	const { widest, setFooter } = useWidestLinkColumn(linkBox);
+	const footerRef = useBothRefs(ref, setFooter);
+	const gridStyle = linkBox
+		? ({
+				"--_link-count": shown.length,
+				...(widest > 0 && { "--_link-measured": `${widest}px` }),
+			} as CSSProperties)
+		: undefined;
 	const stars = (
 		<span className="footer-stars" aria-hidden="true">
 			{STARS.map((star) => (
@@ -293,7 +388,7 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 
 	return (
 		<>
-			<footer ref={ref} className="footer">
+			<footer ref={footerRef} className="footer">
 				<div className="wrap">
 					<div
 						className={[
@@ -308,8 +403,9 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 							.join(" ")}
 						// The link columns drawn, which the brand placement's floors are
 						// measured for (chrome.css), so two or three columns keep the
-						// brand column beside them as long as theirs fit.
-						style={hoursInBrand ? ({ "--_link-count": shown.length } as CSSProperties) : undefined}
+						// brand column beside them as long as theirs fit, and the widest
+						// column's measured width once there is one.
+						style={gridStyle}
 					>
 						<div className="footer-brand">
 							{logo?.tile ? (

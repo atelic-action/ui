@@ -1087,3 +1087,60 @@ export const HoursInBrandLinkSizeScalesTheFloorAt820: Story = {
 		await expectBrandRows(canvas, "brand above four", { rating: false });
 	},
 };
+
+/** The full columns with one label longer than the link columns' floor. */
+const longLabelColumns: FooterColumn[] = fullColumns.map((column) =>
+	column.heading === "Resources"
+		? {
+				...column,
+				links: [{ label: "Financing and insurance claims", href: "/financing" }, ...column.links],
+			}
+		: column,
+);
+
+/**
+ * A label wider than the link columns' floor, beside the hours in the brand
+ * column at a brand share of 2, across every width from 760 to 1100 (9.7.0).
+ * Before, the label held its column wider than the floor the row was laid
+ * out for, so in narrow bands (about 769 to 772 and 1020 to 1023 on a real
+ * site) three columns sat across with the fourth alone under them. Now the
+ * footer measures the widest column and the columns sit four across or two
+ * by two at every width, each wide enough for its longest label.
+ */
+export const HoursInBrandLongLabelEveryWidth: Story = {
+	args: { hours, columns: longLabelColumns, hoursPlacement: "brand" },
+	globals: pin("desktop"),
+	decorators: [
+		(Story) => (
+			<div
+				data-testid="frame"
+				style={{ "--footer-brand-width": "2", width: "1100px" } as CSSProperties}
+			>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		const frame = canvas.getByTestId("frame");
+		const footer = canvas.getByRole("contentinfo");
+		const columns = within(footer).getAllByRole("navigation");
+		const top = (element: Element) => Math.round(element.getBoundingClientRect().top);
+		const settle = () =>
+			new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+		const bad: string[] = [];
+		for (let width = 760; width <= 1100; width++) {
+			frame.style.width = `${width}px`;
+			await settle();
+			const rows = [...new Set(columns.map(top))];
+			const counts = rows.map((row) => columns.filter((column) => top(column) === row).length);
+			const shape = counts.join("+");
+			if (shape !== "4" && shape !== "2+2") bad.push(`${width}: ${shape}`);
+			for (const column of columns) {
+				if (column.scrollWidth > column.clientWidth + 1) {
+					bad.push(`${width}: ${column.getAttribute("aria-label")} overflows`);
+				}
+			}
+		}
+		await expect(bad).toEqual([]);
+	},
+};
