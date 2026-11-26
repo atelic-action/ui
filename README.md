@@ -442,7 +442,7 @@ export const POST = createRequestLink({ noun: "preview" });
 | `RESEND_API_KEY` | request link | The sending only key the link goes out on |
 | `GATE_BASE_URL` | request link | The host the link points at; a bare host is read as https, and plain http is refused unless it is local. Unset, production uses the project's own domain and a preview uses the deployment it was asked on |
 | `GATE_FROM`, `GATE_SUBJECT`, `GATE_LINK_TTL_MIN` | request link | Sender, subject, and link lifetime in minutes (15, a day at most) |
-| `GATE_SESSION_DAYS`, `GATE_WATERMARK_MODE` | verify | Session lifetime in days (7, a year at most), and `pill` or `tiled` |
+| `GATE_SESSION_DAYS`, `GATE_WATERMARK_MODE` | verify | Session lifetime in days (7, a year at most), and `pill` or `tiled`, the watermark's mode wherever a shell draws it (a site's pages only with `gate.watermark` on) |
 
 What it holds to, each with a test in `tst/gate/`:
 
@@ -496,9 +496,15 @@ The two pieces a reader sees are ordinary components, in `@atelic-action/ui/comp
 	/>
 </div>;
 
-// the site's shell, once, inside its `.atelic-ui` wrapper, so every page behind
-// the gate wears it (the styles are scoped there, like every sheet's)
+// a shell, once, inside its `.atelic-ui` wrapper (the styles are scoped there,
+// like every sheet's); ArtifactShell and, with gate.watermark on, SiteShell do it
 <Watermark />;
+```
+
+Where the watermark is drawn (9.6.0): `ArtifactShell` draws it on every document page, always, since a private document is what a reader might screenshot. `SiteShell` draws it only when the site's config sets `gate.watermark: true`, and leaves it off by default: a marketing site's preview is the business's own future public site, so it marks nothing confidential, and on a phone the pill sat over the page's own controls (a form's Continue and call buttons). A gated marketing site that wants the pill back sets it beside the login copy:
+
+```ts
+gate: { headline: "Private preview", lead: "Sign in to see the new site.", watermark: true },
 ```
 
 `GateLogin` posts to `/api/auth/request-link`; a site served under a base path passes its own `endpoint`. Its button wears the site's `.btn` classes, as the chrome's do. `Watermark` reads the `gate_email` cookie and draws nothing without one. `readCookie`, exported beside them, is the reader `Watermark` uses and a site's own code can: empty during prerender, for a missing cookie, and for one that will not decode. `GateLogin` says so when an address is not an email, holds a second submit while the first is in flight, and announces each outcome to a screen reader.
@@ -769,7 +775,7 @@ export const schedule: ScheduleConfig = {
 />
 ```
 
-**The shell.** `StepForm` takes the `steps`' names, the `current` step, `onStep` (a finished step's name is a button back to it), `onBack`, `onNext` (the step's button and Enter in any field both call it, so a form checks its step before it moves on), `nextLabel`, `busy`, the step's `title` and `lead`, its fields as `children`, an `alert` over the step, the `summary` rows (`{ label, value, detail }`, empty ones reading "Not chosen yet"), the `promise` under them, the phone bar's two lines as `sentence`, and the `phone`. From 900px the summary is a card pinned beside the step; below it the summary is a bar fixed to the foot of the screen whose lines open the whole summary as a native modal dialog (focus held inside, Escape and the close button close it, focus goes back), with a back arrow, the step's button, and a call button; before anything is chosen the bar offers the number. A page holding one leaves its contact dock and its sticky call bar off a phone, by the sheet's own rule, since the bar holds the call button.
+**The shell.** `StepForm` takes the `steps`' names, the `current` step, `onStep` (a finished step's name is a button back to it), `onBack`, `onNext` (the step's button and Enter in any field both call it, so a form checks its step before it moves on), `nextLabel`, `busy`, the step's `title` and `lead`, its fields as `children`, an `alert` over the step, the `summary` rows (`{ label, value, detail }`, empty ones reading "Not chosen yet"), the `promise` under them, the phone bar's two lines as `sentence`, and the `phone`. From 900px the summary is a card pinned beside the step; below it the summary is a bar fixed to the foot of the screen whose lines open the whole summary as a native modal dialog (focus held inside, Escape and the close button close it, focus goes back), with a back arrow, the step's button, and a call button; before anything is chosen the bar offers the number. A page holding one leaves its contact dock and its sticky call bar off a phone, by the sheet's own rule, since the bar holds the call button. The rule is keyed to the forms' roots (`.step-form`, `.schedule-request-form`), never the bar, so on a page holding `ScheduleRequestForm` the dock and the sticky bar stay off through the request received screen too, where the bar is gone (9.6.0); the room kept under the page for the bar goes with the bar.
 
 **The endpoint.** A site's `api/schedule.ts`:
 
@@ -918,7 +924,7 @@ The provider stays in the source entry on purpose. A built copy of it would be a
 
 ### SiteShell
 
-`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its closing bar, and the watermark, all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCTA`, `footer`, `pageNav`, `navOnDark`, `hideNavCTA`, `density` (defaults to `site.density`; see [Density](#density)), `contactDock` (on by default; mounts the dock when `site.contactDock` is set), and `credit` (the practice's credit on the closing bar's right side; the copyright prints either way). 5.0.0 renames `CreditBar` to `ClosingBar` with no alias, replaces `.credit-bar` and `.footer-bottom` with `.closing-bar`, and `footer.note` prints at the far right of the closing bar. Since 6.0.0 the closing bar is two sides, `left` and `right`, that each take anything: left out, they are `Copyright` with the business's name and `Credit`, the practice's made with line; `null` empties a side. `credit` off empties the right side and keeps the copyright, and a `footer.note` stands in place of the credit whether `credit` is on or off. A plain click on a link inside the shell to the page being read (the same path as `window.location`, a trailing slash ignored, with no hash and the same query once tracking parameters are set aside) does not load the page again: the window goes back to the top instead, at once under `prefers-reduced-motion`, so a vendor's tool or a half filled form on the page survives a tap on the header's call to action or any other link to the page itself (9.4.1). A click with a modifier, a link that opens a new tab, and an in page `#` jump behave as they always have. A site keeps a wrapper a few lines long:
+`SiteShell` (in `@atelic-action/ui/chrome`) is the page wrapper: the `.atelic-ui` scope around the skip link, the header, `<main>`, the sticky CTA bar, the footer with its closing bar, and, when `site.gate.watermark` is on, the watermark (off by default since 9.6.0; [The Screen and the Watermark](#the-screen-and-the-watermark)), all mapped from the `SiteConfig`. It takes `site`, `currentPath` (the package imports no router), `basePath`, and `nav` (defaults to `site.nav`), plus `heroNav`, `stickyCTA`, `footer`, `pageNav`, `navOnDark`, `hideNavCTA`, `density` (defaults to `site.density`; see [Density](#density)), `contactDock` (on by default; mounts the dock when `site.contactDock` is set), and `credit` (the practice's credit on the closing bar's right side; the copyright prints either way). 5.0.0 renames `CreditBar` to `ClosingBar` with no alias, replaces `.credit-bar` and `.footer-bottom` with `.closing-bar`, and `footer.note` prints at the far right of the closing bar. Since 6.0.0 the closing bar is two sides, `left` and `right`, that each take anything: left out, they are `Copyright` with the business's name and `Credit`, the practice's made with line; `null` empties a side. `credit` off empties the right side and keeps the copyright, and a `footer.note` stands in place of the credit whether `credit` is on or off. A plain click on a link inside the shell to the page being read (the same path as `window.location`, a trailing slash ignored, with no hash and the same query once tracking parameters are set aside) does not load the page again: the window goes back to the top instead, at once under `prefers-reduced-motion`, so a vendor's tool or a half filled form on the page survives a tap on the header's call to action or any other link to the page itself (9.4.1). A click with a modifier, a link that opens a new tab, and an in page `#` jump behave as they always have. A site keeps a wrapper a few lines long:
 
 ```tsx
 import { SiteShell as Shell, type SiteShellProps } from "@atelic-action/ui/chrome";
@@ -1053,6 +1059,10 @@ The space a section leaves above and below itself is one token, `--section-space
 | `compact` | `clamp(24px, 3.2vw, 44px)` | 20px | 0 |
 
 `.section` pads with it, and the steps derived from it keep their old proportion to it: `.section-md` 0.7, `.section-sm` 0.6, `tight-top` and `tight-bottom` a third, the `PricingBand` 0.84, `PageHero` and the not found opener 0.72 on top and 0.5 below, and the `FeatureDetail` rows 0.6, whose first and last rows now sit flush with the section around them. `--block-gap` is the space between a section's heading and the grid under it (`FeatureGrid`, `ProfileCards`, `LinkColumns`, `CalloutPanel`, and `Gallery` at 0.77 of it), and `--card-min` the least a `FeatureGrid` card stands. A site that wants its own value sets the property on `.atelic-ui` in its own sheet, outside the layer. `ArtifactShell` pins `comfortable`, so a document reads as it did; the app shell reads none of these.
+
+### Moving to 9.6.0
+
+What changes on a site that changes nothing: a gated marketing site no longer shows the "Confidential preview" pill with the reader's email. `SiteShell` now draws the watermark only when the config sets `gate.watermark: true`, a new key beside the login copy in `gate`; set it to keep the pill as it was ([The Screen and the Watermark](#the-screen-and-the-watermark)). Nothing changes for a document: `ArtifactShell` draws the watermark always, and `GATE_WATERMARK_MODE` still picks pill or tiled wherever it is drawn. On a phone, a page holding `ScheduleRequestForm` now keeps its contact dock and sticky call bar off on the request received screen as well, where 9.5.0 brought the dock's launcher back once the form's bar was gone ([Schedule Requests](#schedule-requests)). Both changes are in the package's own source and `sections.css`, so a site needs no change beyond the update.
 
 ### Moving to 9.5.0
 

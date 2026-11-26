@@ -78,7 +78,8 @@ export interface SiteShellProps {
 /**
  * The marketing page wrapper: the `.atelic-ui` scope around the skip link,
  * the header, `<main>`, the sticky CTA bar, the footer with its closing bar,
- * and the watermark, all mapped from the site's config. A link inside it to
+ * and, when `site.gate.watermark` is on, the watermark, all mapped from the
+ * site's config (the watermark is off by default since 9.6.0). A link inside it to
  * the page being read goes back to the top instead of loading the page again
  * (9.4.1, `useSamePageLinks`). Moved here from
  * template-marketing in 0.19.0 (ATE-643); a site keeps a wrapper a few lines
@@ -300,7 +301,9 @@ export function SiteShell({
 						)}
 					/>
 				)}
-				<Watermark />
+				{/* The signed in reader's pill, only where the site asks for it: a
+				    marketing site's preview marks nothing confidential (9.6.0). */}
+				{site.gate?.watermark && <Watermark />}
 			</div>
 		</BasePathProvider>
 	);
