@@ -421,6 +421,34 @@ describe("Footer link columns with the hours in the brand column", () => {
 		expect(grid(container).style.getPropertyValue("--_link-floor")).toContain("328px");
 	});
 
+	it("measures a resize on the next frame, never inside the observer's callback", async () => {
+		const observed: ResizeObserverCallback[] = [];
+		vi.stubGlobal(
+			"ResizeObserver",
+			class {
+				constructor(callback: ResizeObserverCallback) {
+					observed.push(callback);
+				}
+				observe() {}
+				disconnect() {}
+			},
+		);
+		layout(1032);
+		render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		const reads = () => vi.mocked(window.getComputedStyle).mock.calls.length;
+		const before = reads();
+		for (const callback of observed) {
+			callback([], {} as ResizeObserver);
+			callback([], {} as ResizeObserver);
+		}
+		expect(reads()).toBe(before);
+		await new Promise((resolve) => requestAnimationFrame(resolve));
+		expect(reads()).toBeGreaterThan(before);
+		vi.unstubAllGlobals();
+	});
+
 	it("attaches a swapped ref and clears the one it replaced", () => {
 		const first = createRef<HTMLElement>();
 		const second = createRef<HTMLElement>();

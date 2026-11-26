@@ -323,14 +323,28 @@ function useLinkColumns(active: boolean, labels: string) {
 			);
 		};
 		run();
-		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(run);
+		// A resize is measured on the next frame, never inside the observer's
+		// own callback: the measure's choice can resize the box it observes,
+		// and a size changed inside the callback is the loop the browser
+		// reports ("ResizeObserver loop completed with undelivered
+		// notifications"). Several in one frame make one measure.
+		let frame = 0;
+		const later = () => {
+			if (frame) return;
+			frame = requestAnimationFrame(() => {
+				frame = 0;
+				run();
+			});
+		};
+		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(later);
 		sizes?.observe(footer);
 		const box = footer.querySelector(".footer-links");
 		if (box) sizes?.observe(box);
 		let live = true;
-		document.fonts?.ready.then(() => live && run()).catch(() => {});
+		document.fonts?.ready.then(() => live && later()).catch(() => {});
 		return () => {
 			live = false;
+			if (frame) cancelAnimationFrame(frame);
 			sizes?.disconnect();
 		};
 	}, [active, labels]);
