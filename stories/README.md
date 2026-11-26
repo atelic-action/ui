@@ -23,7 +23,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 ```
 
-- Every component gets a docs page: `tags: ["autodocs"]` is set once in `.storybook/preview.tsx`, so a file never repeats it. A doc comment on the meta is the docs page's lead; one on a story is that story's caption. Write both as plain sentences saying what the reader sees.
+- Every component gets a docs page: `tags: ["autodocs"]` is set once in `.storybook/preview.tsx`, so a file never repeats it. A doc comment on the meta is the docs page's lead: its first sentence says what the component is for and when to reach for it, and the rest says what the reader sees. The README's Component Index row opens with the same sentence. A doc comment on a story is that story's caption, a plain sentence saying what the reader sees.
 - Shared args go in the meta; a story sets only what it changes.
 - Decorators apply innermost first: the first in a story's `decorators` wraps the story directly, and each later one wraps the one before. A column or a frame the story sits in (a `.wrap`, a band, a page behind) goes last, so it is the outermost.
 - Story names say the state, not the test: `GroupedOpenByClick`, `NoAddress`, `LongestContent`.
