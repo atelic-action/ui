@@ -24,7 +24,7 @@
 	/* The page's main takes focus only as the place the next Tab starts from
 	   (a link to the page being read, followed from the keyboard), so it draws
 	   no ring around the whole page. */
-	.atelic-ui main[tabindex="-1"]:focus {
+	.atelic-ui main[data-focus-top]:focus {
 		outline: none;
 	}
 

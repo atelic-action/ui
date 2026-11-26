@@ -100,7 +100,11 @@ describe("a link to the page being read", () => {
 	});
 
 	it("sets an ad's tracking parameters aside on the page being read", () => {
-		window.history.pushState({}, "", "/estimate?gclid=abc&utm_source=google&fbclid=x");
+		window.history.pushState(
+			{},
+			"",
+			"/estimate?gclid=abc&utm_source=google&fbclid=x&_hsenc=a&__hstc=b&hsa_cam=c&srsltid=d",
+		);
 		renderShell();
 		tap(headerCTA());
 		expect(cancelled).toEqual([true]);

@@ -778,7 +778,7 @@ export const LinkToThisPagePhone: Story = {
 				await userEvent.click(within(dialog).getByRole("link", { name: /Order for today/ }));
 				await expect(clicks.cancelled.at(-1)).toBe(true);
 				await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
-				await expect(window.scrollY).toBe(0);
+				await waitFor(() => expect(window.scrollY).toBe(0));
 			});
 			await step("the dock's item to this page closes the dock and stays on the page", async () => {
 				await scrolledDown();
@@ -788,7 +788,7 @@ export const LinkToThisPagePhone: Story = {
 				await userEvent.click(canvas.getByRole("link", { name: /Order ahead/ }));
 				await expect(clicks.cancelled.at(-1)).toBe(true);
 				await waitFor(() => expect(launcher).toHaveAttribute("aria-expanded", "false"));
-				await expect(window.scrollY).toBe(0);
+				await waitFor(() => expect(window.scrollY).toBe(0));
 			});
 		} finally {
 			clicks.stop();

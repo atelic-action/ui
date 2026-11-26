@@ -1,8 +1,12 @@
 import { type RefObject, useEffect } from "react";
 
 /**
- * The query parameters an ad or a campaign adds to a landing address, which
- * say nothing about what the page shows. Any `utm_` parameter is one too.
+ * The query parameters an ad, a campaign, a search result, or an email adds
+ * to a landing address, which say nothing about what the page shows. Any
+ * parameter that starts with one of `TRACKING_PREFIXES` is one too. The list
+ * is kept by hand on purpose: a link with no query on a page that reads its
+ * own (a filter, a page number) is the way back to the page without it, so
+ * only parameters known to be tracking are set aside.
  */
 const TRACKING_PARAMS = new Set([
 	"gclid",
@@ -20,7 +24,17 @@ const TRACKING_PARAMS = new Set([
 	"_ga",
 	"mc_cid",
 	"mc_eid",
+	"srsltid",
+	"igshid",
+	"yclid",
+	"mkt_tok",
+	"rdt_cid",
+	"epik",
+	"hsCtaTracking",
 ]);
+
+/** The prefixes whole families of tracking parameters share (campaign tags, HubSpot's). */
+const TRACKING_PREFIXES = ["utm_", "_hs", "__hs", "hsa_"];
 
 /** A path with its trailing slash dropped, so `/estimate/` reads as `/estimate`; `/` stays `/`. */
 function trimSlash(path: string): string {
@@ -29,13 +43,14 @@ function trimSlash(path: string): string {
 
 /** A query with the tracking parameters dropped and the rest in one order, for comparing. */
 function realQuery(search: string): string {
-	const kept = [...new URLSearchParams(search)].filter(
-		([key]) => !key.startsWith("utm_") && !TRACKING_PARAMS.has(key),
+	const kept = new URLSearchParams(
+		[...new URLSearchParams(search)].filter(
+			([key]) =>
+				!TRACKING_PARAMS.has(key) && !TRACKING_PREFIXES.some((prefix) => key.startsWith(prefix)),
+		),
 	);
-	return kept
-		.map((pair) => new URLSearchParams([pair]).toString())
-		.sort()
-		.join("&");
+	kept.sort();
+	return kept.toString();
 }
 
 /**
@@ -73,7 +88,15 @@ function focusMain(root: Element): void {
 	if (!main) return;
 	if (!main.hasAttribute("tabindex")) {
 		main.setAttribute("tabindex", "-1");
-		main.addEventListener("blur", () => main.removeAttribute("tabindex"), { once: true });
+		main.setAttribute("data-focus-top", "");
+		main.addEventListener(
+			"blur",
+			() => {
+				main.removeAttribute("tabindex");
+				main.removeAttribute("data-focus-top");
+			},
+			{ once: true },
+		);
 	}
 	main.focus({ preventScroll: true });
 }
@@ -111,7 +134,14 @@ export function useSamePageLinks(root: RefObject<HTMLElement | null>): void {
 			if (!isSamePageClick(event, element)) return;
 			event.preventDefault();
 			const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-			window.scrollTo({ top: 0, behavior: still ? "instant" : "smooth" });
+			const toTop = () => window.scrollTo({ top: 0, behavior: still ? "instant" : "smooth" });
+			toTop();
+			// A phone menu that is still closing holds the page's scroll locked, and a
+			// scroll asked for under the lock can be dropped, so it is asked for once
+			// more on the next frame if the page is not at the top by then.
+			window.requestAnimationFrame?.(() => {
+				if (window.scrollY > 0) toTop();
+			});
 			if (event.detail === 0) focusMain(element);
 		};
 		doc.addEventListener("click", onClick);
