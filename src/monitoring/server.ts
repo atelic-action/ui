@@ -429,25 +429,35 @@ const DATE =
 	"(?:0?[1-9]|[12]\\d|3[01])(?<dateSep>[/.-])(?:0?[1-9]|[12]\\d|3[01])\\k<dateSep>(?:\\d{4}|\\d{2})(?![\\w./-])";
 
 /**
+ * A seven digit local number: an exchange of three digits, the first 2 to
+ * 9 as an exchange's always is, a hyphen, a dash, a dot, or a space, and
+ * four digits (555-0142, 555.0142, 555 0142). The separator is required, so
+ * a bare run of digits (5550142, 4194304, 9000000) is an id or a count and
+ * stays. Written with a space it is two numbers side by side as often as it
+ * is one, so it is left alone when its four digits are a year (350 2026)
+ * and when it follows the word port (port 443 8080).
+ */
+const SEVEN = `(?<!\\bports?\\s+)[2-9]\\d{2}(?:[.\\u2010-\\u2015\\u2212-]|\\s(?!(?:19|20)\\d{2}(?![\\w-])))\\d{4}`;
+
+/**
  * A run shaped like a phone number: an optional country code (a plus sign
  * and one to three digits, or one to three digits and a separator, as in
  * 1-555-555-0142), then an area code in parentheses and the number after
  * it, or at least three groups of digits joined by separators, the last of
  * three or four digits, or a plus sign and seven to fifteen digits run
- * together (E.164), or a seven digit local number (555-0142, 555 0142,
- * 5550142) whose first digit is 2 to 9, as an exchange's always is; any of
- * them may close on an extension (x12, ext. 12). A date (2026-11-23,
+ * together (E.164), or a seven digit local number (`SEVEN`); any of them
+ * may close on an extension (x12, ext. 12). A date (2026-11-23,
  * 11/23/2026), a bare id (12345678), a count beside a year (120 2026), a
  * status (429), and a dotted IPv4 address (192.168.10.200) are none of
- * these, and stay. A run that opens on a 0 is still read as a number (020
- * 7946 0958), so a street number written as a run of groups (0100 200 300
- * Main) may be scrubbed too: a number leaked is worse than an address
- * scrubbed. A run starts at a
- * word's edge and never just after a digit's dot, so no tail of a longer
- * dotted run is taken for one.
+ * these, and stay; the date and the address are held off every shape but
+ * E.164. A run that opens on a 0 is still read as a number (020 7946 0958),
+ * so a street number written as a run of groups (0100 200 300 Main) may be
+ * scrubbed too: a number leaked is worse than an address scrubbed. A run
+ * starts at a word's edge and never just after a digit's dot, so no tail of
+ * a longer dotted run is taken for one.
  */
 const PHONE = new RegExp(
-	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?!${DATE})(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})|[2-9]\\d{2}${SEP}?\\d{4})(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
+	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?!${DATE})(?:(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})|${SEVEN}))(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
 	"giu",
 );
 
