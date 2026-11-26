@@ -56,6 +56,14 @@ export function cell(field: ContactField, value: FieldValue): string {
 	return shown;
 }
 
+/**
+ * The href that dials a number in an email, the one place an email outside
+ * this file writes a call link from (the schedule request's confirmation).
+ */
+export function telHref(e164: string): string {
+	return `tel:${e164}`;
+}
+
 /** One labeled row of an email's table; the value is HTML already escaped. */
 export function row(label: string, value: string): string {
 	return `<tr><td style="padding: 4px 16px 4px 0; color: ${LOOK.quiet}; vertical-align: top; white-space: nowrap;">${escapeHTML(label)}</td><td style="padding: 4px 0; vertical-align: top;">${value}</td></tr>`;

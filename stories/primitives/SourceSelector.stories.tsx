@@ -22,6 +22,24 @@ function Controlled(props: ComponentProps<typeof SourceSelector>) {
 	);
 }
 
+/** The selector with its detail kept beside its answer, as a form that takes the detail keeps it. */
+function WithDetail(props: ComponentProps<typeof SourceSelector>) {
+	const [value, setValue] = useState(props.value);
+	const [detail, setDetail] = useState("");
+	return (
+		<SourceSelector
+			{...props}
+			value={value}
+			onChange={(next) => {
+				setValue(next);
+				props.onChange(next);
+			}}
+			detail={detail}
+			onDetailChange={setDetail}
+		/>
+	);
+}
+
 /**
  * How a visitor heard about the business: a labeled native select of the
  * site's answers, an empty first row before them. The same `Source` a site
@@ -142,6 +160,39 @@ export const LongList: Story = {
 		});
 		await step("the page never scrolls sideways", async () => {
 			await expectNoSidewaysScroll();
+		});
+	},
+};
+
+/**
+ * An answer that asks for a detail (9.5.0): once it is chosen, a short text
+ * field under the select takes what the visitor types, on a form that hands
+ * the selector `onDetailChange`.
+ */
+export const AsksForDetail: Story = {
+	args: {
+		source: {
+			label: "How did you hear about us?",
+			options: [
+				"Google",
+				"Instagram",
+				{ label: "A referral", detail: { label: "Who referred you?", placeholder: "A name" } },
+			],
+		},
+	},
+	render: (args) => <WithDetail {...args} />,
+	play: async ({ canvas, userEvent, step }) => {
+		await step("no detail field until the answer that asks for one", async () => {
+			await expect(canvas.queryByLabelText(/Who referred you/)).toBeNull();
+			await userEvent.selectOptions(
+				canvas.getByLabelText(/How did you hear about us/),
+				"A referral",
+			);
+		});
+		await step("then the detail field takes what is typed", async () => {
+			const detail = canvas.getByLabelText(/Who referred you/);
+			await userEvent.type(detail, "A neighbor");
+			await expect(detail).toHaveValue("A neighbor");
 		});
 	},
 };

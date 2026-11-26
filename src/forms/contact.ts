@@ -58,18 +58,28 @@
 import { EMAIL_PATTERN, toE164 } from "../lib/contactLinks.js";
 import { escapeHTML } from "../lib/escapeHTML.js";
 import { isHoneypotFilled } from "../lib/honeypot.js";
-import { within } from "../lib/within.js";
-import { reportServerErrorLater, scrub, withErrorReporting } from "../monitoring/server.js";
+import { reportServerErrorLater, withErrorReporting } from "../monitoring/server.js";
 import { fieldRows, LOOK, rowsTable, shownWords, words } from "./emailParts.js";
-import { type Guard, type GuardVerdict, TURNSTILE_TOKEN_KEY } from "./guard.js";
+import {
+	addresses,
+	askGuard,
+	isProduction,
+	json,
+	reportVerdict,
+	sameSecret,
+	sendCopy,
+} from "./endpoint.js";
+import { type Guard, TURNSTILE_TOKEN_KEY } from "./guard.js";
 import {
 	DEFAULT_RECEIPT_TIMEOUT_MS,
 	type ReceiptOptions,
 	receiptEmail,
 	receiptSender,
 } from "./receipt.js";
-import { type Destination, type DestinationResult, down, relay, type Submission } from "./relay.js";
+import { type Destination, relay, type Submission } from "./relay.js";
 import { type Email, resendDestination } from "./resend.js";
+
+export { DEFAULT_GUARD_BOUND_MS } from "./endpoint.js";
 
 /**
  * What a field holds, which decides how it is read, checked, and written
@@ -183,14 +193,6 @@ export const DEFAULT_CONTACT_TO = "matt@atelic.me";
 export function recipients(value: string | undefined): string[] {
 	const named = addresses(value);
 	return named.length > 0 ? named : [DEFAULT_CONTACT_TO];
-}
-
-/** A variable's addresses: one, or several split by commas; none when unset. */
-function addresses(value: string | undefined): string[] {
-	return (value ?? "")
-		.split(",")
-		.map((address) => address.trim())
-		.filter(Boolean);
 }
 
 const TEXT_LIMITS: Record<"text" | "email" | "phone", number> = {
@@ -433,37 +435,6 @@ export function officeEmail(
 	return { subject, html, text: plain, replyTo };
 }
 
-function json(status: number, body: Record<string, unknown>): Response {
-	return new Response(JSON.stringify(body), {
-		status,
-		headers: { "Content-Type": "application/json" },
-	});
-}
-
-/**
- * An unset variable is a fault on the production deploy alone. A preview
- * built before its keys are set answers every submission 500 by design, and
- * reporting each one would bury the reports that matter.
- */
-function isProduction(): boolean {
-	return process.env.VERCEL_ENV === "production";
-}
-
-/**
- * Whether two secrets are the same, in time that does not depend on where
- * they first differ, so the canary's token cannot be felt out by timing.
- */
-function sameSecret(given: string, secret: string): boolean {
-	const encoder = new TextEncoder();
-	const a = encoder.encode(given);
-	const b = encoder.encode(secret);
-	let difference = a.length ^ b.length;
-	for (let index = 0; index < b.length; index++) {
-		difference |= (a[index % Math.max(a.length, 1)] ?? 0) ^ (b[index] ?? 0);
-	}
-	return difference === 0;
-}
-
 /**
  * The keys `ContactForm` sends when a site turns on one of its opt in
  * fields. One of these arriving unlisted is a site whose form and function
@@ -483,44 +454,6 @@ export const RESERVED_KEYS = ["company", "canary", TURNSTILE_TOKEN_KEY];
 /** The words a visitor reads when the guard refused the submission. */
 export const GUARD_REFUSAL =
 	"We could not confirm this came from a person. Please call us instead.";
-
-/**
- * The longest the endpoint waits on any guard: the time a guard that names
- * none is held to, and the ceiling on one that names more.
- */
-export const DEFAULT_GUARD_BOUND_MS = 3_500;
-
-/** What the endpoint allows beyond the time a guard says it takes. */
-const GUARD_GRACE_MS = 500;
-
-/**
- * The guard's verdict, held to what the guard says its one try takes and
- * half a second more, never past 3.5 seconds, since a site may pass its own
- * guard: a cutoff, and a throw, are read as a guard that could not answer.
- */
-async function ask(
-	guard: Guard,
-	token: string,
-	id: string,
-	request: Request,
-): Promise<GuardVerdict> {
-	const bound =
-		guard.timeoutMs === undefined
-			? DEFAULT_GUARD_BOUND_MS
-			: Math.min(guard.timeoutMs + GUARD_GRACE_MS, DEFAULT_GUARD_BOUND_MS);
-	try {
-		return await within<GuardVerdict>(
-			bound,
-			(signal) => guard.check(token, { id, request, signal }),
-			() => ({
-				status: "unanswered",
-				cause: new Error(`${guard.name} sent no verdict within ${bound} ms`),
-			}),
-		);
-	} catch (error) {
-		return { status: "unanswered", cause: new Error(`${guard.name} threw`, { cause: error }) };
-	}
-}
 
 /**
  * The handler a site's `api/contact.ts` exports as `POST`. Throws at once,
@@ -629,34 +562,12 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			let checked: boolean | undefined;
 			if (guard && !canary) {
 				const token = data[guard.tokenKey];
-				const verdict = await ask(guard, typeof token === "string" ? token : "", id, request);
+				const verdict = await askGuard(guard, typeof token === "string" ? token : "", id, request);
 				if (verdict.status === "failed") {
 					return json(403, { ok: false, code: "guard", error: GUARD_REFUSAL });
 				}
 				checked = verdict.status === "passed";
-				// A token key that arrived empty is quiet: the form reported a real
-				// visitor whose browser could not run the check, and a bot that
-				// sends it empty would otherwise file a report for every
-				// submission. No token key at all means the form may be running no
-				// check, which production hears about.
-				if (verdict.status === "unanswered" && verdict.quiet) {
-					if (!(guard.tokenKey in data) && isProduction()) {
-						reportServerErrorLater(
-							new Error(
-								"Form guard: the endpoint names a guard and the submission carried no token key, so the form may be running no check",
-							),
-							{ request, tags: { ...tags, guard: guard.name, reason: "guard-no-token-key" } },
-						);
-					}
-				} else if (verdict.status === "unanswered" && (!verdict.unset || isProduction())) {
-					reportServerErrorLater(
-						new Error(
-							`Form guard: ${guard.name} could not answer, and the submission was let through: ${scrub(verdict.cause.message)}`,
-							{ cause: verdict.cause },
-						),
-						{ request, tags: { ...tags, guard: guard.name, reason: "guard-unanswered" } },
-					);
-				}
+				reportVerdict(verdict, guard, data, request, tags);
 			}
 
 			// A choice answered off its list was read as not given. The visitor
@@ -759,41 +670,21 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			const address = visitorEmail(read.fields, fields);
 			let sentReceipt = false;
 			if (receipt && checked === true && apiKey && address) {
-				// Never more than 3000 ms, whatever a site sets, so the endpoint's
-				// stated worst case holds.
-				const timeoutMs = Math.min(
-					receipt.timeoutMs ?? DEFAULT_RECEIPT_TIMEOUT_MS,
-					DEFAULT_RECEIPT_TIMEOUT_MS,
-				);
-				// From a no-reply address, with no reply address of its own.
-				const copy = resendDestination<ContactFields>({
+				// From a no-reply address, with no reply address of its own, never
+				// more than 3000 ms, whatever a site sets, so the endpoint's stated
+				// worst case holds; one try, under its own idempotency key.
+				sentReceipt = await sendCopy({
 					apiKey,
 					from: receiptSender(receipt, options.from),
-					to: [address],
-					name: "receipt",
-					timeoutMs,
-					compose: (taken) =>
-						receiptEmail(taken.fields, fields, { ...receipt, endpointFrom: options.from }),
+					to: address,
+					id: `${id}-receipt`,
+					email: receiptEmail(read.fields, fields, { ...receipt, endpointFrom: options.from }),
+					timeoutMs: receipt.timeoutMs ?? DEFAULT_RECEIPT_TIMEOUT_MS,
+					request,
+					tags,
+					reason: "receipt",
+					what: "Form receipt",
 				});
-				// One try, its own idempotency key, cut off at its limit.
-				const answer = await within<DestinationResult>(
-					timeoutMs,
-					(signal) =>
-						copy
-							.send({ id: `${id}-receipt`, fields: read.fields }, { signal, attempt: 1 })
-							.catch((error: unknown) => down(error)),
-					() => down(new Error(`receipt sent no answer within ${timeoutMs} ms`)),
-				);
-				sentReceipt = answer.status !== "failed";
-				if (answer.status === "failed") {
-					reportServerErrorLater(
-						new Error(
-							`Form receipt: the copy to the visitor was not sent, though the submission was: ${scrub(answer.cause.message)}`,
-							{ cause: answer.cause },
-						),
-						{ request, tags: { ...tags, reason: "receipt" } },
-					);
-				}
 			}
 			return json(200, { ok: true, receipt: sentReceipt });
 		},

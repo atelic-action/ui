@@ -853,4 +853,82 @@
 			white-space: normal;
 		}
 	}
+
+	/* ChoiceCards (9.5.0): a choice seen whole, two or three answers each a
+	   large card holding its radio, its name, and one line under it. The
+	   whole card is the radio's label. */
+	.atelic-ui .choice-cards {
+		margin: 0 0 18px;
+		padding: 0;
+		border: 0;
+		min-width: 0;
+	}
+	.atelic-ui .choice-cards-legend {
+		padding: 0;
+		margin: 0 0 8px;
+		font: var(--weight-bold) 15.5px / 1.3 var(--font-sans);
+		color: var(--ink);
+	}
+	.atelic-ui .choice-cards-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+		gap: 10px;
+	}
+	.atelic-ui .choice-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+		min-height: 76px;
+		min-width: 0;
+		box-sizing: border-box;
+		padding: 14px 16px 14px 46px;
+		border: 1.5px solid var(--hairline-strong);
+		border-radius: var(--radius-md);
+		background: var(--card);
+		cursor: pointer;
+	}
+	.atelic-ui .choice-card input {
+		position: absolute;
+		left: 14px;
+		top: 16px;
+		width: 20px;
+		height: 20px;
+		margin: 0;
+		accent-color: var(--primary);
+	}
+	.atelic-ui .choice-card-label {
+		font-size: 17px;
+		line-height: 1.25;
+		color: var(--ink);
+	}
+	.atelic-ui .choice-card-description {
+		font-size: 14.5px;
+		line-height: 1.4;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .choice-card:hover {
+		border-color: var(--primary);
+	}
+	.atelic-ui .choice-card.is-on {
+		border-color: var(--primary);
+		border-width: 2px;
+		padding: 13.5px 15.5px 13.5px 45.5px;
+		background: var(--primary-tint);
+	}
+	.atelic-ui .choice-card.is-on input {
+		left: 13.5px;
+		top: 15.5px;
+	}
+	.atelic-ui .choice-card:focus-within {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	.atelic-ui .choice-cards-error {
+		display: block;
+		margin: 6px 0 0;
+		color: var(--field-error, var(--primary-ink, var(--primary)));
+		font-size: var(--field-error-size);
+		font-weight: var(--weight-bold);
+	}
 }

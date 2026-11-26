@@ -464,6 +464,456 @@
 		overflow: hidden;
 	}
 
+	/* ---- StepForm (step-form.css, 9.5.0) ---- */
+	/* A form taken one step at a time with a summary of what has been chosen
+	   that stays in view. From 900px the step sits in a card with the summary
+	   pinned beside it; below that the summary is two short lines in a bar
+	   pinned to the foot of the screen, over a back arrow, the step's button,
+	   and a call button, and the lines open the whole summary as a sheet. Its
+	   fields are the contact form's (.field, .field-row), so a step matches
+	   every other form. */
+	.atelic-ui .step-form {
+		display: grid;
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+		gap: clamp(24px, 4vw, 56px);
+		align-items: start;
+		text-align: left;
+		scroll-margin-top: calc(var(--nav-height) + 20px);
+	}
+	.atelic-ui .stf-main {
+		min-width: 0;
+		padding: clamp(20px, 3vw, 34px);
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+	}
+
+	/* The step names: a number, a name, and a rule between. A finished step
+	   is a button back to it. */
+	.atelic-ui .stf-steps {
+		list-style: none;
+		margin: 0 0 24px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.atelic-ui .stf-steps li {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+	}
+	.atelic-ui .stf-steps li + li::before {
+		content: "";
+		flex: none;
+		width: clamp(12px, 4vw, 44px);
+		height: 2px;
+		background: var(--neutral-200);
+	}
+	.atelic-ui .stf-steps li.is-done + li::before {
+		background: var(--primary);
+	}
+	.atelic-ui .stf-step {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: var(--weight-bold) 16px / 1 var(--font-sans);
+		color: var(--neutral-600);
+	}
+	.atelic-ui .stf-step i {
+		flex: none;
+		width: 30px;
+		height: 30px;
+		display: grid;
+		place-items: center;
+		box-sizing: border-box;
+		border-radius: 50%;
+		border: 2px solid var(--neutral-300);
+		font-style: normal;
+		font-size: 15px;
+	}
+	.atelic-ui .stf-step svg {
+		width: 16px;
+		height: 16px;
+	}
+	.atelic-ui .stf-steps li.is-now .stf-step {
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .stf-steps li.is-now .stf-step i {
+		border-color: var(--primary-fill, var(--primary));
+		background: var(--primary-fill, var(--primary));
+		color: var(--on-primary);
+	}
+	.atelic-ui .stf-steps li.is-done .stf-step {
+		color: var(--ink);
+	}
+	.atelic-ui .stf-steps li.is-done .stf-step i {
+		border-color: var(--primary);
+		color: var(--primary);
+	}
+	.atelic-ui button.stf-step {
+		cursor: pointer;
+	}
+	.atelic-ui button.stf-step:hover span {
+		text-decoration: underline;
+	}
+	.atelic-ui button.stf-step:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 4px;
+		border-radius: 4px;
+	}
+
+	.atelic-ui .stf-title {
+		margin: 0 0 4px;
+		font-family: var(--font-sans);
+		font-size: clamp(1.4rem, 2.4vw, 1.8rem);
+		font-weight: var(--heading-weight, var(--weight-heavy));
+		line-height: 1.15;
+		color: var(--ink);
+	}
+	/* Focus lands on the heading so a screen reader reads the new step; it is
+	   not a control, so it draws no ring. */
+	.atelic-ui .stf-title:focus {
+		outline: none;
+	}
+	.atelic-ui .stf-lead {
+		margin: 0 0 22px;
+		font-size: 16.5px;
+		line-height: 1.5;
+		color: var(--ink-soft);
+	}
+	/* A request that can happen one way shows that way as a line, never a choice. */
+	.atelic-ui .stf-note {
+		margin: 0 0 18px;
+		padding: 12px 14px;
+		border-radius: var(--radius-md);
+		background: var(--primary-tint);
+		font-size: 15.5px;
+		line-height: 1.45;
+		color: var(--ink);
+	}
+	.atelic-ui .stf-note strong {
+		color: var(--primary-ink, var(--primary));
+	}
+	.atelic-ui .stf-hint {
+		margin: -6px 0 18px;
+		font-size: 14.5px;
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+
+	/* Back and the step's button, under the step from 900px. */
+	.atelic-ui .stf-actions {
+		display: flex;
+		gap: 12px;
+		margin-top: 6px;
+	}
+	.atelic-ui .stf-actions .stf-next {
+		flex: 1;
+	}
+	.atelic-ui .stf-next {
+		min-height: 54px;
+		border: 0;
+		cursor: pointer;
+		font-family: var(--font-sans);
+		justify-content: center;
+	}
+	.atelic-ui .stf-back {
+		min-height: 54px;
+		padding: 0 22px;
+		border: 1.5px solid var(--hairline-strong);
+		border-radius: 999px;
+		background: var(--card);
+		font: var(--weight-bold) 16px var(--font-sans);
+		color: var(--primary-ink, var(--primary));
+		cursor: pointer;
+	}
+	.atelic-ui .stf-back:hover {
+		border-color: var(--primary);
+	}
+	.atelic-ui .stf-next:focus-visible,
+	.atelic-ui .stf-back:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+	}
+
+	/* The summary beside the step. */
+	.atelic-ui .stf-summary {
+		position: sticky;
+		top: calc(var(--nav-height) + 24px);
+		padding: clamp(18px, 2.4vw, 26px);
+		border-radius: var(--radius-lg);
+		background: var(--surface-alt);
+	}
+	.atelic-ui .stf-summary-title {
+		margin: 0 0 6px;
+		font: var(--weight-bold) 19px / 1.2 var(--font-sans);
+		color: var(--ink);
+	}
+	.atelic-ui .stf-sum {
+		margin: 0;
+	}
+	.atelic-ui .stf-sum > div {
+		padding: 12px 0;
+		border-bottom: 1px solid var(--hairline-strong);
+	}
+	.atelic-ui .stf-sum dt {
+		font: var(--weight-bold) 13px / 1.2 var(--font-sans);
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--neutral-600);
+	}
+	.atelic-ui .stf-sum dd {
+		margin: 4px 0 0;
+		font-size: 17px;
+		line-height: 1.35;
+		color: var(--ink);
+	}
+	.atelic-ui .stf-sum dd.is-empty {
+		color: var(--neutral-600);
+		font-style: italic;
+	}
+	.atelic-ui .stf-sum dd small {
+		display: block;
+		font-size: 14.5px;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .stf-promise {
+		margin: 14px 0 0;
+		font-size: 15px;
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .stf-promise strong {
+		color: var(--ink);
+	}
+	.atelic-ui .stf-summary-call {
+		margin: 14px 0 0;
+		padding-top: 14px;
+		border-top: 1px solid var(--hairline-strong);
+		font-size: 15px;
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .stf-summary-call a {
+		font-weight: var(--weight-bold);
+		white-space: nowrap;
+		color: var(--primary-ink, var(--primary));
+	}
+
+	/* The bar pinned to the foot of a phone, and the sheet its lines open. */
+	.atelic-ui .stf-bar {
+		display: none;
+	}
+	.atelic-ui .stf-sheet {
+		margin: auto 0 0;
+		inset: auto 0 0;
+		width: 100%;
+		max-width: 100%;
+		max-height: 82vh;
+		box-sizing: border-box;
+		overflow: auto;
+		padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+		border: 0;
+		border-radius: 18px 18px 0 0;
+		background: var(--card);
+		color: var(--ink);
+	}
+	.atelic-ui .stf-sheet::backdrop {
+		background: color-mix(in srgb, var(--shade, var(--backdrop-shade)) 50%, transparent);
+	}
+	.atelic-ui .stf-sheet-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.atelic-ui .stf-sheet-close {
+		width: 44px;
+		height: 44px;
+		display: grid;
+		place-items: center;
+		border: 0;
+		border-radius: 50%;
+		background: var(--surface-alt);
+		color: var(--ink);
+		cursor: pointer;
+	}
+	.atelic-ui .stf-sheet-close:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+	@media (max-width: 899px) {
+		.atelic-ui .step-form {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		/* The bar is fixed over the foot of the screen: the page keeps room under its
+		   last line, so the site footer scrolls clear of it. */
+		.atelic-ui:has(.stf-bar) {
+			padding-bottom: 150px;
+		}
+		.atelic-ui .stf-summary,
+		.atelic-ui .stf-actions {
+			display: none;
+		}
+		.atelic-ui .stf-main {
+			padding: 18px 16px;
+		}
+		.atelic-ui .stf-step span {
+			font-size: 15px;
+		}
+		.atelic-ui .stf-bar {
+			display: block;
+			position: fixed;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 110;
+			padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+			background: var(--card);
+			border-top: 1px solid var(--hairline-strong);
+			box-shadow: 0 -6px 18px color-mix(in srgb, var(--shade) 10%, transparent);
+		}
+		.atelic-ui .stf-bar-top {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 10px;
+		}
+		.atelic-ui .stf-bar-sum {
+			flex: 1;
+			min-width: 0;
+			min-height: 44px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 0;
+			border: 0;
+			background: none;
+			text-align: left;
+			font: var(--weight-regular) 15.5px / 1.3 var(--font-sans);
+			color: var(--ink);
+			cursor: pointer;
+		}
+		.atelic-ui .stf-bar-sum span {
+			flex: 1;
+			min-width: 0;
+		}
+		.atelic-ui .stf-bar-sum strong,
+		.atelic-ui .stf-bar-sum em {
+			display: block;
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+		.atelic-ui .stf-bar-sum strong {
+			font: var(--weight-bold) 15.5px / 1.3 var(--font-sans);
+			color: var(--ink);
+		}
+		.atelic-ui .stf-bar-sum em {
+			font: var(--weight-regular) 14.5px / 1.35 var(--font-sans);
+			font-style: normal;
+			color: var(--ink-soft);
+		}
+		.atelic-ui .stf-bar-sum svg {
+			flex: none;
+			width: 18px;
+			height: 18px;
+			color: var(--primary);
+		}
+		.atelic-ui .stf-bar-sum:focus-visible {
+			outline: 2px solid var(--primary);
+			outline-offset: 2px;
+		}
+		.atelic-ui a.stf-bar-talk {
+			flex: 1;
+			min-width: 0;
+			min-height: 44px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			font: var(--weight-regular) 15.5px / 1.3 var(--font-sans);
+			color: var(--ink);
+			text-decoration: none;
+		}
+		.atelic-ui a.stf-bar-talk strong {
+			color: var(--primary-ink, var(--primary));
+		}
+		/* Back is an arrow in a round button at the left, the call button its
+		   twin at the right, the step's button between them. */
+		.atelic-ui a.stf-bar-call,
+		.atelic-ui .stf-bar-back {
+			flex: none;
+			width: 52px;
+			height: 52px;
+			box-sizing: border-box;
+			padding: 0;
+			display: grid;
+			place-items: center;
+			border-radius: 50%;
+			border: 1.5px solid var(--primary);
+			background: var(--card);
+			color: var(--primary-ink, var(--primary));
+			cursor: pointer;
+		}
+		.atelic-ui a.stf-bar-call svg,
+		.atelic-ui .stf-bar-back svg {
+			width: 22px;
+			height: 22px;
+		}
+		.atelic-ui .stf-bar-back:focus-visible,
+		.atelic-ui a.stf-bar-call:focus-visible {
+			outline: 2px solid var(--primary);
+			outline-offset: 3px;
+		}
+		.atelic-ui .stf-bar-actions {
+			display: flex;
+			gap: 10px;
+		}
+		.atelic-ui .stf-bar-actions .stf-next {
+			flex: 1;
+			min-height: 52px;
+		}
+		/* A page holding a step form leaves its corner dock and its sticky bar
+		   off a phone, where the form's own bar holds the call button. */
+		.atelic-ui:has(.stf-bar) .contact-dock,
+		.atelic-ui:has(.stf-bar) .sticky-cta {
+			display: none;
+		}
+	}
+	/* The sheet opens only below 900px; a wider screen shows the summary beside the step. */
+	@media (min-width: 900px) {
+		.atelic-ui .stf-sheet {
+			display: none;
+		}
+	}
+
+	/* ---- ScheduleRequestForm (9.5.0) ---- */
+	/* The request received: one card, the contact form's thanks inside it. */
+	.atelic-ui .schedule-request-form.is-done .srf-done {
+		margin: 0 auto;
+		padding: clamp(20px, 3vw, 34px);
+		background: var(--card);
+		border: 1px solid var(--hairline-strong);
+		border-radius: var(--radius-lg);
+		text-align: left;
+	}
+	.atelic-ui .srf-sooner {
+		margin: 18px 0 0;
+		font-size: 14.5px;
+		line-height: 1.45;
+		color: var(--ink-soft);
+	}
+	.atelic-ui .srf-sooner a {
+		font-weight: var(--weight-bold);
+		white-space: nowrap;
+		color: var(--primary-ink, var(--primary));
+	}
+
 	/* ---- ContactInfoCard (contact-info-card.css) ---- */
 	.atelic-ui .contact-info-card {
 		background: var(--surface-dark);
