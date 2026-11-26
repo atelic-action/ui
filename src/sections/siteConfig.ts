@@ -16,6 +16,7 @@ import type {
 	MenuBurgerStyle,
 	NavFeature,
 	NavPanelSection,
+	Phone,
 	SiteLink,
 	SiteMenuSurface,
 	SocialLink,
@@ -210,18 +211,15 @@ export interface SiteConfig {
 	/** The site's primary conversion action; rendered in nav, sticky bar, and menus. */
 	cta: CTA;
 	/** Omit for businesses with no public phone; call surfaces render nothing. */
-	phone?: {
-		e164: string;
-		display: string;
-		/**
-		 * The words the phone menu sets with this number when the header shows
-		 * no numbers of its own (`header.phones`), on either sheet, e.g. "Call
-		 * / Text" for a line that answers texts. Defaults to "Call". Only the
-		 * phone menu reads it: a header number takes its own `menuLabel`, and
-		 * `ContactInfoCard` takes `phoneLabel` (8.4.0).
-		 */
-		menuLabel?: string;
-	};
+	/**
+	 * `menuLabel` is the words set with this number, e.g. "Call / Text" for a
+	 * line that answers texts, stated once for the site: the phone menu sets
+	 * them when the header shows no numbers of its own (`header.phones`), on
+	 * either sheet (8.4.0), and `ContactInfoCard` beside its phone row unless
+	 * given its own `phoneLabel` (9.7.0). Defaults to "Call". A header number
+	 * takes its own `menuLabel`.
+	 */
+	phone?: Phone & { menuLabel?: string };
 	email: string;
 	address: Address;
 	geo?: { latitude: number; longitude: number };
