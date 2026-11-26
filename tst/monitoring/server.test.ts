@@ -7,6 +7,7 @@ import {
 	reportRefusedResponse,
 	reportServerError,
 	reportServerErrorLater,
+	scrub,
 	withErrorReporting,
 } from "../../src/monitoring/server";
 
@@ -239,6 +240,80 @@ describe("buildEnvelope's chain of causes", () => {
 		expect(values[1].value).toHaveLength(300);
 		expect(JSON.stringify(values)).not.toContain("owner@example.com");
 		expect(JSON.stringify(values)).not.toContain("555-555-0142");
+	});
+
+	it("scrubs a plain object thrown at the top, its nested cause included", () => {
+		const thrown = {
+			reason: "Rejected owner@example.com",
+			cause: { detail: "call 555-555-0142", deeper: { cause: "ops@example.com" } },
+		};
+		const values = valuesOf(thrown);
+		const sent = JSON.stringify(values);
+		expect(sent).not.toContain("owner@example.com");
+		expect(sent).not.toContain("555-555-0142");
+		expect(sent).not.toContain("ops@example.com");
+		// The thrown value is last, as Sentry orders a chain, and still reads as itself.
+		expect(values.at(-1).value).toContain("Rejected [address]");
+		expect(values.at(-1).value).toContain("call [number]");
+	});
+
+	it("drops only the field whose getter throws, on the thrown value and on any cause", () => {
+		const trap = (keep: Record<string, unknown>, bad: string[]) => {
+			const value = Object.assign(new Error("placeholder"), keep);
+			for (const key of bad) {
+				Object.defineProperty(value, key, {
+					get() {
+						throw new Error(`no ${key}`);
+					},
+				});
+			}
+			return value;
+		};
+		for (const key of ["message", "name", "stack", "code"]) {
+			const cause = trap({ code: "ECONNRESET" }, [key]);
+			const thrown = trap({}, [key]);
+			Object.defineProperty(thrown, "cause", { value: cause });
+			const envelope = () => buildEnvelope(thrown, DSN);
+			expect(envelope, key).not.toThrow();
+			const values = valuesOf(thrown);
+			expect(values, key).toHaveLength(2);
+			if (key !== "message") expect(values[1].value, key).toBe("placeholder");
+			if (key === "name") expect(values[1].type).toBe("Error");
+			if (key === "code") expect(values[0].value).toBe("placeholder");
+			else if (key !== "message") expect(values[0].value).toBe("ECONNRESET: placeholder");
+		}
+	});
+
+	it("reads a proxy whose every trap throws as an error with no words, never throwing", () => {
+		const hostile = new Proxy(
+			{},
+			{
+				get() {
+					throw new Error("trap");
+				},
+				has() {
+					throw new Error("trap");
+				},
+				getPrototypeOf() {
+					throw new Error("trap");
+				},
+				ownKeys() {
+					throw new Error("trap");
+				},
+			},
+		);
+		expect(() => buildEnvelope(hostile, DSN)).not.toThrow();
+		expect(() => buildEnvelope(new Error("outer", { cause: hostile }), DSN)).not.toThrow();
+	});
+
+	it("writes a value with no prototype that JSON cannot write without throwing", () => {
+		const bare = Object.create(null) as Record<string, unknown>;
+		bare.size = 10n;
+		const [only] = valuesOf(bare);
+		expect(only).toEqual({ type: "Error", value: "A value that cannot be written was thrown" });
+		const plain = Object.create(null) as Record<string, unknown>;
+		plain.reason = "owner@example.com";
+		expect(valuesOf(plain)[0].value).toBe('{"reason":"[address]"}');
 	});
 
 	it("leaves an error with no cause the one exception it always was, with no mechanism", () => {
@@ -557,6 +632,37 @@ describe("refusalError and reportRefusedResponse", () => {
 			expect(kept.message, message).toBe(
 				`The upstream service answered 422: rate_limit: ${message}`,
 			);
+		}
+	});
+
+	it.each([
+		["a slash written date", "Retry on 11/23/2026 at 10:00", true],
+		["a slash written date, short year", "Retry on 1/2/26 at 10:00", true],
+		["a dotted date", "Due 23.11.2026", true],
+		["a hyphen written date", "Due 11-23-2026", true],
+		["a leading zero street number", "Ship to 0123 Main St", true],
+		["a leading zero street number run", "Ship to 0100 200 300 Main", true],
+		["a count beside a year", "120 2026 sends", true],
+		["a bare id", "id 12345678", true],
+		["a ZIP", "ZIP 90210", true],
+		["a ZIP and four", "ZIP 80202-1234", true],
+		["a status", "status 429", true],
+		["a seven digit number with a hyphen", "Call 555-0142 today", false],
+		["a seven digit number with a space", "Call 555 0142 today", false],
+		["a seven digit number run together", "Call 5550142 today", false],
+		["a seven digit number with a dot", "Call 555.0142 today", false],
+		["a seven digit number with an extension", "Call 555-0142 x12 today", false],
+		["a full number", "Call (555) 555-0142 today", false],
+		["a slashed number", "Call 555/555-0144 today", false],
+		["a country code", "Call 1-555-555-0142 today", false],
+		["an area code in parentheses with a leading zero", "Call (0303) 555 0142 today", false],
+		["E.164", "Call +15555550142 today", false],
+	])("scrub on %s", (_, text, kept) => {
+		const scrubbed = scrub(text);
+		if (kept) expect(scrubbed).toBe(text);
+		else {
+			expect(scrubbed).toContain("[number]");
+			expect(scrubbed).not.toMatch(/\d{3}/);
 		}
 	});
 
