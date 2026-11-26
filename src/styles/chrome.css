@@ -1778,7 +1778,9 @@
 		   width (a basis of the floor, or of half the box once the floors
 		   outrun it), so no breakpoint can disagree with it. A font a few
 		   percent wider than a site was drawn in still sets an ordinary three
-		   word label on one line. */
+		   word label on one line. This is the choice before the client has
+		   measured (the prerender, a page with no script); once Footer has,
+		   the rules on data-link-columns below take over. */
 		.atelic-ui .footer-grid.has-brand-hours {
 			--_link-floor: calc(10 * var(--footer-link-size));
 			--_links-need: calc(
@@ -1808,6 +1810,22 @@
 			flex: 1 1
 				min(calc(50% - 16px), max(var(--_link-floor), calc((var(--_links-need) - 100%) * 999)));
 			min-width: max-content;
+		}
+		/* Once measured (9.7.0), Footer sets the box's floor to hold the widest
+		   column's real width and names its own choice, every column across or
+		   two by two, on data-link-columns: each column then takes exactly that
+		   share of the box, a hair under it so rounding never drops one, and a
+		   label never widens one (min-width: 0), since the measure already
+		   made room for the widest. The basis that blends the two above can
+		   land between a quarter and a half when the box falls a fraction of a
+		   pixel short of the floors, which left three across and a fourth alone;
+		   a named choice cannot. */
+		.atelic-ui .footer-grid.has-brand-hours .footer-links[data-link-columns] > .footer-column {
+			flex: 1 1 calc((100% - (var(--_link-count, 4) - 1) * 24px) / var(--_link-count, 4) - 0.5px);
+			min-width: 0;
+		}
+		.atelic-ui .footer-grid.has-brand-hours .footer-links[data-link-columns="2"] > .footer-column {
+			flex-basis: calc(50% - 12.5px);
 		}
 	}
 	/* One row from 1100px, the brand column a little wider than without the

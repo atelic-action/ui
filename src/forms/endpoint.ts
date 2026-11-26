@@ -13,7 +13,7 @@
 import { within } from "../lib/within.js";
 import { reportServerErrorLater, scrub } from "../monitoring/server.js";
 import type { Guard, GuardVerdict } from "./guard.js";
-import { type DestinationResult, down } from "./relay.js";
+import { type DestinationResult, down, type RelayResult } from "./relay.js";
 import type { Email } from "./resend.js";
 import { resendDestination } from "./resend.js";
 
@@ -57,6 +57,49 @@ export function addresses(value: string | undefined): string[] {
 }
 
 /**
+ * The namespace a site's Resend keys are written under: the host the form
+ * posted to. Every site of the practice may share one Resend account, and a
+ * key is the browser's id (`submissionIDOf`), so the host in front keeps one
+ * site's id from ever meeting another's. A request whose URL cannot be read
+ * falls back to "site", which still keeps the id whole.
+ */
+export function keyNamespace(request: Request): string {
+	try {
+		return new URL(request.url).host || "site";
+	} catch {
+		return "site";
+	}
+}
+
+/**
+ * Whether the browser should make a new id for its next try: only when every
+ * destination answered a definite no (a refusal, such as Resend's 4xx), so
+ * nothing of this try can land later. A destination that was down (a
+ * timeout, a 5xx, a 429, a connection that failed) may still have taken the
+ * submission, so its id is kept and a retry dedupes against it. A refusal
+ * under the kept id would be refused again (a 409 for a key Resend saw with
+ * other words), which a new id ends.
+ */
+export function shouldRenewID(result: RelayResult): boolean {
+	return (
+		result.legs.length > 0 &&
+		result.legs.every((leg) => leg.result.status === "failed" && leg.result.reason === "refused")
+	);
+}
+
+/**
+ * The part of the office email's key that names the guard's verdict:
+ * `checked` when it passed, `unchecked` when it could not answer (the email
+ * then carries the unchecked line), and none with no guard. The words of the
+ * email differ between the two, and Resend refuses a key it has seen with
+ * other words, so a resubmit whose verdict flipped is sent under its own key.
+ */
+export function verdictKey(checked: boolean | undefined): string | undefined {
+	if (checked === undefined) return undefined;
+	return checked ? "checked" : "unchecked";
+}
+
+/**
  * The longest the endpoint waits on any guard: the time a guard that names
  * none is held to, and the ceiling on one that names more.
  */
@@ -73,7 +116,7 @@ const GUARD_GRACE_MS = 500;
 export async function askGuard(
 	guard: Guard,
 	token: string,
-	id: string,
+	ids: { id: string; requestID: string },
 	request: Request,
 ): Promise<GuardVerdict> {
 	const bound =
@@ -83,7 +126,7 @@ export async function askGuard(
 	try {
 		return await within<GuardVerdict>(
 			bound,
-			(signal) => guard.check(token, { id, request, signal }),
+			(signal) => guard.check(token, { ...ids, request, signal }),
 			() => ({
 				status: "unanswered",
 				cause: new Error(`${guard.name} sent no verdict within ${bound} ms`),
@@ -147,6 +190,8 @@ export async function sendCopy(options: {
 	id: string;
 	email: Email;
 	timeoutMs?: number;
+	/** The site's namespace for the idempotency key (`keyNamespace`). */
+	keyNamespace?: string;
 	request: Request;
 	tags: Record<string, string>;
 	reason: string;
@@ -159,6 +204,7 @@ export async function sendCopy(options: {
 		to: [options.to],
 		name: options.reason,
 		timeoutMs,
+		keyNamespace: options.keyNamespace,
 		compose: () => options.email,
 	});
 	const answer = await within<DestinationResult>(

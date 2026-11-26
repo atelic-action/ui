@@ -121,27 +121,96 @@ const CAUSE_DEPTH = 5;
 const EXCEPTION_VALUE_MAX = 300;
 
 /**
+ * One property of a thrown value, read so that a throwing getter (or a
+ * proxy's trap) reads as none and costs only that field, never the report.
+ */
+function field(error: object, key: "name" | "message" | "stack" | "code"): unknown {
+	try {
+		return (error as Record<string, unknown>)[key];
+	} catch {
+		return undefined;
+	}
+}
+
+/** Whether a value is an Error, read so that a proxy's throwing trap reads as no. */
+function isError(error: unknown): boolean {
+	try {
+		return error instanceof Error;
+	} catch {
+		return false;
+	}
+}
+
+/** Whether a value has a key, read so that a proxy's throwing trap reads as no. */
+function has(error: object, key: string): boolean {
+	try {
+		return key in error;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * How much of a value written out as JSON is kept for the scrub: the cap on
+ * a message and room beside it for what the scrub shortens, so a huge object
+ * costs the scrub no more than this.
+ */
+const WRITTEN_MAX = EXCEPTION_VALUE_MAX + 200;
+
+/**
+ * A value as words when it is no error: JSON when it can be written so, else
+ * `String`, else the bare fact that something was thrown, since a value with
+ * no prototype has no `toString` and `String` throws for it. The JSON leaves
+ * out the value's own `cause`, which the chain reports as a link of its own,
+ * and is cut to WRITTEN_MAX before the scrub. A cut that falls inside a
+ * string drops that string's tail back to the JSON's last mark (a quote, a
+ * comma, a colon, a brace, a bracket), so no part of a number or an address
+ * the cut split is left for the scrub to miss.
+ */
+function wordsOf(error: unknown): string {
+	if (typeof error === "string") return error;
+	try {
+		const written = JSON.stringify(error, function (this: unknown, key, value) {
+			return this === error && key === "cause" ? undefined : value;
+		});
+		if (written !== undefined) {
+			return written.length > WRITTEN_MAX
+				? written.slice(0, WRITTEN_MAX).replace(/[^"{}[\],:]*$/u, "")
+				: written;
+		}
+	} catch {
+		// Not writable as JSON (a cycle, a BigInt, a throwing getter).
+	}
+	try {
+		return String(error);
+	} catch {
+		return "A value that cannot be written was thrown";
+	}
+}
+
+/**
  * One thrown value as Sentry's exception: its type, message, and frames. A
  * cause's words are upstream free text (a resolver's, a socket's), so they
  * take the refusal's scrub, and its `code` (ENOTFOUND, ECONNRESET, a TLS
  * error's) leads its message when the message does not already say it, so a
- * DNS fault reads apart from a refused connection.
+ * DNS fault reads apart from a refused connection. A thrown value that is no
+ * error (a plain object, at any depth) is written out as JSON, its own
+ * `cause` and everything else in it included, so it takes the scrub too,
+ * whatever its depth: nothing chose those words for a report. Each property
+ * is read on its own, so a getter that throws drops that field alone.
  */
 function exceptionOne(error: unknown, isCause: boolean) {
-	const words = (text: string) => (isCause ? scrub(text) : text).slice(0, EXCEPTION_VALUE_MAX);
+	const cut = (text: string, scrubbed: boolean) =>
+		(scrubbed ? scrub(text) : text).slice(0, EXCEPTION_VALUE_MAX);
+	const isObject = error !== null && typeof error === "object";
 	const shaped =
-		error instanceof Error ||
-		(isCause &&
-			error !== null &&
-			typeof error === "object" &&
-			("message" in error || "code" in error));
+		isError(error) || (isCause && isObject && (has(error, "message") || has(error, "code")));
 	if (shaped) {
-		const { name, message, stack, code } = error as {
-			name?: unknown;
-			message?: unknown;
-			stack?: unknown;
-			code?: unknown;
-		};
+		const shape = error as object;
+		const name = field(shape, "name");
+		const message = field(shape, "message");
+		const stack = field(shape, "stack");
+		const code = field(shape, "code");
 		const text = typeof message === "string" ? message : "";
 		const coded =
 			isCause && (typeof code === "string" || typeof code === "number") ? String(code) : "";
@@ -149,17 +218,13 @@ function exceptionOne(error: unknown, isCause: boolean) {
 		const frames = parseStack(typeof stack === "string" ? stack : undefined);
 		return {
 			type: typeof name === "string" && name ? name : "Error",
-			value: words(value),
+			value: cut(value, isCause),
 			...(frames.length ? { stacktrace: { frames } } : {}),
 		};
 	}
-	let value: string;
-	try {
-		value = typeof error === "string" ? error : JSON.stringify(error);
-	} catch {
-		value = String(error);
-	}
-	return { type: "Error", value: words(value ?? String(error)) };
+	// A string thrown at the top is the code's own words, as an error's
+	// message is; anything written out from a value is scrubbed.
+	return { type: "Error", value: cut(wordsOf(error), isCause || typeof error !== "string") };
 }
 
 /** A value's `cause`, read so that a throwing getter reads as none. */
@@ -374,19 +439,46 @@ const SEP = "[\\s./\\u2010-\\u2015\\u2212-]";
 const OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";
 
 /**
+ * A date written with its day and month as one or two digits and the same
+ * separator twice (11/23/2026, 23.11.26, 11-23-2026), which is never a
+ * phone number.
+ */
+const DATE =
+	"(?:0?[1-9]|[12]\\d|3[01])(?<dateSep>[/.-])(?:0?[1-9]|[12]\\d|3[01])\\k<dateSep>(?:\\d{4}|\\d{2})(?![\\w./-])";
+
+/**
+ * A seven digit local number: an exchange of three digits, the first 2 to
+ * 9 as an exchange's always is, a hyphen (or a dash) or a space, and four
+ * digits (555-0142, 555 0142). The separator is required, so a bare run of
+ * digits (5550142, 4194304, 9000000) is an id or a count and stays, and it
+ * is never a dot, which in a report is a decimal far more often than a
+ * number (250.1234 s, 299.9900 USD), so 555.0142 stays too. Written with a space it is two numbers side by side as often as it
+ * is one, so it is left alone when its four digits are a year (350 2026),
+ * at the cost of a real number whose last four read as one (555 1999). Any
+ * other pair is scrubbed, two ports side by side (443 8080) included, since
+ * a scrubbed pair of numbers is the safe way to be wrong.
+ */
+const SEVEN = `[2-9]\\d{2}(?:[\\u2010-\\u2015\\u2212-]|\\s(?!(?:19|20)\\d{2}(?![\\w-])))\\d{4}`;
+
+/**
  * A run shaped like a phone number: an optional country code (a plus sign
  * and one to three digits, or one to three digits and a separator, as in
  * 1-555-555-0142), then an area code in parentheses and the number after
  * it, or at least three groups of digits joined by separators, the last of
  * three or four digits, or a plus sign and seven to fifteen digits run
- * together (E.164); any of them may close on an extension (x12, ext. 12). A
- * date (2026-11-23), a bare id (12345678), a count beside a year (120
- * 2026), a status (429), and a dotted IPv4 address (192.168.10.200) are none
- * of these, and stay. A run starts at a word's edge and never just after a
- * digit's dot, so no tail of a longer dotted run is taken for one.
+ * together (E.164), or a seven digit local number (`SEVEN`); any of them
+ * may close on an extension (x12, ext. 12). A date (2026-11-23,
+ * 11/23/2026), a bare id (12345678), a count beside a year (120 2026), a
+ * status (429), and a dotted IPv4 address (192.168.10.200) are none of
+ * these, and stay; the date and the address are held off every shape but
+ * E.164. A run that opens on a 0 is still read as a number (020 7946 0958),
+ * so a street number written as a run of groups (0100 200 300 Main) may be
+ * scrubbed too: a number leaked is worse than an address scrubbed. A run
+ * starts at a word's edge and never just after a digit's dot, so no tail of
+ * a longer dotted run is taken for one.
  */
 const PHONE = new RegExp(
-	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4}))(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
+	`(?<![\\w+-])(?<!\\d\\.)(?:\\+\\d{7,15}|(?!(?:${OCTET}\\.){3}${OCTET}(?![\\w.-]))(?!${DATE})(?:(?:\\+\\d{1,3}${SEP}?|\\d{1,3}${SEP})?(?:\\(\\d{2,4}\\)${SEP}?\\d{2,4}(?:${SEP}\\d{3,4})?|\\d{2,4}(?:${SEP}\\d{2,4}){1,2}${SEP}\\d{3,4})|${SEVEN}))(?:\\s*(?:x|ext\\.?|extension)\\s*\\d{1,6})?(?![\\w-])`,
 	"giu",
 );
 

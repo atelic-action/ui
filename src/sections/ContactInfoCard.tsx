@@ -1,4 +1,5 @@
 import { newTabProps } from "../lib/newTabProps";
+import { menuPhoneLabel } from "../lib/phoneLabel";
 import { EmailLink } from "../primitives/EmailLink";
 import { PhoneLink } from "../primitives/PhoneLink";
 import { useWithBase } from "../routing/BasePathProvider";
@@ -31,9 +32,11 @@ export interface ContactInfoCardProps {
 	 */
 	showAddress?: boolean;
 	/**
-	 * The words beside the single `site.phone` row. Defaults to "Call", which
-	 * asserts nothing a business may not do; a line that answers texts says
-	 * so here ("Call or text").
+	 * The words beside the single `site.phone` row. Defaults to the site's
+	 * own words for its phone (`site.phone.menuLabel`), read as the phone menu
+	 * reads them, so a site states them once (9.7.0), and to "Call" when it
+	 * gives none, which asserts nothing a business may not do. Set here, it
+	 * wins for this card ("Call or text").
 	 */
 	phoneLabel?: string;
 	/**
@@ -52,7 +55,7 @@ export function ContactInfoCard({
 	title = "Reach us directly",
 	phones,
 	showAddress = true,
-	phoneLabel = "Call",
+	phoneLabel,
 	layout = "inline",
 }: ContactInfoCardProps) {
 	const withBase = useWithBase();
@@ -77,7 +80,7 @@ export function ContactInfoCard({
 						))
 					: site.phone && (
 							<div className="ci-row">
-								<span className="k">{phoneLabel}</span>
+								<span className="k">{phoneLabel ?? menuPhoneLabel(site.phone)}</span>
 								<span className="v">
 									<PhoneLink phone={site.phone} />
 								</span>

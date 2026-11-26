@@ -3,8 +3,8 @@ import {
 	type FormEvent,
 	type ReactNode,
 	type RefObject,
-	useEffect,
 	useId,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -27,6 +27,7 @@ import {
 import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePlaces";
 import { isHoneypotFilled } from "../lib/honeypot";
 import { newTabProps } from "../lib/newTabProps";
+import { type HeldSubmission, SUBMISSION_ID_KEY, submissionIDFor } from "../lib/submissionId";
 import { trackEvent } from "../lib/trackEvent";
 import { useTurnstile } from "../lib/turnstile";
 import { reportError } from "../monitoring/catcher";
@@ -409,6 +410,9 @@ export function ContactForm({
 	const turnstile = useTurnstile(checking?.siteKey);
 	const formRef = useRef<HTMLFormElement>(null);
 	const thanksRef = useRef<HTMLDivElement>(null);
+	// The id of this fill, held across a resubmit of the same words and let
+	// go once a send goes through (lib/submissionId says why).
+	const held = useRef<HeldSubmission | null>(null);
 	// Where focus goes once the form or the thanks is drawn: the thanks's
 	// heading when it replaces the form, the first field when the form comes back.
 	const [focusOn, setFocusOn] = useState<"thanks" | "form" | null>(null);
@@ -416,7 +420,11 @@ export function ContactForm({
 	const uid = useId();
 	const idOf = (key: string) => `${uid}-${key}`;
 
-	useEffect(() => {
+	// A layout effect, so focus moves in the same commit that draws the
+	// thanks or the form: with a passive one the focused button vanished and
+	// focus sat on the page for a moment, which a screen reader could catch
+	// and a check run right after the commit (CI's, 9.7.0) did.
+	useLayoutEffect(() => {
 		if (focusOn === "thanks") thanksRef.current?.focus();
 		if (focusOn === "form") {
 			const first = formRef.current?.elements.namedItem(splitName ? "firstName" : "name");
@@ -552,13 +560,18 @@ export function ContactForm({
 					);
 				}
 			}
+			const content = contactFormBody(values, shape);
+			// The same words as the last send keep its id, so a resubmit after a
+			// timeout is the same inquiry; changed words are a new one.
+			const submissionID = submissionIDFor(held, JSON.stringify(content));
 			let response: Response;
 			try {
 				response = await fetch(withBase(endpoint), {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
-						...contactFormBody(values, shape),
+						...content,
+						...(submissionID && { [SUBMISSION_ID_KEY]: submissionID }),
 						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
 					}),
 				});
@@ -572,13 +585,19 @@ export function ContactForm({
 				// of the general message, since trying again would not help. A
 				// 403 from the guard, or a rate limit's 429, is a send stopped as
 				// a bot's, and the visitor is told how else to reach the business.
+				// A 502 says whether every destination definitely refused
+				// (`renew`): then the next try gets a new id, since the kept one
+				// would be refused again; any other failure keeps it, so a retry
+				// dedupes against a try that may yet have landed.
 				const answer =
-					response.status === 400 || response.status === 403
+					response.status === 400 || response.status === 403 || response.status === 502
 						? ((await response.json().catch(() => null)) as {
 								error?: unknown;
 								code?: unknown;
+								renew?: unknown;
 							} | null)
 						: null;
+				if (answer?.renew === true) held.current = null;
 				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
 					stopped = true;
 					setBlocked(true);
@@ -588,6 +607,8 @@ export function ContactForm({
 				setRefusal(refused ?? null);
 				throw new Error(`status ${response.status}`);
 			}
+			// Sent: the next fill is a new inquiry, whatever it says.
+			held.current = null;
 			const answer = (await response.json().catch(() => null)) as { receipt?: unknown } | null;
 			setSentReceipt(answer?.receipt === true);
 			setSentValues(values);

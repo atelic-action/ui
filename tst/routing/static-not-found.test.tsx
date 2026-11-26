@@ -3,6 +3,7 @@ import {
 	createRootRoute,
 	createRoute,
 	createRouter,
+	notFound,
 	Outlet,
 	RouterProvider,
 	useMatches,
@@ -32,6 +33,8 @@ describe("staticNotFoundRouting", () => {
 		expect(staticNotFoundRouting(Page)).toEqual({
 			defaultNotFoundComponent: Page,
 			defaultPendingComponent: Page,
+			// A navigation never times out into the pending view (9.7.0).
+			defaultPendingMs: Number.POSITIVE_INFINITY,
 		});
 	});
 
@@ -96,7 +99,96 @@ describe("staticNotFoundRouting", () => {
 		).toBeInTheDocument();
 	});
 
-	it("the page itself as the pending view, as before, would flash the 404 body there", async () => {
+	/** A site: a header in the root, a fast home page, a slow menu, a blog with a missing slug, and the catch all. */
+	function site(options: { start: string; withMatches?: boolean }) {
+		const rootRoute = createRootRoute({
+			component: () => (
+				<>
+					<header>The header</header>
+					<Outlet />
+				</>
+			),
+		});
+		const home = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/",
+			component: () => <p>The home page</p>,
+		});
+		const slow = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/menu",
+			loader: () => new Promise<void>((resolve) => setTimeout(resolve, 1500)),
+			component: () => <p>The menu</p>,
+		});
+		const post = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/blog/$slug",
+			staticData: { missing: (params: Record<string, string>) => params.slug === "unwritten" },
+			loader: ({ params }) =>
+				new Promise<void>((resolve, reject) =>
+					setTimeout(() => (params.slug === "unwritten" ? reject(notFound()) : resolve()), 1500),
+				),
+			component: () => <p>A post</p>,
+		});
+		const catchAll = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "$",
+			component: NotFoundPage,
+		});
+		return createRouter({
+			routeTree: rootRoute.addChildren([home, slow, post, catchAll]),
+			history: createMemoryHistory({ initialEntries: [options.start] }),
+			...(options.withMatches === false
+				? staticNotFoundRouting(NotFoundPage)
+				: staticNotFoundRouting(NotFoundPage, { useMatches })),
+		});
+	}
+	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	it.each([true, false])(
+		"keeps the header and the page on screen through a slow navigation past the pending time (useMatches given: %s)",
+		async (withMatches) => {
+			const router = site({ start: "/", withMatches });
+			render(<RouterProvider router={router} />);
+			expect(await screen.findByText("The home page")).toBeInTheDocument();
+			void router.navigate({ to: "/menu" });
+			// Past the router's default pending time of a second, the loader still running.
+			await wait(1200);
+			// Shown, not only in the document: a pending view stands in for a
+			// match by hiding it (display: none) beside the fallback.
+			expect(screen.getByText("The header")).toBeVisible();
+			expect(screen.getByText("The home page")).toBeVisible();
+			expect(screen.queryByRole("heading", { name: "Nothing at this address" })).toBeNull();
+			expect(await screen.findByText("The menu", {}, { timeout: 1000 })).toBeVisible();
+			expect(screen.getByText("The header")).toBeVisible();
+		},
+	);
+
+	it("still shows the not found page on a miss, and never the page before it as one", async () => {
+		const router = site({ start: "/" });
+		render(<RouterProvider router={router} />);
+		expect(await screen.findByText("The home page")).toBeInTheDocument();
+		await router.navigate({ to: "/nowhere" });
+		expect(await screen.findByRole("heading", { name: "Nothing at this address" })).toBeVisible();
+		expect(screen.queryByText("The home page")).toBeNull();
+		expect(screen.getByText("The header")).toBeVisible();
+
+		// A slug nobody wrote: the page before stays as itself while the loader
+		// runs, never drawn as the 404, and the 404 replaces it once the router
+		// reports the miss.
+		void router.navigate({ to: "/" });
+		expect(await screen.findByText("The home page")).toBeInTheDocument();
+		void router.navigate({ to: "/blog/$slug", params: { slug: "unwritten" } });
+		await wait(1200);
+		expect(screen.getByText("The home page")).toBeVisible();
+		expect(screen.queryByRole("heading", { name: "Nothing at this address" })).toBeNull();
+		expect(
+			await screen.findByRole("heading", { name: "Nothing at this address" }, { timeout: 1000 }),
+		).toBeInTheDocument();
+		expect(screen.queryByText("The home page")).toBeNull();
+	});
+
+	it("the page itself as the pending view, with a pending time a site set after the spread, would flash the 404 body there", async () => {
 		const rootRoute = createRootRoute({ component: () => <Outlet /> });
 		const slow = createRoute({
 			getParentRoute: () => rootRoute,
@@ -107,9 +199,9 @@ describe("staticNotFoundRouting", () => {
 		const router = createRouter({
 			routeTree: rootRoute.addChildren([slow]),
 			history: createMemoryHistory({ initialEntries: ["/menu"] }),
-			defaultPendingMs: 0,
 			defaultPendingMinMs: 0,
 			...staticNotFoundRouting(NotFoundPage),
+			defaultPendingMs: 0,
 		});
 		render(<RouterProvider router={router} />);
 		expect(

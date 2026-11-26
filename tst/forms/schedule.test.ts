@@ -282,6 +282,95 @@ describe("createScheduleRequest", () => {
 		expect(payload.subject).toContain("Wednesday, December 2");
 	});
 
+	it("keys the office's email by the browser's id under the site's host, and makes its own for a bad one", async () => {
+		const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		const got: string[] = [];
+		const crm = {
+			name: "crm",
+			async send(submission: Submission<ScheduleFields>): Promise<DestinationResult> {
+				got.push(submission.id);
+				return { status: "delivered" };
+			},
+		};
+		const handler = createScheduleRequest({
+			from: FROM,
+			config: CONFIG,
+			destinations: [crm],
+			now: NOW,
+		});
+		await handler(request({ ...VALID, submissionID }));
+		await handler(request({ ...VALID, submissionID }));
+		await handler(request({ ...VALID, submissionID: "forged" }));
+		const keys = vi
+			.mocked(fetch)
+			.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
+		expect(keys.slice(0, 2)).toEqual([`localhost/${submissionID}`, `localhost/${submissionID}`]);
+		expect(got.slice(0, 2)).toEqual([submissionID, submissionID]);
+		expect(got[2]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+		expect(keys[2]).toBe(`localhost/${got[2]}`);
+	});
+
+	it("keys the office's email by the guard's verdict when it names a guard", async () => {
+		const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		let verdict: "passed" | "unanswered" = "passed";
+		const guard: Guard = {
+			name: "test",
+			tokenKey: "turnstile",
+			check: async () =>
+				verdict === "passed"
+					? { status: "passed" }
+					: { status: "unanswered", cause: new Error("down") },
+		};
+		const handler = createScheduleRequest({ from: FROM, config: CONFIG, guard, now: NOW });
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
+		verdict = "unanswered";
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
+		const keys = vi
+			.mocked(fetch)
+			.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
+		expect(keys).toEqual([
+			`localhost/${submissionID}/checked`,
+			`localhost/${submissionID}/unchecked`,
+		]);
+	});
+
+	it("sends byte identical Resend bodies on two tries of the same fill, the confirmation's too", async () => {
+		const submissionID = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		let minute = 0;
+		const handler = createScheduleRequest({
+			from: FROM,
+			config: CONFIG,
+			guard: passing(),
+			confirmation: {},
+			// A minute apart, as a resubmit is: nothing of the clock reaches an email.
+			now: () => new Date(NOW().getTime() + 60_000 * minute++),
+		});
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
+		await handler(request({ ...VALID, turnstile: "t", submissionID }));
+		const calls = vi.mocked(fetch).mock.calls;
+		const byKey = new Map<string, string[]>();
+		for (const [, init] of calls) {
+			const key = String(new Headers(init?.headers).get("Idempotency-Key"));
+			byKey.set(key, [...(byKey.get(key) ?? []), String(init?.body)]);
+		}
+		expect(byKey.size).toBe(2);
+		for (const [key, bodies] of byKey) {
+			expect(bodies, key).toHaveLength(2);
+			expect(bodies[1], key).toBe(bodies[0]);
+		}
+	});
+
+	it("tells the form to renew its id only when every destination definitely refused", async () => {
+		vi.mocked(fetch).mockImplementation(async () => new Response("{}", { status: 422 }));
+		const refusedOnce = await POST(request(VALID));
+		expect(refusedOnce.status).toBe(502);
+		expect(await refusedOnce.json()).toMatchObject({ renew: true });
+		vi.mocked(fetch).mockImplementation(async () => new Response("{}", { status: 503 }));
+		const downTwice = await POST(request(VALID));
+		expect(downTwice.status).toBe(502);
+		expect(await downTwice.json()).not.toHaveProperty("renew");
+	});
+
 	it("falls back to CONTACT_TO, then to the practice's inbox", async () => {
 		vi.stubEnv("SCHEDULE_TO", "");
 		vi.stubEnv("CONTACT_TO", "front@example.com");

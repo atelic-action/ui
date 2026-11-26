@@ -1,5 +1,16 @@
 import { Mail, Star, UserRound } from "lucide-react";
-import { type ComponentProps, type CSSProperties, forwardRef, type ReactNode } from "react";
+import {
+	type ComponentProps,
+	type CSSProperties,
+	type ForwardedRef,
+	forwardRef,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { EmailLink } from "../primitives/EmailLink";
 import { PhoneLink } from "../primitives/PhoneLink";
@@ -208,6 +219,174 @@ export interface FooterProps {
 	headingLevel?: 2 | 3 | 4 | 5 | 6;
 }
 
+/** The gap between two link columns in the box, as chrome.css sets it. */
+const LINK_GAP = 24;
+
+/**
+ * How many link columns sit across the box: all of them when every column
+ * at the wider of its floor and the widest column's real width fits the
+ * box's width with the gaps between, else two, so four columns are only
+ * ever four across or two by two. Two or fewer always sit across.
+ */
+export function linkColumnsFor({
+	box,
+	widest,
+	floor,
+	count,
+}: {
+	/** The box's used width, in pixels, fractions kept. */
+	box: number;
+	/** The widest column's max-content width, in pixels. */
+	widest: number;
+	/** Each column's floor: ten of its link text's size, in pixels. */
+	floor: number;
+	count: number;
+}): number {
+	if (count <= 2) return count;
+	const column = Math.max(widest, floor);
+	return count * column + (count - 1) * LINK_GAP <= box ? count : 2;
+}
+
+/** A measure of the link box: the widest column and the columns across. */
+export interface LinkColumnsMeasure {
+	widest: number;
+	columns: number;
+}
+
+/**
+ * Measures the link box inside a footer and decides its columns. Every
+ * column is set to max-content first, then every width is read, then every
+ * column is handed back its own style, so the read costs one layout, before
+ * anything paints. The widths are used widths (`getComputedStyle`), fractions
+ * kept, which a transform on an ancestor (a scaled preview, an animation)
+ * leaves as they are. Null when the box has no width to read yet (no layout,
+ * or a page with no footer box), so nothing is decided on a guess.
+ */
+export function measureLinkColumns(footer: Element): LinkColumnsMeasure | null {
+	const box = footer.querySelector<HTMLElement>(".footer-links");
+	const view = footer.ownerDocument.defaultView;
+	if (!box || !view) return null;
+	const width = (element: Element) => Number.parseFloat(view.getComputedStyle(element).width);
+	const columns = Array.from(box.querySelectorAll<HTMLElement>(":scope > .footer-column"));
+	const boxWidth = width(box);
+	const link = box.querySelector("a") ?? box;
+	const floor = 10 * Number.parseFloat(view.getComputedStyle(link).fontSize);
+	const kept = columns.map(({ style }) => ({
+		width: style.width,
+		flex: style.flex,
+		minWidth: style.minWidth,
+	}));
+	for (const { style } of columns) {
+		style.flex = "none";
+		style.minWidth = "0";
+		style.width = "max-content";
+	}
+	const widths = columns.map(width);
+	columns.forEach(({ style }, at) => {
+		const own = kept[at];
+		if (!own) return;
+		style.width = own.width;
+		style.flex = own.flex;
+		style.minWidth = own.minWidth;
+	});
+	if (!(boxWidth > 0) || !Number.isFinite(floor) || !widths.every(Number.isFinite)) return null;
+	const widest = Math.max(0, ...widths);
+	return {
+		widest,
+		columns: linkColumnsFor({ box: boxWidth, widest, floor, count: columns.length }),
+	};
+}
+
+// Before paint on the client, so the first frame already has the measured
+// columns; the prerender has no layout to read and runs a plain effect.
+const useBeforePaint = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/**
+ * The link box's measure, taken on the client while the hours sit in the
+ * brand column, and again whenever the footer or the box changes size, the
+ * fonts finish loading, or the columns or their labels change. Null before
+ * the first measure, so the prerender and the first paint keep the
+ * stylesheet's own choice.
+ */
+function useLinkColumns(active: boolean, labels: string) {
+	const [measure, setMeasure] = useState<LinkColumnsMeasure | null>(null);
+	// The footer element, held in a ref rather than state, so handing it over
+	// renders nothing again.
+	const footerRef = useRef<HTMLElement | null>(null);
+	const setFooter = useCallback((element: HTMLElement | null) => {
+		footerRef.current = element;
+	}, []);
+	// The labels are the trigger; the measure reads the DOM they drew.
+	useBeforePaint(() => {
+		const footer = footerRef.current;
+		if (!active || !footer) return;
+		const run = () => {
+			const next = measureLinkColumns(footer);
+			if (!next) return;
+			setMeasure((was) =>
+				was && was.widest === next.widest && was.columns === next.columns ? was : next,
+			);
+		};
+		run();
+		// A resize is measured on the next frame, never inside the observer's
+		// own callback: the measure's choice can resize the box it observes,
+		// and a size changed inside the callback is the loop the browser
+		// reports ("ResizeObserver loop completed with undelivered
+		// notifications"). Several in one frame make one measure.
+		let frame = 0;
+		const later = () => {
+			if (frame) return;
+			frame = requestAnimationFrame(() => {
+				frame = 0;
+				run();
+			});
+		};
+		const sizes = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(later);
+		sizes?.observe(footer);
+		const box = footer.querySelector(".footer-links");
+		if (box) sizes?.observe(box);
+		let live = true;
+		document.fonts?.ready.then(() => live && later()).catch(() => {});
+		return () => {
+			live = false;
+			if (frame) cancelAnimationFrame(frame);
+			sizes?.disconnect();
+		};
+	}, [active, labels]);
+	return { measure: active ? measure : null, setFooter };
+}
+
+/**
+ * Hands the footer element to the caller's ref and to the footer's own
+ * measure. A callback ref that returns a cleanup (React 19) has it called on
+ * detach, in place of a call with null, as React would itself.
+ */
+function useBothRefs(outer: ForwardedRef<HTMLElement>, own: (element: HTMLElement | null) => void) {
+	const cleanupRef = useRef<(() => void) | undefined>(undefined);
+	// Made again when either ref changes, so React detaches the one it
+	// replaces and attaches the new one.
+	return useCallback(
+		(element: HTMLElement | null) => {
+			own(element);
+			if (typeof outer === "function") {
+				if (element) {
+					const returned: unknown = outer(element);
+					cleanupRef.current =
+						typeof returned === "function" ? (returned as () => void) : undefined;
+				} else {
+					const cleanup = cleanupRef.current;
+					cleanupRef.current = undefined;
+					if (cleanup) cleanup();
+					else outer(null);
+				}
+			} else if (outer) {
+				outer.current = element;
+			}
+		},
+		[own, outer],
+	);
+}
+
 /**
  * The site footer: a brand column (the logo, the Google rating, the address
  * linked to the Google profile, the phone, and the email), the hours when the
@@ -269,9 +448,39 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 	// the row is the brand column and that box: the two sit side by side or
 	// each takes a row, and the box alone decides four across or two by two
 	// (chrome.css). Anywhere else, and on a phone, the columns stand in the
-	// grid as they always have.
+	// grid as they always have. With no link column there is no box, so it
+	// takes no gap in the row (9.7.0).
+	const linkBox = Boolean(hoursInBrand) && shown.length > 0;
 	const wrapLinks = (links: ReactNode) =>
-		hoursInBrand ? <div className="footer-links">{links}</div> : links;
+		linkBox ? (
+			<div className="footer-links" data-link-columns={measure?.columns}>
+				{links}
+			</div>
+		) : (
+			links
+		);
+	// Before the client measures, the stylesheet chooses four across or two
+	// by two as it always has. Once measured, the box's floor holds the
+	// widest column's real width and the measure's own choice is set on the
+	// box, which the stylesheet sets as exactly a quarter or exactly a half,
+	// so a fourth column is never left alone. The labels drawn start the
+	// measure again when they change.
+	const labels = linkBox
+		? JSON.stringify(
+				shown.map((column) => [column.heading, column.links.map((link) => link.label)]),
+			)
+		: "";
+	const { measure, setFooter } = useLinkColumns(linkBox, labels);
+	const footerRef = useBothRefs(ref, setFooter);
+	const gridStyle = linkBox
+		? ({
+				"--_link-count": shown.length,
+				...(measure &&
+					measure.widest > 0 && {
+						"--_link-floor": `max(calc(10 * var(--footer-link-size)), ${measure.widest}px)`,
+					}),
+			} as CSSProperties)
+		: undefined;
 	const stars = (
 		<span className="footer-stars" aria-hidden="true">
 			{STARS.map((star) => (
@@ -293,7 +502,7 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 
 	return (
 		<>
-			<footer ref={ref} className="footer">
+			<footer ref={footerRef} className="footer">
 				<div className="wrap">
 					<div
 						className={[
@@ -308,8 +517,9 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 							.join(" ")}
 						// The link columns drawn, which the brand placement's floors are
 						// measured for (chrome.css), so two or three columns keep the
-						// brand column beside them as long as theirs fit.
-						style={hoursInBrand ? ({ "--_link-count": shown.length } as CSSProperties) : undefined}
+						// brand column beside them as long as theirs fit, and the widest
+						// column's measured width once there is one.
+						style={gridStyle}
 					>
 						<div className="footer-brand">
 							{logo?.tile ? (

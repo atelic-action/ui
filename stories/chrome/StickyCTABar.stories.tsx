@@ -115,9 +115,8 @@ function SwappingCaller() {
 }
 
 /**
- * A caller that swaps listeners: the one that was told the bar's height
- * gives its space back, and the new one is told the height, at the bar's
- * next measure (a resize), so no stale padding outlives the swap.
+ * A caller that swaps listeners is one caller: the height the first was told
+ * stands, and a swap tells nothing, so the swap can never loop (9.7.0).
  */
 export const SwappedListener: Story = {
 	beforeEach: () => {
@@ -130,14 +129,41 @@ export const SwappedListener: Story = {
 			await waitFor(() => expect(first).toHaveBeenLastCalledWith(expect.any(Number)));
 			await expect(first.mock.lastCall?.[0]).toBeGreaterThan(0);
 		});
-		await step(
-			"after the swap, the first gives its space back and the second takes it",
-			async () => {
-				await userEvent.click(canvas.getByRole("button", { name: "Swap the listener" }));
-				window.dispatchEvent(new Event("resize"));
-				await waitFor(() => expect(first).toHaveBeenLastCalledWith(0));
-				await expect(second.mock.lastCall?.[0]).toBeGreaterThan(0);
-			},
+		await step("a swap tells neither listener anything", async () => {
+			const told = first.mock.calls.length;
+			await userEvent.click(canvas.getByRole("button", { name: "Swap the listener" }));
+			window.dispatchEvent(new Event("resize"));
+			await expect(first.mock.calls.length).toBe(told);
+			await expect(second).not.toHaveBeenCalled();
+		});
+	},
+};
+
+/** A caller whose inline listener stores the height in an object, made anew each render. */
+function ObjectStateCaller() {
+	const [space, setSpace] = useState({ pixels: 0 });
+	return (
+		<>
+			<p data-testid="reserved">{space.pixels}</p>
+			<StickyCTABar
+				primaryCTA={cta}
+				phone={phone}
+				fromTop
+				onSpaceChange={(pixels) => setSpace({ pixels })}
+			/>
+		</>
+	);
+}
+
+/**
+ * The listener a caller makes anew every render, storing an object, still
+ * holds the reserved height, where the old swap cap left it at 0 (9.7.0).
+ */
+export const InlineObjectListener: Story = {
+	render: () => <ObjectStateCaller />,
+	play: async ({ canvas }) => {
+		await waitFor(() =>
+			expect(Number(canvas.getByTestId("reserved").textContent)).toBeGreaterThan(0),
 		);
 	},
 };

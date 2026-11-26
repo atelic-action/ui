@@ -33,6 +33,17 @@ describe("ContactInfoCard", () => {
 		expect(screen.getByText("Call or text")).toBeInTheDocument();
 	});
 
+	it("falls back to the site's own words for its phone, as the phone menu does", () => {
+		const texts = { ...site, phone: { ...site.phone, menuLabel: "Call / Text" } } as typeof site;
+		const { unmount } = render(<ContactInfoCard site={texts} />);
+		expect(screen.getByText("Call / Text")).toBeInTheDocument();
+		unmount();
+		// The card's own words still win.
+		render(<ContactInfoCard site={texts} phoneLabel="Owner's cell" />);
+		expect(screen.getByText("Owner's cell")).toBeInTheDocument();
+		expect(screen.queryByText("Call / Text")).toBeNull();
+	});
+
 	it("drops the visit row for a business with no storefront", () => {
 		render(<ContactInfoCard site={site} showAddress={false} />);
 		expect(screen.queryByText("Visit")).toBeNull();

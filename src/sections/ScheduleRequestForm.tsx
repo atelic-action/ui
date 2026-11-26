@@ -1,5 +1,14 @@
 import { Check } from "lucide-react";
-import { type ReactNode, type RefObject, useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+	type ReactNode,
+	type RefObject,
+	useEffect,
+	useId,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { MonthCalendar } from "../components/MonthCalendar";
 import {
 	clockLabel,
@@ -33,6 +42,7 @@ import { addressLine } from "../lib/contactForm";
 import { EMAIL_PATTERN, toE164 } from "../lib/contactLinks";
 import { type GooglePlacesOptions, googlePlacesProvider } from "../lib/googlePlaces";
 import { newTabProps } from "../lib/newTabProps";
+import { type HeldSubmission, SUBMISSION_ID_KEY, submissionIDFor } from "../lib/submissionId";
 import { trackEvent } from "../lib/trackEvent";
 import { useTurnstile } from "../lib/turnstile";
 import { reportError } from "../monitoring/catcher";
@@ -379,6 +389,9 @@ export function ScheduleRequestForm({
 	const checking = guard;
 	const turnstile = useTurnstile(checking?.siteKey);
 	const honeypot = useRef<HTMLInputElement>(null);
+	// The id of this request, held across a resubmit of the same request and
+	// let go once a send goes through (lib/submissionId says why).
+	const held = useRef<HeldSubmission | null>(null);
 
 	const googleKey = address?.provider ? undefined : address?.googlePlacesKey;
 	const googleOptions = JSON.stringify(address?.googlePlacesOptions ?? {});
@@ -396,7 +409,9 @@ export function ScheduleRequestForm({
 		if (step === 1 && !pinnedToday) setToday(dayIn(config.timeZone));
 	}, [step, pinnedToday, config.timeZone]);
 
-	useEffect(() => {
+	// A layout effect, so focus moves to the done screen in the commit that
+	// draws it (ContactForm says why).
+	useLayoutEffect(() => {
 		if (!focusDone) return;
 		doneRef.current?.focus({ preventScroll: true });
 		rootRef.current?.scrollIntoView?.({ block: "start" });
@@ -514,10 +529,17 @@ export function ScheduleRequestForm({
 			}
 			let response: Response;
 			try {
+				// The same request as the last send keeps its id, so a resubmit
+				// after a timeout is sent once; a changed one is a new request.
+				const submissionID = submissionIDFor(held, JSON.stringify(body));
 				response = await fetch(withBase(endpoint), {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ ...body, ...(checking && { [TURNSTILE_TOKEN_KEY]: token }) }),
+					body: JSON.stringify({
+						...body,
+						...(submissionID && { [SUBMISSION_ID_KEY]: submissionID }),
+						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
+					}),
 				});
 			} finally {
 				if (checking) turnstile.reset();
@@ -526,7 +548,11 @@ export function ScheduleRequestForm({
 				const answer = (await response.json().catch(() => null)) as {
 					error?: unknown;
 					code?: unknown;
+					renew?: unknown;
 				} | null;
+				// Every destination definitely refused: the next try gets a new
+				// id (ContactForm says why); any other failure keeps it.
+				if (answer?.renew === true) held.current = null;
 				if (response.status === 429 || (response.status === 403 && answer?.code === "guard")) {
 					setNotice(blockedMessage);
 				} else if (
@@ -545,6 +571,8 @@ export function ScheduleRequestForm({
 				}
 				return;
 			}
+			// Sent: the next request is a new one, whatever it says.
+			held.current = null;
 			const answer = (await response.json().catch(() => null)) as { receipt?: unknown } | null;
 			setSent({ values: { ...values, mode, time }, receipt: answer?.receipt === true });
 			setFocusDone(true);

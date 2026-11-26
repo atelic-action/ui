@@ -244,6 +244,41 @@ describe("relay", () => {
 		expect(vi.getTimerCount()).toBe(0);
 	});
 
+	it("sends the reports before it resolves when nothing was taken, since the visitor is waiting", async () => {
+		let land: (response: Response) => void = () => {};
+		vi.mocked(fetch).mockImplementation(
+			() =>
+				new Promise<Response>((resolve) => {
+					land = resolve;
+				}),
+		);
+		const crm = scripted("crm", refused(new Error("crm answered 422")));
+		let settled = false;
+		const running = relay(SUBMISSION, [crm]).then((result) => {
+			settled = true;
+			return result;
+		});
+		await vi.advanceTimersByTimeAsync(0);
+		// The report is in flight, and the relay waits on it.
+		expect(
+			vi.mocked(fetch).mock.calls.filter(([url]) => String(url).startsWith(INGEST)),
+		).toHaveLength(1);
+		expect(settled).toBe(false);
+		land(new Response("{}", { status: 200 }));
+		const result = await running;
+		expect(result.taken).toBe(false);
+	});
+
+	it("never waits on a report when something was taken", async () => {
+		vi.mocked(fetch).mockImplementation(() => new Promise<Response>(() => {}));
+		const email = scripted("email", delivered);
+		const crm = scripted("crm", refused(new Error("crm answered 422")));
+		const result = await relay(SUBMISSION, [email, crm]);
+		expect(result.taken).toBe(true);
+		expect(await reports()).toHaveLength(1);
+		await vi.advanceTimersByTimeAsync(2000);
+	});
+
 	it("is not taken with no destinations", async () => {
 		expect(await relay(SUBMISSION, [])).toEqual({ taken: false, legs: [] });
 	});

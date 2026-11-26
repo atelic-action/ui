@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { createRef } from "react";
 import { Footer, type FooterProps } from "../../src/chrome";
+import { linkColumnsFor } from "../../src/chrome/Footer";
 import { address, brand, email, phone } from "../fixtures";
 
 const columns: FooterProps["columns"] = [
@@ -267,5 +270,247 @@ describe("Footer", () => {
 			Symbol.for("react.forward_ref"),
 		);
 		expect(Footer.displayName).toBe("Footer");
+	});
+});
+
+describe("linkColumnsFor", () => {
+	// Four columns at a 158px floor need 4 * 158 + 3 * 24 = 704px.
+	const need = 704;
+
+	it("sets every column across when the box holds them, to the pixel", () => {
+		expect(linkColumnsFor({ box: need, widest: 150, floor: 158, count: 4 })).toBe(4);
+		expect(linkColumnsFor({ box: need + 300, widest: 150, floor: 158, count: 4 })).toBe(4);
+	});
+
+	it("sets two by two when the box falls a fraction of a pixel short, never three and one", () => {
+		// The site proof: a 703.81px box against columns that need 704.
+		expect(linkColumnsFor({ box: need - 0.19, widest: 150, floor: 158, count: 4 })).toBe(2);
+		expect(linkColumnsFor({ box: 703.81, widest: 150, floor: 158, count: 4 })).toBe(2);
+	});
+
+	it("measures against the widest column when it is wider than the floor", () => {
+		expect(linkColumnsFor({ box: need, widest: 200, floor: 158, count: 4 })).toBe(2);
+		expect(linkColumnsFor({ box: 4 * 200 + 72, widest: 200, floor: 158, count: 4 })).toBe(4);
+	});
+
+	it("sets two or fewer across always, and three across or two and one", () => {
+		expect(linkColumnsFor({ box: 10, widest: 200, floor: 158, count: 2 })).toBe(2);
+		expect(linkColumnsFor({ box: 10, widest: 200, floor: 158, count: 1 })).toBe(1);
+		expect(linkColumnsFor({ box: 3 * 158 + 48, widest: 0, floor: 158, count: 3 })).toBe(3);
+		expect(linkColumnsFor({ box: 3 * 158 + 47.9, widest: 0, floor: 158, count: 3 })).toBe(2);
+	});
+});
+
+describe("Footer link columns with the hours in the brand column", () => {
+	const hours = [{ label: "Mon", range: "7:00 am to 3:00 pm" }];
+	const grid = (container: HTMLElement) => container.querySelector(".footer-grid") as HTMLElement;
+	const box = (container: HTMLElement) =>
+		container.querySelector(".footer-links") as HTMLElement | null;
+	const withLong = (label: string) => [
+		...(columns ?? []).slice(0, 1),
+		{ heading: "Resources", links: [{ label, href: "/financing" }] },
+		...(columns ?? []).slice(2),
+	];
+
+	/**
+	 * A layout for jsdom, which has none: the box is `boxWidth` wide, a link
+	 * is 16px (a 160px floor), and a column set to max-content is its longest
+	 * label at 8px a character. Records whether every column was already set
+	 * when any column's width was read.
+	 */
+	function layout(boxWidth: number) {
+		const allSet: boolean[] = [];
+		const real = window.getComputedStyle.bind(window);
+		vi.spyOn(window, "getComputedStyle").mockImplementation((element: Element) => {
+			const style = real(element);
+			const html = element as HTMLElement;
+			let width = "";
+			let fontSize = style.fontSize;
+			if (html.classList?.contains("footer-links")) width = `${boxWidth}px`;
+			if (html.classList?.contains("footer-column")) {
+				const holder = html.closest(".footer-links") as HTMLElement;
+				allSet.push(
+					Array.from(holder.querySelectorAll<HTMLElement>(".footer-column")).every(
+						(column) => column.style.width === "max-content",
+					),
+				);
+				const longest = Math.max(
+					...Array.from(html.querySelectorAll("a, [role=heading]")).map(
+						(one) => one.textContent?.length ?? 0,
+					),
+				);
+				width = html.style.width === "max-content" ? `${longest * 8}px` : "50px";
+			}
+			if (element.tagName === "A") fontSize = "16px";
+			return new Proxy(style, {
+				get: (target, key) =>
+					key === "width" ? width : key === "fontSize" ? fontSize : Reflect.get(target, key),
+			});
+		});
+		return { allSet };
+	}
+
+	afterEach(() => vi.restoreAllMocks());
+
+	it("draws no link box at all when there is no link column, so it takes no gap", () => {
+		const { container } = render(<Footer {...props} hours={hours} columns={[]} />);
+		expect(box(container)).toBeNull();
+		expect(grid(container).style.getPropertyValue("--_link-count")).toBe("");
+		const { container: emptied } = render(
+			<Footer {...props} hours={hours} columns={[{ heading: "Legal", links: [] }]} />,
+		);
+		expect(box(emptied)).toBeNull();
+	});
+
+	it("leaves the stylesheet's own choice alone until the client measures, so a prerender names none", async () => {
+		const { renderToString } = await import("react-dom/server");
+		const html = renderToString(<Footer {...props} hours={hours} />);
+		expect(html).toContain("footer-links");
+		expect(html).toContain("--_link-count:4");
+		expect(html).not.toContain("data-link-columns");
+		expect(html).not.toContain("--_link-floor");
+	});
+
+	it("names no choice where the box has no layout to read, as in a test with none", () => {
+		const { container } = render(<Footer {...props} hours={hours} />);
+		expect(box(container)).not.toHaveAttribute("data-link-columns");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe("");
+	});
+
+	it("names two by two for a box a fraction short, and floors it at the widest column", () => {
+		// 30 characters at 8px: the widest column is 240px, so four need 1032px.
+		const { allSet } = layout(1031.81);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(box(container)).toHaveAttribute("data-link-columns", "2");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe(
+			"max(calc(10 * var(--footer-link-size)), 240px)",
+		);
+		// Every column set before any was read: one layout for the measure.
+		expect(allSet.length).toBeGreaterThan(0);
+		expect(allSet.every(Boolean)).toBe(true);
+		// The measure hands each column its own style back.
+		for (const column of Array.from(container.querySelectorAll<HTMLElement>(".footer-column"))) {
+			expect(column.getAttribute("style")).toBeFalsy();
+		}
+	});
+
+	it("names every column across when the box holds the widest four", () => {
+		layout(1032);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(box(container)).toHaveAttribute("data-link-columns", "4");
+	});
+
+	it("measures again when a label changes, not only on a resize", () => {
+		layout(1032);
+		const { container, rerender } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(box(container)).toHaveAttribute("data-link-columns", "4");
+		rerender(
+			<Footer
+				{...props}
+				hours={hours}
+				columns={withLong("Financing and insurance claims, explained")}
+			/>,
+		);
+		expect(box(container)).toHaveAttribute("data-link-columns", "2");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toContain("328px");
+	});
+
+	it("measures a resize on the next frame, never inside the observer's callback", async () => {
+		const observed: ResizeObserverCallback[] = [];
+		vi.stubGlobal(
+			"ResizeObserver",
+			class {
+				constructor(callback: ResizeObserverCallback) {
+					observed.push(callback);
+				}
+				observe() {}
+				disconnect() {}
+			},
+		);
+		layout(1032);
+		render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		const reads = () => vi.mocked(window.getComputedStyle).mock.calls.length;
+		const before = reads();
+		for (const callback of observed) {
+			callback([], {} as ResizeObserver);
+			callback([], {} as ResizeObserver);
+		}
+		expect(reads()).toBe(before);
+		await new Promise((resolve) => requestAnimationFrame(resolve));
+		expect(reads()).toBeGreaterThan(before);
+		vi.unstubAllGlobals();
+	});
+
+	it("attaches a swapped ref and clears the one it replaced", () => {
+		const first = createRef<HTMLElement>();
+		const second = createRef<HTMLElement>();
+		const { rerender } = render(<Footer {...props} hours={hours} ref={first} />);
+		expect(first.current).toBe(screen.getByRole("contentinfo"));
+		rerender(<Footer {...props} hours={hours} ref={second} />);
+		expect(second.current).toBe(screen.getByRole("contentinfo"));
+		expect(first.current).toBeNull();
+	});
+
+	it("calls a callback ref's returned cleanup on detach, in place of a call with null", () => {
+		const heard: (HTMLElement | null)[] = [];
+		let cleaned = 0;
+		const ref = (element: HTMLElement | null) => {
+			heard.push(element);
+			return () => {
+				cleaned += 1;
+			};
+		};
+		const { unmount } = render(<Footer {...props} hours={hours} ref={ref} />);
+		unmount();
+		expect(cleaned).toBe(1);
+		expect(heard).toEqual([expect.any(HTMLElement)]);
+	});
+
+	it("measures nothing with the hours as a column of their own, where the columns stand in the grid", () => {
+		const read = vi.spyOn(window, "getComputedStyle");
+		const { container } = render(<Footer {...props} hours={hours} hoursPlacement="column" />);
+		expect(box(container)).toBeNull();
+		expect(read).not.toHaveBeenCalled();
+	});
+});
+
+describe("the brand placement's sheet", () => {
+	const sheet = () =>
+		readFileSync(
+			join(import.meta.dirname, "..", "..", "src", "styles", "chrome.css"),
+			"utf8",
+		).replace(/\s+/g, " ");
+
+	it("keeps the choice before the measure as it was, labels held whole", () => {
+		expect(sheet()).toContain("--_link-floor: calc(10 * var(--footer-link-size));");
+		const rule = sheet().match(
+			/\.footer-grid\.has-brand-hours \.footer-links > \.footer-column \{([^}]*)\}/,
+		)?.[1];
+		expect(rule).toContain("min-width: max-content;");
+		expect(rule).toContain(
+			"min(calc(50% - 16px), max(var(--_link-floor), calc((var(--_links-need) - 100%) * 999)))",
+		);
+	});
+
+	it("gives a measured box exactly a share or exactly a half, and never lets a label widen one", () => {
+		const across = sheet().match(
+			/\.footer-links\[data-link-columns\] > \.footer-column \{([^}]*)\}/,
+		)?.[1];
+		expect(across).toContain("min-width: 0;");
+		expect(across).toContain(
+			"calc((100% - (var(--_link-count, 4) - 1) * 24px) / var(--_link-count, 4) - 0.5px)",
+		);
+		const half = sheet().match(
+			/\.footer-links\[data-link-columns="2"\] > \.footer-column \{([^}]*)\}/,
+		)?.[1];
+		expect(half).toContain("flex-basis: calc(50% - 12.5px);");
 	});
 });

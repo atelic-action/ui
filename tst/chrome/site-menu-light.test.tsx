@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { SiteMenu, SiteShell } from "../../src/chrome";
-import { menuPhoneLabel } from "../../src/chrome/SiteMenu";
+import { menuPhoneLabel } from "../../src/lib/phoneLabel";
 import { BasePathProvider } from "../../src/routing";
 import type { SiteConfig } from "../../src/sections";
 import { brand, links, phone, primaryCTA } from "../fixtures";

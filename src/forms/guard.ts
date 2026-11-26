@@ -41,8 +41,20 @@ export type GuardVerdict =
 
 /** What a guard's `check` is handed beside the token. */
 export interface GuardContext {
-	/** The submission's id, the same one every destination is handed. */
+	/**
+	 * The submission's id, the same one every destination is handed. Since
+	 * 9.7.0 the browser makes it and keeps it across a resubmit of the same
+	 * words, so it is no key for a check of one token.
+	 */
 	id: string;
+	/**
+	 * An id of this request alone, fresh on every POST (9.7.0): the key a
+	 * guard checks its token under, so a resubmit's fresh token is never
+	 * checked under the key an earlier token was checked under. The
+	 * endpoints always hand it over; a caller written before 9.7.0 leaves it
+	 * out, and `turnstileGuard` then keys its check on `id`, as it did.
+	 */
+	requestID?: string;
 	/** The request being handled; a guard may read the visitor's address from its headers. */
 	request: Request;
 	/**
@@ -160,7 +172,7 @@ async function verdictOf(response: Response): Promise<GuardVerdict> {
 /**
  * The guard over Cloudflare Turnstile: one POST to siteverify carrying the
  * secret, the token, the visitor's address when the platform gave one, and
- * the submission's id as the idempotency key. One try, cut off at
+ * the request's id as the idempotency key. One try, cut off at
  * `timeoutMs`. An empty token is unanswered without a call, since a form
  * that could not load the challenge sends none and its visitor is still a
  * lead.
@@ -171,7 +183,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 		name: "turnstile",
 		tokenKey: TURNSTILE_TOKEN_KEY,
 		timeoutMs,
-		async check(token, { id, request, signal: endpoint }) {
+		async check(token, { id, requestID, request, signal: endpoint }) {
 			// The secret is looked for first, so a site whose guard is not set
 			// up yet reads as one missing setting, whatever its form sent.
 			const secret = options.secret ?? process.env.TURNSTILE_SECRET_KEY;
@@ -200,7 +212,7 @@ export function turnstileGuard(options: TurnstileOptions = {}): Guard {
 								secret,
 								response: token,
 								...(remoteip && { remoteip }),
-								idempotency_key: id,
+								idempotency_key: requestID ?? id,
 							}),
 							signal,
 						});

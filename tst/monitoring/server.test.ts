@@ -7,6 +7,7 @@ import {
 	reportRefusedResponse,
 	reportServerError,
 	reportServerErrorLater,
+	scrub,
 	withErrorReporting,
 } from "../../src/monitoring/server";
 
@@ -239,6 +240,105 @@ describe("buildEnvelope's chain of causes", () => {
 		expect(values[1].value).toHaveLength(300);
 		expect(JSON.stringify(values)).not.toContain("owner@example.com");
 		expect(JSON.stringify(values)).not.toContain("555-555-0142");
+	});
+
+	it("scrubs a plain object thrown at the top, its nested cause included", () => {
+		const thrown = {
+			reason: "Rejected owner@example.com",
+			cause: { detail: "call 555-555-0142", deeper: { cause: "ops@example.com" } },
+		};
+		const values = valuesOf(thrown);
+		const sent = JSON.stringify(values);
+		expect(sent).not.toContain("owner@example.com");
+		expect(sent).not.toContain("555-555-0142");
+		expect(sent).not.toContain("ops@example.com");
+		// The thrown value is last, as Sentry orders a chain, and still reads as
+		// itself; its cause is a link of its own, scrubbed too.
+		expect(values.at(-1).value).toContain("Rejected [address]");
+		expect(values[0].value).toContain("call [number]");
+	});
+
+	it("leaves a plain object's own cause out of its JSON, since the chain reports it", () => {
+		const values = valuesOf({ reason: "first", cause: { detail: "second" } });
+		expect(values).toHaveLength(2);
+		expect(values.at(-1).value).toBe('{"reason":"first"}');
+		expect(values[0].value).toBe('{"detail":"second"}');
+	});
+
+	it("cuts a huge plain object before the scrub, and leaves no part of a number the cut split", () => {
+		// Addresses the scrub shortens, then a number the cut at 500 splits after
+		// "555-5", so what is left of it would slide inside the 300 kept.
+		const addresses = Array.from({ length: 5 }, (_, at) => `${"u".repeat(60)}${at}@example.com`);
+		const head = `{"a":"${addresses.join(" ")} `;
+		const fill = "x".repeat(500 - head.length - '","b":"call 555-5'.length);
+		const thrown = { a: `${addresses.join(" ")} ${fill}`, b: "call 555-555-0142 now" };
+		expect(JSON.stringify(thrown).slice(0, 500).endsWith("call 555-5")).toBe(true);
+		const [only] = valuesOf(thrown);
+		expect(only.value.length).toBeLessThanOrEqual(300);
+		expect(only.value).toContain("[address]");
+		expect(only.value).not.toMatch(/555/);
+		// A huge object is cut to the cap, whatever its size.
+		const huge = { list: Array.from({ length: 50_000 }, (_, at) => `item ${at}`) };
+		expect(valuesOf(huge)[0].value).toHaveLength(300);
+	});
+
+	it("drops only the field whose getter throws, on the thrown value and on any cause", () => {
+		const trap = (keep: Record<string, unknown>, bad: string[]) => {
+			const value = Object.assign(new Error("placeholder"), keep);
+			for (const key of bad) {
+				Object.defineProperty(value, key, {
+					get() {
+						throw new Error(`no ${key}`);
+					},
+				});
+			}
+			return value;
+		};
+		for (const key of ["message", "name", "stack", "code"]) {
+			const cause = trap({ code: "ECONNRESET" }, [key]);
+			const thrown = trap({}, [key]);
+			Object.defineProperty(thrown, "cause", { value: cause });
+			const envelope = () => buildEnvelope(thrown, DSN);
+			expect(envelope, key).not.toThrow();
+			const values = valuesOf(thrown);
+			expect(values, key).toHaveLength(2);
+			if (key !== "message") expect(values[1].value, key).toBe("placeholder");
+			if (key === "name") expect(values[1].type).toBe("Error");
+			if (key === "code") expect(values[0].value).toBe("placeholder");
+			else if (key !== "message") expect(values[0].value).toBe("ECONNRESET: placeholder");
+		}
+	});
+
+	it("reads a proxy whose every trap throws as an error with no words, never throwing", () => {
+		const hostile = new Proxy(
+			{},
+			{
+				get() {
+					throw new Error("trap");
+				},
+				has() {
+					throw new Error("trap");
+				},
+				getPrototypeOf() {
+					throw new Error("trap");
+				},
+				ownKeys() {
+					throw new Error("trap");
+				},
+			},
+		);
+		expect(() => buildEnvelope(hostile, DSN)).not.toThrow();
+		expect(() => buildEnvelope(new Error("outer", { cause: hostile }), DSN)).not.toThrow();
+	});
+
+	it("writes a value with no prototype that JSON cannot write without throwing", () => {
+		const bare = Object.create(null) as Record<string, unknown>;
+		bare.size = 10n;
+		const [only] = valuesOf(bare);
+		expect(only).toEqual({ type: "Error", value: "A value that cannot be written was thrown" });
+		const plain = Object.create(null) as Record<string, unknown>;
+		plain.reason = "owner@example.com";
+		expect(valuesOf(plain)[0].value).toBe('{"reason":"[address]"}');
 	});
 
 	it("leaves an error with no cause the one exception it always was, with no mechanism", () => {
@@ -557,6 +657,52 @@ describe("refusalError and reportRefusedResponse", () => {
 			expect(kept.message, message).toBe(
 				`The upstream service answered 422: rate_limit: ${message}`,
 			);
+		}
+	});
+
+	it.each([
+		["a slash written date", "Retry on 11/23/2026 at 10:00", true],
+		["a slash written date, short year", "Retry on 1/2/26 at 10:00", true],
+		["a dotted date", "Due 23.11.2026", true],
+		["a hyphen written date", "Due 11-23-2026", true],
+		["a leading zero street number", "Ship to 0123 Main St", true],
+		["a count beside a year", "120 2026 sends", true],
+		["a bare id", "id 12345678", true],
+		["a ZIP", "ZIP 90210", true],
+		["a ZIP and four", "ZIP 80202-1234", true],
+		["a status", "status 429", true],
+		["a seven digit number with a hyphen", "Call 555-0142 today", false],
+		["a seven digit number with a space", "Call 555 0142 today", false],
+		["seven digits run together, an id or a count", "Call 5550142 today", true],
+		["a count of bytes", "read 4194304 bytes", true],
+		["a round count", "count 9000000", true],
+		["a count beside a year, three digits", "350 2026 sends", true],
+		[
+			"a number whose four digits read as a year, a trade the scrub takes",
+			"Call 555 1999 today",
+			true,
+		],
+		["two ports side by side, scrubbed the safe way", "port 443 8080", false],
+		["a seven digit number with a dash", "Call 555\u20130142 today", false],
+		["seven digits with a dot, read as a decimal", "Call 555.0142 today", true],
+		["a time in seconds", "took 250.1234 s", true],
+		["a price", "total 299.9900 USD", true],
+		["a seven digit number with an extension", "Call 555-0142 x12 today", false],
+		["a full number", "Call (555) 555-0142 today", false],
+		["a slashed number", "Call 555/555-0144 today", false],
+		["a country code", "Call 1-555-555-0142 today", false],
+		["an area code in parentheses with a leading zero", "Call (0303) 555 0142 today", false],
+		["E.164", "Call +15555550142 today", false],
+		["a number abroad written with its trunk 0", "Call 020 7946 0958 today", false],
+		// A leaked number is worse than a scrubbed address, so a street number
+		// written as a run of groups is taken for one.
+		["a leading zero street number run", "Ship to 0100 200 300 Main", false],
+	])("scrub on %s", (_, text, kept) => {
+		const scrubbed = scrub(text);
+		if (kept) expect(scrubbed).toBe(text);
+		else {
+			expect(scrubbed).toContain("[number]");
+			expect(scrubbed).not.toMatch(/\d{3}/);
 		}
 	});
 

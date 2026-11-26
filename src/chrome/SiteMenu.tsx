@@ -1,6 +1,7 @@
 import { ChevronDown, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
+import { type LabeledPhone, menuPhoneLabel } from "../lib/phoneLabel";
 import { telText } from "../lib/phoneText";
 import { Button } from "../primitives/Button";
 import { EmailLink } from "../primitives/EmailLink";
@@ -13,7 +14,6 @@ import type {
 	NavGroupChildLink,
 	NavLink,
 	NavPanelSection,
-	Phone,
 	SiteMenuSurface,
 } from "../types";
 import { BrandLockup } from "./BrandLockup";
@@ -21,15 +21,7 @@ import { NavBadge } from "./NavBadge";
 import { isGroup, isLinkColumn, panelSections } from "./navSections";
 
 /** A number as the menu lists it: the header's, or the contact block's one phone. */
-type MenuPhone = Phone & { label?: string; menuLabel?: string };
-
-/**
- * The words the menu sets with a number: its `menuLabel`, else its `label`,
- * else "Call", which asserts nothing a business may not do (answer texts).
- */
-export function menuPhoneLabel(phone: MenuPhone): string {
-	return phone.menuLabel ?? phone.label ?? "Call";
-}
+type MenuPhone = LabeledPhone;
 
 export interface SiteMenuProps {
 	/** Whether the menu is showing. The owner holds this state. */
