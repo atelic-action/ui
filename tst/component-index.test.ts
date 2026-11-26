@@ -6,7 +6,7 @@ import { join } from "node:path";
  * learns what each piece is for before composing, extending, or creating
  * one, so a component that is exported and has no row there is invisible
  * at the moment it matters. Every component the four component entries
- * export is named, in backticks, in the index.
+ * export has its own name, in backticks, in the first column of an index row.
  */
 const ROOT = join(import.meta.dirname, "..");
 const ENTRIES = ["sections", "primitives", "chrome", "components"];
@@ -21,7 +21,7 @@ function componentsExportedBy(entry: string): string[] {
 			const item = raw.trim();
 			if (!item || item.startsWith("type ")) continue;
 			const name = item.split(/\s+as\s+/).pop() ?? item;
-			if (/^[A-Z][a-z]/.test(name) && /[a-z]/.test(name)) names.push(name);
+			if (/^[A-Z][A-Za-z0-9]*$/.test(name) && /[a-z]/.test(name)) names.push(name);
 		}
 	}
 	return names;
@@ -30,8 +30,20 @@ function componentsExportedBy(entry: string): string[] {
 function componentIndex(): string {
 	const readme = readFileSync(join(ROOT, "README.md"), "utf8");
 	const start = readme.indexOf("## Component Index");
-	const end = readme.indexOf("\n## ", start + 1);
-	return readme.slice(start, end);
+	if (start === -1) throw new Error("README has no Component Index heading");
+	const next = readme.indexOf("\n## ", start + 1);
+	return readme.slice(start, next === -1 ? undefined : next);
+}
+
+/** The names in backticks in the first column of the index's table rows, so a mention in another row's prose never counts. */
+function indexedNames(): Set<string> {
+	const names = new Set<string>();
+	for (const line of componentIndex().split("\n")) {
+		if (!line.startsWith("|")) continue;
+		const firstCell = line.split("|")[1] ?? "";
+		for (const m of firstCell.matchAll(/`([^`]+)`/g)) names.add(m[1]);
+	}
+	return names;
 }
 
 describe("the Component Index", () => {
@@ -40,9 +52,9 @@ describe("the Component Index", () => {
 	});
 
 	it.each(ENTRIES)("names every component the %s entry exports", (entry) => {
-		const index = componentIndex();
+		const index = indexedNames();
 		const exported = componentsExportedBy(entry);
 		expect(exported.length).toBeGreaterThan(0);
-		expect(exported.filter((name) => !index.includes(`\`${name}\``))).toEqual([]);
+		expect(exported.filter((name) => !index.has(name))).toEqual([]);
 	});
 });
