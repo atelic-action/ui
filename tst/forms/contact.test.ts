@@ -1182,9 +1182,66 @@ describe("the guard and the receipt", () => {
 			// The receipt carries a key of its own, so it never collides with the office's.
 			const office = new Headers(officeCalls()[0]?.[1]?.headers).get("Idempotency-Key");
 			const own = new Headers(receiptCalls()[0]?.[1]?.headers).get("Idempotency-Key");
-			expect(own).toBe(`${office}-receipt`);
+			const id = lead.send.mock.calls[0]?.[0].id;
+			expect(office).toBe(`localhost/${id}/checked`);
+			expect(own).toBe(`localhost/${id}-receipt`);
 			expect(lead.send.mock.calls[0]?.[0].checked).toBe(true);
 			expect(await reports()).toEqual([]);
+		});
+
+		it("keys the office's email by the guard's verdict, so a flipped verdict is never a 409", async () => {
+			const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			// Resend as it is: a key seen with other words is refused.
+			const seen = new Map<string, string>();
+			answers.office = () => new Response('{"id":"re_office"}', { status: 200 });
+			vi.mocked(fetch).mockImplementation(async (input, init) => {
+				const url = String(input);
+				if (url.startsWith(INGEST)) return new Response("{}", { status: 200 });
+				if (url.startsWith(SITEVERIFY)) return answers.siteverify();
+				if (isReceipt(init)) return answers.receipt(init);
+				const key = String(new Headers(init?.headers).get("Idempotency-Key"));
+				const body = String(init?.body);
+				if (seen.has(key) && seen.get(key) !== body) {
+					return new Response('{"name":"invalid_idempotent_request"}', { status: 409 });
+				}
+				seen.set(key, body);
+				return answers.office();
+			});
+			const post = guarded({ receipt: undefined });
+			// Passed, then could not answer, then passed again: the same words each time.
+			expect((await post(request({ ...SIGNED, submissionId }))).status).toBe(200);
+			answers.siteverify = () => new Response('{"success":false,"error-codes":["internal-error"]}');
+			expect((await post(request({ ...SIGNED, submissionId }))).status).toBe(200);
+			answers.siteverify = () => new Response('{"success":true}', { status: 200 });
+			expect((await post(request({ ...SIGNED, submissionId }))).status).toBe(200);
+			const keys = officeCalls().map(([, init]) =>
+				new Headers(init?.headers).get("Idempotency-Key"),
+			);
+			expect(keys).toEqual([
+				`localhost/${submissionId}/checked`,
+				`localhost/${submissionId}/unchecked`,
+				`localhost/${submissionId}/checked`,
+			]);
+		});
+
+		it("hands the guard the submission's id and an id of the request beside it", async () => {
+			const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+			const contexts: { id: string; requestID: string }[] = [];
+			const own = {
+				name: "own",
+				tokenKey: "turnstile",
+				check: async (_: string, context: { id: string; requestID: string }) => {
+					contexts.push({ id: context.id, requestID: context.requestID });
+					return { status: "passed" } as const;
+				},
+			};
+			const post = createContact({ from: FROM, guard: own });
+			await post(request({ ...SIGNED, submissionId }));
+			await post(request({ ...SIGNED, submissionId }));
+			expect(contexts.map((context) => context.id)).toEqual([submissionId, submissionId]);
+			expect(contexts[0]?.requestID).toMatch(/^[0-9a-f-]{36}$/);
+			expect(contexts[1]?.requestID).not.toBe(contexts[0]?.requestID);
+			expect(contexts[0]?.requestID).not.toBe(submissionId);
 		});
 
 		it("checks the token once, under a key of this request alone", async () => {

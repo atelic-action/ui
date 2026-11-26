@@ -310,6 +310,30 @@ describe("createScheduleRequest", () => {
 		expect(keys[2]).toBe(`localhost/${got[2]}`);
 	});
 
+	it("keys the office's email by the guard's verdict when it names a guard", async () => {
+		const submissionId = "0b6f3c1e-7d2a-4c5b-9e8f-1a2b3c4d5e6f";
+		let verdict: "passed" | "unanswered" = "passed";
+		const guard: Guard = {
+			name: "test",
+			tokenKey: "turnstile",
+			check: async () =>
+				verdict === "passed"
+					? { status: "passed" }
+					: { status: "unanswered", cause: new Error("down") },
+		};
+		const handler = createScheduleRequest({ from: FROM, config: CONFIG, guard, now: NOW });
+		await handler(request({ ...VALID, turnstile: "t", submissionId }));
+		verdict = "unanswered";
+		await handler(request({ ...VALID, turnstile: "t", submissionId }));
+		const keys = vi
+			.mocked(fetch)
+			.mock.calls.map(([, init]) => new Headers(init?.headers).get("Idempotency-Key"));
+		expect(keys).toEqual([
+			`localhost/${submissionId}/checked`,
+			`localhost/${submissionId}/unchecked`,
+		]);
+	});
+
 	it("falls back to CONTACT_TO, then to the practice's inbox", async () => {
 		vi.stubEnv("SCHEDULE_TO", "");
 		vi.stubEnv("CONTACT_TO", "front@example.com");

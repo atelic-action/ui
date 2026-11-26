@@ -520,13 +520,13 @@ export function ScheduleRequestForm({
 			try {
 				// The same request as the last send keeps its id, so a resubmit
 				// after a timeout is sent once; a changed one is a new request.
-				const submissionId = submissionIDFor(held, JSON.stringify(body));
+				const submissionID = submissionIDFor(held, JSON.stringify(body));
 				response = await fetch(withBase(endpoint), {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						...body,
-						...(submissionId && { [SUBMISSION_ID_KEY]: submissionId }),
+						...(submissionID && { [SUBMISSION_ID_KEY]: submissionID }),
 						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
 					}),
 				});

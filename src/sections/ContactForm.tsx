@@ -559,7 +559,7 @@ export function ContactForm({
 			const content = contactFormBody(values, shape);
 			// The same words as the last send keep its id, so a resubmit after a
 			// timeout is the same inquiry; changed words are a new one.
-			const submissionId = submissionIDFor(held, JSON.stringify(content));
+			const submissionID = submissionIDFor(held, JSON.stringify(content));
 			let response: Response;
 			try {
 				response = await fetch(withBase(endpoint), {
@@ -567,7 +567,7 @@ export function ContactForm({
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
 						...content,
-						...(submissionId && { [SUBMISSION_ID_KEY]: submissionId }),
+						...(submissionID && { [SUBMISSION_ID_KEY]: submissionID }),
 						...(checking && { [TURNSTILE_TOKEN_KEY]: token }),
 					}),
 				});

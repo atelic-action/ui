@@ -22,6 +22,8 @@ describe("the privacy notice", () => {
 const TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
 const SECRET = "1x0000000000000000000000000000000AA";
 const ID = "5b2c7f4e-1d3a-4c8e-9f60-2a7b8c9d0e1f";
+/** The id of the one request, apart from the submission's (9.7.0). */
+const REQUEST_ID = "9d0e1f2a-7b8c-4c8e-9f60-5b2c7f4e1d3a";
 
 function request(headers: Record<string, string> = {}): Request {
 	return new Request("http://localhost/api/contact", { method: "POST", headers });
@@ -71,9 +73,10 @@ describe("turnstileGuard", () => {
 		expect(TURNSTILE_TOKEN_KEY).toBe("turnstile");
 	});
 
-	it("passes a token Cloudflare passes, sending the secret, the token, the address, and the id", async () => {
+	it("passes a token Cloudflare passes, sending the secret, the token, the address, and the request's id", async () => {
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request({ "x-forwarded-for": "203.0.113.7, 10.0.0.1" }),
 			signal: open(),
 		});
@@ -82,24 +85,31 @@ describe("turnstileGuard", () => {
 			secret: SECRET,
 			response: TOKEN,
 			remoteip: "203.0.113.7",
-			idempotency_key: ID,
+			// The request's own id, never the submission's, which a resubmit keeps.
+			idempotency_key: REQUEST_ID,
 		});
 		expect(vi.mocked(fetch).mock.calls[0]?.[1]?.method).toBe("POST");
 	});
 
 	it("leaves the address out when the platform gave none", async () => {
-		await turnstileGuard().check(TOKEN, { id: ID, request: request(), signal: open() });
+		await turnstileGuard().check(TOKEN, {
+			id: ID,
+			requestID: REQUEST_ID,
+			request: request(),
+			signal: open(),
+		});
 		expect(sentBody()).not.toHaveProperty("remoteip");
 	});
 
 	it("reads the secret at each check, and takes one given in the options first", async () => {
 		const guard = turnstileGuard();
 		vi.stubEnv("TURNSTILE_SECRET_KEY", "later-secret");
-		await guard.check(TOKEN, { id: ID, request: request(), signal: open() });
+		await guard.check(TOKEN, { id: ID, requestID: REQUEST_ID, request: request(), signal: open() });
 		expect(sentBody().secret).toBe("later-secret");
 		vi.mocked(fetch).mockClear();
 		await turnstileGuard({ secret: "given-secret" }).check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -109,6 +119,7 @@ describe("turnstileGuard", () => {
 	it("calls an empty token unanswered without calling Cloudflare", async () => {
 		const verdict = await turnstileGuard().check("", {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -123,6 +134,7 @@ describe("turnstileGuard", () => {
 			vi.mocked(fetch).mockResolvedValue(answer({ success: false, "error-codes": [code] }));
 			const verdict = await turnstileGuard().check(TOKEN, {
 				id: ID,
+				requestID: REQUEST_ID,
 				request: request(),
 				signal: open(),
 			});
@@ -142,6 +154,7 @@ describe("turnstileGuard", () => {
 		vi.mocked(fetch).mockResolvedValue(answer({ success: false, "error-codes": [code] }));
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -157,6 +170,7 @@ describe("turnstileGuard", () => {
 		);
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -167,6 +181,7 @@ describe("turnstileGuard", () => {
 		vi.mocked(fetch).mockResolvedValue(answer({ success: false }));
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -178,6 +193,7 @@ describe("turnstileGuard", () => {
 		vi.stubEnv("TURNSTILE_SECRET_KEY", "");
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -190,6 +206,7 @@ describe("turnstileGuard", () => {
 		vi.stubEnv("TURNSTILE_SECRET_KEY", "");
 		const verdict = await turnstileGuard().check("", {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -202,6 +219,7 @@ describe("turnstileGuard", () => {
 		vi.mocked(fetch).mockRejectedValue(thrown);
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -216,6 +234,7 @@ describe("turnstileGuard", () => {
 			vi.mocked(fetch).mockResolvedValue(answer({ success: true }, status));
 			const verdict = await turnstileGuard().check(TOKEN, {
 				id: ID,
+				requestID: REQUEST_ID,
 				request: request(),
 				signal: open(),
 			});
@@ -231,6 +250,7 @@ describe("turnstileGuard", () => {
 		vi.mocked(fetch).mockResolvedValue(answer(body));
 		const verdict = await turnstileGuard().check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -251,7 +271,7 @@ describe("turnstileGuard", () => {
 		);
 		let settled: GuardVerdict | undefined;
 		const pending = turnstileGuard()
-			.check(TOKEN, { id: ID, request: request(), signal: open() })
+			.check(TOKEN, { id: ID, requestID: REQUEST_ID, request: request(), signal: open() })
 			.then((verdict) => {
 				settled = verdict;
 			});
@@ -269,6 +289,7 @@ describe("turnstileGuard", () => {
 		vi.mocked(fetch).mockImplementation(() => new Promise<Response>(() => {}));
 		const pending = turnstileGuard({ timeoutMs: 500 }).check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: open(),
 		});
@@ -304,6 +325,7 @@ describe("turnstileGuard and the endpoint's signal", () => {
 		const endpoint = new AbortController();
 		const pending = turnstileGuard({ timeoutMs: 60_000 }).check(TOKEN, {
 			id: ID,
+			requestID: REQUEST_ID,
 			request: request(),
 			signal: endpoint.signal,
 		});

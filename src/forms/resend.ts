@@ -42,6 +42,12 @@ export interface ResendOptions<Fields = Record<string, unknown>> {
 	 * site's host (`keyNamespace`). Left out, the key is the id alone.
 	 */
 	keyNamespace?: string;
+	/**
+	 * What the idempotency key ends with, after the id, for an email whose
+	 * words can differ between two sends of one submission (the guard's
+	 * verdict, `verdictKey`). Left out, the key ends with the id.
+	 */
+	keySuffix?: string;
 }
 
 const ENDPOINT = "https://api.resend.com/emails";
@@ -116,9 +122,9 @@ export function resendDestination<Fields = Record<string, unknown>>(
 					headers: {
 						Authorization: `Bearer ${options.apiKey}`,
 						"Content-Type": "application/json",
-						"Idempotency-Key": options.keyNamespace
-							? `${options.keyNamespace}/${submission.id}`
-							: submission.id,
+						"Idempotency-Key": [options.keyNamespace, submission.id, options.keySuffix]
+							.filter(Boolean)
+							.join("/"),
 					},
 					body: JSON.stringify({
 						from: options.from,

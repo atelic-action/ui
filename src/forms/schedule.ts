@@ -65,6 +65,7 @@ import {
 	reportVerdict,
 	sameSecret,
 	sendCopy,
+	verdictKey,
 } from "./endpoint.js";
 import { type Guard, TURNSTILE_TOKEN_KEY } from "./guard.js";
 import { displayName, noReplySender } from "./receipt.js";
@@ -646,7 +647,7 @@ export function createScheduleRequest(
 				const verdict = await askGuard(
 					guard,
 					typeof token === "string" ? token : "",
-					requestID,
+					{ id, requestID },
 					request,
 				);
 				if (verdict.status === "failed") {
@@ -682,6 +683,8 @@ export function createScheduleRequest(
 						to: canary ? canaryTo : to,
 						timeoutMs: options.emailTimeoutMs,
 						keyNamespace: namespace,
+						// Each guard verdict its own key (`createContact` says why).
+						keySuffix: verdictKey(checked),
 						compose: (submission) =>
 							officeScheduleEmail(submission.fields, config, {
 								canary,

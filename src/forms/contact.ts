@@ -73,6 +73,7 @@ import {
 	reportVerdict,
 	sameSecret,
 	sendCopy,
+	verdictKey,
 } from "./endpoint.js";
 import { type Guard, TURNSTILE_TOKEN_KEY } from "./guard.js";
 import {
@@ -530,8 +531,8 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 			// a resubmit is the same inquiry: the office's email is then sent
 			// once however many times the visitor presses the button. A missing
 			// or malformed one is replaced by the server's own, as every POST
-			// got before. The guard is handed an id of this request alone, so a
-			// token checked on a resubmit is checked as it always was.
+			// got before. The guard is handed an id of this request alone beside
+			// it, so a token checked on a resubmit is checked as it always was.
 			const id = submissionIDOf(data[SUBMISSION_ID_KEY]);
 			const requestID = crypto.randomUUID();
 			const namespace = keyNamespace(request);
@@ -580,7 +581,7 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 				const verdict = await askGuard(
 					guard,
 					typeof token === "string" ? token : "",
-					requestID,
+					{ id, requestID },
 					request,
 				);
 				if (verdict.status === "failed") {
@@ -654,6 +655,11 @@ export function createContact(options: ContactOptions): (request: Request) => Pr
 						to: canary ? canaryTo : to,
 						timeoutMs: options.emailTimeoutMs,
 						keyNamespace: namespace,
+						// The office's email carries the unchecked line when the guard
+						// could not answer, so a resubmit whose verdict flipped is other
+						// words to Resend: each verdict sends under its own key, and the
+						// same words under the same verdict send once.
+						keySuffix: verdictKey(checked),
 						compose: (submission) =>
 							officeEmail(submission.fields, fields, {
 								subject: options.subject,

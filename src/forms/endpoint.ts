@@ -72,6 +72,18 @@ export function keyNamespace(request: Request): string {
 }
 
 /**
+ * The part of the office email's key that names the guard's verdict:
+ * `checked` when it passed, `unchecked` when it could not answer (the email
+ * then carries the unchecked line), and none with no guard. The words of the
+ * email differ between the two, and Resend refuses a key it has seen with
+ * other words, so a resubmit whose verdict flipped is sent under its own key.
+ */
+export function verdictKey(checked: boolean | undefined): string | undefined {
+	if (checked === undefined) return undefined;
+	return checked ? "checked" : "unchecked";
+}
+
+/**
  * The longest the endpoint waits on any guard: the time a guard that names
  * none is held to, and the ceiling on one that names more.
  */
@@ -88,7 +100,7 @@ const GUARD_GRACE_MS = 500;
 export async function askGuard(
 	guard: Guard,
 	token: string,
-	id: string,
+	ids: { id: string; requestID: string },
 	request: Request,
 ): Promise<GuardVerdict> {
 	const bound =
@@ -98,7 +110,7 @@ export async function askGuard(
 	try {
 		return await within<GuardVerdict>(
 			bound,
-			(signal) => guard.check(token, { id, request, signal }),
+			(signal) => guard.check(token, { ...ids, request, signal }),
 			() => ({
 				status: "unanswered",
 				cause: new Error(`${guard.name} sent no verdict within ${bound} ms`),
