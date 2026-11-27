@@ -75,6 +75,7 @@ export {
 	type FAQCTA,
 	type FAQEntry,
 } from "./FAQBrowser";
+export { FAQList, type FAQListItem, type FAQListProps, type FAQRowLabels } from "./FAQList";
 export { FeatureDetail, type FeatureDetailLink, type FeatureDetailProps } from "./FeatureDetail";
 export { type FeatureCard, FeatureGrid, type FeatureGridProps } from "./FeatureGrid";
 export { FullBleedVideo, type FullBleedVideoProps } from "./FullBleedVideo";

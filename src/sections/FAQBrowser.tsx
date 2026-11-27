@@ -1,26 +1,17 @@
-import { Check, ChevronDown, Link2, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { newTabProps } from "../lib/newTabProps";
-import { useOpenHeight } from "../lib/useOpenHeight";
 import { useWithBase } from "../routing/BasePathProvider";
+import { type FAQCTA, FAQCTALink, type FAQListItem, FAQRow, useCopiedLink } from "./FAQList";
 import { JumpRail } from "./JumpRail";
 import { PageHero } from "./PageHero";
 
-export interface FAQCTA {
-	label: string;
-	href: string;
-	newTab?: boolean;
-}
+export type { FAQCTA };
 
-export interface FAQEntry {
+export interface FAQEntry extends FAQListItem {
 	/** Stable slug; doubles as the deep-link anchor, e.g. "do-you-take-insurance". */
 	id: string;
-	question: string;
-	answer: ReactNode;
 	/** Plain-text answer for search matching and FAQPage structured data. */
 	answerText: string;
-	/** Optional link rendered at the end of the open answer. */
-	cta?: FAQCTA;
 }
 
 export interface FAQCategory {
@@ -50,75 +41,6 @@ function matches(query: string, item: FAQEntry): boolean {
 	return item.question.toLowerCase().includes(q) || item.answerText.toLowerCase().includes(q);
 }
 
-function CTALink({ cta, className }: { cta: FAQCTA; className?: string }) {
-	const withBase = useWithBase();
-	return (
-		<a className={className} href={withBase(cta.href)} {...newTabProps(cta.href, cta.newTab)}>
-			{cta.label} <span className="arrow">→</span>
-		</a>
-	);
-}
-
-function FAQRow({
-	item,
-	open,
-	copied,
-	onToggle,
-	onCopy,
-}: {
-	item: FAQEntry;
-	open: boolean;
-	copied: boolean;
-	onToggle: () => void;
-	onCopy: () => void;
-}) {
-	const { ref, maxHeight } = useOpenHeight(open);
-
-	return (
-		<div className={["faq-row", open && "open"].filter(Boolean).join(" ")} id={item.id}>
-			<div className="faq-row-head">
-				<button type="button" className="faq-row-q" aria-expanded={open} onClick={onToggle}>
-					{item.question}
-				</button>
-				<div className="faq-row-icons">
-					<button
-						type="button"
-						className={["faq-icon-btn", "faq-link-btn", copied && "copied"]
-							.filter(Boolean)
-							.join(" ")}
-						aria-label={copied ? "Link copied" : "Copy link to this question"}
-						onClick={onCopy}
-					>
-						{copied ? (
-							<Check size={16} strokeWidth={2} aria-hidden="true" />
-						) : (
-							<Link2 size={16} strokeWidth={1.6} aria-hidden="true" />
-						)}
-					</button>
-					<button
-						type="button"
-						className="faq-icon-btn faq-chevron"
-						aria-label={open ? "Collapse answer" : "Expand answer"}
-						aria-expanded={open}
-						onClick={onToggle}
-					>
-						<ChevronDown size={16} strokeWidth={2} aria-hidden="true" />
-					</button>
-				</div>
-			</div>
-			{/* Closed, the answer stays in the HTML for crawlers but is inert, so
-			    its links are out of the tab order and out of a screen reader's
-			    reach while it is clipped to nothing. */}
-			<div className="faq-row-a" style={{ maxHeight }} inert={!open}>
-				<div className="faq-row-a-inner" ref={ref}>
-					{item.answer}
-					{item.cta && <CTALink cta={item.cta} className="faq-answer-cta" />}
-				</div>
-			</div>
-		</div>
-	);
-}
-
 /**
  * The full FAQ page organism: centered help hero with live search, a sticky
  * category tab bar with scroll spy, and per-category card groups with
@@ -135,7 +57,7 @@ export function FAQBrowser({
 	const withBase = useWithBase();
 	const [query, setQuery] = useState("");
 	const [openIds, setOpenIds] = useState<Set<string>>(new Set());
-	const [copiedId, setCopiedId] = useState<string | null>(null);
+	const { copiedID, copy: copyLink } = useCopiedLink();
 
 	const filtered = useMemo(() => {
 		const withMatches = categories.map((cat) => ({
@@ -172,14 +94,6 @@ export function FAQBrowser({
 			else next.add(id);
 			return next;
 		});
-	}
-
-	// Copy only — updating the URL here would trip the router's scroll handling.
-	function copyLink(id: string) {
-		const url = `${window.location.origin}${window.location.pathname}#${id}`;
-		navigator.clipboard?.writeText(url).catch(() => {});
-		setCopiedId(id);
-		window.setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1600);
 	}
 
 	function toggleAll(cat: FAQCategory) {
@@ -267,13 +181,13 @@ export function FAQBrowser({
 											key={item.id}
 											item={item}
 											open={openIds.has(item.id)}
-											copied={copiedId === item.id}
+											copied={copiedID === item.id}
 											onToggle={() => toggle(item.id)}
 											onCopy={() => copyLink(item.id)}
 										/>
 									))}
 								</div>
-								{cat.cta && <CTALink cta={cat.cta} className="faq-cat-cta" />}
+								{cat.cta && <FAQCTALink cta={cat.cta} className="faq-cat-cta" />}
 							</div>
 						</section>
 					);

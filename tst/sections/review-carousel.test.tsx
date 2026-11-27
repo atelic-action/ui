@@ -30,9 +30,11 @@ describe("ReviewCarousel", () => {
 				items={[items[0], { quote: long, by: "Medium M." }, { quote: veryLong, by: "Long L." }]}
 			/>,
 		);
-		expect(screen.getByText(`“${items[0].quote}”`).className).toBe("rvc-quote");
-		expect(screen.getByText(`“${long}”`)).toHaveClass("is-medium");
-		expect(screen.getByText(`“${veryLong}”`)).toHaveClass("is-compact");
+		// The quote's words sit in its Show more clamp, inside the sized blockquote.
+		const quote = (text: string) => screen.getByText(`“${text}”`).closest("blockquote");
+		expect(quote(items[0].quote)?.className).toBe("rvc-quote");
+		expect(quote(long)).toHaveClass("is-medium");
+		expect(quote(veryLong)).toHaveClass("is-compact");
 	});
 
 	it("marks exactly one slide active at a time", () => {
