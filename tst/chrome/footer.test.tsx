@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { render, screen, within } from "@testing-library/react";
-import { createRef } from "react";
+import { act, render, screen, within } from "@testing-library/react";
+import { createRef, Profiler } from "react";
 import { Footer, type FooterProps } from "../../src/chrome";
-import { linkColumnsFor } from "../../src/chrome/Footer";
+import { footerLayoutFor, linkColumnsFor } from "../../src/chrome/Footer";
 import { address, brand, email, phone } from "../fixtures";
 
 const columns: FooterProps["columns"] = [
@@ -274,30 +274,112 @@ describe("Footer", () => {
 });
 
 describe("linkColumnsFor", () => {
-	// Four columns at a 158px floor need 4 * 158 + 3 * 24 = 704px.
-	const need = 704;
+	// A column at a 158px floor is decided at 159, the floor rounded up and a
+	// pixel of headroom, so four need 4 * 159 + 3 * 24 = 708px.
+	const need = 708;
+	const decide = (box: number, widest: number, count = 4) =>
+		linkColumnsFor({ box, widest, floor: 158, count, gap: 24 });
 
 	it("sets every column across when the box holds them, to the pixel", () => {
-		expect(linkColumnsFor({ box: need, widest: 150, floor: 158, count: 4 })).toBe(4);
-		expect(linkColumnsFor({ box: need + 300, widest: 150, floor: 158, count: 4 })).toBe(4);
+		expect(decide(need, 150)).toBe(4);
+		expect(decide(need + 300, 150)).toBe(4);
 	});
 
 	it("sets two by two when the box falls a fraction of a pixel short, never three and one", () => {
-		// The site proof: a 703.81px box against columns that need 704.
-		expect(linkColumnsFor({ box: need - 0.19, widest: 150, floor: 158, count: 4 })).toBe(2);
-		expect(linkColumnsFor({ box: 703.81, widest: 150, floor: 158, count: 4 })).toBe(2);
+		expect(decide(need - 0.19, 150)).toBe(2);
+	});
+
+	it("keeps a pixel of room past the widest label, rounded up, so the hair under each share never wraps it", () => {
+		// A 157.6px label: 158 rounded up and one more, so four need 708 again.
+		expect(linkColumnsFor({ box: 707.9, widest: 157.6, floor: 0, count: 4, gap: 24 })).toBe(2);
+		expect(linkColumnsFor({ box: 708, widest: 157.6, floor: 0, count: 4, gap: 24 })).toBe(4);
 	});
 
 	it("measures against the widest column when it is wider than the floor", () => {
-		expect(linkColumnsFor({ box: need, widest: 200, floor: 158, count: 4 })).toBe(2);
-		expect(linkColumnsFor({ box: 4 * 200 + 72, widest: 200, floor: 158, count: 4 })).toBe(4);
+		expect(decide(need, 200)).toBe(2);
+		expect(decide(4 * 201 + 72, 200)).toBe(4);
 	});
 
 	it("sets two or fewer across always, and three across or two and one", () => {
-		expect(linkColumnsFor({ box: 10, widest: 200, floor: 158, count: 2 })).toBe(2);
-		expect(linkColumnsFor({ box: 10, widest: 200, floor: 158, count: 1 })).toBe(1);
-		expect(linkColumnsFor({ box: 3 * 158 + 48, widest: 0, floor: 158, count: 3 })).toBe(3);
-		expect(linkColumnsFor({ box: 3 * 158 + 47.9, widest: 0, floor: 158, count: 3 })).toBe(2);
+		expect(decide(10, 200, 2)).toBe(2);
+		expect(decide(10, 200, 1)).toBe(1);
+		expect(decide(3 * 159 + 48, 0, 3)).toBe(3);
+		expect(decide(3 * 159 + 47.9, 0, 3)).toBe(2);
+	});
+
+	it("reads the gap it is handed, never one of its own", () => {
+		expect(
+			linkColumnsFor({ box: 4 * 159 + 3 * 40, widest: 0, floor: 158, count: 4, gap: 40 }),
+		).toBe(4);
+		expect(linkColumnsFor({ box: need, widest: 0, floor: 158, count: 4, gap: 40 })).toBe(2);
+	});
+});
+
+describe("footerLayoutFor", () => {
+	const gaps = { brand: 24, link: 24, brandTwo: 32, linkTwo: 32 };
+	// A 159px column: four across beside the brand need brand + 24 + 708;
+	// two by two beside it, brand + 32 + 2 * 159 + 32 = brand + 382.
+	const at = (row: number, brand: number, count = 4) => {
+		const { layout, columns } = footerLayoutFor({
+			row,
+			brand,
+			widest: 150,
+			floor: 158,
+			count,
+			gaps,
+		});
+		return { layout, columns };
+	};
+
+	it("sets every column beside the brand when the brand, the gap, and four fit", () => {
+		expect(at(300 + 24 + 708, 300)).toEqual({ layout: "beside", columns: 4 });
+	});
+
+	it("sets two by two beside the brand when four do not fit beside it, never the brand alone", () => {
+		expect(at(300 + 24 + 708 - 0.19, 300)).toEqual({ layout: "beside-two", columns: 2 });
+		// The tablet case: a 1024 wrap of about 976px and a brand of 360.
+		expect(at(976, 360)).toEqual({ layout: "beside-two", columns: 2 });
+		expect(at(300 + 382, 300)).toEqual({ layout: "beside-two", columns: 2 });
+	});
+
+	it("gives the brand its own row only when two by two beside it does not fit", () => {
+		expect(at(300 + 382 - 0.19, 300)).toEqual({ layout: "stacked", columns: 2 });
+		expect(at(720, 700)).toEqual({ layout: "stacked", columns: 4 });
+	});
+
+	it("keeps three columns under the brand, three across, never two and a lone one beside it", () => {
+		// Three across beside the brand need 300 + 24 + 525; two by two beside it would fit.
+		expect(at(300 + 24 + 525 - 1, 300, 3)).toEqual({ layout: "stacked", columns: 3 });
+		expect(at(300 + 24 + 525, 300, 3)).toEqual({ layout: "beside", columns: 3 });
+	});
+
+	it("never sets two or fewer columns two by two beside the brand", () => {
+		expect(at(500, 300, 2)).toEqual({ layout: "stacked", columns: 2 });
+	});
+
+	it("reports the row widths where the layout changes, for a test to look at closely", () => {
+		const { breaks } = footerLayoutFor({
+			row: 900,
+			brand: 300,
+			widest: 150,
+			floor: 158,
+			count: 4,
+			gaps,
+		});
+		expect(breaks).toEqual([300 + 24 + 708, 300 + 382, 708]);
+	});
+
+	it("reads the gaps it is handed", () => {
+		const wide = { brand: 56, link: 24, brandTwo: 56, linkTwo: 32 };
+		const { layout } = footerLayoutFor({
+			row: 300 + 382,
+			brand: 300,
+			widest: 150,
+			floor: 158,
+			count: 4,
+			gaps: wide,
+		});
+		expect(layout).toBe("stacked");
 	});
 });
 
@@ -318,7 +400,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 	 * label at 8px a character. Records whether every column was already set
 	 * when any column's width was read.
 	 */
-	function layout(boxWidth: number) {
+	function layout(rowWidth: number, brandWidth = 0, options: { phone?: boolean } = {}) {
 		const allSet: boolean[] = [];
 		const real = window.getComputedStyle.bind(window);
 		vi.spyOn(window, "getComputedStyle").mockImplementation((element: Element) => {
@@ -326,7 +408,11 @@ describe("Footer link columns with the hours in the brand column", () => {
 			const html = element as HTMLElement;
 			let width = "";
 			let fontSize = style.fontSize;
-			if (html.classList?.contains("footer-links")) width = `${boxWidth}px`;
+			if (html.classList?.contains("footer-links")) width = `${rowWidth}px`;
+			if (html.classList?.contains("footer-grid")) width = `${rowWidth}px`;
+			if (html.classList?.contains("footer-brand")) {
+				width = html.style.width === "max-content" ? `${brandWidth}px` : "50px";
+			}
 			if (html.classList?.contains("footer-column")) {
 				const holder = html.closest(".footer-links") as HTMLElement;
 				allSet.push(
@@ -342,13 +428,84 @@ describe("Footer link columns with the hours in the brand column", () => {
 				width = html.style.width === "max-content" ? `${longest * 8}px` : "50px";
 			}
 			if (element.tagName === "A") fontSize = "16px";
+			// The sheet's gaps, which jsdom does not load, and the box a phone
+			// sets as display: contents.
+			const custom: Record<string, string> = html.classList?.contains("footer-grid")
+				? {
+						"--_brand-gap": "24px",
+						"--_link-gap": "24px",
+						"--_brand-gap-two": "32px",
+						"--_link-gap-two": "32px",
+					}
+				: {};
+			const display =
+				options.phone && html.classList?.contains("footer-links")
+					? "contents"
+					: style.display || "block";
 			return new Proxy(style, {
-				get: (target, key) =>
-					key === "width" ? width : key === "fontSize" ? fontSize : Reflect.get(target, key),
+				get: (target, key) => {
+					if (key === "width") return width;
+					if (key === "fontSize") return fontSize;
+					if (key === "display") return display;
+					if (key === "getPropertyValue") {
+						return (name: string) => custom[name] ?? target.getPropertyValue(name);
+					}
+					return Reflect.get(target, key);
+				},
 			});
 		});
-		return { allSet };
+		return { allSet, options };
 	}
+
+	/** A ResizeObserver that records what it watches and lets a test fire it. */
+	function observer() {
+		const watched: Element[] = [];
+		const callbacks: ResizeObserverCallback[] = [];
+		vi.stubGlobal(
+			"ResizeObserver",
+			class {
+				constructor(callback: ResizeObserverCallback) {
+					callbacks.push(callback);
+				}
+				observe(element: Element) {
+					watched.push(element);
+				}
+				disconnect() {}
+			},
+		);
+		const fire = async () => {
+			for (const callback of callbacks) callback([], {} as ResizeObserver);
+			await act(async () => {
+				await new Promise((resolve) => requestAnimationFrame(resolve));
+			});
+		};
+		return { watched, fire };
+	}
+
+	it("measures again when the brand block changes size, so it watches the brand too", () => {
+		const { watched } = observer();
+		layout(1060);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(watched).toContain(container.querySelector(".footer-brand"));
+		vi.unstubAllGlobals();
+	});
+
+	it("lets the tablet's choice go when the footer narrows to a phone's", async () => {
+		const { fire } = observer();
+		const { options } = layout(1060);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside");
+		options.phone = true;
+		await fire();
+		expect(grid(container)).not.toHaveAttribute("data-footer-layout");
+		expect(box(container)).not.toHaveAttribute("data-link-columns");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe("");
+		vi.unstubAllGlobals();
+	});
 
 	afterEach(() => vi.restoreAllMocks());
 
@@ -377,15 +534,17 @@ describe("Footer link columns with the hours in the brand column", () => {
 		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe("");
 	});
 
-	it("names two by two for a box a fraction short, and floors it at the widest column", () => {
-		// 30 characters at 8px: the widest column is 240px, so four need 1032px.
-		const { allSet } = layout(1031.81);
+	it("names two by two beside the brand for a row a fraction short of four, and floors it at the widest column", () => {
+		// 30 characters at 8px: the widest column is 240px, decided at 241, so
+		// four need 1036px and the 24px beside the brand.
+		const { allSet } = layout(1059.81);
 		const { container } = render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
 		expect(box(container)).toHaveAttribute("data-link-columns", "2");
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside-two");
 		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe(
-			"max(calc(10 * var(--footer-link-size)), 240px)",
+			"max(calc(10 * var(--footer-link-size)), 241px)",
 		);
 		// Every column set before any was read: one layout for the measure.
 		expect(allSet.length).toBeGreaterThan(0);
@@ -396,16 +555,30 @@ describe("Footer link columns with the hours in the brand column", () => {
 		}
 	});
 
-	it("names every column across when the box holds the widest four", () => {
-		layout(1032);
+	it("names every column across beside the brand when the row holds the widest four", () => {
+		layout(1060);
 		const { container } = render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
 		expect(box(container)).toHaveAttribute("data-link-columns", "4");
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside");
+	});
+
+	it("gives the brand a row of its own only when even two by two beside it does not fit", () => {
+		// A 600px brand: two by two beside it needs 600 + 32 + 482 + 32 = 1146px.
+		layout(1100, 600);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "stacked");
+		// Under it the row holds all four at 1036px.
+		expect(box(container)).toHaveAttribute("data-link-columns", "4");
+		// The brand is measured at its own width and handed its style back.
+		expect(container.querySelector(".footer-brand")?.getAttribute("style")).toBeFalsy();
 	});
 
 	it("measures again when a label changes, not only on a resize", () => {
-		layout(1032);
+		layout(1060);
 		const { container, rerender } = render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
@@ -418,7 +591,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 			/>,
 		);
 		expect(box(container)).toHaveAttribute("data-link-columns", "2");
-		expect(grid(container).style.getPropertyValue("--_link-floor")).toContain("328px");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toContain("329px");
 	});
 
 	it("measures a resize on the next frame, never inside the observer's callback", async () => {
@@ -433,7 +606,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 				disconnect() {}
 			},
 		);
-		layout(1032);
+		layout(1060);
 		render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
@@ -474,6 +647,21 @@ describe("Footer link columns with the hours in the brand column", () => {
 		expect(heard).toEqual([expect.any(HTMLElement)]);
 	});
 
+	it("measures nothing on a phone, where the box is display: contents, so nothing is set and nothing renders again", () => {
+		layout(1060, 0, { phone: true });
+		let renders = 0;
+		const counted = (
+			<Profiler id="footer" onRender={() => renders++}>
+				<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />
+			</Profiler>
+		);
+		const { container } = render(counted);
+		expect(grid(container)).not.toHaveAttribute("data-footer-layout");
+		expect(box(container)).not.toHaveAttribute("data-link-columns");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe("");
+		expect(renders).toBe(1);
+	});
+
 	it("measures nothing with the hours as a column of their own, where the columns stand in the grid", () => {
 		const read = vi.spyOn(window, "getComputedStyle");
 		const { container } = render(<Footer {...props} hours={hours} hoursPlacement="column" />);
@@ -506,11 +694,29 @@ describe("the brand placement's sheet", () => {
 		)?.[1];
 		expect(across).toContain("min-width: 0;");
 		expect(across).toContain(
-			"calc((100% - (var(--_link-count, 4) - 1) * 24px) / var(--_link-count, 4) - 0.5px)",
+			"calc( (100% - (var(--_link-count, 4) - 1) * var(--_link-gap)) / var(--_link-count, 4) - 0.5px )",
 		);
 		const half = sheet().match(
 			/\.footer-links\[data-link-columns="2"\] > \.footer-column \{([^}]*)\}/,
 		)?.[1];
-		expect(half).toContain("flex-basis: calc(50% - 12.5px);");
+		expect(half).toContain("flex-basis: calc(50% - var(--_link-gap) / 2 - 0.5px);");
+	});
+
+	it("keeps the brand at its own width two by two beside it, so the columns keep their headroom", () => {
+		expect(sheet()).toContain(
+			'.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-brand { flex-grow: 0; }',
+		);
+	});
+
+	it("declares once the gaps the measure reads", () => {
+		for (const [name, value] of [
+			["--_brand-gap", "24px"],
+			["--_link-gap", "24px"],
+			["--_brand-gap-two", "32px"],
+			["--_link-gap-two", "32px"],
+			["--_link-row-gap-two", "40px"],
+		]) {
+			expect(sheet().split(`${name}: ${value};`)).toHaveLength(2);
+		}
 	});
 });
