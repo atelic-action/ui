@@ -168,6 +168,8 @@ export function ReviewCarousel({
 	const seconds = autoAdvance && autoAdvance > 0 && count > 1 ? autoAdvance : 0;
 	const [stopped, setStopped] = useState(false);
 	const [held, setHeld] = useState(false);
+	// seen is a dependency so a turn skipped on a hidden page is rescheduled on return.
+	const [seen, setSeen] = useState(0);
 	// index is a dependency so each review, however it was reached, gets its full time.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: index restarts the wait on purpose
 	useEffect(() => {
@@ -178,9 +180,8 @@ export function ReviewCarousel({
 			setIndex((current) => (Math.min(current, count - 1) + 1) % count);
 		}, seconds * 1000);
 		return () => window.clearTimeout(timer);
-	}, [seconds, stopped, held, count, index]);
+	}, [seconds, stopped, held, count, index, seen]);
 	// A hidden page skips its turn above; coming back starts the wait again.
-	const [, setSeen] = useState(0);
 	useEffect(() => {
 		if (!seconds) return;
 		const onShow = () => setSeen((n) => n + 1);
@@ -193,7 +194,7 @@ export function ReviewCarousel({
 	// A link or button inside a slide keeps its own arrow keys: stepping from it would
 	// hide the slide that holds focus.
 	function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-		if ((event.target as HTMLElement).closest?.(".rvc-stage a, .rvc-stage button")) return;
+		if ((event.target as HTMLElement).closest?.(".rvc-stage a, .rvc-stage button, .rvc-stage [tabindex]")) return;
 		if (event.key === "ArrowLeft") {
 			event.preventDefault();
 			go(index - 1);
