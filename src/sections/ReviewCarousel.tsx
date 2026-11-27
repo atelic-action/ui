@@ -2,6 +2,7 @@ import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { type KeyboardEvent, type ReactNode, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow } from "../primitives";
+import { ExpandableText } from "../primitives/ExpandableText";
 import { StarRow } from "../primitives/StarRow";
 import type { ReviewItem } from "./ReviewWall";
 import type { Surface } from "./siteConfig";
@@ -43,6 +44,16 @@ export interface ReviewCarouselProps {
 	 * no `sourceURL` gets no link. Defaults to "View review".
 	 */
 	sourceLabel?: string;
+	/**
+	 * The lines a quote shows before it is cut behind Show more (default 6),
+	 * so one long review never makes the card tall. Every word stays in the
+	 * page while cut (9.10.0).
+	 */
+	quoteLines?: number;
+	/** The words of the control that opens a cut quote. Defaults to "Show more". */
+	moreLabel?: string;
+	/** The words of the control that closes it again. Defaults to "Show less". */
+	lessLabel?: string;
 	/** Accessible name for the carousel region. */
 	ariaLabel?: string;
 	id?: string;
@@ -73,7 +84,10 @@ function quoteSize(quote: string): string {
  * Every quote ships in the static HTML — inactive slides are hidden by
  * CSS, never conditionally rendered — so crawlers and answer engines read
  * all of them. Slides stack in one grid cell, so the card is as tall as
- * the longest quote and stepping never shifts the page.
+ * the longest quote and stepping never shifts the page. Every quote is cut
+ * to `quoteLines` behind Show more (`ExpandableText`), so the longest quote
+ * is capped and the card's height holds steady from review to review;
+ * opening a long quote may grow the card, and stepping closes it again.
  *
  * Per-review stars are opt-in per item (`rating`), like `ReviewWall`:
  * render them only when the source actually shows them.
@@ -93,6 +107,9 @@ export function ReviewCarousel({
 	stats,
 	items,
 	sourceLabel = "View review",
+	quoteLines = 6,
+	moreLabel = "Show more",
+	lessLabel = "Show less",
 	ariaLabel = "Customer reviews",
 	id,
 	className,
@@ -113,10 +130,10 @@ export function ReviewCarousel({
 
 	// Left/right step the carousel whenever focus sits on one of its
 	// controls, the keyboard convention for a paged region.
-	// A link inside a slide keeps its own arrow keys: stepping from it would
+	// A link or button inside a slide keeps its own arrow keys: stepping from it would
 	// hide the slide that holds focus.
 	function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-		if ((event.target as HTMLElement).closest?.("a")) return;
+		if ((event.target as HTMLElement).closest?.(".rvc-stage a, .rvc-stage button")) return;
 		if (event.key === "ArrowLeft") {
 			event.preventDefault();
 			go(index - 1);
@@ -197,7 +214,15 @@ export function ReviewCarousel({
 								<blockquote
 									className={["rvc-quote", quoteSize(item.quote)].filter(Boolean).join(" ")}
 								>
-									“{item.quote}”
+									{/* Keyed to the review shown, so stepping closes an opened quote. */}
+									<ExpandableText
+										key={`shown-${index}`}
+										lines={quoteLines}
+										moreLabel={moreLabel}
+										lessLabel={lessLabel}
+									>
+										“{item.quote}”
+									</ExpandableText>
 								</blockquote>
 								<figcaption className="rvc-who">
 									<span className="rvc-name">{item.by}</span>
