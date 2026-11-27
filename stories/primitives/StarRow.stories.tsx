@@ -3,9 +3,10 @@ import { expect } from "storybook/test";
 import { StarRow } from "../../src/primitives";
 
 /**
- * Shows a rating as a row of filled stars; use `StarRating` when the reader
- * can set it. A row of filled stars, read as one picture named by the rating
- * as given: "4.5 out of 5 stars". It draws to the nearest half star.
+ * Shows a rating as a row of five stars filled to the rating; use
+ * `StarRating` when the reader can set it. One picture named by the rating
+ * as given, "4.8 out of 5 stars", and drawn as given: a 4.8 fills four stars
+ * and eight tenths of the fifth.
  */
 const meta = {
 	title: "Primitives/StarRow",
@@ -17,11 +18,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** The stars the row fills, read off where the filled row is cut: 15px stars, 2px apart. */
+function filled(canvasElement: HTMLElement): number {
+	const cut = /inset\(0(?:px)? ([\d.]+)px/.exec(
+		(canvasElement.querySelector(".star-row-fill") as HTMLElement).style.clipPath,
+	);
+	const reach = 83 - Number(cut?.[1] ?? 0);
+	const whole = Math.floor((reach + 0.01) / 17);
+	return whole + Math.min(reach - whole * 17, 15) / 15;
+}
+
 /** Five stars, one image named by the count, the glyphs hidden. */
 export const Five: Story = {
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByRole("img", { name: "5 out of 5 stars" })).toBeVisible();
-		await expect(canvasElement.querySelectorAll("svg")).toHaveLength(5);
+		await expect(canvasElement.querySelectorAll(".star-row-fill svg")).toHaveLength(5);
+		await expect(filled(canvasElement)).toBeCloseTo(5, 1);
 	},
 };
 
@@ -32,36 +44,32 @@ export const Three: Story = {
 	},
 };
 
-/** The stars a row draws, whole and half, read off their glyphs. */
-const drawn = (canvasElement: HTMLElement) => ({
-	whole: canvasElement.querySelectorAll(".lucide-star").length,
-	half: canvasElement.querySelectorAll(".lucide-star-half").length,
-});
-
-/** A fraction is said as given, to one decimal, and drawn to the nearest half: 4.2 draws four. */
-export const RoundsDown: Story = {
+/** A rating just over a whole star barely begins the next one: 4.2 is never drawn as four and a half. */
+export const JustOver: Story = {
 	args: { rating: 4.2 },
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByRole("img", { name: "4.2 out of 5 stars" })).toBeVisible();
-		await expect(drawn(canvasElement)).toEqual({ whole: 4, half: 0 });
+		await expect(filled(canvasElement)).toBeGreaterThan(4);
+		await expect(filled(canvasElement)).toBeLessThan(4.4);
 	},
 };
 
-/** A half rating is said and drawn as itself: four stars and a half, never five. */
+/** A half rating is said and drawn as itself: four stars and half of the fifth. */
 export const HalfStar: Story = {
 	args: { rating: 4.5 },
 	play: async ({ canvas, canvasElement }) => {
 		await expect(canvas.getByRole("img", { name: "4.5 out of 5 stars" })).toBeVisible();
-		await expect(drawn(canvasElement)).toEqual({ whole: 4, half: 1 });
+		await expect(filled(canvasElement)).toBeCloseTo(4.5, 1);
 	},
 };
 
-/** Near a half, it draws the half: 4.3 draws four and a half, said as 4.3. */
-export const NearAHalf: Story = {
-	args: { rating: 4.3 },
+/** A rating near the top is never rounded up to it: 4.8 leaves the fifth star short of full. */
+export const NearlyFive: Story = {
+	args: { rating: 4.8 },
 	play: async ({ canvas, canvasElement }) => {
-		await expect(canvas.getByRole("img", { name: "4.3 out of 5 stars" })).toBeVisible();
-		await expect(drawn(canvasElement)).toEqual({ whole: 4, half: 1 });
+		await expect(canvas.getByRole("img", { name: "4.8 out of 5 stars" })).toBeVisible();
+		await expect(filled(canvasElement)).toBeGreaterThan(4.6);
+		await expect(filled(canvasElement)).toBeLessThan(4.9);
 	},
 };
 

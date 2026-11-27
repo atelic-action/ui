@@ -36,6 +36,18 @@ describe("ReviewCarousel", () => {
 		}
 	});
 
+	it("shows the first reviews up to its limit, and never more than ten", () => {
+		const many = Array.from({ length: 14 }, (_, i) => ({
+			quote: `Review number ${i + 1}.`,
+			by: `R. ${i}`,
+		}));
+		const { container, unmount } = render(<ReviewCarousel score="5.0" items={many} />);
+		expect(container.querySelectorAll("blockquote")).toHaveLength(10);
+		unmount();
+		const four = render(<ReviewCarousel score="5.0" items={many} limit={4} />);
+		expect(four.container.querySelectorAll("blockquote")).toHaveLength(4);
+	});
+
 	it("marks exactly one slide active at a time", () => {
 		render(<ReviewCarousel score="5.0" items={items} />);
 		expect(slideOf(items[0].quote)).toHaveClass("is-active");

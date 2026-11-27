@@ -1,5 +1,5 @@
-import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { type KeyboardEvent, type ReactNode, useId, useState } from "react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { type KeyboardEvent, type ReactNode, useEffect, useId, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow } from "../primitives";
 import { ScrollFade } from "../primitives/ScrollFade";
@@ -39,6 +39,25 @@ export interface ReviewCarouselProps {
 	/** The reviews, shown one at a time. */
 	items: ReviewItem[];
 	/**
+	 * How many of `items` the card shows, the first ones: 1 to 10, and 10
+	 * when left out. Ten is the most a card holds, since each review is one
+	 * dot in a row that does not wrap (9.12.0).
+	 */
+	limit?: number;
+	/**
+	 * The seconds each review shows before the card moves to the next on its
+	 * own; 5 when left out, and `false` or 0 to turn it off. It waits while
+	 * the pointer or the keyboard's focus is on the card, while the page is
+	 * hidden, and for a reader who asks for less motion it never starts. A
+	 * touch on the card, or the pause button, stops it until the reader
+	 * starts it again (9.12.0).
+	 */
+	autoAdvance?: number | false;
+	/** The pause button's name while the reviews advance. Defaults to "Pause reviews". */
+	pauseLabel?: string;
+	/** Its name once paused. Defaults to "Play reviews". */
+	playLabel?: string;
+	/**
 	 * What the link to where a review was written says, for a review that
 	 * carries a `sourceURL`, e.g. "View on Google": the reviewer's name is
 	 * the link, and these words are its description, heard after the name.
@@ -74,6 +93,9 @@ export interface ReviewCarouselProps {
 	/** The band's background, so adjacent sections never wear the same one. Defaults to the page surface. */
 	surface?: Surface;
 }
+
+/** The most reviews one card holds: one dot each, in a row that does not wrap. */
+const MOST_REVIEWS = 10;
 
 /**
  * The social-proof split: the aggregate rating on the left (eyebrow, big
@@ -112,7 +134,11 @@ export function ReviewCarousel({
 	profileURL,
 	lead,
 	stats,
-	items,
+	items: given,
+	limit = MOST_REVIEWS,
+	autoAdvance = 5,
+	pauseLabel = "Pause reviews",
+	playLabel = "Play reviews",
 	sourceLabel = "View review",
 	quoteLines = 6,
 	quoteLabel = "Review text",
@@ -123,6 +149,7 @@ export function ReviewCarousel({
 }: ReviewCarouselProps) {
 	const [rawIndex, setIndex] = useState(0);
 	const minted = useId();
+	const items = given.slice(0, Math.min(Math.max(Math.floor(limit) || 1, 1), MOST_REVIEWS));
 	const count = items.length;
 	const index = Math.min(rawIndex, Math.max(count - 1, 0));
 	// The profile link's new tab attributes, worked out once for the link and its name.
@@ -134,6 +161,32 @@ export function ReviewCarousel({
 		if (count === 0) return;
 		setIndex(((next % count) + count) % count);
 	}
+
+	// The card moves on by itself every `autoAdvance` seconds. `stopped` is
+	// the reader's own choice (the pause button, or a touch on the card);
+	// `held` is the passing kind, while a pointer or the focus is on it.
+	const seconds = autoAdvance && autoAdvance > 0 && count > 1 ? autoAdvance : 0;
+	const [stopped, setStopped] = useState(false);
+	const [held, setHeld] = useState(false);
+	// index is a dependency so each review, however it was reached, gets its full time.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: index restarts the wait on purpose
+	useEffect(() => {
+		if (!seconds || stopped || held) return;
+		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+		const timer = window.setTimeout(() => {
+			if (document.hidden) return;
+			setIndex((current) => (Math.min(current, count - 1) + 1) % count);
+		}, seconds * 1000);
+		return () => window.clearTimeout(timer);
+	}, [seconds, stopped, held, count, index]);
+	// A hidden page skips its turn above; coming back starts the wait again.
+	const [, setSeen] = useState(0);
+	useEffect(() => {
+		if (!seconds) return;
+		const onShow = () => setSeen((n) => n + 1);
+		document.addEventListener("visibilitychange", onShow);
+		return () => document.removeEventListener("visibilitychange", onShow);
+	}, [seconds]);
 
 	// Left/right step the carousel whenever focus sits on one of its
 	// controls, the keyboard convention for a paged region.
@@ -207,8 +260,17 @@ export function ReviewCarousel({
 					aria-roledescription="carousel"
 					aria-label={ariaLabel}
 					onKeyDown={onKeyDown}
+					onPointerEnter={(event) => event.pointerType === "mouse" && setHeld(true)}
+					onPointerLeave={() => setHeld(false)}
+					onFocus={() => setHeld(true)}
+					onBlur={(event) => {
+						if (!event.currentTarget.contains(event.relatedTarget)) setHeld(false);
+					}}
+					onTouchStart={() => setStopped(true)}
 				>
-					<div className="rvc-stage" aria-live="polite">
+					{/* While the card moves by itself it says nothing aloud; a
+					    reader who steps it hears the review they stepped to. */}
+					<div className="rvc-stage" aria-live={seconds && !stopped && !held ? "off" : "polite"}>
 						{items.map((item, i) => {
 							const sourceTab = item.sourceURL ? newTabProps(item.sourceURL, true) : {};
 							const describedBy = `${minted}-source-${i}`;
@@ -273,6 +335,20 @@ export function ReviewCarousel({
 								))}
 							</div>
 							<div className="rvc-arrows">
+								{seconds > 0 && (
+									<button
+										type="button"
+										className="rvc-arrow rvc-pause"
+										aria-label={stopped ? playLabel : pauseLabel}
+										onClick={() => setStopped((current) => !current)}
+									>
+										{stopped ? (
+											<Play size={15} strokeWidth={2} aria-hidden="true" />
+										) : (
+											<Pause size={15} strokeWidth={2} aria-hidden="true" />
+										)}
+									</button>
+								)}
 								<button
 									type="button"
 									className="rvc-arrow"

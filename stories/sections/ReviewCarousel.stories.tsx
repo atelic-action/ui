@@ -28,6 +28,8 @@ const meta = {
 		],
 		items: reviews,
 		sourceLabel: "View on Google",
+		// The stories step the card by hand; `AutoAdvance` shows it moving by itself.
+		autoAdvance: false,
 	},
 	globals: pin("desktop"),
 } satisfies Meta<typeof ReviewCarousel>;
@@ -109,6 +111,34 @@ export const Steps: Story = {
 		await step("a review with no source has no link", async () => {
 			await expect(within(shown(canvas)).queryByRole("link")).toBeNull();
 		});
+	},
+};
+
+/**
+ * Left alone, the card moves to the next review every `autoAdvance` seconds
+ * (5 unless set; here a fraction of one). The pause button stops it, and
+ * says Play once it has.
+ */
+export const AutoAdvance: Story = {
+	args: { autoAdvance: 0.4 },
+	play: async ({ canvas, userEvent, step }) => {
+		await step("it reaches the second review by itself", async () => {
+			await waitFor(() => expect(shown(canvas)).toHaveAccessibleName("Review 2 of 4"));
+		});
+		await step("Pause holds the review it is on", async () => {
+			await userEvent.click(canvas.getByRole("button", { name: "Pause reviews" }));
+			const held = shown(canvas).getAttribute("aria-label");
+			await new Promise((resolve) => setTimeout(resolve, 900));
+			await expect(shown(canvas)).toHaveAccessibleName(held as string);
+			await expect(canvas.getByRole("button", { name: "Play reviews" })).toBeVisible();
+		});
+	},
+};
+
+/** With `autoAdvance` off there is no pause button, and the card waits for the reader. */
+export const AutoAdvanceOff: Story = {
+	play: async ({ canvas }) => {
+		await expect(canvas.queryByRole("button", { name: "Pause reviews" })).toBeNull();
 	},
 };
 

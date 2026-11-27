@@ -610,11 +610,26 @@
 	   component's `size` prop so one row can be small in a card and larger
 	   beside an aggregate score. */
 	.atelic-ui .star-row {
+		position: relative;
+		display: inline-flex;
+		flex: 0 0 auto;
+		color: var(--primary);
+	}
+	.atelic-ui .star-row-back,
+	.atelic-ui .star-row-fill {
 		display: inline-flex;
 		align-items: center;
 		gap: 2px;
-		flex: 0 0 auto;
-		color: var(--primary);
+	}
+	/* Five faint stars behind, so the part of the rating not earned shows. */
+	.atelic-ui .star-row-back {
+		opacity: 0.22;
+	}
+	/* The filled stars lie over them, cut off where the rating ends; the
+	   component sets the cut (StarRow.tsx), which knows the stars' size. */
+	.atelic-ui .star-row-fill {
+		position: absolute;
+		inset: 0;
 	}
 
 	/* ---- TickList (tick-list.css) ---- */
