@@ -291,6 +291,13 @@
 		   they never wrap early into dead space (the 60ch cap here was measured
 		   at the body font size, boxing every title into ~510px). */
 		max-width: none;
+		/* The heading's column, which --heading-fit measures, so a title in
+		   a narrow column (a split's heading side, a card) sets small enough
+		   that its longest ordinary word fits whole (9.12.0). Its width is
+		   the space it is given, never its words', so a flex row that holds
+		   one gives it the row. */
+		container-type: inline-size;
+		width: 100%;
 	}
 	.atelic-ui .section-head.center {
 		margin-inline: auto;
@@ -1099,5 +1106,47 @@
 		margin-top: 4px;
 		font-size: 0.82rem;
 		color: var(--neutral-600);
+	}
+
+	/* ---- ScrollFade ----
+	   A box of fixed greatest height whose content scrolls inside it, with
+	   no scrollbar drawn and a fade at each edge with more beyond it. The
+	   height is the box's own lines of text (--_sf-lines, set by the
+	   component, read in its own line height) or a length (--_sf-max). The fade is a mask
+	   on the scrolling box, so it fades the words into whatever ground is
+	   behind them; each edge's fade is zero until the component measures
+	   more beyond it (data-fade-top, data-fade-bottom), so a prerendered box
+	   is never faded and an overflowing one already scrolls. The mask would
+	   cut a focus ring drawn on the box, so the ring is drawn on the frame
+	   around it. */
+	.atelic-ui .scroll-fade {
+		min-width: 0;
+		border-radius: var(--radius-sm);
+	}
+	.atelic-ui .scroll-fade:has(> .scroll-fade-box:focus-visible) {
+		outline: 2px solid var(--primary);
+		outline-offset: 4px;
+	}
+	.atelic-ui .scroll-fade-box {
+		/* Where the solid part of the mask starts and ends. */
+		--_sf-from: 0px;
+		--_sf-to: 100%;
+		max-height: var(--_sf-max, calc(var(--_sf-lines, 6) * 1lh));
+		overflow-y: auto;
+		overflow-x: hidden;
+		scrollbar-width: none;
+		mask-image: linear-gradient(transparent, #000 var(--_sf-from) var(--_sf-to), transparent);
+	}
+	.atelic-ui .scroll-fade-box::-webkit-scrollbar {
+		display: none;
+	}
+	.atelic-ui .scroll-fade-box:focus-visible {
+		outline: none;
+	}
+	.atelic-ui .scroll-fade-box[data-fade-top] {
+		--_sf-from: min(2.5em, 30%);
+	}
+	.atelic-ui .scroll-fade-box[data-fade-bottom] {
+		--_sf-to: calc(100% - min(2.5em, 30%));
 	}
 }

@@ -106,7 +106,7 @@
 
 	.atelic-ui .bp-title {
 		margin: 0 0 14px;
-		font-size: clamp(1.9rem, 4vw, 2.6rem);
+		font-size: min(clamp(1.9rem, 4vw, 2.6rem), var(--heading-fit));
 		line-height: 1.15;
 		text-wrap: pretty;
 	}
@@ -1284,8 +1284,13 @@
 	.atelic-ui .page-hero.surface-default {
 		background: var(--surface);
 	}
+	/* The page hero's measure is the column its headline's size fits
+	   (--heading-fit, 9.12.0). */
+	.atelic-ui .page-hero > .wrap {
+		container-type: inline-size;
+	}
 	.atelic-ui .page-hero h1 {
-		font-size: var(--page-hero-title-size);
+		font-size: min(var(--page-hero-title-size), var(--heading-fit));
 		margin: 16px 0 0;
 	}
 	.atelic-ui .page-hero .lead {
@@ -1601,8 +1606,13 @@
 		letter-spacing: 0.1em;
 		margin-bottom: 10px;
 	}
+	/* The row's copy is the column its title's size fits (--heading-fit,
+	   9.12.0). */
+	.atelic-ui .feature-detail > :first-child {
+		container-type: inline-size;
+	}
 	.atelic-ui .feature-detail h2 {
-		font-size: clamp(1.8rem, 4vw, 2.6rem);
+		font-size: min(clamp(1.8rem, 4vw, 2.6rem), var(--heading-fit));
 	}
 	.atelic-ui .feature-detail .tag-row {
 		gap: 8px;
@@ -1805,6 +1815,8 @@
 		);
 	}
 	.atelic-ui .hero-content {
+		/* The column the headline's size fits (--heading-fit, 9.12.0). */
+		container-type: inline-size;
 		position: relative;
 		z-index: 2;
 		padding-bottom: clamp(48px, 9vh, 110px);
@@ -1939,6 +1951,10 @@
 	.atelic-ui .hero-split-inner {
 		--hero-split-edge: max(var(--gutter), calc((100cqw - var(--max-width)) / 2 + var(--gutter)));
 		width: 100%;
+		/* The copy is the column the headline's size fits (--heading-fit,
+		   9.12.0). Its own padding above still reads the hero, the container
+		   around it; only what sits inside reads this one. */
+		container-type: inline-size;
 		/* --hero-split-pad sets the copy's sides outright, for a design that
 		   wants them tighter than the wrap's edge. Its default is the edge
 		   computed on this element, so it stays at the read. */
@@ -1957,7 +1973,7 @@
 		}
 	}
 	.atelic-ui .hero.is-split h1 {
-		font-size: clamp(2.1rem, 4vw, 3.3rem);
+		font-size: min(clamp(2.1rem, 4vw, 3.3rem), var(--heading-fit));
 		line-height: 1.05;
 		margin-top: var(--hero-gap-kicker, var(--hero-stack-gap, 12px));
 		text-shadow: none;
@@ -3415,21 +3431,27 @@
 		box-shadow: var(--shadow-md);
 	}
 
-	/* Every slide sits in the same grid cell: all quotes stay in the static
-	   HTML, the card is as tall as the longest one, and stepping through
-	   never shifts the page. Inactive slides are hidden (and so are dropped
-	   from the tab order and the accessibility tree) rather than unmounted. */
+	/* Every slide sits in the same place: all quotes stay in the static
+	   HTML, and inactive slides are hidden (and so are dropped from the tab
+	   order and the accessibility tree) rather than unmounted. The stage
+	   has four rows, the quote, the stars, the name, and the detail line,
+	   and each slide lays its parts into them as a subgrid (the bottom block
+	   a subgrid of its own), so each row is as tall as the tallest slide's
+	   part. The card holds one height from review to review, the quote
+	   starts at the top whatever its length, and the divider, the stars,
+	   the name, and the detail sit in one place for every review, the rows
+	   a review leaves empty keeping their room (9.12.0). */
 	.atelic-ui .rvc-stage {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: auto auto auto auto;
 	}
 	.atelic-ui .rvc-slide {
-		grid-area: 1 / 1;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		/* The card is as tall as the longest quote, so a short one centers in
-		   it rather than floating above a hole. */
-		justify-content: center;
+		grid-column: 1;
+		grid-row: 1 / span 4;
+		display: grid;
+		grid-template-rows: subgrid;
+		row-gap: 0;
 		margin: 0;
 		min-width: 0;
 		opacity: 0;
@@ -3446,11 +3468,10 @@
 			transition: none;
 		}
 	}
-	.atelic-ui .rvc-slide .star-row {
-		margin-bottom: 18px;
-	}
-
 	.atelic-ui .rvc-quote {
+		grid-row: 1;
+		align-self: start;
+		min-width: 0;
 		margin: 0;
 		font-size: clamp(1.15rem, 1.5vw, 1.42rem);
 		font-weight: var(--weight-medium);
@@ -3469,33 +3490,51 @@
 		line-height: 1.6;
 		letter-spacing: 0;
 	}
-	/* A cut quote's Show more sits under it at the body's size, not the quote's. */
-	.atelic-ui .rvc-quote .expandable-text-toggle {
-		margin-top: 10px;
-		font-size: 0.92rem;
-		letter-spacing: 0;
-	}
-
+	/* The bottom block: the divider over the stars, the name, and the
+	   detail line, each in its own row of the stage, so none of them moves
+	   between a review that has it and one that does not. */
 	.atelic-ui .rvc-who {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-		width: 100%;
-		padding-top: clamp(20px, 2.4vw, 28px);
+		grid-row: 2 / span 3;
+		display: grid;
+		grid-template-rows: subgrid;
+		row-gap: 0;
+		justify-items: start;
+		min-width: 0;
+		margin-top: clamp(20px, 2.4vw, 28px);
+		padding-top: clamp(18px, 2.2vw, 24px);
+		border-top: 1px solid var(--hairline-strong);
 	}
-	.atelic-ui .rvc-who::before {
-		content: "";
+	.atelic-ui .rvc-stars {
+		grid-row: 1;
 		display: block;
-		height: 1px;
-		background: var(--hairline-strong);
-		margin-bottom: clamp(18px, 2.2vw, 24px);
+		margin-bottom: 10px;
 	}
 	.atelic-ui .rvc-name {
+		grid-row: 2;
 		font-weight: var(--weight-bold);
 		font-size: 1rem;
 		color: var(--ink);
 	}
+	/* A review with a source makes the name the link to it: the caption
+	   link's quiet idiom, a hairline underline and a trailing arrow. */
+	.atelic-ui a.rvc-name {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		text-decoration: underline;
+		text-decoration-color: var(--neutral-300);
+		text-underline-offset: 3px;
+		transition:
+			color 0.2s ease,
+			text-decoration-color 0.2s ease;
+	}
+	.atelic-ui a.rvc-name:hover {
+		color: var(--primary-ink, var(--primary));
+		text-decoration-color: currentColor;
+	}
 	.atelic-ui .rvc-detail {
+		grid-row: 3;
+		margin-top: 3px;
 		font-size: 0.86rem;
 		color: var(--neutral-500);
 	}
@@ -3553,29 +3592,8 @@
 		background: var(--surface-alt);
 		border-color: var(--neutral-300);
 	}
-	/* The link under a review to where it was written: the caption link's
-	   quiet idiom, set small on its own line of the attribution. */
-	.atelic-ui .rvc-source {
-		display: inline-flex;
-		align-self: flex-start;
-		align-items: center;
-		gap: 3px;
-		margin-top: 6px;
-		font-size: 0.85rem;
-		color: var(--ink-soft);
-		text-decoration: underline;
-		text-decoration-color: var(--neutral-300);
-		text-underline-offset: 3px;
-		transition:
-			color 0.2s ease,
-			text-decoration-color 0.2s ease;
-	}
-	.atelic-ui .rvc-source:hover {
-		color: var(--primary-ink, var(--primary));
-		text-decoration-color: currentColor;
-	}
 	.atelic-ui .rvc-arrow:focus-visible,
-	.atelic-ui .rvc-source:focus-visible,
+	.atelic-ui a.rvc-name:focus-visible,
 	.atelic-ui .rvc-dot:focus-visible {
 		outline: 2px solid var(--primary);
 		outline-offset: 3px;

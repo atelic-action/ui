@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { CSSProperties } from "react";
 import { expect, type within } from "storybook/test";
 import { ImageFrame, SectionHeading } from "../../src/primitives";
 import { SplitSection } from "../../src/sections";
 import { image, longEmail } from "../fixtures/sections";
-import { expectNoSidewaysScroll } from "../support/geometry";
+import { brokenWords, expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /*
@@ -200,4 +201,51 @@ export const TwoThreeTablet: Story = {
 		await expect(right.top).toBeGreaterThanOrEqual(left.bottom);
 		await expectNoSidewaysScroll();
 	},
+};
+
+/*
+ * A heading whose words are as long as ordinary words get (thirteen to
+ * sixteen letters), in heavy capitals, the widest a theme sets them: in the
+ * narrow side of a two three split its size steps down to the column, so no
+ * word is broken inside itself and the page never scrolls sideways.
+ */
+const longWordHeading = (
+	<section aria-label="The heading" style={{ "--heading-transform": "uppercase" } as CSSProperties}>
+		<SectionHeading
+			eyebrow="Wholesale"
+			title="Neighborhoods, recommendations, and no misunderstanding"
+		/>
+	</section>
+);
+
+const longWordsWhole = async (canvas: ReturnType<typeof within>) => {
+	const title = canvas.getByRole("heading", { name: /Neighborhoods/ });
+	await expect(brokenWords(title)).toEqual([]);
+	await expectNoSidewaysScroll();
+};
+
+/** Long words in the heading's narrow column, each kept whole on its line. */
+export const TwoThreeLongWords: Story = {
+	args: { ratio: "two-three", left: longWordHeading, right: paragraphs },
+	play: async ({ canvas }) => {
+		await longWordsWhole(canvas);
+	},
+};
+
+/** At 1024 the heading's column is at its narrowest beside the paragraphs, and still no word breaks. */
+export const TwoThreeLongWordsLaptop: Story = {
+	...TwoThreeLongWords,
+	globals: pin("laptop"),
+};
+
+/** Just under the split's step the heading takes the page's width, and no word breaks. */
+export const TwoThreeLongWordsSmallDesktop: Story = {
+	...TwoThreeLongWords,
+	globals: pin("smallDesktop"),
+};
+
+/** On the narrowest phone a site meets, the sixteen letter word still fits its line whole. */
+export const TwoThreeLongWordsSmallPhone: Story = {
+	...TwoThreeLongWords,
+	globals: pin("smallPhone"),
 };

@@ -67,11 +67,14 @@ export const Default: Story = {
 				await expect(carousel(canvas)).toHaveAttribute("aria-roledescription", "carousel");
 			},
 		);
-		await step("its source link opens a new tab", async () => {
-			await expect(
-				within(shown(canvas)).getByRole("link", { name: /View on Google/ }),
-			).toHaveAttribute("target", "_blank");
-		});
+		await step(
+			"the reviewer's name links to the review, in a new tab, and says where",
+			async () => {
+				const source = within(shown(canvas)).getByRole("link", { name: "Priya N." });
+				await expect(source).toHaveAttribute("target", "_blank");
+				await expect(source).toHaveAccessibleDescription("View on Google, opens in a new tab");
+			},
+		);
 	},
 };
 
@@ -121,9 +124,7 @@ export const Keyboard: Story = {
 				await userEvent.tab();
 				await expect(canvas.getByRole("link", { name: /opens the review profile/ })).toHaveFocus();
 				await userEvent.tab();
-				await expect(
-					within(shown(canvas)).getByRole("link", { name: /View on Google/ }),
-				).toHaveFocus();
+				await expect(within(shown(canvas)).getByRole("link", { name: "Priya N." })).toHaveFocus();
 				await userEvent.tab();
 				await expect(dot(canvas, 1)).toHaveFocus();
 			},
@@ -139,9 +140,7 @@ export const Keyboard: Story = {
 		});
 		await step("on a review's own link, the arrows do not step", async () => {
 			await userEvent.click(dot(canvas, 1));
-			within(shown(canvas))
-				.getByRole("link", { name: /View on Google/ })
-				.focus();
+			within(shown(canvas)).getByRole("link", { name: "Priya N." }).focus();
 			await userEvent.keyboard("{ArrowRight}");
 			await expect(shown(canvas)).toHaveAccessibleName("Review 1 of 4");
 		});
@@ -260,86 +259,128 @@ export const LongestContent: Story = {
 	},
 };
 
-/** A review far past any card's room: the longest review twice over, for the quote's cap. */
+/** A review far past any card's room: the longest review twice over, for the quote's box. */
 const veryLongReview = {
 	...longestReview,
 	quote: `${longestReview.quote} We have since ordered a standing box for the office every Friday, and the buns arrive warm enough that the whole floor knows by nine. When the ovens went down for a week in the summer they called every standing order themselves, and the loaf that came back was better than the one before.`,
 	sourceURL: undefined,
 };
-const mixed = [reviews[0], veryLongReview, reviews[1]];
+
+/** A one line review with nothing beside the name: no stars, no detail, no source. */
+const oneLineReview = { quote: "Best rye in town.", by: "Sam K." };
+
+/**
+ * One line, mid length, and very long, rated and not, with a detail and
+ * without, linked to a source and not: every way a review differs from the
+ * next, in one carousel.
+ */
+const mixed = [oneLineReview, reviews[0], veryLongReview, reviews[3]];
 
 const cardHeight = (canvas: Canvas) => Math.round(carousel(canvas).getBoundingClientRect().height);
 
+/** Where the shown review's parts sit, measured from the card's top. */
+function layoutOf(canvas: Canvas, item: (typeof mixed)[number]) {
+	const card = carousel(canvas).getBoundingClientRect().top;
+	const slide = within(shown(canvas));
+	const top = (element: Element) => Math.round(element.getBoundingClientRect().top - card);
+	const name = slide.getByText(item.by);
+	return {
+		card: cardHeight(canvas),
+		quote: top(slide.getByText(/^“/)),
+		divider: top(name.closest("figcaption") as Element),
+		name: top(name),
+	};
+}
+
 /**
- * One very long review among short ones: every quote is cut to six lines
- * behind Show more, so the card holds one height from review to review.
- * Opening the long quote grows the card, and stepping on closes it again.
+ * The card never moves from review to review: one height, the quote at the
+ * top, and the divider and the name in one place, whether the quote is one
+ * line or past its box, rated or not, with a detail and a source or not.
+ * The very long quote scrolls inside its box, faded below, and stepping
+ * away and back opens it at its top again.
  */
-export const LongReviewCapped: Story = {
+export const MixedLengths: Story = {
 	args: { items: mixed },
 	play: async ({ canvas, userEvent, step }) => {
-		const resting = cardHeight(canvas);
-		await step("the card holds one height from review to review", async () => {
-			await userEvent.click(next(canvas));
-			await expect(shown(canvas)).toHaveAccessibleName("Review 2 of 3");
-			await expect(cardHeight(canvas)).toBe(resting);
-			await userEvent.click(next(canvas));
-			await expect(cardHeight(canvas)).toBe(resting);
+		const first = layoutOf(canvas, mixed[0]);
+		await step("each review sits in the first one's layout", async () => {
+			for (const [at, item] of mixed.entries()) {
+				await userEvent.click(dot(canvas, at + 1));
+				await expect(shown(canvas)).toHaveAccessibleName(`Review ${at + 1} of 4`);
+				await expect(layoutOf(canvas, item)).toEqual(first);
+			}
+		});
+		await step("a review with no detail keeps the detail line's room", async () => {
 			await userEvent.click(dot(canvas, 2));
+			const detail = within(shown(canvas)).getByText("Regular since 2019");
+			const card = carousel(canvas).getBoundingClientRect();
+			await expect(detail.getBoundingClientRect().bottom).toBeLessThan(card.bottom);
 		});
-		const more = () => within(shown(canvas)).getByRole("button", { name: "Show more" });
-		await step("the long quote is cut to its six lines behind Show more", async () => {
-			const quote = within(shown(canvas)).getByText(/^“We moved to Fairhaven/);
-			const lineHeight = Number.parseFloat(getComputedStyle(quote).lineHeight);
-			await expect(quote.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight * 6 + 1);
-			await expect(quote.scrollHeight).toBeGreaterThan(quote.clientHeight);
-			await expect(more()).toHaveAttribute("aria-expanded", "false");
+		await step("the very long quote scrolls in its box, faded, a named tab stop", async () => {
+			await userEvent.click(dot(canvas, 3));
+			const box = within(shown(canvas)).getByRole("region", { name: "Review text" });
+			await expect(box.scrollHeight).toBeGreaterThan(box.clientHeight);
+			await expect(box).toHaveAttribute("tabindex", "0");
+			box.scrollTo({ top: box.scrollHeight, behavior: "instant" });
+			await waitFor(() => expect(box.scrollTop).toBeGreaterThan(0));
 		});
-		await step("Show more opens the whole quote, and the card may grow", async () => {
-			await userEvent.click(more());
-			const less = within(shown(canvas)).getByRole("button", { name: "Show less" });
-			await expect(less).toHaveAttribute("aria-expanded", "true");
-			await expect(cardHeight(canvas)).toBeGreaterThan(resting);
-		});
-		await step("stepping on and back closes it again, at the resting height", async () => {
+		await step("stepping away and back opens it at its top", async () => {
 			await userEvent.click(next(canvas));
 			await userEvent.click(previous(canvas));
-			await expect(shown(canvas)).toHaveAccessibleName("Review 2 of 3");
-			await expect(more()).toHaveAttribute("aria-expanded", "false");
-			await expect(cardHeight(canvas)).toBe(resting);
+			await expect(shown(canvas)).toHaveAccessibleName("Review 3 of 4");
+			const box = within(shown(canvas)).getByRole("region", { name: "Review text" });
+			await expect(box.scrollTop).toBe(0);
+		});
+		await step("a quote that fits is no tab stop", async () => {
+			await userEvent.click(dot(canvas, 1));
+			await expect(within(shown(canvas)).queryByRole("region")).toBeNull();
 		});
 	},
 };
 
-/** The same reviews on a phone: the cap holds the card steady at the narrow width too. */
-export const LongReviewCappedPhone: Story = {
-	...LongReviewCapped,
-	globals: pin("phone"),
+/** The same reviews at the tablet width, the card stacked under the aggregate. */
+export const MixedLengthsTablet: Story = {
+	...MixedLengths,
+	globals: pin("tablet"),
 	play: async (context) => {
-		await LongReviewCapped.play?.(context);
+		await MixedLengths.play?.(context);
 		await expectNoSidewaysScroll();
 	},
 };
 
-/** A short review fits its lines, so no Show more is drawn for it. */
-export const ShortReviewUncut: Story = {
-	play: async ({ canvas }) => {
-		await expect(within(shown(canvas)).queryByRole("button", { name: "Show more" })).toBeNull();
+/** The same reviews on a phone: the card holds its layout at the narrow width too. */
+export const MixedLengthsPhone: Story = {
+	...MixedLengthsTablet,
+	globals: pin("phone"),
+};
+
+/**
+ * Every quote short: the card is as tall as the longest of them, never the
+ * full box, so no gap opens under a short quote.
+ */
+export const AllShort: Story = {
+	args: { items: [oneLineReview, reviews[0], reviews[1]] },
+	play: async ({ canvas, userEvent }) => {
+		// The longest of the three, whose quote sets the row.
+		await userEvent.click(dot(canvas, 3));
+		const slide = within(shown(canvas));
+		const quote = slide.getByText(/^“Ordered a birthday cake/);
+		const divider = slide.getByText("Marcus T.").closest("figcaption") as Element;
+		const lineHeight = Number.parseFloat(getComputedStyle(quote).lineHeight);
+		const gap = divider.getBoundingClientRect().top - quote.getBoundingClientRect().bottom;
+		// Only the divider's own margin lies between: no room held for lines the quote lacks.
+		await expect(gap).toBeLessThan(lineHeight);
+		await expect(quote.getBoundingClientRect().height).toBeLessThan(lineHeight * 6 - 1);
 	},
 };
 
-/** The cap and the control's words, set by the page. */
+/** The box's lines and the scrolling quote's name, set by the page. */
 export const QuoteLines: Story = {
-	args: { items: mixed, quoteLines: 3, moreLabel: "Read the rest", lessLabel: "Read less" },
+	args: { items: mixed, quoteLines: 3, quoteLabel: "The whole review" },
 	play: async ({ canvas, userEvent }) => {
-		await userEvent.click(dot(canvas, 2));
-		const quote = within(shown(canvas)).getByText(/^“We moved to Fairhaven/);
-		const lineHeight = Number.parseFloat(getComputedStyle(quote).lineHeight);
-		await expect(quote.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight * 3 + 1);
-		await userEvent.click(within(shown(canvas)).getByRole("button", { name: "Read the rest" }));
-		await expect(within(shown(canvas)).getByRole("button", { name: "Read less" })).toHaveAttribute(
-			"aria-expanded",
-			"true",
-		);
+		await userEvent.click(dot(canvas, 3));
+		const box = within(shown(canvas)).getByRole("region", { name: "The whole review" });
+		const lineHeight = Number.parseFloat(getComputedStyle(box).lineHeight);
+		await expect(box.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight * 3 + 1);
 	},
 };

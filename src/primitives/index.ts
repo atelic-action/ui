@@ -34,6 +34,7 @@ export { Lead, type LeadProps } from "./Lead";
 export { PhoneLink, type PhoneLinkProps, phoneHref } from "./PhoneLink";
 export { type ProseBlock, ProseBlocks, type ProseBlocksProps } from "./ProseBlocks";
 export { QuoteCard, type QuoteCardProps } from "./QuoteCard";
+export { ScrollFade, type ScrollFadeProps } from "./ScrollFade";
 export { SectionHeading, type SectionHeadingProps } from "./SectionHeading";
 export { SourceSelector, type SourceSelectorProps } from "./SourceSelector";
 export { Spinner, type SpinnerProps } from "./Spinner";

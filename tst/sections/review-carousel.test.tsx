@@ -30,7 +30,7 @@ describe("ReviewCarousel", () => {
 				items={[items[0], { quote: long, by: "Medium M." }, { quote: veryLong, by: "Long L." }]}
 			/>,
 		);
-		// The quote's words sit in its Show more clamp, inside the sized blockquote.
+		// The quote's words sit in its scrolling box, inside the sized blockquote.
 		const quote = (text: string) => screen.getByText(`“${text}”`).closest("blockquote");
 		expect(quote(items[0].quote)?.className).toBe("rvc-quote");
 		expect(quote(long)).toHaveClass("is-medium");
@@ -141,7 +141,7 @@ describe("ReviewCarousel", () => {
 		expect(screen.getByText("Google reviews")).toBeInTheDocument();
 	});
 
-	it("links each review to its source when the item carries one", () => {
+	it("makes the reviewer's name the link to the review's source, described by the source label", () => {
 		render(
 			<ReviewCarousel
 				score="5.0"
@@ -149,25 +149,39 @@ describe("ReviewCarousel", () => {
 				items={[{ ...items[0], sourceURL: "https://example.com/reviews/1" }, items[1]]}
 			/>,
 		);
-		const link = screen.getByRole("link", {
-			name: "View on Google",
-		});
+		const link = screen.getByRole("link", { name: "Sam O." });
 		expect(link).toHaveAttribute("href", "https://example.com/reviews/1");
 		expect(link).toHaveAttribute("target", "_blank");
 		expect(link).toHaveAttribute("rel", "noopener");
-		expect(link).toHaveClass("rvc-source");
+		expect(link).toHaveAccessibleDescription("View on Google, opens in a new tab");
 		expect(slideOf(items[0].quote)).toContainElement(link);
-		expect(slideOf(items[1].quote).querySelector("a.rvc-source")).toBeNull();
+		// A review with no source keeps its name as words, in the same place.
+		expect(slideOf(items[1].quote).querySelector("a")).toBeNull();
+		expect(screen.getByText("Priya S.").tagName).toBe("SPAN");
 	});
 
-	it("labels the source link 'View review' by default", () => {
+	it("describes the source link as 'View review' by default", () => {
 		render(
 			<ReviewCarousel
 				score="5.0"
 				items={[{ ...items[0], sourceURL: "https://example.com/review" }]}
 			/>,
 		);
-		expect(screen.getByRole("link", { name: /^View review$/ })).toHaveTextContent("View review");
+		expect(screen.getByRole("link", { name: "Sam O." })).toHaveAccessibleDescription(
+			"View review, opens in a new tab",
+		);
+	});
+
+	it("draws no Show more, and still takes the deprecated labels", () => {
+		render(
+			<ReviewCarousel
+				score="5.0"
+				moreLabel="Read the rest"
+				lessLabel="Read less"
+				items={[{ quote: "z ".repeat(600), by: "Long L." }, ...items]}
+			/>,
+		);
+		expect(screen.queryByRole("button", { name: /Show more|Read the rest/ })).toBeNull();
 	});
 
 	it("draws no dots and no arrows when there is only one review", () => {

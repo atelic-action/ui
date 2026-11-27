@@ -4,7 +4,7 @@ import { expect } from "storybook/test";
 import { PageHero } from "../../src/sections";
 import { unbroken } from "../fixtures/sections";
 import { resolvedColor } from "../support/color";
-import { expectNoSidewaysScroll } from "../support/geometry";
+import { brokenWords, expectNoSidewaysScroll } from "../support/geometry";
 import { pin } from "../support/viewports";
 
 /**
@@ -103,6 +103,27 @@ export const UnbrokenWord: Story = {
 	globals: pin("phone"),
 	args: { title: `The ${unbroken}` },
 	play: async () => {
+		await expectNoSidewaysScroll();
+	},
+};
+
+/**
+ * Ordinary long words (thirteen to sixteen letters) in heavy capitals, on the
+ * narrowest phone a site meets: the headline sets small enough that each
+ * fits its line whole, and the page stays still.
+ */
+export const LongWordsSmallPhone: Story = {
+	globals: pin("smallPhone"),
+	args: { title: "Neighborhoods, recommendations, and no misunderstanding" },
+	decorators: [
+		(Story) => (
+			<div style={{ "--heading-transform": "uppercase" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		await expect(brokenWords(canvas.getByRole("heading", { level: 1 }))).toEqual([]);
 		await expectNoSidewaysScroll();
 	},
 };

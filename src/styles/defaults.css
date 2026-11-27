@@ -206,6 +206,15 @@
 		--contact-section-card-pad: clamp(20px, 3vw, 34px);
 		/* The page hero's headline size (8.5.0). */
 		--page-hero-title-size: clamp(2.4rem, 7vw, 4.2rem);
+		/* The most a page or section heading grows to, by the width of the
+		   column it sits in, so an ordinary long word (sixteen letters, in
+		   heavy capitals) fits a line whole and is never broken inside
+		   itself: 100cqi is the column's width, and a sixteen letter word in
+		   the practice's heavy capitals runs to about 10.3em. Each heading
+		   size is the smaller of its own clamp and this (9.12.0). A theme
+		   whose heading face is wider sets a larger divisor, one that is
+		   narrower or never in capitals a smaller one. */
+		--heading-fit: calc(100cqi / 11);
 		/* A form field's label: its size, its case, and its tracking (8.5.0). */
 		--field-label-size: 0.74rem;
 		--field-label-case: uppercase;
