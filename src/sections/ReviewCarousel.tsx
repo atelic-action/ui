@@ -1,4 +1,4 @@
-import { ArrowUpRight, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { type KeyboardEvent, type ReactNode, useEffect, useId, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow } from "../primitives";
@@ -47,16 +47,11 @@ export interface ReviewCarouselProps {
 	/**
 	 * The seconds each review shows before the card moves to the next on its
 	 * own; 5 when left out, and `false` or 0 to turn it off. It waits while
-	 * the pointer or the keyboard's focus is on the card, while the page is
-	 * hidden, and for a reader who asks for less motion it never starts. A
-	 * touch on the card, or the pause button, stops it until the reader
-	 * starts it again (9.12.0).
+	 * a pointer, a finger, or the keyboard's focus is on the card and while
+	 * the page is hidden, each review getting its full time once they leave,
+	 * and for a reader who asks for less motion it never starts (9.12.0).
 	 */
 	autoAdvance?: number | false;
-	/** The pause button's name while the reviews advance. Defaults to "Pause reviews". */
-	pauseLabel?: string;
-	/** Its name once paused. Defaults to "Play reviews". */
-	playLabel?: string;
 	/**
 	 * What the link to where a review was written says, for a review that
 	 * carries a `sourceURL`, e.g. "View on Google": the reviewer's name is
@@ -137,8 +132,6 @@ export function ReviewCarousel({
 	items: given,
 	limit = MOST_REVIEWS,
 	autoAdvance = 5,
-	pauseLabel = "Pause reviews",
-	playLabel = "Play reviews",
 	sourceLabel = "View review",
 	quoteLines = 6,
 	quoteLabel = "Review text",
@@ -162,28 +155,27 @@ export function ReviewCarousel({
 		setIndex(((next % count) + count) % count);
 	}
 
-	// The card moves on by itself every `autoAdvance` seconds. `stopped` is
-	// the reader's own choice (the pause button, or a touch on the card);
-	// `held` is the passing kind, while a pointer or the focus is on it.
+	// The card moves on by itself every `autoAdvance` seconds, and waits
+	// (`held`) while a pointer, a finger, or the keyboard's focus is on it.
 	const seconds = autoAdvance && autoAdvance > 0 && count > 1 ? autoAdvance : 0;
-	const [stopped, setStopped] = useState(false);
-	// Hover and focus are kept apart so leaving one never releases the other.
+	// Each is kept apart so leaving one never releases another.
 	const [hovered, setHovered] = useState(false);
 	const [focused, setFocused] = useState(false);
-	const held = hovered || focused;
+	const [touched, setTouched] = useState(false);
+	const held = hovered || focused || touched;
 	// seen is a dependency so a turn skipped on a hidden page is rescheduled on return.
 	const [seen, setSeen] = useState(0);
 	// index is a dependency so each review, however it was reached, gets its full time.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: index restarts the wait on purpose
 	useEffect(() => {
-		if (!seconds || stopped || held) return;
+		if (!seconds || held) return;
 		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 		const timer = window.setTimeout(() => {
 			if (document.hidden) return;
 			setIndex((current) => (Math.min(current, count - 1) + 1) % count);
 		}, seconds * 1000);
 		return () => window.clearTimeout(timer);
-	}, [seconds, stopped, held, count, index, seen]);
+	}, [seconds, held, count, index, seen]);
 	// A hidden page skips its turn above; coming back starts the wait again.
 	useEffect(() => {
 		if (!seconds) return;
@@ -271,18 +263,21 @@ export function ReviewCarousel({
 					onKeyDown={onKeyDown}
 					onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(true)}
 					onPointerLeave={() => setHovered(false)}
-					onFocus={() => setFocused(true)}
+					// The keyboard's focus alone: a control keeps focus after a click,
+					// and that must not hold the card for good.
+					onFocus={(event) => {
+						if ((event.target as HTMLElement).matches?.(":focus-visible")) setFocused(true);
+					}}
 					onBlur={(event) => {
 						if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
 					}}
-					onTouchStart={(event) => {
-						// The pause button decides for itself, so a tap on it is not a touch on the card.
-						if (!(event.target as HTMLElement).closest?.(".rvc-pause")) setStopped(true);
-					}}
+					onTouchStart={() => setTouched(true)}
+					onTouchEnd={() => setTouched(false)}
+					onTouchCancel={() => setTouched(false)}
 				>
 					{/* While the card moves by itself it says nothing aloud; a
 					    reader who steps it hears the review they stepped to. */}
-					<div className="rvc-stage" aria-live={seconds && !stopped && !held ? "off" : "polite"}>
+					<div className="rvc-stage" aria-live={seconds && !held ? "off" : "polite"}>
 						{items.map((item, i) => {
 							const sourceTab = item.sourceURL ? newTabProps(item.sourceURL, true) : {};
 							const describedBy = `${minted}-source-${i}`;
@@ -347,27 +342,6 @@ export function ReviewCarousel({
 								))}
 							</div>
 							<div className="rvc-arrows">
-								{seconds > 0 && (
-									<button
-										type="button"
-										className="rvc-arrow rvc-pause"
-										aria-label={stopped ? playLabel : pauseLabel}
-										onClick={() => {
-											// Pressing Play asks for rotation, so the hold it was pressed under ends.
-											if (stopped) {
-												setHovered(false);
-												setFocused(false);
-											}
-											setStopped((current) => !current);
-										}}
-									>
-										{stopped ? (
-											<Play size={15} strokeWidth={2} aria-hidden="true" />
-										) : (
-											<Pause size={15} strokeWidth={2} aria-hidden="true" />
-										)}
-									</button>
-								)}
 								<button
 									type="button"
 									className="rvc-arrow"

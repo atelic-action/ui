@@ -116,8 +116,8 @@ export const Steps: Story = {
 
 /**
  * Left alone, the card moves to the next review every `autoAdvance` seconds
- * (5 unless set; here a fraction of one). The pause button stops it, and
- * says Play once it has.
+ * (5 unless set; here a fraction of one), and waits while a pointer rests
+ * on it.
  */
 export const AutoAdvance: Story = {
 	args: { autoAdvance: 0.4 },
@@ -125,20 +125,17 @@ export const AutoAdvance: Story = {
 		await step("it reaches the second review by itself", async () => {
 			await waitFor(() => expect(shown(canvas)).toHaveAccessibleName("Review 2 of 4"));
 		});
-		await step("Pause holds the review it is on", async () => {
-			await userEvent.click(canvas.getByRole("button", { name: "Pause reviews" }));
+		await step("a pointer on the card holds the review it is on", async () => {
+			await userEvent.hover(carousel(canvas));
 			const held = shown(canvas).getAttribute("aria-label");
 			await new Promise((resolve) => setTimeout(resolve, 900));
 			await expect(shown(canvas)).toHaveAccessibleName(held as string);
-			await expect(canvas.getByRole("button", { name: "Play reviews" })).toBeVisible();
 		});
-	},
-};
-
-/** With `autoAdvance` off there is no pause button, and the card waits for the reader. */
-export const AutoAdvanceOff: Story = {
-	play: async ({ canvas }) => {
-		await expect(canvas.queryByRole("button", { name: "Pause reviews" })).toBeNull();
+		await step("and it moves on once the pointer leaves", async () => {
+			const held = shown(canvas).getAttribute("aria-label");
+			await userEvent.unhover(carousel(canvas));
+			await waitFor(() => expect(shown(canvas)).not.toHaveAccessibleName(held as string));
+		});
 	},
 };
 

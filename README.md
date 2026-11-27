@@ -1081,7 +1081,7 @@ Nothing breaks. What a site would notice:
 
 4. **Every quote in `ReviewCarousel` sets at one type size.** The card used to set a longer quote smaller; a long quote scrolls now, so the steps are gone.
 5. **`ReviewCarousel` shows ten reviews at most** (`limit`, 1 to 10, default 10): each review is one dot in a row that does not wrap, so a site that handed it more now sees the first ten.
-6. **`ReviewCarousel` moves to the next review by itself**, every 5 seconds unless `autoAdvance` says another number, and never with `autoAdvance={false}`. It waits while the pointer or the focus is on the card and while the page is hidden, never starts for a reader who asks for less motion, and stops at a touch on the card or at the new pause button (`pauseLabel`, `playLabel`) until the reader starts it again. A site that wants the card still sets `autoAdvance={false}`.
+6. **`ReviewCarousel` moves to the next review by itself**, every 5 seconds unless `autoAdvance` says another number, and never with `autoAdvance={false}`. It waits while a pointer, a finger, or the keyboard's focus is on the card and while the page is hidden, and never starts for a reader who asks for less motion. A site that wants the card still sets `autoAdvance={false}`.
 7. **`StarRow` draws the rating as given.** It shows five stars, faint ones behind and filled ones cut off at the rating, so a 4.8 fills four stars and eight tenths of the fifth where it used to round to the nearest half and draw five. A whole rating fills whole stars, and now shows the stars it did not earn faintly beside them.
 
 ### Moving to 9.11.0
