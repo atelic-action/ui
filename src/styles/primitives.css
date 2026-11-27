@@ -1150,11 +1150,6 @@
 		overflow-y: auto;
 		overflow-x: hidden;
 		scrollbar-width: none;
-		-webkit-mask-image: linear-gradient(
-			transparent,
-			#000 var(--_sf-from) var(--_sf-to),
-			transparent
-		);
 		mask-image: linear-gradient(transparent, #000 var(--_sf-from) var(--_sf-to), transparent);
 	}
 	.atelic-ui .scroll-fade-box::-webkit-scrollbar {
