@@ -259,3 +259,87 @@ export const LongestContent: Story = {
 		await expectNoSidewaysScroll();
 	},
 };
+
+/** A review far past any card's room: the longest review twice over, for the quote's cap. */
+const veryLongReview = {
+	...longestReview,
+	quote: `${longestReview.quote} We have since ordered a standing box for the office every Friday, and the buns arrive warm enough that the whole floor knows by nine. When the ovens went down for a week in the summer they called every standing order themselves, and the loaf that came back was better than the one before.`,
+	sourceURL: undefined,
+};
+const mixed = [reviews[0], veryLongReview, reviews[1]];
+
+const cardHeight = (canvas: Canvas) => Math.round(carousel(canvas).getBoundingClientRect().height);
+
+/**
+ * One very long review among short ones: every quote is cut to six lines
+ * behind Show more, so the card holds one height from review to review.
+ * Opening the long quote grows the card, and stepping on closes it again.
+ */
+export const LongReviewCapped: Story = {
+	args: { items: mixed },
+	play: async ({ canvas, userEvent, step }) => {
+		const resting = cardHeight(canvas);
+		await step("the card holds one height from review to review", async () => {
+			await userEvent.click(next(canvas));
+			await expect(shown(canvas)).toHaveAccessibleName("Review 2 of 3");
+			await expect(cardHeight(canvas)).toBe(resting);
+			await userEvent.click(next(canvas));
+			await expect(cardHeight(canvas)).toBe(resting);
+			await userEvent.click(dot(canvas, 2));
+		});
+		const more = () => within(shown(canvas)).getByRole("button", { name: "Show more" });
+		await step("the long quote is cut to its six lines behind Show more", async () => {
+			const quote = within(shown(canvas)).getByText(/^“We moved to Fairhaven/);
+			const lineHeight = Number.parseFloat(getComputedStyle(quote).lineHeight);
+			await expect(quote.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight * 6 + 1);
+			await expect(quote.scrollHeight).toBeGreaterThan(quote.clientHeight);
+			await expect(more()).toHaveAttribute("aria-expanded", "false");
+		});
+		await step("Show more opens the whole quote, and the card may grow", async () => {
+			await userEvent.click(more());
+			const less = within(shown(canvas)).getByRole("button", { name: "Show less" });
+			await expect(less).toHaveAttribute("aria-expanded", "true");
+			await expect(cardHeight(canvas)).toBeGreaterThan(resting);
+		});
+		await step("stepping on and back closes it again, at the resting height", async () => {
+			await userEvent.click(next(canvas));
+			await userEvent.click(previous(canvas));
+			await expect(shown(canvas)).toHaveAccessibleName("Review 2 of 3");
+			await expect(more()).toHaveAttribute("aria-expanded", "false");
+			await expect(cardHeight(canvas)).toBe(resting);
+		});
+	},
+};
+
+/** The same reviews on a phone: the cap holds the card steady at the narrow width too. */
+export const LongReviewCappedPhone: Story = {
+	...LongReviewCapped,
+	globals: pin("phone"),
+	play: async (context) => {
+		await LongReviewCapped.play?.(context);
+		await expectNoSidewaysScroll();
+	},
+};
+
+/** A short review fits its lines, so no Show more is drawn for it. */
+export const ShortReviewUncut: Story = {
+	play: async ({ canvas }) => {
+		await expect(within(shown(canvas)).queryByRole("button", { name: "Show more" })).toBeNull();
+	},
+};
+
+/** The cap and the control's words, set by the page. */
+export const QuoteLines: Story = {
+	args: { items: mixed, quoteLines: 3, moreLabel: "Read the rest", lessLabel: "Read less" },
+	play: async ({ canvas, userEvent }) => {
+		await userEvent.click(dot(canvas, 2));
+		const quote = within(shown(canvas)).getByText(/^“We moved to Fairhaven/);
+		const lineHeight = Number.parseFloat(getComputedStyle(quote).lineHeight);
+		await expect(quote.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight * 3 + 1);
+		await userEvent.click(within(shown(canvas)).getByRole("button", { name: "Read the rest" }));
+		await expect(within(shown(canvas)).getByRole("button", { name: "Read less" })).toHaveAttribute(
+			"aria-expanded",
+			"true",
+		);
+	},
+};

@@ -299,12 +299,12 @@
 		margin-top: 16px;
 		max-width: 60ch;
 	}
-	/* A GridLayout or an ExpandList set straight after a heading sits the
-	   block gap under it, as the package's own sections set their grids
-	   (9.9.0). Named pieces only, so a paragraph or a site's own block after a
-	   heading keeps the space it had, and no section that sets its own gap
-	   holds either piece there. */
-	.atelic-ui .section-head + :is(.grid-layout, .expand-list) {
+	/* A GridLayout, an ExpandList, or an FAQList set straight after a
+	   heading sits the block gap under it, as the package's own sections set
+	   their grids (9.9.0; FAQList 9.10.0). Named pieces only, so a paragraph
+	   or a site's own block after a heading keeps the space it had, and no
+	   section that sets its own gap holds any of them there. */
+	.atelic-ui .section-head + :is(.grid-layout, .expand-list, .faq-group) {
 		margin-top: var(--block-gap);
 	}
 	/* On a dark band the whole heading lifts, not only the eyebrow: the

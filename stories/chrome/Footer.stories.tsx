@@ -655,6 +655,7 @@ const fullColumns: FooterColumn[] = [
 				icon: "linkedin",
 				external: true,
 			},
+			{ label: "Yelp", href: "https://yelp.example.com/kh", icon: "yelp", external: true },
 			{ label: "Reviews", href: "https://reviews.example.com/kh", icon: "star", external: true },
 			{ label: "Newsletter", href: "/news", icon: "mail" },
 		],
@@ -677,6 +678,29 @@ async function expectWholeWords(canvas: ReturnType<typeof within>) {
 	await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
 	await expectNoSidewaysScroll();
 }
+
+/**
+ * Every brand mark in the Social column (Instagram, Facebook, YouTube,
+ * LinkedIn, and Yelp) in one box and one size, in the link's color.
+ */
+export const SocialMarks: Story = {
+	args: { columns: fullColumns },
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		const marks = ["Instagram", "Facebook", "YouTube", "LinkedIn", "Yelp"].map((name) => {
+			const link = within(footer).getByRole("link", { name });
+			return { link, mark: link.querySelector("svg") as SVGElement };
+		});
+		const first = marks[0].mark.getBoundingClientRect();
+		for (const { link, mark } of marks) {
+			const box = mark.getBoundingClientRect();
+			await expect(Math.round(box.width)).toBe(Math.round(first.width));
+			await expect(Math.round(box.height)).toBe(Math.round(first.height));
+			await expect(mark).toHaveAttribute("aria-hidden", "true");
+			await expect(getComputedStyle(mark).color).toBe(getComputedStyle(link).color);
+		}
+	},
+};
 
 /** The hours as their own column beside four full link columns, at 1280. */
 export const CrowdedHoursColumn: Story = {
@@ -816,7 +840,7 @@ async function expectBrandRows(
 		.parentElement as HTMLElement;
 	const columns = footer.getAllByRole("navigation");
 	const rows = new Set(columns.map(top));
-	// Beside the brand: to its right, whichever row (9.10.0 sets two by two there).
+	// Beside the brand: to its right, whichever row (9.11.0 sets two by two there).
 	const brandRight = brand.closest(".footer-brand")?.getBoundingClientRect().right ?? 0;
 	const besideBrand = columns.filter(
 		(column) => column.getBoundingClientRect().left >= brandRight - 1,
@@ -857,7 +881,7 @@ async function expectBrandRows(
 /**
  * Hours in the brand column just under 1100: four columns do not fit beside
  * the brand, so they sit two by two beside it, where the brand used to take
- * a row of its own (9.10.0).
+ * a row of its own (9.11.0).
  */
 export const HoursInBrandAt1099: Story = {
 	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
@@ -1074,7 +1098,7 @@ export const HoursInBrandShortBrandBlockNoShare: Story = {
 /**
  * At 1024, a short brand block and the link columns' floors at the footer's
  * own size: four do not fit beside the brand, so they sit two by two beside
- * it (9.10.0).
+ * it (9.11.0).
  */
 export const HoursInBrandShortBrandBlockAt1024: Story = {
 	args: shortBrand,
@@ -1107,7 +1131,7 @@ export const HoursInBrandLinkSizeScalesTheFloor: Story = {
 	},
 };
 
-/** The same at 820: the four link columns two by two beside the brand column at the smaller floor (9.10.0). */
+/** The same at 820: the four link columns two by two beside the brand column at the smaller floor (9.11.0). */
 export const HoursInBrandLinkSizeScalesTheFloorAt820: Story = {
 	...HoursInBrandLinkSizeScalesTheFloor,
 	globals: pin("tablet"),
@@ -1201,7 +1225,7 @@ function lineCount(element: Element): number {
  * where the footer lays its row, also a link label on two lines, and the
  * columns two by two under the brand on a row as wide as the footer's own
  * measure says two by two fits beside it (`besideTwoAt`), which would leave
- * the half beside the brand empty (9.10.0). Below 760 the phone footer
+ * the half beside the brand empty (9.11.0). Below 760 the phone footer
  * pairs the columns in half the row, as it always has, and a three word
  * label may take two lines there.
  */
@@ -1335,7 +1359,7 @@ export const HoursInBrandSweepThreeColumns: Story = sweep(fullColumns.slice(0, 3
  * The tablet case at 1024 with a brand share of 2, as a site whose brand
  * block carries the hours sets it: the brand on the left at its own width
  * and the four link columns two by two beside it, shorter than the same
- * footer with the brand on a row of its own over the four (9.10.0).
+ * footer with the brand on a row of its own over the four (9.11.0).
  */
 export const HoursInBrandShareTwoAt1024: Story = {
 	args: { hours, columns: fullColumns, hoursPlacement: "brand" },

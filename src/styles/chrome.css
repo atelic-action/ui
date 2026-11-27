@@ -1821,7 +1821,7 @@
 		   pixel short of the floors, which left three across and a fourth alone;
 		   a named choice cannot. */
 		/* The gaps the measured layouts are set with, which Footer's measure
-		   reads from here, so the two never disagree (9.10.0): between the
+		   reads from here, so the two never disagree (9.11.0): between the
 		   brand and the box and between two columns when every column sits
 		   across (the values the rules above set), and when the columns sit
 		   two by two beside the brand, the footer grid's own 32px between the
@@ -1847,7 +1847,7 @@
 		.atelic-ui .footer-grid.has-brand-hours .footer-links[data-link-columns="2"] > .footer-column {
 			flex-basis: calc(50% - var(--_link-gap) / 2 - 0.5px);
 		}
-		/* And the measure's layout (9.10.0), named on the grid as
+		/* And the measure's layout (9.11.0), named on the grid as
 		   data-footer-layout, so the row never wraps on its own: beside, every
 		   column across beside the brand; beside-two, the columns two by two
 		   beside it, where the brand used to take a row of its own and leave
