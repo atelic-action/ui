@@ -1343,7 +1343,7 @@ Nothing breaks: every addition is an optional prop, config key, token, or entry.
 | `ExpandList` | A light accordion of numbered rows whose bodies stay in the HTML while closed |
 | `ComparisonTable` | A graded before and after that scrolls sideways on a phone rather than reflowing |
 | `RevealSlider` | Drag or arrow keys to compare two frames, each with its own toned shot brief before photography |
-| `ReviewCarousel` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source; one review draws no dots and no arrows (9.9.0); every quote cut to `quoteLines` behind Show more, so the card holds its height (9.10.0) |
+| `ReviewCarousel` | The aggregate beside one large review at a time, stepped by dots and arrows, each review linking to its source; one review draws no dots and no arrows (9.9.0); each quote in a scrolling box so the card holds its height, rotating every few seconds unless held (9.12.0) |
 | `ReviewWall` | The reviews page: tag filter and sort when the data carries them, clamped quotes behind Read more |
 | `ProfileCards` | Equal weight cards of media beside a short bio |
 | `Gallery` | A captioned wall of the business's own work, a shot brief where a photo is missing |

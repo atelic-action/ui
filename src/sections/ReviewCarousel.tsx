@@ -266,7 +266,11 @@ export function ReviewCarousel({
 					// The keyboard's focus alone: a control keeps focus after a click,
 					// and that must not hold the card for good.
 					onFocus={(event) => {
-						if ((event.target as HTMLElement).matches?.(":focus-visible")) setFocused(true);
+						let keyboard = true;
+						try {
+							keyboard = (event.target as HTMLElement).matches(":focus-visible");
+						} catch {}
+						if (keyboard) setFocused(true);
 					}}
 					onBlur={(event) => {
 						if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
