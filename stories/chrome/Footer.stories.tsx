@@ -4,6 +4,7 @@ import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, type HoursRow, SiteHeader } from "../../src/chrome";
 import { formatHoursRange } from "../../src/sections";
 import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
+import { frameOf, SizedFrame } from "../support/frame";
 import { brokenWords, expectNoSidewaysScroll, lines } from "../support/geometry";
 import { pin } from "../support/viewports";
 
@@ -805,7 +806,7 @@ export const LinkSizeAndBrandShareDefaults: Story = {
  */
 async function expectBrandRows(
 	canvas: ReturnType<typeof within>,
-	layout?: "one row" | "brand above four" | "brand above two by two",
+	layout?: "one row" | "brand beside two by two" | "brand above four" | "brand above two by two",
 	{ rating = true }: { rating?: boolean } = {},
 ) {
 	const footer = within(canvas.getByRole("contentinfo"));
@@ -814,15 +815,29 @@ async function expectBrandRows(
 		.parentElement as HTMLElement;
 	const columns = footer.getAllByRole("navigation");
 	const rows = new Set(columns.map(top));
-	const besideBrand = columns.filter((column) => top(column) === top(brand)).length;
+	// Beside the brand: to its right, whichever row (9.10.0 sets two by two there).
+	const brandRight = brand.closest(".footer-brand")?.getBoundingClientRect().right ?? 0;
+	const besideBrand = columns.filter(
+		(column) => column.getBoundingClientRect().left >= brandRight - 1,
+	).length;
 	await expect([0, columns.length]).toContain(besideBrand);
 	await expect([1, 2]).toContain(rows.size);
-	if (layout === "one row") await expect(besideBrand).toBe(columns.length);
+	if (layout === "one row") {
+		await expect(besideBrand).toBe(columns.length);
+		await expect(rows.size).toBe(1);
+	}
+	if (layout === "brand beside two by two") {
+		await expect(besideBrand).toBe(columns.length);
+		await expect(rows.size).toBe(2);
+	}
 	if (layout === "brand above four") {
 		await expect(besideBrand).toBe(0);
 		await expect(rows.size).toBe(1);
 	}
-	if (layout === "brand above two by two") await expect(rows.size).toBe(2);
+	if (layout === "brand above two by two") {
+		await expect(besideBrand).toBe(0);
+		await expect(rows.size).toBe(2);
+	}
 	if (rows.size === 2) {
 		const counts = [...rows].map((row) => columns.filter((column) => top(column) === row).length);
 		await expect(counts).toEqual([2, 2]);
@@ -838,12 +853,16 @@ async function expectBrandRows(
 	await expectWholeWords(canvas);
 }
 
-/** Hours in the brand column just under 1100: the brand column takes its own row when the floors outrun the row. */
+/**
+ * Hours in the brand column just under 1100: four columns do not fit beside
+ * the brand, so they sit two by two beside it, where the brand used to take
+ * a row of its own (9.10.0).
+ */
 export const HoursInBrandAt1099: Story = {
 	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
 	globals: pin("wideTablet"),
 	play: async ({ canvas }) => {
-		await expectBrandRows(canvas, "brand above four");
+		await expectBrandRows(canvas, "brand beside two by two");
 	},
 };
 
@@ -851,7 +870,7 @@ export const HoursInBrandAt1099: Story = {
 export const HoursInBrandAt1024: Story = {
 	...HoursInBrandAt1099,
 	play: async ({ canvas }) => {
-		await expectBrandRows(canvas, "brand above four");
+		await expectBrandRows(canvas, "brand beside two by two");
 	},
 	globals: pin("laptop"),
 };
@@ -860,7 +879,7 @@ export const HoursInBrandAt1024: Story = {
 export const HoursInBrandAt820: Story = {
 	...HoursInBrandAt1099,
 	play: async ({ canvas }) => {
-		await expectBrandRows(canvas, "brand above two by two");
+		await expectBrandRows(canvas, "brand beside two by two");
 	},
 	globals: pin("tablet"),
 };
@@ -869,7 +888,7 @@ export const HoursInBrandAt820: Story = {
 export const HoursInBrandAt768: Story = {
 	...HoursInBrandAt1099,
 	play: async ({ canvas }) => {
-		await expectBrandRows(canvas, "brand above two by two");
+		await expectBrandRows(canvas, "brand beside two by two");
 	},
 	globals: pin("smallTablet"),
 };
@@ -1051,12 +1070,16 @@ export const HoursInBrandShortBrandBlockNoShare: Story = {
 	},
 };
 
-/** At 1024, a short brand block and the link columns' floors at the footer's own size: the brand column takes its own row. */
+/**
+ * At 1024, a short brand block and the link columns' floors at the footer's
+ * own size: four do not fit beside the brand, so they sit two by two beside
+ * it (9.10.0).
+ */
 export const HoursInBrandShortBrandBlockAt1024: Story = {
 	args: shortBrand,
 	globals: pin("laptop"),
 	play: async ({ canvas }) => {
-		await expectBrandRows(canvas, "brand above four", { rating: false });
+		await expectBrandRows(canvas, "brand beside two by two", { rating: false });
 	},
 };
 
@@ -1083,12 +1106,12 @@ export const HoursInBrandLinkSizeScalesTheFloor: Story = {
 	},
 };
 
-/** The same at 820: the brand column above, the four link columns across under it at the smaller floor. */
+/** The same at 820: the four link columns two by two beside the brand column at the smaller floor (9.10.0). */
 export const HoursInBrandLinkSizeScalesTheFloorAt820: Story = {
 	...HoursInBrandLinkSizeScalesTheFloor,
 	globals: pin("tablet"),
 	play: async ({ canvas }) => {
-		await expectBrandRows(canvas, "brand above four", { rating: false });
+		await expectBrandRows(canvas, "brand beside two by two", { rating: false });
 	},
 };
 
@@ -1146,5 +1169,133 @@ export const HoursInBrandLongLabelEveryWidth: Story = {
 			}
 		}
 		await expect(bad).toEqual([]);
+	},
+};
+
+/**
+ * What the footer's measure reads, read again here from the page: the row,
+ * the brand column at its own width, and each link column's, with every
+ * piece set to its own width for the read and handed back, so the sweep can
+ * say whether two by two fits beside the brand at a width.
+ */
+function naturalWidths(footer: HTMLElement) {
+	const view = footer.ownerDocument.defaultView as Window;
+	const grid = footer.querySelector(".footer-grid") as HTMLElement;
+	const brand = grid.querySelector(":scope > .footer-brand") as HTMLElement;
+	const columns = Array.from(footer.querySelectorAll<HTMLElement>("nav.footer-column"));
+	const width = (element: Element) => Number.parseFloat(view.getComputedStyle(element).width);
+	const style = view.getComputedStyle(grid);
+	const row =
+		width(grid) - Number.parseFloat(style.paddingLeft) - Number.parseFloat(style.paddingRight);
+	const pieces = [brand, ...columns];
+	const kept = pieces.map((piece) => piece.getAttribute("style"));
+	for (const piece of pieces)
+		piece.setAttribute("style", "flex: none; min-width: 0; width: max-content");
+	const brandWidth = width(brand);
+	const widest = Math.max(...columns.map(width));
+	pieces.forEach((piece, at) => {
+		const own = kept[at];
+		if (own === null || own === undefined) piece.removeAttribute("style");
+		else piece.setAttribute("style", own);
+	});
+	const link = footer.querySelector("nav.footer-column a") as HTMLElement;
+	const floor = 10 * Number.parseFloat(view.getComputedStyle(link).fontSize);
+	return { row, brand: brandWidth, column: Math.max(widest, floor) };
+}
+
+/**
+ * Sweeps the footer with the hours in the brand column at a brand share of
+ * 2 across `from` to `to`, a width at a time, in a frame whose media queries
+ * follow its width. At every width the link columns sit four across or two
+ * by two, never three and a lone fourth; the brand sits beside all of them
+ * or above all of them; no column is wider than its box; and from 760, where
+ * the footer lays its row, the brand sits beside the links at every width
+ * where two by two beside it fits (9.10.0). Below 760 the phone footer
+ * pairs the columns under the brand, as it always has.
+ */
+function sweep(from: number, to: number): Story {
+	return {
+		args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+		globals: pin("desktop"),
+		render: (args) => (
+			<SizedFrame width={from}>
+				<div style={{ "--footer-brand-width": "2" } as CSSProperties}>
+					<Footer {...args} />
+				</div>
+			</SizedFrame>
+		),
+		play: async ({ canvasElement }) => {
+			const settle = () =>
+				new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+			const { frame, doc } = frameOf(canvasElement);
+			let footer: HTMLElement | null = null;
+			for (let tries = 0; !footer && tries < 50; tries++) {
+				await settle();
+				footer = doc.querySelector("footer");
+			}
+			if (!footer) throw new Error("The footer never drew in the frame");
+			const columns = Array.from(footer.querySelectorAll<HTMLElement>("nav.footer-column"));
+			const brand = footer.querySelector(".footer-brand") as HTMLElement;
+			const rect = (element: Element) => element.getBoundingClientRect();
+			const bad: string[] = [];
+			for (let width = from; width <= to; width++) {
+				frame.style.width = `${width}px`;
+				await settle();
+				const tops = [...new Set(columns.map((column) => Math.round(rect(column).top)))];
+				const shape = tops
+					.map((row) => columns.filter((column) => Math.round(rect(column).top) === row).length)
+					.join("+");
+				if (shape !== "4" && shape !== "2+2") bad.push(`${width}: ${shape}`);
+				const beside = columns.filter(
+					(column) => rect(column).left >= rect(brand).right - 1,
+				).length;
+				if (beside !== 0 && beside !== columns.length) bad.push(`${width}: ${beside} beside`);
+				for (const column of columns) {
+					if (column.scrollWidth > column.clientWidth + 1) {
+						bad.push(`${width}: ${column.getAttribute("aria-label")} overflows`);
+					}
+				}
+				if (width >= 760 && beside === 0) {
+					const natural = naturalWidths(footer);
+					if (natural.brand + 32 + 2 * natural.column + 32 <= natural.row) {
+						bad.push(`${width}: the brand stands alone where two by two fits beside it`);
+					}
+				}
+			}
+			await expect(bad).toEqual([]);
+		},
+	};
+}
+
+/** The sweep from 360 to 619: the phone footer, then the first of the flowing row. */
+export const HoursInBrandSweep360: Story = sweep(360, 619);
+/** The sweep from 620 to 879. */
+export const HoursInBrandSweep620: Story = sweep(620, 879);
+/** The sweep from 880 to 1139. */
+export const HoursInBrandSweep880: Story = sweep(880, 1139);
+/** The sweep from 1140 to 1400. */
+export const HoursInBrandSweep1140: Story = sweep(1140, 1400);
+
+/**
+ * The tablet case at 1024 with a brand share of 2, as a site whose brand
+ * block carries the hours sets it: the brand on the left at its own width
+ * and the four link columns two by two beside it, where the brand used to
+ * take the whole first row and leave its right half empty (9.10.0).
+ */
+export const HoursInBrandShareTwoAt1024: Story = {
+	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+	globals: pin("laptop"),
+	decorators: [
+		(Story) => (
+			<div style={{ "--footer-brand-width": "2" } as CSSProperties}>
+				<Story />
+			</div>
+		),
+	],
+	play: async ({ canvas }) => {
+		await expectBrandRows(canvas, "brand beside two by two");
+		// Shorter than the brand above four columns at the same width (718px before 9.10.0).
+		const footer = canvas.getByRole("contentinfo");
+		await expect(footer.getBoundingClientRect().height).toBeLessThan(700);
 	},
 };

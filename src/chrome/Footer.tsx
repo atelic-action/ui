@@ -247,10 +247,67 @@ export function linkColumnsFor({
 	return count * column + (count - 1) * LINK_GAP <= box ? count : 2;
 }
 
-/** A measure of the link box: the widest column and the columns across. */
+/** The gap between the brand column and the link box when all the columns sit beside it, as chrome.css sets it. */
+const BRAND_GAP = 24;
+
+/**
+ * The gaps when the columns sit two by two beside the brand (9.10.0): the
+ * footer grid's own 32px between the brand and the box, as every other
+ * footer sets between its brand and its columns, and inside the box the
+ * phone footer's 40px between the rows and 32px between the two columns,
+ * the gaps the footer already pairs its columns with.
+ */
+const BRAND_GAP_TWO = 32;
+const LINK_GAP_TWO = 32;
+
+/**
+ * Where the link columns sit against the brand column: `beside`, every
+ * column across beside the brand; `beside-two`, two by two beside it; and
+ * `stacked`, the brand on a row of its own with the columns under it.
+ */
+export type FooterLayout = "beside" | "beside-two" | "stacked";
+
+/**
+ * The footer's layout with the hours in the brand column, from real widths:
+ * every column beside the brand when the brand at its own width, the gap,
+ * and every column at the wider of its floor and the widest column fit the
+ * row; else two by two beside the brand when that fits (9.10.0); else the
+ * brand takes a row of its own, with the columns under it every one across
+ * when they fit the row and two by two when they do not. Discrete, so the
+ * columns are never three and a lone fourth, and the brand never sits
+ * beside some of them.
+ */
+export function footerLayoutFor({
+	row,
+	brand,
+	widest,
+	floor,
+	count,
+}: {
+	/** The row's content width, in pixels, fractions kept. */
+	row: number;
+	/** The brand column's own width with nothing to wrap it. */
+	brand: number;
+	/** The widest link column's max-content width. */
+	widest: number;
+	/** Each column's floor: ten of its link text's size. */
+	floor: number;
+	count: number;
+}): { layout: FooterLayout; columns: number } {
+	const column = Math.max(widest, floor);
+	const across = (columns: number) => columns * column + (columns - 1) * LINK_GAP;
+	if (brand + BRAND_GAP + across(count) <= row) return { layout: "beside", columns: count };
+	if (count > 2 && brand + BRAND_GAP_TWO + 2 * column + LINK_GAP_TWO <= row) {
+		return { layout: "beside-two", columns: 2 };
+	}
+	return { layout: "stacked", columns: linkColumnsFor({ box: row, widest, floor, count }) };
+}
+
+/** A measure of the footer: the widest column, the columns across, and the layout. */
 export interface LinkColumnsMeasure {
 	widest: number;
 	columns: number;
+	layout: FooterLayout;
 }
 
 /**
@@ -264,36 +321,53 @@ export interface LinkColumnsMeasure {
  */
 export function measureLinkColumns(footer: Element): LinkColumnsMeasure | null {
 	const box = footer.querySelector<HTMLElement>(".footer-links");
+	const grid = box?.parentElement;
+	const brand = grid?.querySelector<HTMLElement>(":scope > .footer-brand");
 	const view = footer.ownerDocument.defaultView;
-	if (!box || !view) return null;
+	if (!box || !grid || !brand || !view) return null;
 	const width = (element: Element) => Number.parseFloat(view.getComputedStyle(element).width);
+	const gridStyle = view.getComputedStyle(grid);
+	const row =
+		Number.parseFloat(gridStyle.width) -
+		(gridStyle.boxSizing === "border-box"
+			? Number.parseFloat(gridStyle.paddingLeft) + Number.parseFloat(gridStyle.paddingRight)
+			: 0);
 	const columns = Array.from(box.querySelectorAll<HTMLElement>(":scope > .footer-column"));
-	const boxWidth = width(box);
 	const link = box.querySelector("a") ?? box;
 	const floor = 10 * Number.parseFloat(view.getComputedStyle(link).fontSize);
-	const kept = columns.map(({ style }) => ({
+	// Every piece at its own width at once, read, then handed back.
+	const pieces = [brand, ...columns];
+	const kept = pieces.map(({ style }) => ({
 		width: style.width,
 		flex: style.flex,
 		minWidth: style.minWidth,
 	}));
-	for (const { style } of columns) {
+	for (const { style } of pieces) {
 		style.flex = "none";
 		style.minWidth = "0";
 		style.width = "max-content";
 	}
+	const brandWidth = width(brand);
 	const widths = columns.map(width);
-	columns.forEach(({ style }, at) => {
+	pieces.forEach(({ style }, at) => {
 		const own = kept[at];
 		if (!own) return;
 		style.width = own.width;
 		style.flex = own.flex;
 		style.minWidth = own.minWidth;
 	});
-	if (!(boxWidth > 0) || !Number.isFinite(floor) || !widths.every(Number.isFinite)) return null;
+	if (
+		!(row > 0) ||
+		!Number.isFinite(floor) ||
+		!Number.isFinite(brandWidth) ||
+		!widths.every(Number.isFinite)
+	) {
+		return null;
+	}
 	const widest = Math.max(0, ...widths);
 	return {
 		widest,
-		columns: linkColumnsFor({ box: boxWidth, widest, floor, count: columns.length }),
+		...footerLayoutFor({ row, brand: brandWidth, widest, floor, count: columns.length }),
 	};
 }
 
@@ -324,7 +398,12 @@ function useLinkColumns(active: boolean, labels: string) {
 			const next = measureLinkColumns(footer);
 			if (!next) return;
 			setMeasure((was) =>
-				was && was.widest === next.widest && was.columns === next.columns ? was : next,
+				was &&
+				was.widest === next.widest &&
+				was.columns === next.columns &&
+				was.layout === next.layout
+					? was
+					: next,
 			);
 		};
 		run();
@@ -520,6 +599,9 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 						// brand column beside them as long as theirs fit, and the widest
 						// column's measured width once there is one.
 						style={gridStyle}
+						// The measure's layout (9.10.0): every column beside the brand,
+						// two by two beside it, or the brand on a row of its own.
+						data-footer-layout={measure?.layout}
 					>
 						<div className="footer-brand">
 							{logo?.tile ? (

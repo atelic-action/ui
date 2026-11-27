@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { render, screen, within } from "@testing-library/react";
 import { createRef } from "react";
 import { Footer, type FooterProps } from "../../src/chrome";
-import { linkColumnsFor } from "../../src/chrome/Footer";
+import { footerLayoutFor, linkColumnsFor } from "../../src/chrome/Footer";
 import { address, brand, email, phone } from "../fixtures";
 
 const columns: FooterProps["columns"] = [
@@ -301,6 +301,36 @@ describe("linkColumnsFor", () => {
 	});
 });
 
+describe("footerLayoutFor", () => {
+	// Four columns at a 158px floor need 4 * 158 + 3 * 24 = 704px; two by two
+	// beside the brand, 2 * 158 + 32 = 348px.
+	const at = (row: number, brand: number) =>
+		footerLayoutFor({ row, brand, widest: 150, floor: 158, count: 4 });
+
+	it("sets every column beside the brand when the brand, the gap, and four fit", () => {
+		expect(at(300 + 24 + 704, 300)).toEqual({ layout: "beside", columns: 4 });
+	});
+
+	it("sets two by two beside the brand when four do not fit beside it, never the brand alone", () => {
+		expect(at(300 + 24 + 704 - 0.19, 300)).toEqual({ layout: "beside-two", columns: 2 });
+		// The tablet case: a 1024 wrap of about 976px and a brand of 360.
+		expect(at(976, 360)).toEqual({ layout: "beside-two", columns: 2 });
+		expect(at(300 + 32 + 348, 300)).toEqual({ layout: "beside-two", columns: 2 });
+	});
+
+	it("gives the brand its own row only when two by two beside it does not fit", () => {
+		expect(at(300 + 32 + 348 - 0.19, 300)).toEqual({ layout: "stacked", columns: 2 });
+		expect(at(720, 700)).toEqual({ layout: "stacked", columns: 4 });
+	});
+
+	it("never sets two or fewer columns two by two beside the brand", () => {
+		expect(footerLayoutFor({ row: 500, brand: 300, widest: 0, floor: 158, count: 2 })).toEqual({
+			layout: "stacked",
+			columns: 2,
+		});
+	});
+});
+
 describe("Footer link columns with the hours in the brand column", () => {
 	const hours = [{ label: "Mon", range: "7:00 am to 3:00 pm" }];
 	const grid = (container: HTMLElement) => container.querySelector(".footer-grid") as HTMLElement;
@@ -318,7 +348,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 	 * label at 8px a character. Records whether every column was already set
 	 * when any column's width was read.
 	 */
-	function layout(boxWidth: number) {
+	function layout(rowWidth: number, brandWidth = 0) {
 		const allSet: boolean[] = [];
 		const real = window.getComputedStyle.bind(window);
 		vi.spyOn(window, "getComputedStyle").mockImplementation((element: Element) => {
@@ -326,7 +356,11 @@ describe("Footer link columns with the hours in the brand column", () => {
 			const html = element as HTMLElement;
 			let width = "";
 			let fontSize = style.fontSize;
-			if (html.classList?.contains("footer-links")) width = `${boxWidth}px`;
+			if (html.classList?.contains("footer-links")) width = `${rowWidth}px`;
+			if (html.classList?.contains("footer-grid")) width = `${rowWidth}px`;
+			if (html.classList?.contains("footer-brand")) {
+				width = html.style.width === "max-content" ? `${brandWidth}px` : "50px";
+			}
 			if (html.classList?.contains("footer-column")) {
 				const holder = html.closest(".footer-links") as HTMLElement;
 				allSet.push(
@@ -377,13 +411,15 @@ describe("Footer link columns with the hours in the brand column", () => {
 		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe("");
 	});
 
-	it("names two by two for a box a fraction short, and floors it at the widest column", () => {
-		// 30 characters at 8px: the widest column is 240px, so four need 1032px.
-		const { allSet } = layout(1031.81);
+	it("names two by two beside the brand for a row a fraction short of four, and floors it at the widest column", () => {
+		// 30 characters at 8px: the widest column is 240px, so four need 1032px
+		// and the 24px beside the brand.
+		const { allSet } = layout(1055.81);
 		const { container } = render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
 		expect(box(container)).toHaveAttribute("data-link-columns", "2");
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside-two");
 		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe(
 			"max(calc(10 * var(--footer-link-size)), 240px)",
 		);
@@ -396,16 +432,30 @@ describe("Footer link columns with the hours in the brand column", () => {
 		}
 	});
 
-	it("names every column across when the box holds the widest four", () => {
-		layout(1032);
+	it("names every column across beside the brand when the row holds the widest four", () => {
+		layout(1056);
 		const { container } = render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
 		expect(box(container)).toHaveAttribute("data-link-columns", "4");
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside");
+	});
+
+	it("gives the brand a row of its own only when even two by two beside it does not fit", () => {
+		// A 600px brand: two by two beside it needs 600 + 32 + 512 = 1144px.
+		layout(1100, 600);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "stacked");
+		// Under it the row holds all four at 1032px.
+		expect(box(container)).toHaveAttribute("data-link-columns", "4");
+		// The brand is measured at its own width and handed its style back.
+		expect(container.querySelector(".footer-brand")?.getAttribute("style")).toBeFalsy();
 	});
 
 	it("measures again when a label changes, not only on a resize", () => {
-		layout(1032);
+		layout(1056);
 		const { container, rerender } = render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);
@@ -433,7 +483,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 				disconnect() {}
 			},
 		);
-		layout(1032);
+		layout(1056);
 		render(
 			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
 		);

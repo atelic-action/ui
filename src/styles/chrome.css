@@ -1827,6 +1827,42 @@
 		.atelic-ui .footer-grid.has-brand-hours .footer-links[data-link-columns="2"] > .footer-column {
 			flex-basis: calc(50% - 12.5px);
 		}
+		/* And the measure's layout (9.10.0), named on the grid as
+		   data-footer-layout, so the row never wraps on its own: beside, every
+		   column across beside the brand; beside-two, the columns two by two
+		   beside it, where the brand used to take a row of its own and leave
+		   the half beside it empty, the two set the footer grid's own 32px
+		   apart, as every other footer sets its brand and its columns, and
+		   the columns 40px and 32px apart, as the phone footer pairs them; and
+		   stacked, the brand on a row of its own when even two by two beside
+		   it does not fit. Beside, the brand never shrinks below its own
+		   width, since the measure made room for it, and the box takes the
+		   rest. */
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside"],
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] {
+			flex-wrap: nowrap;
+		}
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] {
+			column-gap: 32px;
+		}
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside"] > .footer-brand,
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-brand {
+			flex-shrink: 0;
+		}
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-links {
+			flex-basis: calc(2 * var(--_link-floor) + 32px);
+			min-width: 0;
+			gap: 40px 32px;
+		}
+		.atelic-ui
+			.footer-grid.has-brand-hours[data-footer-layout="beside-two"]
+			.footer-links[data-link-columns]
+			> .footer-column {
+			flex-basis: calc(50% - 16.5px);
+		}
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="stacked"] > .footer-brand {
+			flex-basis: 100%;
+		}
 	}
 	/* One row from 1100px, the brand column a little wider than without the
 	   hours, so the lockup and the rating keep a line each. */
