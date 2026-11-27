@@ -167,7 +167,10 @@ export function ReviewCarousel({
 	// `held` is the passing kind, while a pointer or the focus is on it.
 	const seconds = autoAdvance && autoAdvance > 0 && count > 1 ? autoAdvance : 0;
 	const [stopped, setStopped] = useState(false);
-	const [held, setHeld] = useState(false);
+	// Hover and focus are kept apart so leaving one never releases the other.
+	const [hovered, setHovered] = useState(false);
+	const [focused, setFocused] = useState(false);
+	const held = hovered || focused;
 	// seen is a dependency so a turn skipped on a hidden page is rescheduled on return.
 	const [seen, setSeen] = useState(0);
 	// index is a dependency so each review, however it was reached, gets its full time.
@@ -266,13 +269,16 @@ export function ReviewCarousel({
 					aria-roledescription="carousel"
 					aria-label={ariaLabel}
 					onKeyDown={onKeyDown}
-					onPointerEnter={(event) => event.pointerType === "mouse" && setHeld(true)}
-					onPointerLeave={() => setHeld(false)}
-					onFocus={() => setHeld(true)}
+					onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(true)}
+					onPointerLeave={() => setHovered(false)}
+					onFocus={() => setFocused(true)}
 					onBlur={(event) => {
-						if (!event.currentTarget.contains(event.relatedTarget)) setHeld(false);
+						if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
 					}}
-					onTouchStart={() => setStopped(true)}
+					onTouchStart={(event) => {
+						// The pause button decides for itself, so a tap on it is not a touch on the card.
+						if (!(event.target as HTMLElement).closest?.(".rvc-pause")) setStopped(true);
+					}}
 				>
 					{/* While the card moves by itself it says nothing aloud; a
 					    reader who steps it hears the review they stepped to. */}
@@ -346,7 +352,14 @@ export function ReviewCarousel({
 										type="button"
 										className="rvc-arrow rvc-pause"
 										aria-label={stopped ? playLabel : pauseLabel}
-										onClick={() => setStopped((current) => !current)}
+										onClick={() => {
+											// Pressing Play asks for rotation, so the hold it was pressed under ends.
+											if (stopped) {
+												setHovered(false);
+												setFocused(false);
+											}
+											setStopped((current) => !current);
+										}}
 									>
 										{stopped ? (
 											<Play size={15} strokeWidth={2} aria-hidden="true" />
