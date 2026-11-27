@@ -133,7 +133,7 @@ export function ReviewCarousel({
 	// A link or button inside a slide keeps its own arrow keys: stepping from it would
 	// hide the slide that holds focus.
 	function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-		if ((event.target as HTMLElement).closest?.("a, button")) return;
+		if ((event.target as HTMLElement).closest?.(".rvc-stage a, .rvc-stage button")) return;
 		if (event.key === "ArrowLeft") {
 			event.preventDefault();
 			go(index - 1);
