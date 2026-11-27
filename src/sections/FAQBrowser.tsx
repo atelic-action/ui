@@ -1,7 +1,14 @@
 import { Search, X } from "lucide-react";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useWithBase } from "../routing/BasePathProvider";
-import { type FAQCTA, FAQCTALink, type FAQListItem, FAQRow, useCopiedLink } from "./FAQList";
+import {
+	type FAQCTA,
+	FAQCTALink,
+	type FAQListItem,
+	FAQRow,
+	type FAQRowLabels,
+	useCopiedLink,
+} from "./FAQList";
 import { JumpRail } from "./JumpRail";
 import { PageHero } from "./PageHero";
 
@@ -26,7 +33,7 @@ export interface FAQCategory {
 	items: FAQEntry[];
 }
 
-export interface FAQBrowserProps {
+export interface FAQBrowserProps extends FAQRowLabels {
 	hero: { eyebrow?: string; title: ReactNode; lead?: ReactNode };
 	categories: FAQCategory[];
 	searchPlaceholder?: string;
@@ -53,6 +60,7 @@ export function FAQBrowser({
 	searchPlaceholder = "Search questions or keywords",
 	browseAllLabel = "Browse all questions ↓",
 	contactHref = "/contact",
+	...labels
 }: FAQBrowserProps) {
 	const withBase = useWithBase();
 	const [query, setQuery] = useState("");
@@ -184,6 +192,7 @@ export function FAQBrowser({
 											copied={copiedID === item.id}
 											onToggle={() => toggle(item.id)}
 											onCopy={() => copyLink(item.id)}
+											{...labels}
 										/>
 									))}
 								</div>
