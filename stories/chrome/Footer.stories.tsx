@@ -2,6 +2,7 @@ import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import type { CSSProperties } from "react";
 import { expect, within } from "storybook/test";
 import { Footer, type FooterColumn, type HoursRow, SiteHeader } from "../../src/chrome";
+import { measureLinkColumns } from "../../src/chrome/Footer";
 import { formatHoursRange } from "../../src/sections";
 import { address, brand, email, marks, phone, site, wordmarkBrand } from "../fixtures/bakery";
 import { frameOf, SizedFrame } from "../support/frame";
@@ -1173,49 +1174,85 @@ export const HoursInBrandLongLabelEveryWidth: Story = {
 };
 
 /**
- * What the footer's measure reads, read again here from the page: the row,
- * the brand column at its own width, and each link column's, with every
- * piece set to its own width for the read and handed back, so the sweep can
- * say whether two by two fits beside the brand at a width.
+ * How many lines an element's words take, counted from the boxes its text
+ * nodes lay out in, so an icon beside the words (a social link's) counts for
+ * nothing.
  */
-function naturalWidths(footer: HTMLElement) {
-	const view = footer.ownerDocument.defaultView as Window;
+function lineCount(element: Element): number {
+	const doc = element.ownerDocument;
+	const walker = doc.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+	const tops = new Set<number>();
+	for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+		if (!node.textContent?.trim()) continue;
+		const range = doc.createRange();
+		range.selectNodeContents(node);
+		for (const box of Array.from(range.getClientRects())) {
+			if (box.width > 0) tops.add(Math.round(box.top));
+		}
+	}
+	return tops.size;
+}
+
+/**
+ * What is wrong with the footer's geometry at the frame's width, read from
+ * the page: a column that runs past the row's right edge, a brand beside
+ * some columns and not others, and, for four columns, any rows but four
+ * across or two by two; with three, two and one beside the brand. From 760,
+ * where the footer lays its row, also a link label on two lines, and the
+ * columns two by two under the brand on a row as wide as the footer's own
+ * measure says two by two fits beside it (`besideTwoAt`), which would leave
+ * the half beside the brand empty (9.10.0). Below 760 the phone footer
+ * pairs the columns in half the row, as it always has, and a three word
+ * label may take two lines there.
+ */
+function geometryFaults(footer: HTMLElement, width: number, besideTwoAt = Infinity): string[] {
+	const rect = (element: Element) => element.getBoundingClientRect();
 	const grid = footer.querySelector(".footer-grid") as HTMLElement;
-	const brand = grid.querySelector(":scope > .footer-brand") as HTMLElement;
+	const brand = grid.querySelector(".footer-brand") as HTMLElement;
 	const columns = Array.from(footer.querySelectorAll<HTMLElement>("nav.footer-column"));
-	const width = (element: Element) => Number.parseFloat(view.getComputedStyle(element).width);
-	const style = view.getComputedStyle(grid);
-	const row =
-		width(grid) - Number.parseFloat(style.paddingLeft) - Number.parseFloat(style.paddingRight);
-	const pieces = [brand, ...columns];
-	const kept = pieces.map((piece) => piece.getAttribute("style"));
-	for (const piece of pieces)
-		piece.setAttribute("style", "flex: none; min-width: 0; width: max-content");
-	const brandWidth = width(brand);
-	const widest = Math.max(...columns.map(width));
-	pieces.forEach((piece, at) => {
-		const own = kept[at];
-		if (own === null || own === undefined) piece.removeAttribute("style");
-		else piece.setAttribute("style", own);
-	});
-	const link = footer.querySelector("nav.footer-column a") as HTMLElement;
-	const floor = 10 * Number.parseFloat(view.getComputedStyle(link).fontSize);
-	return { row, brand: brandWidth, column: Math.max(widest, floor) };
+	const faults: string[] = [];
+	const view = footer.ownerDocument.defaultView as Window;
+	const right = rect(grid).right - Number.parseFloat(view.getComputedStyle(grid).paddingRight);
+	for (const column of columns) {
+		if (rect(column).right > right + 1) {
+			faults.push(`${width}: ${column.getAttribute("aria-label")} runs past the row`);
+		}
+		if (width < 760) continue;
+		for (const link of Array.from(column.querySelectorAll("a"))) {
+			if (lineCount(link) > 1) faults.push(`${width}: "${link.textContent}" wraps`);
+		}
+	}
+	const tops = [...new Set(columns.map((column) => Math.round(rect(column).top)))];
+	const shape = tops
+		.map((row) => columns.filter((column) => Math.round(rect(column).top) === row).length)
+		.join("+");
+	const beside = columns.filter((column) => rect(column).left >= rect(brand).right - 1).length;
+	if (beside !== 0 && beside !== columns.length)
+		faults.push(`${width}: ${beside} beside the brand`);
+	if (columns.length === 4) {
+		if (shape !== "4" && shape !== "2+2") faults.push(`${width}: ${shape}`);
+		const row =
+			right - rect(grid).left - Number.parseFloat(view.getComputedStyle(grid).paddingLeft);
+		if (width >= 760 && shape === "2+2" && beside === 0 && row >= besideTwoAt) {
+			faults.push(`${width}: two by two under the brand, the half beside it empty`);
+		}
+	}
+	if (columns.length === 3 && beside === 3 && tops.length > 1) {
+		faults.push(`${width}: ${shape} beside the brand`);
+	}
+	return faults;
 }
 
 /**
  * Sweeps the footer with the hours in the brand column at a brand share of
- * 2 across `from` to `to`, a width at a time, in a frame whose media queries
- * follow its width. At every width the link columns sit four across or two
- * by two, never three and a lone fourth; the brand sits beside all of them
- * or above all of them; no column is wider than its box; and from 760, where
- * the footer lays its row, the brand sits beside the links at every width
- * where two by two beside it fits (9.10.0). Below 760 the phone footer
- * pairs the columns under the brand, as it always has.
+ * 2 from `from` to `to` in a frame whose media queries follow its width: 8px
+ * at a time, and every pixel within 2 of each width at which the footer's
+ * own measure says its layout changes, where a fault would hide. Faults are
+ * read from the page's geometry alone (`geometryFaults`).
  */
-function sweep(from: number, to: number): Story {
+function sweep(columns: FooterColumn[], from = 360, to = 1400): Story {
 	return {
-		args: { hours, columns: fullColumns, hoursPlacement: "brand" },
+		args: { hours, columns, hoursPlacement: "brand" },
 		globals: pin("desktop"),
 		render: (args) => (
 			<SizedFrame width={from}>
@@ -1234,53 +1271,71 @@ function sweep(from: number, to: number): Story {
 				footer = doc.querySelector("footer");
 			}
 			if (!footer) throw new Error("The footer never drew in the frame");
-			const columns = Array.from(footer.querySelectorAll<HTMLElement>("nav.footer-column"));
-			const brand = footer.querySelector(".footer-brand") as HTMLElement;
-			const rect = (element: Element) => element.getBoundingClientRect();
-			const bad: string[] = [];
-			for (let width = from; width <= to; width++) {
+			const grid = footer.querySelector(".footer-grid") as HTMLElement;
+			const view = doc.defaultView as Window;
+			const rowOf = () => {
+				const style = view.getComputedStyle(grid);
+				return (
+					Number.parseFloat(style.width) -
+					Number.parseFloat(style.paddingLeft) -
+					Number.parseFloat(style.paddingRight)
+				);
+			};
+			const faults: string[] = [];
+			const check = async (width: number) => {
 				frame.style.width = `${width}px`;
 				await settle();
-				const tops = [...new Set(columns.map((column) => Math.round(rect(column).top)))];
-				const shape = tops
-					.map((row) => columns.filter((column) => Math.round(rect(column).top) === row).length)
-					.join("+");
-				if (shape !== "4" && shape !== "2+2") bad.push(`${width}: ${shape}`);
-				const beside = columns.filter(
-					(column) => rect(column).left >= rect(brand).right - 1,
-				).length;
-				if (beside !== 0 && beside !== columns.length) bad.push(`${width}: ${beside} beside`);
-				for (const column of columns) {
-					if (column.scrollWidth > column.clientWidth + 1) {
-						bad.push(`${width}: ${column.getAttribute("aria-label")} overflows`);
+				// The row width two by two beside the brand fits from, as the
+				// footer's own measure reports it.
+				const besideTwoAt = measureLinkColumns(footer as HTMLElement)?.breaks[1] ?? Infinity;
+				faults.push(
+					...geometryFaults(
+						footer as HTMLElement,
+						width,
+						columns.length === 4 ? besideTwoAt : Infinity,
+					),
+				);
+			};
+			let closely = 0;
+			for (let width = from; width <= to; width += 8) {
+				await check(width);
+				const measure = measureLinkColumns(footer);
+				if (!measure) continue;
+				const offset = width - rowOf();
+				for (const at of measure.breaks.map((row) => Math.round(row + offset))) {
+					if (at < width || at >= width + 8) continue;
+					for (let near = at - 2; near <= at + 2; near++) {
+						if (near < from || near > to) continue;
+						closely++;
+						await check(near);
 					}
-				}
-				if (width >= 760 && beside === 0) {
-					const natural = naturalWidths(footer);
-					if (natural.brand + 32 + 2 * natural.column + 32 <= natural.row) {
-						bad.push(`${width}: the brand stands alone where two by two fits beside it`);
-					}
+					await check(width);
 				}
 			}
-			await expect(bad).toEqual([]);
+			await expect(faults).toEqual([]);
+			// The breaks the measure reported were looked at pixel by pixel.
+			await expect(closely).toBeGreaterThan(0);
 		},
 	};
 }
 
-/** The sweep from 360 to 619: the phone footer, then the first of the flowing row. */
-export const HoursInBrandSweep360: Story = sweep(360, 619);
-/** The sweep from 620 to 879. */
-export const HoursInBrandSweep620: Story = sweep(620, 879);
-/** The sweep from 880 to 1139. */
-export const HoursInBrandSweep880: Story = sweep(880, 1139);
-/** The sweep from 1140 to 1400. */
-export const HoursInBrandSweep1140: Story = sweep(1140, 1400);
+/** Four link columns, 360 to 1400. */
+export const HoursInBrandSweep: Story = sweep(fullColumns);
+
+/**
+ * A label wider than the floor, 360 to 1400: the widest column decides, and
+ * at each width the layout changes the label still holds one line.
+ */
+export const HoursInBrandSweepLongLabel: Story = sweep(longLabelColumns);
+
+/** Three link columns, 360 to 1400: never two and a lone one beside the brand. */
+export const HoursInBrandSweepThreeColumns: Story = sweep(fullColumns.slice(0, 3));
 
 /**
  * The tablet case at 1024 with a brand share of 2, as a site whose brand
  * block carries the hours sets it: the brand on the left at its own width
- * and the four link columns two by two beside it, where the brand used to
- * take the whole first row and leave its right half empty (9.10.0).
+ * and the four link columns two by two beside it, shorter than the same
+ * footer with the brand on a row of its own over the four (9.10.0).
  */
 export const HoursInBrandShareTwoAt1024: Story = {
 	args: { hours, columns: fullColumns, hoursPlacement: "brand" },
@@ -1294,8 +1349,27 @@ export const HoursInBrandShareTwoAt1024: Story = {
 	],
 	play: async ({ canvas }) => {
 		await expectBrandRows(canvas, "brand beside two by two");
-		// Shorter than the brand above four columns at the same width (718px before 9.10.0).
 		const footer = canvas.getByRole("contentinfo");
-		await expect(footer.getBoundingClientRect().height).toBeLessThan(700);
+		const grid = footer.querySelector(".footer-grid") as HTMLElement;
+		const beside = footer.getBoundingClientRect().height;
+		// The same footer laid out with the brand on a row of its own, read and put back.
+		grid.setAttribute("data-footer-layout", "stacked");
+		const stacked = footer.getBoundingClientRect().height;
+		grid.setAttribute("data-footer-layout", "beside-two");
+		await expect(beside).toBeLessThan(stacked);
+	},
+};
+
+/** Three link columns at 1024 at a brand share of 2: one row of three, never two and one beside the brand. */
+export const HoursInBrandThreeColumnsShareTwoAt1024: Story = {
+	args: { hours, columns: fullColumns.slice(0, 3), hoursPlacement: "brand" },
+	globals: pin("laptop"),
+	decorators: HoursInBrandShareTwoAt1024.decorators,
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		await expect(geometryFaults(footer, 1024)).toEqual([]);
+		const columns = within(footer).getAllByRole("navigation");
+		const tops = new Set(columns.map((column) => Math.round(column.getBoundingClientRect().top)));
+		await expect(tops.size).toBe(1);
 	},
 };

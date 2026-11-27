@@ -37,7 +37,11 @@ export function SizedFrame({
 		host.className = "atelic-ui";
 		doc.body.appendChild(host);
 		setRoot(host);
-		return () => host.remove();
+		// The sheets too, so a second run of the effect (StrictMode) adds them once.
+		return () => {
+			host.remove();
+			doc.head.replaceChildren();
+		};
 	}, []);
 	return (
 		<iframe
