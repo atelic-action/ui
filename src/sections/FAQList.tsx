@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Link2 } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { useOpenHeight } from "../lib/useOpenHeight";
 import { useWithBase } from "../routing/BasePathProvider";
@@ -118,11 +118,14 @@ export function FAQRow({
  */
 export function useCopiedLink() {
 	const [copiedID, setCopiedID] = useState<string | null>(null);
+	const timer = useRef<number | undefined>(undefined);
+	useEffect(() => () => window.clearTimeout(timer.current), []);
 	const copy = useCallback((id: string) => {
 		const url = `${window.location.origin}${window.location.pathname}#${id}`;
 		navigator.clipboard?.writeText(url).catch(() => {});
 		setCopiedID(id);
-		window.setTimeout(() => setCopiedID((current) => (current === id ? null : current)), 1600);
+		window.clearTimeout(timer.current);
+		timer.current = window.setTimeout(() => setCopiedID(null), 1600);
 	}, []);
 	return { copiedID, copy } as const;
 }
@@ -146,10 +149,13 @@ export function FAQList({ items, id, className, ...labels }: FAQListProps) {
 	const [openIDs, setOpenIDs] = useState<Set<string>>(new Set());
 	const { copiedID, copy } = useCopiedLink();
 
+	// Keyed to the ids, so a parent passing a fresh array does not reopen a closed row.
+	const idKey = items.map((item) => item.id).join("\n");
 	useEffect(() => {
+		const ids = idKey.split("\n");
 		const openFromHash = () => {
 			const target = window.location.hash.slice(1);
-			if (!target || !items.some((item) => item.id === target)) return;
+			if (!target || !ids.includes(target)) return;
 			setOpenIDs((prev) => new Set(prev).add(target));
 			requestAnimationFrame(() => {
 				document.getElementById(target)?.scrollIntoView({ block: "center" });
@@ -158,7 +164,7 @@ export function FAQList({ items, id, className, ...labels }: FAQListProps) {
 		openFromHash();
 		window.addEventListener("hashchange", openFromHash);
 		return () => window.removeEventListener("hashchange", openFromHash);
-	}, [items]);
+	}, [idKey]);
 
 	function toggle(itemID: string) {
 		setOpenIDs((prev) => {
