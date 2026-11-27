@@ -583,12 +583,16 @@ function typeScale(weights: Map<string, number>) {
 		return name ? weights.get(name) : value && /^\d+$/.test(value) ? Number(value) : undefined;
 	};
 	const sized = (name: string, props: Record<string, string>, usage: string): TypeStyle => {
-		const size = props["font-size"] ?? "";
+		const declared = props["font-size"] ?? "";
+		// A heading size held to its column (9.12.0) is its clamp inside a min().
+		const fitted = /^min\((clamp\([^)]*\)),\s*var\(--heading-fit\)\)$/.exec(declared);
+		const size = fitted ? (fitted[1] as string) : declared;
 		const fluid = /^clamp\(([^,]+),([^,]+),([^)]+)\)$/.exec(size);
+		const held = fitted ? " Held to --heading-fit, so its longest word fits its column." : "";
 		const style: TypeStyle = {
 			name,
 			fontSize: fluid ? (fluid[3] as string).trim() : size,
-			usage: fluid ? `${usage} Fluid, ${size}; shown at its largest.` : usage,
+			usage: fluid ? `${usage} Fluid, ${size}; shown at its largest.${held}` : usage,
 		};
 		const leading = props["line-height"];
 		if (leading) style.lineHeight = /^[\d.]+$/.test(leading) ? Number(leading) : leading;

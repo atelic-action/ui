@@ -263,31 +263,43 @@ describe("ProseBlocks", () => {
 });
 
 describe("StarRow, the real rating", () => {
-	const stars = (container: HTMLElement) => ({
-		whole: container.querySelectorAll(".lucide-star").length,
-		half: container.querySelectorAll(".lucide-star-half").length,
+	// The filled share of the row, in stars: the row is 5 stars of 15px and 4 gaps of 2px.
+	const reach = (container: HTMLElement) => {
+		const cut = /inset\(0(?:px)? ([\d.]+)px/.exec(
+			(container.querySelector(".star-row-fill") as HTMLElement).style.clipPath,
+		);
+		const filled = 83 - Number(cut?.[1] ?? 0);
+		const whole = Math.floor((filled + 0.01) / 17);
+		return whole + Math.min(filled - whole * 17, 15) / 15;
+	};
+
+	it("says a part rating as it is and fills that part of the next star, never rounding up", () => {
+		const { container } = render(<StarRow rating={4.8} />);
+		expect(screen.getByRole("img")).toHaveAccessibleName("4.8 out of 5 stars");
+		expect(container.querySelectorAll(".star-row-back .lucide-star")).toHaveLength(5);
+		expect(container.querySelectorAll(".star-row-fill .lucide-star")).toHaveLength(5);
+		expect(reach(container)).toBeGreaterThan(4.7);
+		expect(reach(container)).toBeLessThan(4.9);
 	});
 
-	it("says a half rating as it is and draws the half, never rounding up to the next star", () => {
-		const { container } = render(<StarRow rating={4.5} />);
-		expect(screen.getByRole("img")).toHaveAccessibleName("4.5 out of 5 stars");
-		expect(stars(container)).toEqual({ whole: 4, half: 1 });
-	});
-
-	it("says a rating to one decimal and draws it to the nearest half star", () => {
+	it("says a rating to one decimal and draws more for a higher one", () => {
 		const { container, unmount } = render(<StarRow rating={4.27} />);
 		expect(screen.getByRole("img")).toHaveAccessibleName("4.3 out of 5 stars");
-		expect(stars(container)).toEqual({ whole: 4, half: 1 });
+		const higher = reach(container);
 		unmount();
-		const four = render(<StarRow rating={4.2} />);
-		expect(stars(four.container)).toEqual({ whole: 4, half: 0 });
+		const lower = reach(render(<StarRow rating={4.2} />).container);
+		expect(lower).toBeGreaterThan(4);
+		expect(lower).toBeLessThan(higher);
 	});
 
-	it("draws a whole rating as it always has, and clamps out of range into 1 to 5", () => {
+	it("fills whole stars for a whole rating, and clamps out of range into 1 to 5", () => {
 		const { container, unmount } = render(<StarRow rating={5} />);
 		expect(screen.getByRole("img")).toHaveAccessibleName("5 out of 5 stars");
-		expect(stars(container)).toEqual({ whole: 5, half: 0 });
+		expect(reach(container)).toBeCloseTo(5, 1);
 		unmount();
+		const four = render(<StarRow rating={4} />);
+		expect(reach(four.container)).toBeCloseTo(4, 1);
+		four.unmount();
 		render(<StarRow rating={9} />);
 		expect(screen.getByRole("img")).toHaveAccessibleName("5 out of 5 stars");
 	});

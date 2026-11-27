@@ -1,10 +1,10 @@
-import { Star, StarHalf } from "lucide-react";
+import { Star } from "lucide-react";
 
 export interface StarRowProps {
 	/**
 	 * The rating, 1 to 5, clamped into range. It is said as given (to one
-	 * decimal) and drawn to the nearest half star, so a 4.5 reads and shows
-	 * as four and a half, never as five.
+	 * decimal) and drawn as given: a 4.8 fills four stars and eight tenths of
+	 * the fifth, never five.
 	 */
 	rating: number;
 	/** Glyph size in px. */
@@ -17,36 +17,53 @@ function spoken(rating: number): number {
 	return Math.round(Math.max(1, Math.min(5, rating)) * 10) / 10;
 }
 
+const STARS = [0, 1, 2, 3, 4];
+/** The star's drawn shape sits inside its box: it starts and ends this far in, as a share of the box. */
+const INSET = 2 / 24;
+/** The space between two stars in px, the same in the sheet (.star-row-back, .star-row-fill). */
+const GAP = 2;
+
 /**
- * A row of filled stars, rendered as a single labeled image so screen
- * readers announce "4.5 out of 5 stars" instead of the decorative glyphs.
- * Whole stars draw filled and a half star draws as one; a whole rating
- * looks as it always has. Shared by the review components; render one only
- * when the source actually shows a rating, never invent one.
+ * A row of five stars filled to the rating, rendered as a single labeled
+ * image so screen readers announce "4.8 out of 5 stars" instead of the
+ * decorative glyphs. Five faint stars sit behind and the filled ones are cut
+ * off at the rating, so a 4.8 shows the fifth star nearly full and a 4.2
+ * barely begun; a whole rating fills whole stars. Shared by the review
+ * components; render one only when the source actually shows a rating,
+ * never invent one.
  */
 export function StarRow({ rating, size = 15, className }: StarRowProps) {
 	const value = spoken(rating);
-	// Drawn to the nearest half: 4.3 shows four and a half, 4.2 shows four.
-	const halves = Math.round(value * 2);
-	const whole = Math.floor(halves / 2);
-	const half = halves % 2 === 1;
+	const whole = Math.floor(value);
+	const part = value - whole;
+	// How far across the row the fill reaches, in px: the whole stars with
+	// their gaps, then the part of the next one, measured across its shape.
+	const reach = whole * (size + GAP) + (part > 0 ? (INSET + part * (1 - 2 * INSET)) * size : 0);
+	const width = 5 * size + 4 * GAP;
+	const row = (filled: boolean) =>
+		STARS.map((star) => (
+			<Star
+				key={star}
+				size={size}
+				strokeWidth={1.5}
+				fill="currentColor"
+				aria-hidden="true"
+				className={filled ? undefined : "star-row-empty"}
+			/>
+		));
 	return (
 		<span
 			className={["star-row", className].filter(Boolean).join(" ")}
 			role="img"
 			aria-label={`${value} out of 5 stars`}
 		>
-			{Array.from({ length: whole }, (_, i) => (
-				<Star
-					// biome-ignore lint/suspicious/noArrayIndexKey: static decorative row
-					key={i}
-					size={size}
-					strokeWidth={1.5}
-					fill="currentColor"
-					aria-hidden="true"
-				/>
-			))}
-			{half && <StarHalf size={size} strokeWidth={1.5} fill="currentColor" aria-hidden="true" />}
+			<span className="star-row-back">{row(false)}</span>
+			<span
+				className="star-row-fill"
+				style={{ clipPath: `inset(0 ${Math.max(width - reach, 0).toFixed(2)}px 0 0)` }}
+			>
+				{row(true)}
+			</span>
 		</span>
 	);
 }

@@ -63,6 +63,11 @@ const ALLOWED: { sheet: string; line: string; reason: string }[] = [
 		line: "mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);",
 		reason: "the same mask, unprefixed",
 	},
+	{
+		sheet: "primitives.css",
+		line: "mask-image: linear-gradient(transparent, #000 var(--_sf-from) var(--_sf-to), transparent);",
+		reason: "the scroll fade's edges are a mask: only its alpha counts, and no color is painted",
+	},
 ];
 
 const NAMED = [

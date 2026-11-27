@@ -155,14 +155,20 @@
 		--_h4-tracking: calc(var(--subheading-tracking) * 2 / 3);
 		letter-spacing: var(--_h4-tracking);
 	}
+	/* Each heading size stops at --heading-fit, the size at which an
+	   ordinary long word fits the column the heading sits in, so a word is
+	   never broken inside itself to fit (9.12.0). The column is the nearest
+	   heading container: a section heading, a hero's copy, a page hero's
+	   measure, a feature row's copy, each an inline size container; a
+	   heading in none is held to the viewport instead. */
 	.atelic-ui h1 {
-		font-size: clamp(2.6rem, 8vw, 5rem);
+		font-size: min(clamp(2.6rem, 8vw, 5rem), var(--heading-fit));
 	}
 	.atelic-ui h2 {
-		font-size: clamp(2rem, 5.5vw, 3.4rem);
+		font-size: min(clamp(2rem, 5.5vw, 3.4rem), var(--heading-fit));
 	}
 	.atelic-ui h3 {
-		font-size: clamp(1.35rem, 3vw, 1.85rem);
+		font-size: min(clamp(1.35rem, 3vw, 1.85rem), var(--heading-fit));
 	}
 	.atelic-ui h4 {
 		font-size: 1.15rem;

@@ -1,8 +1,8 @@
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { type KeyboardEvent, type ReactNode, useState } from "react";
+import { type KeyboardEvent, type ReactNode, useEffect, useId, useState } from "react";
 import { newTabProps } from "../lib/newTabProps";
 import { Eyebrow } from "../primitives";
-import { ExpandableText } from "../primitives/ExpandableText";
+import { ScrollFade } from "../primitives/ScrollFade";
 import { StarRow } from "../primitives/StarRow";
 import type { ReviewItem } from "./ReviewWall";
 import type { Surface } from "./siteConfig";
@@ -39,20 +39,47 @@ export interface ReviewCarouselProps {
 	/** The reviews, shown one at a time. */
 	items: ReviewItem[];
 	/**
-	 * The label of the link under a review to where it was written, for a
-	 * review that carries a `sourceURL`, e.g. "View on Google". A review with
-	 * no `sourceURL` gets no link. Defaults to "View review".
+	 * How many of `items` the card shows, the first ones: 1 to 10, and 10
+	 * when left out. Ten is the most a card holds, since each review is one
+	 * dot in a row that does not wrap (9.12.0).
+	 */
+	limit?: number;
+	/**
+	 * The seconds each review shows before the card moves to the next on its
+	 * own; 5 when left out, and `false` or 0 to turn it off. It waits while
+	 * a pointer, a finger, or the keyboard's focus is on the card and while
+	 * the page is hidden, each review getting its full time once they leave,
+	 * and for a reader who asks for less motion it never starts (9.12.0).
+	 */
+	autoAdvance?: number | false;
+	/**
+	 * What the link to where a review was written says, for a review that
+	 * carries a `sourceURL`, e.g. "View on Google": the reviewer's name is
+	 * the link, and these words are its description, heard after the name.
+	 * A review with no `sourceURL` gets no link. Defaults to "View review".
 	 */
 	sourceLabel?: string;
 	/**
-	 * The lines a quote shows before it is cut behind Show more (default 6),
-	 * so one long review never makes the card tall. Every word stays in the
-	 * page while cut (9.10.0).
+	 * The lines of quote the card shows (default 6); a longer quote scrolls
+	 * inside them, faded at the edge with more beyond it (`ScrollFade`), so
+	 * one long review never makes the card tall (9.12.0).
 	 */
 	quoteLines?: number;
-	/** The words of the control that opens a cut quote. Defaults to "Show more". */
+	/**
+	 * The accessible name of a quote that scrolls, heard when it takes
+	 * focus. Defaults to "Review text" (9.12.0).
+	 */
+	quoteLabel?: string;
+	/**
+	 * @deprecated Ignored since 9.12.0: a long quote scrolls inside its box
+	 * rather than opening behind Show more. Accepted so a page passing it
+	 * still type checks; it goes in the next major.
+	 */
 	moreLabel?: string;
-	/** The words of the control that closes it again. Defaults to "Show less". */
+	/**
+	 * @deprecated Ignored since 9.12.0, with `moreLabel`. It goes in the next
+	 * major.
+	 */
 	lessLabel?: string;
 	/** Accessible name for the carousel region. */
 	ariaLabel?: string;
@@ -62,18 +89,8 @@ export interface ReviewCarouselProps {
 	surface?: Surface;
 }
 
-/**
- * Real reviews run from a sentence to a paragraph, and every slide shares
- * one card, so the quote's type size steps down as it gets longer: short
- * quotes stay big and quotable, long ones stay inside a card the page can
- * hold. Length, not layout, decides — the same quote always sets the same
- * way, on the server and in the browser.
- */
-function quoteSize(quote: string): string {
-	if (quote.length > 420) return "is-compact";
-	if (quote.length > 260) return "is-medium";
-	return "";
-}
+/** The most reviews one card holds: one dot each, in a row that does not wrap. */
+const MOST_REVIEWS = 10;
 
 /**
  * The social-proof split: the aggregate rating on the left (eyebrow, big
@@ -81,16 +98,23 @@ function quoteSize(quote: string): string {
  * stat row) and a single large review card on the right, stepped through
  * with dot pagination and round prev/next arrows.
  *
- * Every quote ships in the static HTML — inactive slides are hidden by
- * CSS, never conditionally rendered — so crawlers and answer engines read
- * all of them. Slides stack in one grid cell, so the card is as tall as
- * the longest quote and stepping never shifts the page. Every quote is cut
- * to `quoteLines` behind Show more (`ExpandableText`), so the longest quote
- * is capped and the card's height holds steady from review to review;
- * opening a long quote may grow the card, and stepping closes it again.
+ * Every quote ships in the static HTML (inactive slides are hidden by
+ * CSS, never conditionally rendered), so crawlers and answer engines read
+ * all of them. The card has one layout and never moves from review to
+ * review: the quote at the top, in a box `quoteLines` tall at most that a
+ * longer quote scrolls inside (`ScrollFade`), then the divider and the
+ * bottom block (the review's stars, the reviewer's name, the detail
+ * line), then the dots and arrows. The slides share one grid whose rows
+ * each slide's parts sit in (a subgrid), so every row is as tall as the
+ * tallest slide's part: the card holds one height, the quote always starts
+ * at the top, and the divider, the stars, the name, and the detail sit in
+ * the same place for every review, a review with no stars or no detail
+ * keeping their room. Stepping opens each quote at its top.
  *
  * Per-review stars are opt-in per item (`rating`), like `ReviewWall`:
- * render them only when the source actually shows them.
+ * render them only when the source actually shows them. A review with a
+ * `sourceURL` makes the reviewer's name the link to it, so the link takes
+ * no line of its own.
  *
  * `profileURL` turns the caption into a link out to the live review
  * profile, carrying the wall's dated-source idiom (quiet text, trailing
@@ -105,17 +129,20 @@ export function ReviewCarousel({
 	profileURL,
 	lead,
 	stats,
-	items,
+	items: given,
+	limit = MOST_REVIEWS,
+	autoAdvance = 5,
 	sourceLabel = "View review",
 	quoteLines = 6,
-	moreLabel = "Show more",
-	lessLabel = "Show less",
+	quoteLabel = "Review text",
 	ariaLabel = "Customer reviews",
 	id,
 	className,
 	surface = "default",
 }: ReviewCarouselProps) {
 	const [rawIndex, setIndex] = useState(0);
+	const minted = useId();
+	const items = given.slice(0, Math.min(Math.max(Math.floor(limit) || 1, 1), MOST_REVIEWS));
 	const count = items.length;
 	const index = Math.min(rawIndex, Math.max(count - 1, 0));
 	// The profile link's new tab attributes, worked out once for the link and its name.
@@ -128,12 +155,46 @@ export function ReviewCarousel({
 		setIndex(((next % count) + count) % count);
 	}
 
+	// The card moves on by itself every `autoAdvance` seconds, and waits
+	// (`held`) while a pointer, a finger, or the keyboard's focus is on it.
+	const seconds = autoAdvance && autoAdvance > 0 && count > 1 ? autoAdvance : 0;
+	// Each is kept apart so leaving one never releases another.
+	const [hovered, setHovered] = useState(false);
+	const [focused, setFocused] = useState(false);
+	const [touched, setTouched] = useState(false);
+	const held = hovered || focused || touched;
+	// seen is a dependency so a turn skipped on a hidden page is rescheduled on return.
+	const [seen, setSeen] = useState(0);
+	// index is a dependency so each review, however it was reached, gets its full time.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: index restarts the wait on purpose
+	useEffect(() => {
+		if (!seconds || held) return;
+		if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+		const timer = window.setTimeout(() => {
+			if (document.hidden) return;
+			setIndex((current) => (Math.min(current, count - 1) + 1) % count);
+		}, seconds * 1000);
+		return () => window.clearTimeout(timer);
+	}, [seconds, held, count, index, seen]);
+	// A hidden page skips its turn above; coming back starts the wait again.
+	useEffect(() => {
+		if (!seconds) return;
+		const onShow = () => setSeen((n) => n + 1);
+		document.addEventListener("visibilitychange", onShow);
+		return () => document.removeEventListener("visibilitychange", onShow);
+	}, [seconds]);
+
 	// Left/right step the carousel whenever focus sits on one of its
 	// controls, the keyboard convention for a paged region.
 	// A link or button inside a slide keeps its own arrow keys: stepping from it would
 	// hide the slide that holds focus.
 	function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-		if ((event.target as HTMLElement).closest?.(".rvc-stage a, .rvc-stage button")) return;
+		if (
+			(event.target as HTMLElement).closest?.(
+				".rvc-stage a, .rvc-stage button, .rvc-stage [tabindex]",
+			)
+		)
+			return;
 		if (event.key === "ArrowLeft") {
 			event.preventDefault();
 			go(index - 1);
@@ -194,52 +255,77 @@ export function ReviewCarousel({
 				</div>
 
 				{/* A named <section> is an ARIA region, the carousel pattern's
-				    wrapper — spelled semantically rather than role="group". */}
+				    wrapper, spelled semantically rather than role="group". */}
 				<section
 					className="rvc-viewport"
 					aria-roledescription="carousel"
 					aria-label={ariaLabel}
 					onKeyDown={onKeyDown}
+					onPointerEnter={(event) => event.pointerType === "mouse" && setHovered(true)}
+					onPointerLeave={() => setHovered(false)}
+					// The keyboard's focus alone: a control keeps focus after a click,
+					// and that must not hold the card for good.
+					onFocus={(event) => {
+						let keyboard = true;
+						try {
+							keyboard = (event.target as HTMLElement).matches(":focus-visible");
+						} catch {}
+						if (keyboard) setFocused(true);
+					}}
+					onBlur={(event) => {
+						if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+					}}
+					onTouchStart={() => setTouched(true)}
+					onTouchEnd={() => setTouched(false)}
+					onTouchCancel={() => setTouched(false)}
 				>
-					<div className="rvc-stage" aria-live="polite">
-						{items.map((item, i) => (
-							<figure
-								className={["rvc-slide", i === index && "is-active"].filter(Boolean).join(" ")}
-								key={item.by + item.quote.slice(0, 24)}
-								aria-hidden={i !== index}
-								aria-roledescription="slide"
-								aria-label={`Review ${i + 1} of ${count}`}
-							>
-								{item.rating != null && <StarRow rating={item.rating} size={17} />}
-								<blockquote
-									className={["rvc-quote", quoteSize(item.quote)].filter(Boolean).join(" ")}
+					{/* While the card moves by itself it says nothing aloud; a
+					    reader who steps it hears the review they stepped to. */}
+					<div className="rvc-stage" aria-live={seconds && !held ? "off" : "polite"}>
+						{items.map((item, i) => {
+							const sourceTab = item.sourceURL ? newTabProps(item.sourceURL, true) : {};
+							const describedBy = `${minted}-source-${i}`;
+							return (
+								<figure
+									className={["rvc-slide", i === index && "is-active"].filter(Boolean).join(" ")}
+									key={item.by + item.quote.slice(0, 24)}
+									aria-hidden={i !== index}
+									aria-roledescription="slide"
+									aria-label={`Review ${i + 1} of ${count}`}
 								>
-									{/* Keyed to the review shown, so stepping closes an opened quote. */}
-									<ExpandableText
-										key={`shown-${index}`}
-										lines={quoteLines}
-										moreLabel={moreLabel}
-										lessLabel={lessLabel}
-									>
-										“{item.quote}”
-									</ExpandableText>
-								</blockquote>
-								<figcaption className="rvc-who">
-									<span className="rvc-name">{item.by}</span>
-									{item.detail && <span className="rvc-detail">{item.detail}</span>}
-									{item.sourceURL && (
-										<a
-											className="rvc-source"
-											href={item.sourceURL}
-											{...newTabProps(item.sourceURL, true)}
-										>
-											{sourceLabel}
-											<ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" />
-										</a>
-									)}
-								</figcaption>
-							</figure>
-						))}
+									<blockquote className="rvc-quote">
+										{/* Every slide hears the review shown, so each opens at its top. */}
+										<ScrollFade lines={quoteLines} ariaLabel={quoteLabel} resetKey={index}>
+											“{item.quote}”
+										</ScrollFade>
+									</blockquote>
+									<figcaption className="rvc-who">
+										{item.rating != null && (
+											<span className="rvc-stars">
+												<StarRow rating={item.rating} size={17} />
+											</span>
+										)}
+										{item.sourceURL ? (
+											<a
+												className="rvc-name is-link"
+												href={item.sourceURL}
+												{...sourceTab}
+												aria-describedby={describedBy}
+											>
+												{item.by}
+												<ArrowUpRight size={14} strokeWidth={2} aria-hidden="true" />
+												<span id={describedBy} hidden>
+													{sourceTab.target ? `${sourceLabel}, opens in a new tab` : sourceLabel}
+												</span>
+											</a>
+										) : (
+											<span className="rvc-name">{item.by}</span>
+										)}
+										{item.detail && <span className="rvc-detail">{item.detail}</span>}
+									</figcaption>
+								</figure>
+							);
+						})}
 					</div>
 
 					{/* With one review, or none, there is nowhere to step, so no
