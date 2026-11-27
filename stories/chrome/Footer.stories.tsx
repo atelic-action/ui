@@ -653,6 +653,7 @@ const fullColumns: FooterColumn[] = [
 				icon: "linkedin",
 				external: true,
 			},
+			{ label: "Yelp", href: "https://yelp.example.com/kh", icon: "yelp", external: true },
 			{ label: "Reviews", href: "https://reviews.example.com/kh", icon: "star", external: true },
 			{ label: "Newsletter", href: "/news", icon: "mail" },
 		],
@@ -675,6 +676,29 @@ async function expectWholeWords(canvas: ReturnType<typeof within>) {
 	await expect(brokenLabels(canvas.getByRole("contentinfo"))).toEqual([]);
 	await expectNoSidewaysScroll();
 }
+
+/**
+ * Every brand mark in the Social column (Instagram, Facebook, YouTube,
+ * LinkedIn, and Yelp) in one box and one size, in the link's color.
+ */
+export const SocialMarks: Story = {
+	args: { columns: fullColumns },
+	play: async ({ canvas }) => {
+		const footer = canvas.getByRole("contentinfo");
+		const marks = ["Instagram", "Facebook", "YouTube", "LinkedIn", "Yelp"].map((name) => {
+			const link = within(footer).getByRole("link", { name });
+			return { link, mark: link.querySelector("svg") as SVGElement };
+		});
+		const first = marks[0].mark.getBoundingClientRect();
+		for (const { link, mark } of marks) {
+			const box = mark.getBoundingClientRect();
+			await expect(Math.round(box.width)).toBe(Math.round(first.width));
+			await expect(Math.round(box.height)).toBe(Math.round(first.height));
+			await expect(mark).toHaveAttribute("aria-hidden", "true");
+			await expect(getComputedStyle(mark).color).toBe(getComputedStyle(link).color);
+		}
+	},
+};
 
 /** The hours as their own column beside four full link columns, at 1280. */
 export const CrowdedHoursColumn: Story = {

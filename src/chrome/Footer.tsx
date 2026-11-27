@@ -31,9 +31,10 @@ import { Copyright } from "./Copyright";
 /*
  * lucide-react ships no brand marks (removed upstream by policy), and a code
  * glyph standing in for GitHub or a briefcase for LinkedIn misleads the
- * reader. These are the brands' own simple marks, carried by hand as a
- * considered exception to the lucide only rule; like lucide icons they take
- * currentColor and a size prop.
+ * reader. These are the brands' simple marks (GitHub, LinkedIn, Facebook,
+ * Instagram, YouTube, and Yelp's burst, drawn here as a plain five petal
+ * burst), carried by hand as a considered exception to the lucide only rule;
+ * like lucide icons they take currentColor and a size prop.
  */
 type MarkProps = { size?: number } & ComponentProps<"svg">;
 
@@ -124,6 +125,21 @@ function YouTubeMark({ size = 18, ...rest }: MarkProps) {
 	);
 }
 
+function YelpMark({ size = 18, ...rest }: MarkProps) {
+	return (
+		<svg
+			aria-hidden="true"
+			viewBox="0 0 24 24"
+			width={size}
+			height={size}
+			fill="currentColor"
+			{...rest}
+		>
+			<path d="M12.85 10.85L12.53 4.11A1.9 1.9 0 0 0 8.78 4.77L10.79 11.21ZM10.33 11.67L7.06 9.96A1.8 1.8 0 0 0 6.13 13.44L9.82 13.59ZM9.94 14.06L6.97 15.89A1.8 1.8 0 0 0 9.51 18.43L11.34 15.46ZM12.65 15.57L13.94 18.82A1.8 1.8 0 0 0 16.89 16.75L14.27 14.43ZM14.61 13.38L18.27 12.91A1.8 1.8 0 0 0 17.03 9.52L13.93 11.52Z" />
+		</svg>
+	);
+}
+
 const LINK_ICONS = {
 	facebook: FacebookMark,
 	github: GitHubMark,
@@ -132,6 +148,7 @@ const LINK_ICONS = {
 	mail: Mail,
 	star: Star,
 	user: UserRound,
+	yelp: YelpMark,
 	youtube: YouTubeMark,
 } as const;
 

@@ -266,6 +266,7 @@ export type FooterIcon =
 	| "mail"
 	| "star"
 	| "user"
+	| "yelp"
 	| "youtube";
 
 /** A social link; the footer's Social column prints it with its icon. */

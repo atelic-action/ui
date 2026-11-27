@@ -970,7 +970,7 @@ The header carries the services and the service areas, so the footer does not re
 | The phone and the email | `phone`, `email` |
 | Company | `nav` |
 | Resources | `footerLinks` |
-| Social | `socialLinks`, each with its `icon` (`facebook`, `github`, `instagram`, `linkedin`, `mail`, `star`, `user`, `youtube`) |
+| Social | `socialLinks`, each with its `icon` (`facebook`, `github`, `instagram`, `linkedin`, `mail`, `star`, `user`, `yelp`, `youtube`) |
 | Legal | `legalLinks` |
 | The closing bar's right side | the practice's credit, or `footer.note` in its place |
 
@@ -1076,7 +1076,7 @@ Nothing breaks. What a site would notice:
 
 1. **`ReviewCarousel` caps every quote** at `quoteLines` (6) behind Show more, through `ExpandableText`, which needed no change: a quote is prose, the piece's own content. One long review no longer makes the card tall, the card holds one height from review to review, an opened quote may grow it, and stepping to another review closes it again. `moreLabel` and `lessLabel` name the control. Every word stays in the page. A quote's words now sit inside the clamp, one element below the sized `blockquote.rvc-quote`.
 2. **`FAQList`** in `sections` is a short list of questions with no numbers, each row folding open with a link button that copies the question's address beside the chevron. It is `FAQBrowser`'s own row, now in `FAQList.tsx` and drawn by both, so there is one question row; `ExpandList` keeps its numbered rows for steps. A link to `#<id>` opens that question and scrolls it into view, on arrival or when followed. The row's control names, which `FAQBrowser` hard coded, are props on `FAQList` with the same words as defaults. Set straight after a `SectionHeading`, it sits the block gap under it, as a `GridLayout` does.
-3. **The footer's Social column** already draws `linkedin`. There is no `yelp`: `lucide-react` ships no brand marks, and the footer's marks are carried by hand as a considered exception, so a new one waits on a decision to carry Yelp's mark the same way.
+3. **The footer's Social column draws `yelp`** (9.10.0) beside `facebook`, `instagram`, `youtube`, and `linkedin`, which it already drew: a social link's `icon` takes the new name. `lucide-react` ships no brand marks, so Yelp's burst is carried in the package as the other marks are, a single color path in `currentColor` on the same 24 box and size.
 
 ### Moving to 9.9.0
 
