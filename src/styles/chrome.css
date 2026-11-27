@@ -1869,6 +1869,12 @@
 		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-brand {
 			flex-shrink: 0;
 		}
+		/* Two by two beside it, the brand keeps its own width and the box takes
+		   every pixel left, so the headroom the decision counted for each
+		   column is never shared out to the brand. */
+		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-brand {
+			flex-grow: 0;
+		}
 		.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-links {
 			flex-basis: calc(2 * var(--_link-floor) + var(--_link-gap-two));
 			min-width: 0;

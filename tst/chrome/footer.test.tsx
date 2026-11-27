@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { createRef, Profiler } from "react";
 import { Footer, type FooterProps } from "../../src/chrome";
 import { footerLayoutFor, linkColumnsFor } from "../../src/chrome/Footer";
@@ -400,7 +400,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 	 * label at 8px a character. Records whether every column was already set
 	 * when any column's width was read.
 	 */
-	function layout(rowWidth: number, brandWidth = 0, { phone = false } = {}) {
+	function layout(rowWidth: number, brandWidth = 0, options: { phone?: boolean } = {}) {
 		const allSet: boolean[] = [];
 		const real = window.getComputedStyle.bind(window);
 		vi.spyOn(window, "getComputedStyle").mockImplementation((element: Element) => {
@@ -439,7 +439,9 @@ describe("Footer link columns with the hours in the brand column", () => {
 					}
 				: {};
 			const display =
-				phone && html.classList?.contains("footer-links") ? "contents" : style.display || "block";
+				options.phone && html.classList?.contains("footer-links")
+					? "contents"
+					: style.display || "block";
 			return new Proxy(style, {
 				get: (target, key) => {
 					if (key === "width") return width;
@@ -452,8 +454,58 @@ describe("Footer link columns with the hours in the brand column", () => {
 				},
 			});
 		});
-		return { allSet };
+		return { allSet, options };
 	}
+
+	/** A ResizeObserver that records what it watches and lets a test fire it. */
+	function observer() {
+		const watched: Element[] = [];
+		const callbacks: ResizeObserverCallback[] = [];
+		vi.stubGlobal(
+			"ResizeObserver",
+			class {
+				constructor(callback: ResizeObserverCallback) {
+					callbacks.push(callback);
+				}
+				observe(element: Element) {
+					watched.push(element);
+				}
+				disconnect() {}
+			},
+		);
+		const fire = async () => {
+			for (const callback of callbacks) callback([], {} as ResizeObserver);
+			await act(async () => {
+				await new Promise((resolve) => requestAnimationFrame(resolve));
+			});
+		};
+		return { watched, fire };
+	}
+
+	it("measures again when the brand block changes size, so it watches the brand too", () => {
+		const { watched } = observer();
+		layout(1060);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(watched).toContain(container.querySelector(".footer-brand"));
+		vi.unstubAllGlobals();
+	});
+
+	it("lets the tablet's choice go when the footer narrows to a phone's", async () => {
+		const { fire } = observer();
+		const { options } = layout(1060);
+		const { container } = render(
+			<Footer {...props} hours={hours} columns={withLong("Financing and insurance claims")} />,
+		);
+		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside");
+		options.phone = true;
+		await fire();
+		expect(grid(container)).not.toHaveAttribute("data-footer-layout");
+		expect(box(container)).not.toHaveAttribute("data-link-columns");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe("");
+		vi.unstubAllGlobals();
+	});
 
 	afterEach(() => vi.restoreAllMocks());
 
@@ -492,7 +544,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 		expect(box(container)).toHaveAttribute("data-link-columns", "2");
 		expect(grid(container)).toHaveAttribute("data-footer-layout", "beside-two");
 		expect(grid(container).style.getPropertyValue("--_link-floor")).toBe(
-			"max(calc(10 * var(--footer-link-size)), 240px)",
+			"max(calc(10 * var(--footer-link-size)), 241px)",
 		);
 		// Every column set before any was read: one layout for the measure.
 		expect(allSet.length).toBeGreaterThan(0);
@@ -539,7 +591,7 @@ describe("Footer link columns with the hours in the brand column", () => {
 			/>,
 		);
 		expect(box(container)).toHaveAttribute("data-link-columns", "2");
-		expect(grid(container).style.getPropertyValue("--_link-floor")).toContain("328px");
+		expect(grid(container).style.getPropertyValue("--_link-floor")).toContain("329px");
 	});
 
 	it("measures a resize on the next frame, never inside the observer's callback", async () => {
@@ -648,6 +700,12 @@ describe("the brand placement's sheet", () => {
 			/\.footer-links\[data-link-columns="2"\] > \.footer-column \{([^}]*)\}/,
 		)?.[1];
 		expect(half).toContain("flex-basis: calc(50% - var(--_link-gap) / 2 - 0.5px);");
+	});
+
+	it("keeps the brand at its own width two by two beside it, so the columns keep their headroom", () => {
+		expect(sheet()).toContain(
+			'.atelic-ui .footer-grid.has-brand-hours[data-footer-layout="beside-two"] > .footer-brand { flex-grow: 0; }',
+		);
 	});
 
 	it("declares once the gaps the measure reads", () => {

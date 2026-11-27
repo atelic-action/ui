@@ -449,7 +449,13 @@ function useLinkColumns(active: boolean, labels: string) {
 		if (!active || !footer) return;
 		const run = () => {
 			const next = measureLinkColumns(footer);
-			if (!next) return;
+			// Nothing to measure (a phone, where the box is display: contents):
+			// what a wider footer measured is let go, so no tablet choice is left
+			// on the page, and an unchanged null renders nothing again.
+			if (!next) {
+				setMeasure((was) => (was === null ? was : null));
+				return;
+			}
 			setMeasure((was) =>
 				was &&
 				was.widest === next.widest &&
@@ -477,6 +483,10 @@ function useLinkColumns(active: boolean, labels: string) {
 		sizes?.observe(footer);
 		const box = footer.querySelector(".footer-links");
 		if (box) sizes?.observe(box);
+		// The brand block too: a change in what it holds (a longer address, the
+		// hours) changes its own width, which the layout is decided against.
+		const brandBlock = footer.querySelector(".footer-grid > .footer-brand");
+		if (brandBlock) sizes?.observe(brandBlock);
 		let live = true;
 		document.fonts?.ready.then(() => live && later()).catch(() => {});
 		return () => {
@@ -609,7 +619,10 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(function Footer(
 				"--_link-count": shown.length,
 				...(measure &&
 					measure.widest > 0 && {
-						"--_link-floor": `max(calc(10 * var(--footer-link-size)), ${measure.widest}px)`,
+						// The widest column as the decision took it, rounded up and
+						// with its pixel of headroom, so every basis built on the
+						// floor keeps the room the decision counted on.
+						"--_link-floor": `max(calc(10 * var(--footer-link-size)), ${columnWidth(measure.widest, 0)}px)`,
 					}),
 			} as CSSProperties)
 		: undefined;
