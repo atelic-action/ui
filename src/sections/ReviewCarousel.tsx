@@ -76,19 +76,6 @@ export interface ReviewCarouselProps {
 }
 
 /**
- * Real reviews run from a sentence to a paragraph, and every slide shares
- * one card, so the quote's type size steps down as it gets longer: short
- * quotes stay big and quotable, long ones stay inside a card the page can
- * hold. Length, not layout, decides: the same quote always sets the same
- * way, on the server and in the browser.
- */
-function quoteSize(quote: string): string {
-	if (quote.length > 420) return "is-compact";
-	if (quote.length > 260) return "is-medium";
-	return "";
-}
-
-/**
  * The social-proof split: the aggregate rating on the left (eyebrow, big
  * score, star row and caption, a short provenance paragraph, an optional
  * stat row) and a single large review card on the right, stepped through
@@ -233,9 +220,7 @@ export function ReviewCarousel({
 									aria-roledescription="slide"
 									aria-label={`Review ${i + 1} of ${count}`}
 								>
-									<blockquote
-										className={["rvc-quote", quoteSize(item.quote)].filter(Boolean).join(" ")}
-									>
+									<blockquote className="rvc-quote">
 										{/* Every slide hears the review shown, so each opens at its top. */}
 										<ScrollFade lines={quoteLines} ariaLabel={quoteLabel} resetKey={index}>
 											“{item.quote}”

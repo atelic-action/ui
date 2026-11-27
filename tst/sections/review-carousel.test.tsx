@@ -21,7 +21,7 @@ describe("ReviewCarousel", () => {
 		}
 	});
 
-	it("steps the quote's type size down as the quote gets longer", () => {
+	it("sets every quote at one type size, whatever its length", () => {
 		const long = "x".repeat(300);
 		const veryLong = "y".repeat(500);
 		render(
@@ -30,11 +30,10 @@ describe("ReviewCarousel", () => {
 				items={[items[0], { quote: long, by: "Medium M." }, { quote: veryLong, by: "Long L." }]}
 			/>,
 		);
-		// The quote's words sit in its scrolling box, inside the sized blockquote.
 		const quote = (text: string) => screen.getByText(`“${text}”`).closest("blockquote");
-		expect(quote(items[0].quote)?.className).toBe("rvc-quote");
-		expect(quote(long)).toHaveClass("is-medium");
-		expect(quote(veryLong)).toHaveClass("is-compact");
+		for (const text of [items[0].quote, long, veryLong]) {
+			expect(quote(text)?.className).toBe("rvc-quote");
+		}
 	});
 
 	it("marks exactly one slide active at a time", () => {

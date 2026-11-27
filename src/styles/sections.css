@@ -3479,17 +3479,8 @@
 		letter-spacing: -0.01em;
 		color: var(--ink);
 	}
-	/* Longer quotes set smaller, so one paragraph-length review doesn't drive
-	   the shared card height past what the page can hold (see quoteSize). */
-	.atelic-ui .rvc-quote.is-medium {
-		font-size: clamp(1.05rem, 1.25vw, 1.2rem);
-		line-height: 1.55;
-	}
-	.atelic-ui .rvc-quote.is-compact {
-		font-size: clamp(0.98rem, 1.1vw, 1.06rem);
-		line-height: 1.6;
-		letter-spacing: 0;
-	}
+	/* Every quote sets at this one size, whatever its length: a longer one
+	   scrolls inside its box, so the card never needs smaller type. */
 	/* The bottom block: the divider over the stars, the name, and the
 	   detail line, each in its own row of the stage, so none of them moves
 	   between a review that has it and one that does not. */
